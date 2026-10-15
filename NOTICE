@@ -1,0 +1,4 @@
+This project is a C port of numerical methods and test cases from MICM.
+MICM copyright (C) 2023-2026 University Corporation for Atmospheric Research.
+Licensed under Apache-2.0; see LICENSE. The implementation here is modified
+and translated to ISO C11. No MICM library is linked by the C implementation.

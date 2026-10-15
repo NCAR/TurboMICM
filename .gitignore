@@ -1,0 +1,8 @@
+.conda/
+.conda_pkgs/
+build/
+bin/
+__pycache__/
+*.pyc
+ts1_final.csv
+PROMPT.md
