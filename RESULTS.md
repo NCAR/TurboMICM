@@ -1,6 +1,6 @@
 # Validation progress
 
-The complete acceptance gate has **not** been met: 509 of the 680 case ports
+The complete acceptance gate has **not** been met: 476 of the 680 case ports
 remain pending. The test runner reports these as FAIL, not N/A.
 
 ## Current case results
@@ -10,10 +10,11 @@ OpenMP flags. The ported cases keep original or tighter numerical bounds.
 
 | Compiler | PASS | Pending FAIL | N/A |
 | --- | ---: | ---: | ---: |
-| Apple Clang 21 | 171 | 509 | 0 |
-| GCC 15.2 | 171 | 509 | 0 |
+| Apple Clang 21 | 204 | 476 | 0 |
+| GCC 15.2 | 204 | 476 | 0 |
 
-The 171 cases comprise 31 rate-constant tests, 32 LU decomposition
+The 204 cases comprise 31 rate-constant tests, 11 rate-store cases, 22 state
+cases, 32 LU decomposition
 cases, 20 linear-solver cases, 2 backward Euler cases, 42 constraint
 definition/set cases, 12 constraint initialization cases, 10 DAE integration
 cases, 8 Rosenbrock utility/regression cases, 7 process cases and 7 Jacobian

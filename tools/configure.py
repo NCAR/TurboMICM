@@ -194,7 +194,7 @@ def emit_c(mechanism, symbol):
             out.append(f'    for (size_t c=0; c<state->cells; ++c) state->conditions[c].{key}={literal(value)};')
         else:
             setter = 'concentration' if key in indices else 'custom'
-            out.append(f'    value={literal(value)}; status=chem_state_set_{setter}(state,{q(key)},&value,1);')
+            out.append(f'    value={literal(value)}; status=chem_state_fill_{setter}(state,{q(key)},value);')
             out.append('    if (status != CHEM_OK) return status;')
     out.append('    for (size_t c=0; c<state->cells; ++c) chem_ideal_air_density(&state->conditions[c]);')
     out.append('    return status;\n}')

@@ -30,6 +30,14 @@ contiguous cell loops. Dense Jacobian evaluation is available as a reference
 path. Solver construction prepares a sparse derivative plan ordered by
 independent variable and reaction, avoiding name lookups during integration.
 
+State copies own independent buffers and borrow their mechanism. Copy assignment
+allocates before replacing the destination; moves transfer the owning pointer.
+`chem_state_set_concentration` and `chem_state_set_custom` require exactly one
+value per cell. Their `chem_state_fill_*` counterparts broadcast explicitly.
+Bulk named setters use `ChemNamedValues`; the custom-matrix setter transposes
+checked row-major input into the library layout. Named concentration accessors
+return contiguous columns for mutable or const access.
+
 ## Linear algebra and integration
 
 `src/sparse.c` adds symbolic fill once and stores a plan for Mozart elimination.

@@ -57,16 +57,16 @@ static void initialize(ChemState *s,int which)
     }
     if (which==2) {
         const char *labels[]={"r1","r2","r3"};double rates[]={.04,3e7,1e4};
-        for (size_t i=0;i<3;++i) CHECK(chem_state_set_custom(s,labels[i],rates+i,1)==CHEM_OK);
+        for (size_t i=0;i<3;++i) CHECK(chem_state_fill_custom(s,labels[i],rates[i])==CHEM_OK);
     } else {
         double radius=1e-7,number=2.5e6;
-        CHECK(chem_state_set_custom(s,"C surface.effective radius [m]",&radius,1)==CHEM_OK);
-        CHECK(chem_state_set_custom(s,"C surface.particle number concentration [# m-3]",&number,1)==CHEM_OK);
+        CHECK(chem_state_fill_custom(s,"C surface.effective radius [m]",radius)==CHEM_OK);
+        CHECK(chem_state_fill_custom(s,"C surface.particle number concentration [# m-3]",number)==CHEM_OK);
         if (which) {
             double photo=1e-10,emission=1e-20,loss=1e-23;
-            CHECK(chem_state_set_custom(s,"my photolysis rate",&photo,1)==CHEM_OK);
-            CHECK(chem_state_set_custom(s,"my emission rate",&emission,1)==CHEM_OK);
-            CHECK(chem_state_set_custom(s,"my loss rate",&loss,1)==CHEM_OK);
+            CHECK(chem_state_fill_custom(s,"my photolysis rate",photo)==CHEM_OK);
+            CHECK(chem_state_fill_custom(s,"my emission rate",emission)==CHEM_OK);
+            CHECK(chem_state_fill_custom(s,"my loss rate",loss)==CHEM_OK);
         }
     }
     chem_update_rates(s);

@@ -65,3 +65,18 @@ The public kinetic accumulation functions leave the destination's initial
 values intact and skip algebraic rows. Full forcing/Jacobian functions clear
 outputs and then apply kinetics and constraints. This preserves ProcessSet's
 additive contract without forcing callers to allocate a temporary array.
+
+## State ownership and dimensions
+
+C pointer-to-pointer assignment/move helpers replace C++ ownership operators;
+column accessors replace square-bracket proxies. States borrow immutable
+mechanism metadata, which must outlive them, and own all numerical buffers.
+The default-constructor tests use a zero-variable mechanism and zero-cell
+state. Other state tests create ten reactions with the original variable and
+custom-label dimensions.
+
+MICM's named setters reject a scalar for a multi-cell state. The initial C API
+broadcast scalars implicitly; the state-case port corrected that mismatch.
+Explicit fill APIs now provide broadcasting for configuration defaults and
+hand-built configuration comparison fixtures. The original error checks and
+all state tests pass without relaxed bounds.

@@ -52,9 +52,9 @@ ChemStatus chem_state_copy(const ChemState *s, ChemState **out)
 }
 static ChemStatus set_field(double *field, size_t cells, size_t index, const double *v, size_t count)
 {
-    if (count != 1 && count != cells) return CHEM_DIMENSION;
+    if (count != cells) return CHEM_DIMENSION;
     if (count && !v) return CHEM_INVALID;
-    for (size_t c = 0; c < cells; ++c) field[index * cells + c] = v[count == 1 ? 0 : c];
+    for (size_t c = 0; c < cells; ++c) field[index * cells + c] = v[c];
     return CHEM_OK;
 }
 ChemStatus chem_state_set_concentration(ChemState *s, const char *name, const double *v, size_t count)
@@ -178,4 +178,71 @@ void chem_jacobian(const ChemState *s,const double *y,double *jac)
     memset(jac,0,nv*nv*s->cells*sizeof(double));
     kinetic_jacobian_add(s,y,jac,1);
     chem_constraints_jacobian_add(s,y,jac,NULL,1);
+}
+
+ChemStatus chem_state_assign(ChemState **destination,const ChemState *source)
+{
+    if (!destination || !source) return CHEM_INVALID;
+    if (*destination==source) return CHEM_OK;
+    ChemState *copy=NULL;ChemStatus status=chem_state_copy(source,&copy);
+    if (status) return status;
+    chem_state_free(*destination);*destination=copy;return CHEM_OK;
+}
+void chem_state_move(ChemState **destination,ChemState **source)
+{
+    if (!destination || !source || destination==source) return;
+    chem_state_free(*destination);*destination=*source;*source=NULL;
+}
+ChemStatus chem_state_fill_concentration(ChemState *s,const char *name,double value)
+{
+    if (!s) return CHEM_INVALID;
+    size_t index;ChemStatus status=chem_species_index(s->mechanism,name,&index);if (status) return status;
+    for (size_t c=0;c<s->cells;++c) s->values[index*s->cells+c]=value;
+    return CHEM_OK;
+}
+ChemStatus chem_state_fill_custom(ChemState *s,const char *name,double value)
+{
+    if (!s) return CHEM_INVALID;
+    size_t index;ChemStatus status=chem_custom_index(s->mechanism,name,&index);if (status) return status;
+    for (;index<s->mechanism->custom_count;++index) if (!strcmp(s->mechanism->custom_names[index],name))
+        for (size_t c=0;c<s->cells;++c) s->custom[index*s->cells+c]=value;
+    return CHEM_OK;
+}
+ChemStatus chem_state_set_concentrations(ChemState *s,size_t count,const ChemNamedValues *values)
+{
+    if (!s || (count && !values)) return CHEM_INVALID;
+    for (size_t i=0;i<count;++i) {
+        ChemStatus status=chem_state_set_concentration(s,values[i].name,values[i].values,values[i].count);
+        if (status) return status;
+    }
+    return CHEM_OK;
+}
+ChemStatus chem_state_set_custom_parameters(ChemState *s,size_t count,const ChemNamedValues *values)
+{
+    if (!s || (count && !values)) return CHEM_INVALID;
+    for (size_t i=0;i<count;++i) {
+        ChemStatus status=chem_state_set_custom(s,values[i].name,values[i].values,values[i].count);
+        if (status) return status;
+    }
+    return CHEM_OK;
+}
+ChemStatus chem_state_set_custom_matrix(ChemState *s,size_t cells,size_t parameters,const double *values)
+{
+    if (!s) return CHEM_INVALID;
+    if (cells!=s->cells || parameters!=s->mechanism->custom_count) return CHEM_DIMENSION;
+    if (cells && parameters && !values) return CHEM_INVALID;
+    for (size_t c=0;c<cells;++c) for (size_t p=0;p<parameters;++p) s->custom[p*cells+c]=values[c*parameters+p];
+    return CHEM_OK;
+}
+const double *chem_state_concentration_const_data(const ChemState *s,const char *name)
+{
+    if (!s) return NULL;
+    size_t index;if (chem_species_index(s->mechanism,name,&index)) return NULL;
+    return s->values+index*s->cells;
+}
+double *chem_state_concentration_data(ChemState *s,const char *name)
+{
+    if (!s) return NULL;
+    size_t index;if (chem_species_index(s->mechanism,name,&index)) return NULL;
+    return s->values+index*s->cells;
 }

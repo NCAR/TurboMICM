@@ -8,6 +8,8 @@ int main(void)
     test_rosenbrock();
     test_jacobian_verification();
     test_process();
+    test_rate_store();
+    test_state();
     test_constraints();
     test_rates();
     test_sparse();

@@ -49,9 +49,15 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   identical to MICM at 8,624.21 ms; GCC max 1.43e-13 relative at 10,293.17 ms.
   These are diagnostic single runs, not ranking medians.
 
+- All 11 reaction-rate store tests and all 22 state tests pass on both compilers
+  (204 total). State assignment is transactional; moves transfer ownership;
+  named column access has mutable and const variants; bulk setters validate
+  dimensions. Named setters now require one value per cell, matching MICM;
+  explicit fill functions broadcast, including generated configuration inputs.
+
 ## Remaining work (required)
 
-- Port all remaining 509 cases, individually checking original test quantities.
+- Port all remaining 476 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
 - External model hooks and aerosol models. Built-in constraints and
   initialization now pass their unit tests, equilibrium/overshoot integrations,

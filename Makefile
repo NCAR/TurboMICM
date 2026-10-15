@@ -46,9 +46,9 @@ build/%.o: src/%.c include/chem.h include/chem_solver.h include/chem_constraints
 build/libchem.a: $(OBJECTS)
 	ar rcs $@ $(OBJECTS)
 
-bin/test_cpu: tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c tests/test_constraints.c tests/test_constraint_initialization.c tests/test_dae.c tests/test_rosenbrock.c tests/test_jacobian_verification.c tests/test_process.c tests/test.h build/libchem.a
+bin/test_cpu: tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c tests/test_constraints.c tests/test_constraint_initialization.c tests/test_dae.c tests/test_rosenbrock.c tests/test_jacobian_verification.c tests/test_process.c tests/test_rate_store.c tests/test_state.c tests/test.h build/libchem.a
 	@mkdir -p bin
-	$(CC) $(CFLAGS) tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c tests/test_constraints.c tests/test_constraint_initialization.c tests/test_dae.c tests/test_rosenbrock.c tests/test_jacobian_verification.c tests/test_process.c build/libchem.a $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c tests/test_constraints.c tests/test_constraint_initialization.c tests/test_dae.c tests/test_rosenbrock.c tests/test_jacobian_verification.c tests/test_process.c tests/test_rate_store.c tests/test_state.c build/libchem.a $(LDLIBS) -o $@
 test-cpu: env bin/test_cpu bin/test_config bin/ts1_bench_cpu
 	$(PYTHON) tools/run_tests.py
 

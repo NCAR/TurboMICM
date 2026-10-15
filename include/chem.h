@@ -86,6 +86,9 @@ size_t chem_reaction_count(const ChemMechanism *mechanism);
 size_t chem_custom_count(const ChemMechanism *mechanism);
 const char *chem_species_name(const ChemMechanism *mechanism, size_t variable);
 const char *chem_custom_name(const ChemMechanism *mechanism, size_t parameter);
+const ChemRate *chem_rate_definition(const ChemMechanism *,size_t sorted_reaction);
+size_t chem_parameterized_reactant_count(const ChemMechanism *,size_t sorted_reaction);
+double chem_reaction_multiplier(const ChemMechanism *,size_t sorted_reaction,const ChemConditions *);
 size_t chem_rate_offset(const ChemMechanism *mechanism, ChemRateType type);
 ChemStatus chem_species_index(const ChemMechanism *, const char *, size_t *);
 ChemStatus chem_custom_index(const ChemMechanism *, const char *, size_t *);
@@ -104,6 +107,18 @@ typedef struct {
 ChemStatus chem_state_create(const ChemMechanism *, size_t cells, ChemState **out);
 ChemStatus chem_state_copy(const ChemState *, ChemState **out);
 void chem_state_free(ChemState *);
+ChemStatus chem_state_assign(ChemState **destination,const ChemState *source);
+void chem_state_move(ChemState **destination,ChemState **source);
+/* Named setters require one value per cell. Fill functions explicitly broadcast. */
+ChemStatus chem_state_fill_concentration(ChemState *,const char *,double value);
+ChemStatus chem_state_fill_custom(ChemState *,const char *,double value);
+typedef struct { const char *name;const double *values;size_t count; } ChemNamedValues;
+ChemStatus chem_state_set_concentrations(ChemState *,size_t count,const ChemNamedValues *);
+ChemStatus chem_state_set_custom_parameters(ChemState *,size_t count,const ChemNamedValues *);
+/* Matrix input is row-major [cell*parameters+parameter]. */
+ChemStatus chem_state_set_custom_matrix(ChemState *,size_t cells,size_t parameters,const double *);
+double *chem_state_concentration_data(ChemState *,const char *);
+const double *chem_state_concentration_const_data(const ChemState *,const char *);
 ChemStatus chem_state_set_concentration(ChemState *, const char *, const double *, size_t count);
 ChemStatus chem_state_set_custom(ChemState *, const char *, const double *, size_t count);
 void chem_update_rates(ChemState *);

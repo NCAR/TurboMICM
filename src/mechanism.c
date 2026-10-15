@@ -224,3 +224,18 @@ int chem_kinetic_has_element(const ChemMechanism *m,size_t row,size_t column)
     }
     return 0;
 }
+
+const ChemRate *chem_rate_definition(const ChemMechanism *m,size_t reaction)
+{ return reaction<m->reaction_count?&m->processes[reaction].rate:NULL; }
+size_t chem_parameterized_reactant_count(const ChemMechanism *m,size_t reaction)
+{ return reaction<m->reaction_count?m->processes[reaction].parameter_count:0; }
+double chem_reaction_multiplier(const ChemMechanism *m,size_t reaction,const ChemConditions *conditions)
+{
+    if (reaction>=m->reaction_count) return 1;
+    const ChemProcess *p=&m->processes[reaction];double multiplier=1;
+    for (size_t i=0;i<p->parameter_count;++i) {
+        const ChemSpecies *species=&m->species[p->parameters[i]];
+        multiplier*=species->parameter(conditions,species->parameter_context);
+    }
+    return multiplier;
+}

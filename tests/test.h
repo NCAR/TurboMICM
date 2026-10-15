@@ -15,6 +15,8 @@ void test_dae(void);
 void test_rosenbrock(void);
 void test_jacobian_verification(void);
 void test_process(void);
+void test_rate_store(void);
+void test_state(void);
 void test_constraints(void);
 void test_rates(void);
 void test_sparse(void);
