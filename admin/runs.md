@@ -43,6 +43,16 @@ Verification
   `admin/time_entries.py` alongside MICM. The results are in
   `results/2026-10-15-sol-verification/` and on the wiki's Results page.
 
+Transcripts
+- Each finished run's session transcript is archived on the branch `transcripts`,
+  in `transcripts/<run>.jsonl.gz`, kept apart from `main` and the run branches
+  because a transcript names the model and shows every step. The files are made
+  with `admin/archive_transcript.py`, which redacts the account identifiers in
+  the session header and gzips the rest unchanged.
+- 2026-10-15: sol-high, sol-xhigh, and sol-max archived. Their reasoning is
+  encrypted by OpenAI and cannot be read; messages, tool calls with their full
+  output, and token counts are complete.
+
 | Run | Model | Effort | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|
 | sol-high | gpt-6.1-sol | high | Codex CLI 0.162.1, interactive | 2026-10-14 21:55-23:32 | `1d944f4`, 23:32 (6 commits) | finished |
