@@ -38,6 +38,14 @@ Bulk named setters use `ChemNamedValues`; the custom-matrix setter transposes
 checked row-major input into the library layout. Named concentration accessors
 return contiguous columns for mutable or const access.
 
+`include/chem_system.h` adds owning species properties, affine parameterizations,
+phase entries with optional diffusion/density, systems, and named reaction
+metadata. Constructors and assignment helpers make deep copies. Name queries
+exclude parameterized species and optionally apply caller-defined ordering.
+`chem_system_mechanism` resolves names into the same indexed reactions used by
+the low-level API; the mechanism owns a metadata snapshot that keeps parameter
+contexts alive. Callers can destroy all source metadata after construction.
+
 ## Matrix utilities
 
 `include/chem_matrix.h` exposes owning dense matrices and borrowed array/column

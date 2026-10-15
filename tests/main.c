@@ -12,6 +12,8 @@ int main(void)
     test_state();
     test_matrix();
     test_matrix_functions();
+    test_system();
+    test_runtime();
     test_constraints();
     test_rates();
     test_sparse();

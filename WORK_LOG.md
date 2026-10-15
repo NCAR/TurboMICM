@@ -62,15 +62,24 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   vector arguments, and strict/non-strict reductions. Group sizes 1–4 retain
   original raw offsets, padding, dimensions and numerical assertions.
 
+- Species typed-property maps and affine parameterizations, phase metadata,
+  system names/reordering and owning named reactions now pass all 16 associated
+  tests. A system builds the existing runtime mechanism with an owned metadata
+  snapshot, so parameter contexts survive input destruction. Supplemental checks
+  exercise this lifetime and rate evaluation.
+- Five version tests, the callback-rate override integration and the eight-thread
+  shared-mechanism/independent-workspace test pass on Clang and GCC (344 total).
+  Both builds are warning-free; configuration and TS1 regressions pass.
+
 ## Remaining work (required)
 
-- Port all remaining 359 cases, individually checking original test quantities.
+- Port all remaining 336 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
 - External model hooks and aerosol models. Built-in constraints and
   initialization now pass their unit tests, equilibrium/overshoot integrations,
   and the combined Terminator–Robertson conservation test.
 - Backward Euler analytical/regression coverage, reaction-rate tracking, solver status
-  behavior, solver-builder validations and full species/property/phase APIs.
+  behavior and solver-builder validations.
 - Sparse matrix utilities, grouped views and operations, generic C
   equivalents of C++ ownership and dimension checks. Only genuinely
   compile-time-only cases may receive documented N/A reasons.

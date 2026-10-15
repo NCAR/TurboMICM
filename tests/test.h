@@ -19,6 +19,8 @@ void test_rate_store(void);
 void test_state(void);
 void test_matrix(void);
 void test_matrix_functions(void);
+void test_system(void);
+void test_runtime(void);
 void test_constraints(void);
 void test_rates(void);
 void test_sparse(void);

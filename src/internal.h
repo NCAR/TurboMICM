@@ -1,6 +1,7 @@
 #ifndef CHEM_INTERNAL_H
 #define CHEM_INTERNAL_H
 #include "chem.h"
+#include "chem_system.h"
 #include "chem_constraints.h"
 #include "chem_solver.h"
 #include <stdint.h>
@@ -18,6 +19,7 @@ typedef struct {
     size_t *reactants, *products;
 } ChemBoundConstraint;
 struct ChemMechanism {
+    ChemSystem *system;
     size_t species_count, variable_count, reaction_count, custom_count;
     ChemSpecies *species;
     size_t *variable_species;

@@ -13,6 +13,7 @@ static char *copy_string(const char *a, const char *suffix)
 void chem_mechanism_free(ChemMechanism *m)
 {
     if (!m) return;
+    chem_system_free(m->system);
     if (m->species) for (size_t i = 0; i < m->species_count; ++i) free((void *)m->species[i].name);
     if (m->processes) for (size_t i = 0; i < m->reaction_count; ++i) {
         free(m->processes[i].reactants); free(m->processes[i].parameters);

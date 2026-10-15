@@ -101,3 +101,26 @@ allocation. Reductions explicitly select logical or padded rows. Const view
 writes and out-of-range columns return errors, including release builds where
 the corresponding C++ assertion would be disabled. Tests retain all original
 checks, add those release-mode errors, and use groups 1, 2, 3 and 4 as specified.
+
+## Species, phase and system metadata
+
+Owning `ChemSpeciesInfo` property maps retain separate real/string/integer/bool
+entries, including same-name entries of different types. An unsupported enum
+tag tests MICM's invalid-property-type error without using extended floating
+point, which the portability rules forbid. Affine species parameterizations
+retain the original constant, temperature, pressure and density coefficients.
+Phase entries own species copies and optional diffusion/density values. Named
+reaction definitions own their phase, indices and rate label. Their copy and
+assignment helpers replace C++ value semantics.
+
+`chem_system_mechanism` resolves reaction names against the system gas phase
+and calls the existing generic mechanism constructor. The resulting mechanism
+owns a separate system snapshot; parameter callbacks point into that snapshot,
+so no builder metadata must outlive it. Both construction paths therefore use
+the same runtime rate and solver code. The OpenMP test shares this immutable
+mechanism and gives each thread its own state and solver scratch workspace,
+matching the original state-isolation behavior with the C ownership design.
+
+The supplied `micm/include/micm/version.hpp` returns version `3.14.0` and numeric
+components 3, 14, 0, 0, despite the older version description in the task prompt.
+The compatibility version API follows those actual supplied source values.
