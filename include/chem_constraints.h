@@ -23,6 +23,8 @@ ChemStatus chem_constraint_validate(const ChemConstraint *);
  * is transactional: an invalid definition leaves the old constraints intact. */
 ChemStatus chem_mechanism_set_constraints(ChemMechanism *, size_t count, const ChemConstraint *);
 size_t chem_constraint_count(const ChemMechanism *);
+/* Built-in definitions precede external model rows. An external row has no
+ * ChemConstraint definition, so its definition accessor returns NULL. */
 const ChemConstraint *chem_constraint_definition(const ChemMechanism *, size_t index);
 size_t chem_constraint_row(const ChemMechanism *, size_t index);
 int chem_is_algebraic(const ChemMechanism *, size_t variable);

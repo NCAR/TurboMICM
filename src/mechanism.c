@@ -13,6 +13,7 @@ static char *copy_string(const char *a, const char *suffix)
 void chem_mechanism_free(ChemMechanism *m)
 {
     if (!m) return;
+    chem_models_free(m);
     chem_system_free(m->system);
     if (m->species) for (size_t i = 0; i < m->species_count; ++i) free((void *)m->species[i].name);
     if (m->processes) for (size_t i = 0; i < m->reaction_count; ++i) {
@@ -109,7 +110,7 @@ ChemStatus chem_mechanism_create(size_t ns, const ChemSpecies *species, size_t n
             if (!m->custom_names[j] || !m->custom_names[j+1]) goto fail;
         }
     }
-    m->reaction_custom_count=m->custom_count;
+    m->base_custom_count=m->custom_count;
     m->algebraic=chem_alloc(m->variable_count,1);
     if (!m->algebraic) { status=CHEM_MEMORY; goto fail; }
     free(map); *out = m; return CHEM_OK;
@@ -170,6 +171,11 @@ unsigned char *chem_mechanism_pattern(const ChemMechanism *m)
         memset(pattern+row*n,0,n);
         for (size_t col=0;col<n;++col) pattern[row*n+col]=(unsigned char)chem_constraint_has_element(m,row,col);
     }
+    for (size_t i=0;i<m->model_count;++i) {
+        const ChemModelBinding *b=&m->models[i].binding;
+        for (size_t j=0;j<b->process_element_count;++j)
+            pattern[b->process_elements[j].row*n+b->process_elements[j].column]=1;
+    }
     return pattern;
 }
 ChemStatus chem_mechanism_reorder(ChemMechanism *m)
@@ -196,6 +202,7 @@ ChemStatus chem_mechanism_reorder(ChemMechanism *m)
         for (size_t j=0;j<c->definition.reactant_count;++j) c->reactants[j]=inverse[c->reactants[j]];
         for (size_t j=0;j<c->definition.product_count;++j) c->products[j]=inverse[c->products[j]];
     }
+    chem_models_reorder(m,inverse);
 finish:
     free(pattern); free(perm); free(inverse); free(species); return status;
 }

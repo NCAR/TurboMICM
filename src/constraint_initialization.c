@@ -45,7 +45,7 @@ ChemStatus chem_initialize_constraints(ChemSolver *s,ChemState *state,
 {
     if (!s || !state || !p || !stats || state->mechanism!=s->mechanism || state->cells!=s->cells)
         return CHEM_INVALID;
-    if (!s->mechanism->constraint_count) return CHEM_OK;
+    if (!chem_constraint_count(s->mechanism)) return CHEM_OK;
     double *delta=s->initial,*original=s->stages,*candidate=s->next,*trial=s->error;
     size_t bytes=s->count*sizeof(double);
     int modified=0;

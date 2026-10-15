@@ -155,3 +155,33 @@ copies and non-strict row loops visit the allocated padded lanes, matching the
 source grouped primitives. Strict row iteration and strict reductions exclude
 those lanes. Tests verify group boundaries, pointer offsets, untouched neighbor
 entries and partial tails, with additional checks of padded versus strict visits.
+
+
+## External processes and constraints
+
+C model descriptors replace the source's model template packs. Each build owns
+resolved index arrays and a separate context copy. This preserves repeatable
+builds without retaining descriptor strings or moving data out of the caller.
+A callback gets the current binding instead of caching a particular sparse
+layout. Positive derivative accumulation uses a destination view with a sign,
+so a single callback serves dense numerical checks and the negative sparse
+solver Jacobian. Generic callers can supply arbitrary nonlinear models.
+
+External process entries in algebraic rows are retained structurally, then
+cleared numerically before applying constraints. This covers both externally
+controlled rows and rows controlled by built-in constraints. Built-in constraint
+replacement retains model parameters and algebraic rows and rejects duplicate
+controlled variables. Constraint count/row enumeration includes both sources;
+only built-in rows have a ChemConstraint definition.
+
+The 18 aerosol cases retain the source initial values, quantities and analytical
+tolerances. The C tests exercise both LU algorithms with separate/in-place
+factors, all five Rosenbrock methods, backward Euler, and batch widths 1–4.
+As in the source, the vector Rosenbrock policies use ROS3; other Rosenbrock
+methods use the full original one- or three-cell state. An exploratory ROS6
+split into independent one/two-cell states changed its adaptive error norm and
+missed the original three-cell analytical tolerance. That combination is not
+one of the source cases and is not used to represent it. No method coefficient,
+solver tolerance or original acceptance bound was changed. Solver matrices have
+a canonical layout; CSR/CSC data-view behavior is covered by the separate sparse
+utility ports rather than duplicate integrator implementations.

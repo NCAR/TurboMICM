@@ -101,6 +101,7 @@ void chem_update_rates(ChemState *s)
             s->rates[i * n + c] *= mult;
         }
     }
+    chem_models_update(s,0);
     chem_constraints_update_parameters(s);
 }
 void chem_add_kinetic_forcing(const ChemState *s, const double *restrict y, double *restrict f)
@@ -135,6 +136,11 @@ void chem_forcing(const ChemState *s,const double *y,double *f)
 {
     memset(f,0,s->mechanism->variable_count*s->cells*sizeof(double));
     chem_add_kinetic_forcing(s,y,f);
+    if (s->mechanism->model_count) {
+        chem_external_add_forcing(s,y,f);
+        for (size_t r=0;r<s->mechanism->variable_count;++r) if (s->mechanism->algebraic[r])
+            memset(f+r*s->cells,0,s->cells*sizeof(double));
+    }
     chem_constraints_forcing(s,y,f);
 }
 static void kinetic_jacobian_add(const ChemState *s, const double *restrict y, double *restrict jac,double sign)
@@ -177,6 +183,10 @@ void chem_jacobian(const ChemState *s,const double *y,double *jac)
     size_t nv=s->mechanism->variable_count;
     memset(jac,0,nv*nv*s->cells*sizeof(double));
     kinetic_jacobian_add(s,y,jac,1);
+    if (s->mechanism->model_count) {
+        chem_models_jacobian(s,y,jac,NULL,1,0);
+        chem_clear_algebraic_jacobian(s,jac,NULL);
+    }
     chem_constraints_jacobian_add(s,y,jac,NULL,1);
 }
 

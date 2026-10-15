@@ -103,8 +103,30 @@ and damped line search before integration. It modifies only algebraic variables
 and restores the full input state on failure. Projection uses the same sparse
 factor/solve callbacks as integration. `chem_add_mass_diagonal` and the finite-
 difference utilities in `chem_jacobian.h` expose independently testable numerical
-operations. External and aerosol models remain to be implemented; this is not
-yet the complete CPU port.
+operations.
+
+`chem_external.h` defines external process and constraint callbacks. The model
+constructor copies added species, resolves named variables, parameters and
+Jacobian entries, and owns one context per model. Plain contexts are copied by
+size; contexts with pointers supply clone/destructor hooks. Bindings are passed
+into callbacks and remapped by mechanism reordering. Callbacks use column-major
+state arrays and `chem_model_jacobian_add`, which accepts positive derivatives
+and applies the dense or sparse destination's sign convention.
+
+The composed forcing/Jacobian paths first evaluate kinetic and external
+processes, clear algebraic rows, then apply built-in and external constraints.
+External process structural entries remain present even on algebraic rows, so
+model derivative callbacks can always address their declared entries. Constraint
+projection and the mass matrix use the combined algebraic mask. Separate process
+and constraint APIs support finite-difference verification. Parameter updates
+run for every model, including a constraint model preceded by a process-only
+model. Independent states can share the immutable mechanism and model contexts;
+callbacks must keep mutable per-cell values in the state.
+
+The integration tests implement two aerosol models through this public callback
+interface, with added phase species, number concentrations, temperature-updated
+parameters and user-set parameters. Both solvers use the same mechanism and
+sparse kernels. The complete CPU port still requires the pending case inventory.
 
 To add a Rosenbrock method, add a method enum and a coefficient-set branch in
 `chem_rosenbrock_parameters`, then test the coefficients and stiff integration

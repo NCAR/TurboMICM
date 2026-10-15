@@ -89,13 +89,23 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   All dense and sparse utility inventory cases are now ported. Both builds are
   warning-free and configuration/TS1 regressions continue to pass.
 
+- Added generic external model descriptors with owned contexts, added variables,
+  state parameters, resolved Jacobian entries and separate process/constraint
+  callbacks. All 20 external constraint cases and 18 aerosol cases pass on both
+  compilers (599 total). Tests cover conservative/ratio-only systems, composed
+  equilibria, temperature parameters, model order, repeated builds, reordering,
+  process entries in algebraic rows and finite-difference Jacobians. Aerosol
+  tests cover both integrators, both LU algorithms, factor ownership and ROS3/
+  backward-Euler cell batches. Both builds remain warning-free.
+- Reran the full 10,000-cell seed-2026 TS1 gate after the external model changes:
+  Clang 8,669.65 ms and GCC 10,173.56 ms, unchanged step/call counts. Full final
+  state comparisons retain exact Clang agreement and GCC maximum relative error
+  1.43e-13. The three configuration comparisons and clamp regression also pass.
+
 ## Remaining work (required)
 
-- Port all remaining 119 cases, individually checking original test quantities.
+- Port all remaining 81 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
-- External model hooks and aerosol models. Built-in constraints and
-  initialization now pass their unit tests, equilibrium/overshoot integrations,
-  and the combined Terminator–Robertson conservation test.
 - Backward Euler analytical/regression coverage, reaction-rate tracking, solver status
   behavior and solver-builder validations.
 - Remaining solver regression/analytical tests,

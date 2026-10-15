@@ -46,13 +46,16 @@ ChemStatus chem_mechanism_set_constraints(ChemMechanism *m,size_t count,const Ch
     if (!m || (count && !definitions)) return CHEM_INVALID;
     ChemBoundConstraint *constraints=chem_alloc(count,sizeof(*constraints));
     unsigned char *algebraic=chem_alloc(m->variable_count,1);
-    size_t custom_count=m->reaction_custom_count;
+    size_t custom_count=m->base_custom_count;
     for (size_t i=0;i<count;++i) custom_count+=definitions[i].type==CHEM_EQUILIBRIUM_CONSTRAINT;
     char **names=chem_alloc(custom_count,sizeof(*names));
     ChemStatus status=CHEM_MEMORY;
     if (!constraints || !algebraic || !names) goto fail;
-    for (size_t i=0;i<m->reaction_custom_count;++i) if (!(names[i]=duplicate(m->custom_names[i]))) goto fail;
-    size_t parameter=m->reaction_custom_count;
+    for (size_t i=0;i<m->base_custom_count;++i) if (!(names[i]=duplicate(m->custom_names[i]))) goto fail;
+    for (size_t i=0;i<m->model_count;++i)
+        for (size_t j=0;j<m->models[i].binding.algebraic_count;++j)
+            algebraic[m->models[i].binding.algebraic[j]]=1;
+    size_t parameter=m->base_custom_count;
     for (size_t i=0;i<count;++i) {
         const ChemConstraint *source=&definitions[i];
         status=chem_constraint_validate(source);if (status) goto fail;
@@ -95,11 +98,20 @@ fail:
     free(names);
     return status;
 }
-size_t chem_constraint_count(const ChemMechanism *m) { return m->constraint_count; }
+size_t chem_constraint_count(const ChemMechanism *m) { return m->constraint_count+m->external_constraint_count; }
 const ChemConstraint *chem_constraint_definition(const ChemMechanism *m,size_t i)
 { return i<m->constraint_count?&m->constraints[i].definition:NULL; }
 size_t chem_constraint_row(const ChemMechanism *m,size_t i)
-{ return i<m->constraint_count?m->constraints[i].row:SIZE_MAX; }
+{
+    if (i<m->constraint_count) return m->constraints[i].row;
+    i-=m->constraint_count;
+    for (size_t model=0;model<m->model_count;++model) {
+        const ChemModelBinding *b=&m->models[model].binding;
+        if (i<b->algebraic_count) return b->algebraic[i];
+        i-=b->algebraic_count;
+    }
+    return SIZE_MAX;
+}
 int chem_is_algebraic(const ChemMechanism *m,size_t v)
 { return v<m->variable_count && m->algebraic[v]; }
 int chem_constraint_has_element(const ChemMechanism *m,size_t row,size_t col)
@@ -110,11 +122,12 @@ int chem_constraint_has_element(const ChemMechanism *m,size_t row,size_t col)
         for (size_t j=0;j<b->definition.reactant_count;++j) if (b->reactants[j]==col) return 1;
         for (size_t j=0;j<b->definition.product_count;++j) if (b->products[j]==col) return 1;
     }
-    return 0;
+    return chem_external_has_element(m,row,col,1);
 }
 void chem_constraints_update_parameters(ChemState *s)
 {
     const ChemMechanism *m=s->mechanism;
+    chem_models_update(s,1);
     for (size_t i=0;i<m->constraint_count;++i) {
         const ChemBoundConstraint *b=&m->constraints[i];
         if (b->definition.type!=CHEM_EQUILIBRIUM_CONSTRAINT) continue;
@@ -151,6 +164,7 @@ void chem_constraints_forcing(const ChemState *s,const double *y,double *f)
             f[b->row*cells+c]=value;
         }
     }
+    chem_models_residual(s,y,f);
 }
 void chem_constraints_jacobian_add(const ChemState *s,const double *y,double *jac,const ChemSparse *sparse,double sign)
 {
@@ -175,6 +189,7 @@ void chem_constraints_jacobian_add(const ChemState *s,const double *y,double *ja
             }
         }
     }
+    chem_models_jacobian(s,y,jac,sparse,sign,1);
 }
 void chem_constraints_subtract_jacobian(const ChemState *s,const double *y,double *jac)
 { chem_constraints_jacobian_add(s,y,jac,NULL,-1); }

@@ -106,6 +106,10 @@ void chem_solver_negative_jacobian(ChemSolver *s,const ChemState *state,const do
             for (size_t c=0;c<cells;++c) dst[c]-=yield*work[c];
         }
     }
+    if (s->mechanism->model_count) {
+        chem_models_jacobian(state,y,s->matrix,s->sparse,-1,0);
+        chem_clear_algebraic_jacobian(state,s->matrix,s->sparse);
+    }
     chem_constraints_jacobian_add(state,y,s->matrix,s->sparse,-1);
 }
 void chem_add_mass_diagonal(const ChemMechanism *m,const ChemSparse *pattern,size_t cells,double alpha,double *matrix)
@@ -177,7 +181,7 @@ ChemStatus chem_solve(ChemSolver *s,ChemState *state,double dt,const ChemRosenbr
                 }
                 if (stage+1<p->stages && !p->new_function[stage+1]) memcpy(k+n,k,n*sizeof(double));
                 for (size_t j=0;j<stage;++j) {
-                    if (!s->mechanism->constraint_count) axpy(n,k,p->c[offset+j]/h,s->stages+j*n);
+                    if (!chem_constraint_count(s->mechanism)) axpy(n,k,p->c[offset+j]/h,s->stages+j*n);
                     else for (size_t v=0;v<s->mechanism->variable_count;++v)
                         if (!s->mechanism->algebraic[v])
                             axpy(s->cells,k+v*s->cells,p->c[offset+j]/h,s->stages+j*n+v*s->cells);
