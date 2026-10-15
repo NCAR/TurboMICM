@@ -23,6 +23,10 @@ agent's repository history unchanged, so commit hashes match the run log:
 
     runs/sol/high    runs/sol/xhigh    runs/sol/max    ...
 
+A repeat instance of the same model and effort is run `<model>-<effort>-<n>`
+(`prompts/make_prompts.py --instance 2 sol-high` writes its prompt) and is kept on
+branch `runs/<model>/<effort>-<n>`, for example `runs/sol/high-2`.
+
 ## Where the runs happen
 
 The runs execute in /Users/fillmore/NSF-NCAR/ODE/benchmarks, which every prompt

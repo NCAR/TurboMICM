@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create the run directories, ROOT/<model>-<effort>/, from prompts/*.txt.
+"""Create the run directories, ROOT/<run>/, from prompts/*.txt.
 
     admin/setup_runs.py
 
@@ -28,7 +28,7 @@ if unfilled:
 
 for prompt in prompts:
     run = ROOT / prompt.stem
-    if not re.fullmatch(r"[a-z]+-(high|xhigh|max)", run.name):
+    if not re.fullmatch(r"[a-z]+-(high|xhigh|max)(-[0-9]+)?", run.name):
         continue
     run.mkdir(exist_ok=True)
     if not (run / ".git").exists():

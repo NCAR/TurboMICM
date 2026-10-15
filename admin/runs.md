@@ -9,6 +9,18 @@ Each run is an interactive session started in its run directory,
 
 The run repositories have no remote, so "push" has nowhere to go.
 
+A run is `<model>-<effort>`; repeat instances of the same model and effort, run as
+time permits, add a suffix: `sol-high-2`, `sol-high-3`. Each finished run is kept
+on the TurboMICM branch `runs/<model>/<effort>`, or `runs/<model>/<effort>-<n>`
+for a repeat.
+
+Prompt changes
+- 2026-10-15, after the three Sol runs finished: RULES gained "and do not look at
+  other solutions to this task, on this machine or online", because finished
+  solutions now live in ~/NSF-NCAR/TurboMICM and on GitHub. Every prompt in
+  prompts/ carries it. The Sol runs received the prompt without it, which the
+  experimenter judged immaterial to their solutions.
+
 | Run | Model | Effort | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|
 | sol-high | gpt-6.1-sol | high | Codex CLI 0.162.1, interactive | 2026-10-14 21:55-23:32 | `1d944f4`, 23:32 (6 commits) | finished |

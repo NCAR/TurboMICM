@@ -19,9 +19,10 @@ RULES
         the executables from the copy.
     ROOT/reference
         test-case list, TS1 tools, inputs, and MICM results; see README.md
-- Apart from these, do not read other directories under ROOT. Do not modify
-  anything outside your directory. Do not install software or download code,
-  except packages installed into your own conda environment (see PYTHON).
+- Apart from these, do not read other directories under ROOT, and do not look at
+  other solutions to this task, on this machine or online. Do not modify anything
+  outside your directory. Do not install software or download code, except
+  packages installed into your own conda environment (see PYTHON).
 - Do not put your model or vendor name in any file. Reviews are blind.
 - No one will answer questions. When something is unspecified, decide, and record the
   decision and your reasoning in DECISIONS.md.
