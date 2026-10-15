@@ -1,0 +1,29 @@
+You are a part of a controlled LLM agentic coding experiment.
+All models will work from this prompt.
+You are <model>.
+You will work strictly in the subdir <model>.
+Do not look in other subdirs of benchmark.
+
+Port the MICM library to C and optimize for performance on this Mac laptop.
+Use the clang compiler.
+Use make files for the build system.
+The library can be found in ~/NSF-NCAR/MICM.
+
+Your ports must replicate ALL MICM unit tests within numerical roundoff.
+
+You will create configurations.
+(1) CPU only.
+(2) CPU and GPU.
+
+You may choose GPU libraries available for this Mac.
+All functions must be implemented in C, but you may also implement directly
+in the LLVM intermediate representation as a configuration option.
+Do not modify the mathematical algorithms,
+but design the code so the solvers can be modified in future experiments.
+
+Benchmark only the TS1 mechanism.
+Models will be ranked on TS1 timing performance.
+Secondary qualitative rankings will be assigned by adversial review agents
+for readability, maintainability, and extensibility.
+
+Good luck.
