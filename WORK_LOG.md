@@ -80,18 +80,24 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   Group widths 1–4 and the required width-10 combinations are exercised.
   Both compiler builds have no warnings; configuration and TS1 regressions pass.
 
+- All 22 grouped-view and 5 view-category cases pass on both compilers (561
+  total). Group views precompute base pointers and preserve read-only access.
+  Grouped fill/copy and non-strict iteration include allocated tail padding;
+  strict iteration excludes it. Source template-category tests use C enum tags
+  and constructor classification, so none require N/A. Dense/sparse mixed group
+  paths, original widths 1/2/4/8, partial tails and cross-view copies are covered.
+  All dense and sparse utility inventory cases are now ported. Both builds are
+  warning-free and configuration/TS1 regressions continue to pass.
+
 ## Remaining work (required)
 
-- Port all remaining 146 cases, individually checking original test quantities.
+- Port all remaining 119 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
 - External model hooks and aerosol models. Built-in constraints and
   initialization now pass their unit tests, equilibrium/overshoot integrations,
   and the combined Terminator–Robertson conservation test.
 - Backward Euler analytical/regression coverage, reaction-rate tracking, solver status
   behavior and solver-builder validations.
-- Grouped views and operations, generic C
-  equivalents of C++ ownership and dimension checks. Only genuinely
-  compile-time-only cases may receive documented N/A reasons.
 - Remaining solver regression/analytical tests,
   all eight complete tutorial programs with reference stdout comparisons.
 - Complete analytical validation of all five Rosenbrock parameter sets and

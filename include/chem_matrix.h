@@ -54,11 +54,16 @@ typedef struct {
     ChemArrayKind kind;
     int read_only;
 } ChemArray;
+typedef enum {
+    CHEM_VIEW_VECTOR, CHEM_VIEW_DENSE, CHEM_VIEW_SPARSE,
+    CHEM_VIEW_GROUPED_DENSE, CHEM_VIEW_GROUPED_SPARSE
+} ChemViewKind;
 typedef struct {
     const void *data;
     void *writable;
     size_t length, padded_length, group, block_stride, stride;
     ChemMatrixType type;
+    ChemViewKind kind;
 } ChemView;
 ChemArray chem_array_matrix(ChemMatrix *);
 ChemArray chem_array_const_matrix(const ChemMatrix *);
@@ -66,15 +71,20 @@ ChemArray chem_array_vector(void *, size_t length, ChemMatrixType);
 ChemArray chem_array_const_vector(const void *, size_t length, ChemMatrixType);
 ChemStatus chem_array_column(ChemArray, size_t column, ChemView *);
 ChemView chem_view_const(ChemView);
+/* Select one group and precompute its base pointer. Logical length excludes
+ * tail padding. Grouped fill/copy and non-strict row loops include padding. */
+ChemStatus chem_view_group(ChemView raw, size_t group_index, ChemView *out);
 double chem_view_get(ChemView, size_t row);
 ChemStatus chem_view_set(ChemView, size_t row, double);
 ChemStatus chem_view_fill(ChemView, double);
 ChemStatus chem_view_copy(ChemView destination, ChemView source);
 /* The row callback sees a snapshot of all arguments. Its updated values are
  * written to mutable views; const arguments are never written. Logical rows
- * only are visited, so external vectors need no padding. */
+ * only are visited for raw views, so external vectors need no padding. When
+ * all arguments are grouped views, the default loop includes their padding. */
 typedef void (*ChemRowFunction)(double *values, size_t count, void *context);
 ChemStatus chem_views_for_each(size_t count, const ChemView *, ChemRowFunction, void *context);
+ChemStatus chem_views_for_each_strict(size_t count, const ChemView *, ChemRowFunction, void *context);
 typedef double (*ChemReduceFunction)(double value, double accumulator, void *context);
 ChemStatus chem_view_reduce(ChemView, int strict, ChemReduceFunction, void *context, double *accumulator);
 /* Function creation fixes argument kinds, scalar types and mutability. Dense

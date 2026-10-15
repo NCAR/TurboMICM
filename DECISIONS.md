@@ -141,3 +141,17 @@ validate block counts at invocation. A raw block-zero vector index identifies a
 block view; missing entries and missing block indices return distinct errors.
 All debug-only source bounds assertions are also checked in the C release tests.
 Empty function invocations validate their shapes and skip callback execution.
+
+## Grouped views and category tests
+
+`chem_view_group` selects one physical group and precomputes its element base
+pointer. A category enum distinguishes vector, dense, sparse, grouped dense and
+grouped sparse views. It replaces the source's template category traits with
+observable C constructor/classification behavior, including static assertions
+for distinct enum values. No category case is declared N/A.
+
+Raw-view operations still visit only logical rows. Explicit grouped-view fills,
+copies and non-strict row loops visit the allocated padded lanes, matching the
+source grouped primitives. Strict row iteration and strict reductions exclude
+those lanes. Tests verify group boundaries, pointer offsets, untouched neighbor
+entries and partial tails, with additional checks of padded versus strict visits.

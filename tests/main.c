@@ -16,6 +16,7 @@ int main(void)
     test_runtime();
     test_sparse_matrix();
     test_sparse_functions();
+    test_grouped_views();
     test_constraints();
     test_rates();
     test_sparse();

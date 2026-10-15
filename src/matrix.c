@@ -178,12 +178,26 @@ ChemStatus chem_array_column(ChemArray a,size_t c,ChemView *out)
     size_t offset=(a.group?c*group:c)*element_size(a.type);
     *out=(ChemView){a.data?(const unsigned char *)a.data+offset:NULL,
         a.writable?(unsigned char *)a.writable+offset:NULL,a.rows,padded,group,
-        a.columns*group,1,a.type};
+        a.columns*group,1,a.type,a.kind==CHEM_ARRAY_VECTOR?CHEM_VIEW_VECTOR:a.kind==CHEM_ARRAY_SPARSE?CHEM_VIEW_SPARSE:CHEM_VIEW_DENSE};
     return CHEM_OK;
 }
 ChemView chem_view_const(ChemView v) { v.writable=NULL;return v; }
 static size_t view_index(ChemView v,size_t i)
 { return i/v.group*v.block_stride+i%v.group*v.stride; }
+static int grouped(ChemView v)
+{ return v.kind==CHEM_VIEW_GROUPED_DENSE || v.kind==CHEM_VIEW_GROUPED_SPARSE; }
+ChemStatus chem_view_group(ChemView v,size_t group_index,ChemView *out)
+{
+    if(!out || (v.kind!=CHEM_VIEW_DENSE && v.kind!=CHEM_VIEW_SPARSE) || !v.group)return CHEM_INVALID;
+    size_t count=v.length/v.group+(v.length%v.group!=0);
+    if(group_index>=count)return CHEM_DIMENSION;
+    size_t start=group_index*v.group,offset=view_index(v,start)*element_size(v.type);
+    *out=v;out->data=(const unsigned char *)v.data+offset;
+    out->writable=v.writable?(unsigned char *)v.writable+offset:NULL;
+    out->length=v.length-start<v.group?v.length-start:v.group;out->padded_length=v.group;
+    out->kind=v.kind==CHEM_VIEW_DENSE?CHEM_VIEW_GROUPED_DENSE:CHEM_VIEW_GROUPED_SPARSE;
+    return CHEM_OK;
+}
 double chem_view_get(ChemView v,size_t r)
 { return r<v.length?read_value(v.data,v.type,view_index(v,r)):NAN; }
 ChemStatus chem_view_set(ChemView v,size_t r,double value)
@@ -196,39 +210,58 @@ ChemStatus chem_view_set(ChemView v,size_t r,double value)
 ChemStatus chem_view_fill(ChemView v,double value)
 {
     if ((v.length && !v.writable) || !valid_value(v.type,value)) return CHEM_INVALID;
-    for (size_t i=0;i<v.length;++i) write_value(v.writable,v.type,view_index(v,i),value);
+    size_t n=grouped(v)?v.padded_length:v.length;
+    for (size_t i=0;i<n;++i) write_value(v.writable,v.type,view_index(v,i),value);
     return CHEM_OK;
 }
 ChemStatus chem_view_copy(ChemView dst,ChemView src)
 {
     if (dst.length!=src.length) return CHEM_DIMENSION;
     if (dst.length && (!dst.writable || !src.data)) return CHEM_INVALID;
+    if(grouped(dst)&&grouped(src)) {
+        if(dst.padded_length!=src.padded_length)return CHEM_DIMENSION;
+        dst.length=dst.padded_length;src.length=src.padded_length;
+    }
     for (size_t i=0;i<src.length;++i) {
         ChemStatus s=chem_view_set(dst,i,chem_view_get(src,i));
         if (s!=CHEM_OK) return s;
     }
     return CHEM_OK;
 }
-ChemStatus chem_views_for_each(size_t n,const ChemView *views,ChemRowFunction fn,void *ctx)
+static ChemStatus for_each_views(size_t n,const ChemView *views,ChemRowFunction fn,void *ctx,int strict)
 {
     if (!n || !views || !fn) return CHEM_INVALID;
     for (size_t k=0;k<n;++k) {
         if (views[k].length!=views[0].length) return CHEM_DIMENSION;
         if (views[k].length && !views[k].data) return CHEM_INVALID;
     }
+    int all_grouped=!strict;
+    for(size_t k=0;k<n;++k)all_grouped&=grouped(views[k]);
+    size_t rows=views[0].length;
+    if(all_grouped) {
+        rows=views[0].padded_length;
+        for(size_t k=0;k<n;++k)if(views[k].padded_length!=rows)return CHEM_DIMENSION;
+    }
     if (n>SIZE_MAX/sizeof(double)) return CHEM_MEMORY;
     double *values=malloc(n*sizeof(double));
     if (!values) return CHEM_MEMORY;
     ChemStatus status=CHEM_OK;
-    for (size_t i=0;i<views[0].length && status==CHEM_OK;++i) {
-        for (size_t k=0;k<n;++k) values[k]=chem_view_get(views[k],i);
+    for (size_t i=0;i<rows && status==CHEM_OK;++i) {
+        for (size_t k=0;k<n;++k) values[k]=read_value(views[k].data,views[k].type,view_index(views[k],i));
         fn(values,n,ctx);
         for (size_t k=0;k<n && status==CHEM_OK;++k)
-            if (views[k].writable) status=chem_view_set(views[k],i,values[k]);
+            if (views[k].writable) {
+                if(!valid_value(views[k].type,values[k]))status=CHEM_INVALID;
+                else write_value(views[k].writable,views[k].type,view_index(views[k],i),values[k]);
+            }
     }
     free(values);
     return status;
 }
+ChemStatus chem_views_for_each(size_t n,const ChemView *v,ChemRowFunction fn,void *ctx)
+{ return for_each_views(n,v,fn,ctx,0); }
+ChemStatus chem_views_for_each_strict(size_t n,const ChemView *v,ChemRowFunction fn,void *ctx)
+{ return for_each_views(n,v,fn,ctx,1); }
 ChemStatus chem_view_reduce(ChemView v,int strict,ChemReduceFunction fn,void *ctx,double *acc)
 {
     if (!fn || !acc || (v.length && !v.data)) return CHEM_INVALID;

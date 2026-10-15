@@ -68,6 +68,12 @@ fill. Its values reuse `ChemMatrix` storage and its block views reuse `ChemView`
 Sparse functions allow different matrix structures, enforce matching group
 widths, and check equal block/row/vector lengths on each invocation.
 
+`chem_view_group` narrows a raw view to one group with a precomputed base pointer
+and distinct grouped category. Grouped fill/copy and default grouped row loops
+include the allocated tail padding; `chem_views_for_each_strict` excludes it.
+The logical length remains available for bounds-checked element access. Raw
+views and caller-owned vectors retain logical-only iteration.
+
 ## Linear algebra and integration
 
 `src/sparse.c` adds symbolic fill once and stores a plan for Mozart elimination.
