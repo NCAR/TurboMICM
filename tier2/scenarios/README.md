@@ -97,7 +97,17 @@ Each reference is MICM's six-stage Rosenbrock method (rosenbrock6dae) at
 relative tolerance 1e-10 and absolute tolerance 1e-23 mol m-3. It is checked
 against the same method at 1e-9 and 1e-22. references.log gives that agreement,
 and the accuracy of MICM's default three-stage Rosenbrock, both in score.py's
-digits.
+digits. The references were made with micm_scenario --threads 10, one group of
+100 cells per thread.
+
+| Scenario | Reference convergence: overall (worst species) | MICM's default three-stage Rosenbrock |
+|---|---|---|
+| tier1-30s | 10.79 (BR 9.77) | 4.63 digits (worst C6H5O2 4.03) |
+| diurnal-30min | 10.31 (OCLO 8.86) | fails: NaN detected in step 1 |
+| diurnal-10min | 10.22 (CLO 9.34) | fails: step size too small in step 3 |
+| diurnal-5min | 10.18 (BRO 9.30) | 1.21 digits (worst NTERPOOH 0.21) |
+| polluted-10min | 10.25 (MCO3 9.40) | fails: NaN detected in step 1 |
+| clean-10min | 10.20 (CLO 9.37) | 2.96 digits (worst CLO 2.16) |
 
 ## Tools
 

@@ -1,0 +1,6 @@
+# diurnal-10min: 1000 cells (seed 101, NOx x1); 144 steps of 600 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+default: cells 300-399 failed: step 3: Step Size Too Small FAILED 
+tight: elapsed_ms=107756.826 internal_steps=192524 accepted=189671 rejected=0 function_calls=1152291 jacobian_updates=192524 decompositions=192524 solves=1155144 
+tighter: elapsed_ms=205782.915 internal_steps=366210 accepted=362263 rejected=0 function_calls=2193313 jacobian_updates=366210 decompositions=366210 solves=2197260 
+convergence (tight against tighter): overall 10.22 digits over 586475 values (180 species, 4000 rows); worst species: CLO 9.34, BRO 9.47, HO2NO2 9.47, OCLO 9.51, MDIALO2 9.59
+MICM default against tighter: no result (the default run failed)

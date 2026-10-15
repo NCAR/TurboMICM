@@ -1,0 +1,6 @@
+# polluted-10min: 1000 cells (seed 102, NOx x10); 144 steps of 600 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+default: cells 100-199 failed: step 1: NaNDetected FAILED 
+tight: elapsed_ms=138501.161 internal_steps=243704 accepted=240826 rejected=0 function_calls=1459346 jacobian_updates=243704 decompositions=243704 solves=1462224 
+tighter: elapsed_ms=279237.572 internal_steps=486853 accepted=482859 rejected=0 function_calls=2917124 jacobian_updates=486853 decompositions=486853 solves=2921118 
+convergence (tight against tighter): overall 10.25 digits over 554061 values (178 species, 4000 rows); worst species: MCO3 9.40, HO2NO2 9.50, NTERPO2 9.57, HO2 9.65, N2O5 9.68
+MICM default against tighter: no result (the default run failed)

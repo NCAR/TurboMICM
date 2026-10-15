@@ -43,6 +43,7 @@ for dir in "$@"; do
   [ -f $work/tighter/ts1_snapshots.csv ] && result=ts1_snapshots.csv
   {
     echo "# ${dir:t}: $(head -1 $scenario | sed 's/^# //')"
+    echo "# made with ${micm:t} --threads $threads"
     for run in default tight tighter; do echo "$run: $(tr '\n' ' ' < $work/$run/run.log)"; done
     echo "convergence (tight against tighter): $(python3 $here/../scenarios/score.py $work/tight/$result $work/tighter/$result | head -1)"
     if [ -f $work/default/$result ]; then

@@ -1,0 +1,6 @@
+# diurnal-30min: 1000 cells (seed 101, NOx x1); 48 steps of 1800 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+default: cells 0-99 failed: step 1: NaNDetected FAILED 
+tight: elapsed_ms=75005.950 internal_steps=131202 accepted=129804 rejected=0 function_calls=785814 jacobian_updates=131202 decompositions=131202 solves=787212 
+tighter: elapsed_ms=147971.381 internal_steps=262237 accepted=260527 rejected=0 function_calls=1571712 jacobian_updates=262237 decompositions=262237 solves=1573422 
+convergence (tight against tighter): overall 10.31 digits over 589857 values (180 species, 4000 rows); worst species: OCLO 8.86, CLO 9.57, HO2NO2 9.60, BRCL 9.64, N2O5 9.77
+MICM default against tighter: no result (the default run failed)

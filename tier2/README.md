@@ -56,15 +56,48 @@ the Tier 2 run root, `ODE/benchmarks/tier2`; keep the two identical.
 | `admin/setup_runs.py` | clones each Tier 1 run repository into the Tier 2 root (no shared files, no remote), writes PROMPT.md, links `micm/` and `reference/` | built and tested; sol-xhigh and sol-max set up |
 | `scenarios/micm_scenario.cpp` | MICM on a scenario: f(t) photolysis at the start of each step, any MICM Rosenbrock method and tolerances, snapshots | built; bit-identical to `micm_ts1_ref` on Tier 1's scenario |
 | `admin/make_scenarios.sh`, `scenarios/make_scenario.py` | the six disclosed scenarios, and 10,000-cell versions for timing | built; regenerates the disclosed set byte for byte |
-| `admin/make_references.sh` | references: MICM's six-stage Rosenbrock at 1e-10 relative and 1e-23 absolute, checked against 1e-9 and 1e-22 | tier1-30s done (converged to 10.8 digits; MICM's default reaches 4.6); the other five suspended while astra-high runs |
+| `admin/make_references.sh` | references: MICM's six-stage Rosenbrock at 1e-10 relative and 1e-23 absolute, checked against 1e-9 and 1e-22 | all six done on 2026-10-15 (10 threads, 16:31–17:00): converged to 10.18–10.79 digits overall, no species below 8.86 |
 | `scenarios/score.py` | significant digits overall and per species, and the gate | built |
 | `scenarios/README.md` | the scenario, output, and scoring formats, for the agents | written |
 
 Still to do before launch:
-- the five remaining references, on an idle machine;
-- the undisclosed scenarios, made the same way and kept outside the run root;
-- scenario timing in `admin/time_entries.py`, then MICM's time on every
-  scenario, for context.
+- the undisclosed scenarios, made the same way and kept outside the run root
+  (their parameters for the SSE to choose);
+- test the scenario mode of `admin/time_entries.py` (written), then time MICM
+  on every scenario at tolerances that reach 2 and 3 digits, for context.
+
+## MICM's default on the scenarios
+
+MICM's default three-stage Rosenbrock (relative 1e-6, absolute 1e-3 mol m-3 for
+every species; MUSICA's TS1 and TS4 configurations set no absolute tolerances)
+is accurate on Tier 1's benchmark but not over a day:
+
+| Scenario | Reference convergence | MICM default |
+|---|---:|---|
+| tier1-30s | 10.79 | 4.63 digits |
+| diurnal-30min | 10.31 | fails: NaN in step 1 |
+| diurnal-10min | 10.22 | fails: step size too small in step 3 |
+| diurnal-5min | 10.18 | 1.21 digits (worst species 0.21) |
+| polluted-10min | 10.25 | fails: NaN in step 1 |
+| clean-10min | 10.20 | 2.96 digits (worst species 2.16) |
+
+The default takes 9 internal steps per scenario step whatever the step length,
+which suggests its error control is inactive: an absolute tolerance of 1e-3 mol
+m-3 (about 24 ppm) is above every trace gas. Tightening only the absolute
+tolerance fixes it. These are single runs on `diurnal-30min`, 1,000 cells, 10
+threads:
+
+| Three-stage Rosenbrock | Time | Overall digits | Worst species |
+|---|---:|---:|---|
+| default | — | fails | NaN in step 1 |
+| absolute 1e-12 | 1.6 s | 2.76 | ISOP 1.50 |
+| absolute 1e-15 | 4.5 s | 4.77 | ISOP 3.63 |
+| relative 1e-3, absolute 1e-15 | 2.0 s | 2.97 | ISOP 1.71 |
+| relative 1e-2, absolute 1e-15 | 1.6 s | 2.49 | ISOP 1.24 |
+
+The agents' scenarios README gives the first table, which matches what
+`references.log` already shows them. The tolerance experiment stays here: choosing
+tolerances is part of their research.
 
 ## Launch
 
