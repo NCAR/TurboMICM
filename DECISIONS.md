@@ -14,3 +14,13 @@
   hand-written mechanism-specific runtime kernels.
 - Tests must have concrete assertions for their named behavior. Unimplemented
   cases remain failures; N/A is reserved for C++-only language mechanics.
+- The default CAMP concentration unit is molecule cm^-3, matching the tutorials;
+  the TS1 configuration declares `concentration units: mol m-3` because its C++
+  parameters have already been converted. Conversion depends on reaction order.
+- Reactants and products additionally accept ordered lists. This preserves repeated
+  species and the order of individual yield updates without combining terms,
+  which avoids unnecessary differences in floating-point roundoff.
+- Use the reference's default diagonal Markowitz species permutation, including
+  its stable tie-breaking, before generating sparse LU schedules. The input
+  configuration keeps its original species ordering. Default absolute tolerance
+  is 1e-3, as set by MICM's builder, and relative tolerance is 1e-6.

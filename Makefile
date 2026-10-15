@@ -34,3 +34,22 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mecha
 	clang++ -std=c++20 $(OPTFLAGS) -I../micm/include -I../micm/test/benchmark $< -o $@
 clean:
 	rm -rf build bin generated
+
+LIB_SOURCES = src/rates.c src/model.c src/state.c src/process.c src/parameters.c src/solver.c
+LIB_OBJECTS = $(LIB_SOURCES:src/%.c=build/%.o)
+build/%.o: src/%.c include/chem.h src/internal.h
+	@mkdir -p build
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+build/libchem.a: $(LIB_OBJECTS)
+	ar rcs $@ $^
+
+generated/ts1.c: mechanisms/ts1.json tools/configure.py .conda/bin/python
+	$(PYTHON) tools/configure.py $< $@ --symbol ts1
+build/ts1.o: generated/ts1.c include/chem.h
+	@mkdir -p build
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+GROUP_SIZE ?= 128
+bin/ts1_bench_cpu: src/bench.c build/ts1.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) -DCK_DEFAULT_GROUP_SIZE=$(GROUP_SIZE) $< build/ts1.o build/libchem.a $(LDLIBS) -o $@
