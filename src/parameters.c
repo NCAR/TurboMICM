@@ -8,6 +8,9 @@ ChemRosenbrock chem_rosenbrock_parameters(int method)
     ChemRosenbrock p = {0};
     p.max_steps = 1000; p.factor_min = .2; p.factor_max = 6;
     p.rejection_factor = .1; p.safety = .9;
+    p.constraint_init_max_iterations = 10; p.constraint_init_max_backtracks = 24;
+    p.constraint_init_tolerance = .1; p.constraint_init_backtrack_factor = .5;
+    p.constraint_init_sufficient_decrease = 1e-4;
     switch (method) {
     case 2: {
         double g = 1.0 + 1.0 / sqrt(2.0);

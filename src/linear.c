@@ -50,3 +50,56 @@ void chem_linear_solve(const ChemMechanism *m, size_t nc, const double *matrix, 
         for (size_t c = 0; c < nc; ++c) xi[c] /= uii[c];
     }
 }
+
+static ChemStatus factor_doolittle(const ChemMechanism *m, size_t nc, double *matrix)
+{
+    size_t n = m->data->species_count;
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t k = i; k < n; ++k) {
+            size_t ik = m->index[i * n + k];
+            if (ik == SIZE_MAX) continue;
+            double *restrict dst = matrix + ik * nc;
+            for (size_t j = 0; j < i; ++j) {
+                size_t ij = m->index[i * n + j], jk = m->index[j * n + k];
+                if (ij == SIZE_MAX || jk == SIZE_MAX) continue;
+                const double *restrict a = matrix + ij * nc, *restrict b = matrix + jk * nc;
+                #pragma omp simd
+                for (size_t c = 0; c < nc; ++c) dst[c] -= a[c] * b[c];
+            }
+        }
+        const double *restrict pivot = matrix + m->diagonal[i] * nc;
+        for (size_t c = 0; c < nc; ++c) if (pivot[c] == 0 || !isfinite(pivot[c])) return CHEM_SINGULAR;
+        for (size_t k = i + 1; k < n; ++k) {
+            size_t ki = m->index[k * n + i];
+            if (ki == SIZE_MAX) continue;
+            double *restrict dst = matrix + ki * nc;
+            for (size_t j = 0; j < i; ++j) {
+                size_t kj = m->index[k * n + j], ji = m->index[j * n + i];
+                if (kj == SIZE_MAX || ji == SIZE_MAX) continue;
+                const double *restrict a = matrix + kj * nc, *restrict b = matrix + ji * nc;
+                #pragma omp simd
+                for (size_t c = 0; c < nc; ++c) dst[c] -= a[c] * b[c];
+            }
+            #pragma omp simd
+            for (size_t c = 0; c < nc; ++c) dst[c] /= pivot[c];
+        }
+    }
+    return CHEM_OK;
+}
+ChemLinearSolver chem_linear_mozart(void) { return (ChemLinearSolver){chem_factor, chem_linear_solve}; }
+ChemLinearSolver chem_linear_doolittle(void) { return (ChemLinearSolver){factor_doolittle, chem_linear_solve}; }
+ChemStatus chem_set_linear_solver(ChemState *s, ChemLinearSolver linear)
+{
+    if (!s || !linear.factor || !linear.solve) return CHEM_INVALID;
+    s->linear = linear;
+    return CHEM_OK;
+}
+
+void chem_alpha_minus_jacobian(const ChemMechanism *m, size_t nc, double *matrix, double alpha)
+{
+    for (size_t i = 0; i < m->data->species_count; ++i) if (!m->algebraic[i]) {
+        double *restrict diagonal = matrix + m->diagonal[i] * nc;
+        #pragma omp simd
+        for (size_t c = 0; c < nc; ++c) diagonal[c] += alpha;
+    }
+}

@@ -14135,6 +14135,7 @@
           "MUSICA name": "het4"
         }
       ],
+      "rate units": "mol m-3",
       "initial conditions": {
         "temperature": 287.45,
         "pressure": 101319.9

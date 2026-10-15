@@ -80,3 +80,28 @@ double chem_rate_evaluate(const ChemRate *r, double t, double pressure, double a
     for (int i = 0; i < r->third_body_count; ++i) value *= air;
     return value;
 }
+
+ChemRate chem_rate_default(ChemRateType type)
+{
+    ChemRate r = {.type = type, .parameter = -1};
+    switch (type) {
+    case CHEM_ARRHENIUS: case CHEM_TAYLOR:
+        r.p[0] = 1; r.p[3] = 300;
+        if (type == CHEM_TAYLOR) { r.coefficient_count = 1; r.p[5] = 1; }
+        break;
+    case CHEM_TROE: case CHEM_TERNARY:
+        r.p[0] = r.p[3] = r.p[7] = 1; r.p[6] = .6;
+        break;
+    case CHEM_TERNARY_JPL19:
+        r.p[0] = r.p[4] = r.p[8] = r.p[13] = 1;
+        r.p[3] = r.p[7] = r.p[11] = 298; r.p[12] = .6;
+        break;
+    case CHEM_TUNNELING: case CHEM_REVERSIBLE: case CHEM_USER:
+        r.p[0] = 1;
+        if (type == CHEM_USER) r.parameter = 0;
+        break;
+    case CHEM_SURFACE: r.p[2] = 1; r.parameter = 0; break;
+    default: break;
+    }
+    return r;
+}

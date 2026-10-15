@@ -30,6 +30,29 @@ static int valid_data(const ChemMechanismData *d)
         }
         if (rate->type == CHEM_SURFACE && (!(rate->p[0] > 0) || !(rate->p[1] > 0))) return 0;
     }
+    if ((d->constraint_count && !d->constraints) || (d->external_model_count && !d->external_models)) return 0;
+    for (size_t i = 0; i < d->constraint_count; ++i) {
+        const ChemConstraint *c = &d->constraints[i];
+        if (c->type < CHEM_LINEAR_CONSTRAINT || c->type > CHEM_CALLBACK_CONSTRAINT
+            || c->algebraic_species < 0 || (size_t)c->algebraic_species >= d->species_count
+            || !c->reactant_count || !c->reactants || (c->product_count && !c->products)) return 0;
+        for (size_t j = 0; j < i; ++j) if (d->constraints[j].algebraic_species == c->algebraic_species) return 0;
+        for (size_t j = 0; j < c->reactant_count + c->product_count; ++j) {
+            ChemProduct term = j < c->reactant_count ? c->reactants[j] : c->products[j - c->reactant_count];
+            if (term.species < 0 || (size_t)term.species >= d->species_count || !isfinite(term.yield)) return 0;
+            if (c->type == CHEM_EQUILIBRIUM_CONSTRAINT && !(term.yield > 0)) return 0;
+        }
+        if (c->type == CHEM_EQUILIBRIUM_CONSTRAINT && (!c->product_count || !(c->equilibrium_constant > 0)
+            || !(c->gas_constant > 0) || !(c->reference_temperature > 0)
+            || (c->parameter >= 0 && (size_t)c->parameter >= d->parameter_count))) return 0;
+        if (c->type == CHEM_CALLBACK_CONSTRAINT && !c->function) return 0;
+    }
+    for (size_t i = 0; i < d->external_model_count; ++i) {
+        const ChemExternalModel *model = &d->external_models[i];
+        if (model->nonzero_count && !model->nonzeros) return 0;
+        for (size_t j = 0; j < model->nonzero_count; ++j)
+            if (model->nonzeros[j].row >= d->species_count || model->nonzeros[j].column >= d->species_count) return 0;
+    }
     return 1;
 }
 
@@ -43,6 +66,9 @@ ChemStatus chem_mechanism_create(const ChemMechanismData *d, ChemMechanism **out
     unsigned char *pattern = calloc(n * n, 1);
     if (!m || !pattern) { free(m); free(pattern); return CHEM_MEMORY; }
     m->data = d;
+    m->rate_specs = calloc(d->reaction_count + 1, sizeof(*m->rate_specs));
+    if (!m->rate_specs) goto memory_error;
+    for (size_t i = 0; i < d->reaction_count; ++i) m->rate_specs[i] = d->reactions[i].rate;
     for (size_t i = 0; i < n; ++i) pattern[i * n + i] = 1;
     for (size_t r = 0; r < d->reaction_count; ++r) {
         const ChemReaction *rx = &d->reactions[r];
@@ -53,6 +79,22 @@ ChemStatus chem_mechanism_create(const ChemMechanismData *d, ChemMechanism **out
             for (size_t k = 0; k < rx->product_count; ++k) pattern[rx->products[k].species * n + col] = 1;
         }
     }
+    m->algebraic = calloc(n, 1);
+    m->constraint_pattern = calloc(n * n, 1);
+    if (!m->algebraic || !m->constraint_pattern) goto memory_error;
+    for (size_t i = 0; i < d->constraint_count; ++i) {
+        const ChemConstraint *c = &d->constraints[i];
+        size_t row = (size_t)c->algebraic_species;
+        m->algebraic[row] = 1;
+        m->constraint_pattern[row * n + row] = 1;
+        for (size_t j = 0; j < c->reactant_count; ++j) pattern[row * n + c->reactants[j].species] = m->constraint_pattern[row * n + c->reactants[j].species] = 1;
+        for (size_t j = 0; j < c->product_count; ++j) pattern[row * n + c->products[j].species] = m->constraint_pattern[row * n + c->products[j].species] = 1;
+    }
+    for (size_t i = 0; i < d->external_model_count; ++i)
+        for (size_t j = 0; j < d->external_models[i].nonzero_count; ++j) {
+            ChemMatrixIndex ij = d->external_models[i].nonzeros[j];
+            pattern[ij.row * n + ij.column] = 1;
+        }
     for (size_t i = 0; i < n; ++i)
         for (size_t k = i + 1; k < n; ++k) if (pattern[i * n + k])
             for (size_t j = i + 1; j < n; ++j) if (pattern[j * n + i]) pattern[j * n + k] = 1;
@@ -123,7 +165,7 @@ void chem_mechanism_free(ChemMechanism *m)
     if (!m) return;
     free(m->index); free(m->row_start); free(m->entries); free(m->diagonal);
     free(m->lower_start); free(m->lower); free(m->operation_start);
-    free(m->operations); free(m->derivatives); free(m);
+    free(m->rate_specs); free(m->operations); free(m->derivatives); free(m->algebraic); free(m->constraint_pattern); free(m);
 }
 const ChemMechanismData *chem_mechanism_data(const ChemMechanism *m) { return m->data; }
 size_t chem_jacobian_size(const ChemMechanism *m) { return m->nnz; }
@@ -135,6 +177,22 @@ size_t chem_jacobian_index(const ChemMechanism *m, size_t r, size_t c)
 const char *chem_status_string(ChemStatus s)
 {
     static const char *const names[] = {"converged", "invalid argument", "allocation failed", "maximum steps exceeded",
-        "step size too small", "nonfinite value", "singular matrix"};
-    return s >= CHEM_OK && s <= CHEM_SINGULAR ? names[s] : "unknown status";
+        "step size too small", "nonfinite value", "singular matrix", "accepting unconverged integration", "Constraint Initialization Failed"};
+    return s >= CHEM_OK && s <= CHEM_INITIALIZATION_FAILED ? names[s] : "unknown status";
+}
+
+int chem_is_algebraic(const ChemMechanism *m, size_t species)
+{ return species < m->data->species_count ? m->algebraic[species] : 0; }
+int chem_constraint_nonzero(const ChemMechanism *m, size_t row, size_t col)
+{
+    size_t n = m->data->species_count;
+    return row < n && col < n ? m->constraint_pattern[row * n + col] : 0;
+}
+
+ChemRate *chem_rate_by_name(ChemMechanism *m, const char *name)
+{
+    if (!m || !name) return NULL;
+    for (size_t i = 0; i < m->data->reaction_count; ++i)
+        if (m->rate_specs[i].name && !strcmp(m->rate_specs[i].name, name)) return &m->rate_specs[i];
+    return NULL;
 }

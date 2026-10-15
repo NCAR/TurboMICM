@@ -54,6 +54,7 @@ def translate(path):
     if len(species) != 210 or len(reactions) != 547:
         raise ValueError(f'unexpected TS1 counts: {len(species)} species, {len(reactions)} reactions')
     return {'camp-data': species + [{'name': 'TS1', 'type': 'MECHANISM', 'reactions': reactions,
+        'rate units': 'mol m-3',
         'initial conditions': {'temperature': 287.45, 'pressure': 101319.9},
         'initial rate parameters': parameters}]}
 

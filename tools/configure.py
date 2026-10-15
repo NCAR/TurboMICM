@@ -77,16 +77,19 @@ def normalize(path):
         if entry.get('type') == 'MECHANISM':
             conditions.update(entry.get('initial conditions', {}))
             initial.update(entry.get('initial rate parameters', {}))
-            raw_reactions.extend(entry.get('reactions', []))
+            raw_reactions.extend(dict(r, **{'rate units': r.get('rate units', entry.get('rate units', 'molecule cm-3'))})
+                                 for r in entry.get('reactions', []))
         elif entry.get('type') != 'CHEM_SPEC':
             raise ConfigurationError(f'unsupported entry type {entry.get("type")}')
+    expanded = []
     for raw in raw_reactions:
-        r = copy.deepcopy(raw)
-        if r['type'] == 'BRANCHED':
+        if raw['type'] == 'BRANCHED':
             for branch in ('alkoxy', 'nitrate'):
-                b = dict(r, type=f'BRANCHED_{branch.upper()}', products=r[f'{branch} products'])
-                raw_reactions.append(b)
-            continue
+                expanded.append(dict(raw, type=f'BRANCHED_{branch.upper()}', products=raw[f'{branch} products']))
+        else:
+            expanded.append(raw)
+    for raw in expanded:
+        r = copy.deepcopy(raw)
         kind = {'PHOTOLYSIS': 'USER', 'USER_DEFINED': 'USER', 'EMISSION': 'USER',
                 'FIRST_ORDER_LOSS': 'USER', 'TERNARY_CHEMICAL_ACTIVATION': 'TERNARY',
                 'TERNARY_CHEMICAL_ACTIVATION_JPL19': 'TERNARY_JPL19', 'TAYLOR_SERIES': 'TAYLOR'}.get(r['type'], r['type'])
@@ -117,10 +120,27 @@ def normalize(path):
             values = [r.get(k, d) for k, d in RATE_PARAMETERS[kind]]
             labels = [r['MUSICA name']] if kind == 'USER' else []
             if kind == 'TAYLOR':
-                coeffs = r.get('coefficients', [])
+                coeffs = r.get('coefficients', [1])
                 if len(coeffs) > 19:
                     raise ConfigurationError('at most 19 Taylor coefficients supported')
                 values += coeffs
+        units = r['rate units']
+        if units not in ('mol m-3', 'molecule cm-3'):
+            raise ConfigurationError(f'unsupported rate units {units}')
+        if units == 'molecule cm-3':
+            conversion = 1e-6 * 6.02214076e23
+            def scale(index, power):
+                for _ in range(abs(power)):
+                    values[index] = float(values[index]) * conversion if power > 0 else float(values[index]) / conversion
+            order = len(rr)
+            if kind in ('ARRHENIUS', 'TAYLOR', 'TUNNELING', 'BRANCHED_ALKOXY', 'BRANCHED_NITRATE'):
+                scale(0, order - 1)
+            elif kind == 'TROE':
+                scale(0, order); scale(3, order - 1)
+            elif kind == 'TERNARY':
+                scale(0, order - 1); scale(3, order - 2)
+            elif kind == 'TERNARY_JPL19':
+                scale(0, order); scale(4, order - 1); scale(8, order - 1)
         if labels:
             param = len(parameters)
             for label in labels:
@@ -134,6 +154,47 @@ def normalize(path):
                               coefficient_count=len(coeffs), third_body_count=third_body_count))
     return dict(species=dynamic, reactions=reactions, parameters=parameters,
                 initial_parameters=initial_parameters, conditions=conditions)
+
+
+def reorder(mech):
+    """Diagonal Markowitz ordering, with stable original-index tie breaking.
+
+    Source patterns can include species with no kinetic diagonal. A negative
+    degree-minus-one product ranks after finite nonnegative costs, matching
+    unsigned degree arithmetic without depending on Python integer width.
+    """
+    mech = copy.deepcopy(mech)
+    n = len(mech['species'])
+    rows = [set() for _ in range(n)]
+    cols = [set() for _ in range(n)]
+    for r in mech['reactions']:
+        for col in r['reactants']:
+            for row in r['reactants'] + [i for i, _ in r['products']]:
+                rows[row].add(col)
+                cols[col].add(row)
+    alive, permutation = set(range(n)), []
+    def cost(i):
+        value = (len(rows[i]) - 1) * (len(cols[i]) - 1)
+        return value if value >= 0 else math.inf
+    while alive:
+        pivot = min(alive, key=lambda i: (cost(i), i))
+        permutation.append(pivot)
+        alive.remove(pivot)
+        outgoing, incoming = rows[pivot] & alive, cols[pivot] & alive
+        for i in incoming:
+            for c in outgoing:
+                rows[i].add(c)
+                cols[c].add(i)
+        for c in outgoing:
+            cols[c].discard(pivot)
+        for i in incoming:
+            rows[i].discard(pivot)
+    inverse = {old: new for new, old in enumerate(permutation)}
+    mech['species'] = [mech['species'][i] for i in permutation]
+    for r in mech['reactions']:
+        r['reactants'] = [inverse[i] for i in r['reactants']]
+        r['products'] = [(inverse[i], y) for i, y in r['products']]
+    return mech
 
 
 def number(v):
@@ -161,10 +222,11 @@ def emit_c(mech, symbol):
             len(r['reactants']), len(r['products']), i, i, r['type'], ','.join(number(v) for v in r['values']),
             r['parameter'], r['coefficient_count'], r['third_body_count']))
     lines.append('};')
-    lines.append(f'const ChemMechanismData {symbol} = {{' + ','.join([
-        str(len(mech['species'])), str(len(mech['reactions'])), str(len(mech['parameters'])),
-        'species_names', 'parameter_names', 'initial_y', 'initial_p', 'atol',
-        number(mech['conditions']['temperature']), number(mech['conditions']['pressure']), 'reactions']) + '};')
+    fields = dict(species_count=str(len(mech['species'])), reaction_count=str(len(mech['reactions'])),
+        parameter_count=str(len(mech['parameters'])), species_names='species_names', parameter_names='parameter_names',
+        initial_concentrations='initial_y', initial_parameters='initial_p', absolute_tolerances='atol',
+        temperature=number(mech['conditions']['temperature']), pressure=number(mech['conditions']['pressure']), reactions='reactions')
+    lines.append(f'const ChemMechanismData {symbol} = {{' + ','.join(f'.{k}={v}' for k, v in fields.items()) + '};')
     return '\n'.join(lines) + '\n'
 
 
@@ -173,7 +235,12 @@ if __name__ == '__main__':
     p.add_argument('config')
     p.add_argument('output')
     p.add_argument('--symbol', default='mechanism_data')
+    p.add_argument('--no-reorder', action='store_true')
     a = p.parse_args()
     if not a.symbol.isidentifier() or not a.symbol.isascii():
         p.error('symbol must be an ASCII C identifier')
-    Path(a.output).write_text(emit_c(normalize(a.config), a.symbol))
+    mech = normalize(a.config)
+    if not a.no_reorder:
+        mech = reorder(mech)
+    Path(a.output).parent.mkdir(parents=True, exist_ok=True)
+    Path(a.output).write_text(emit_c(mech, a.symbol))

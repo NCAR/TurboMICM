@@ -19,17 +19,22 @@ void chem_forcing(const ChemState *s, const double *y, double *f)
             for (size_t c = 0; c < nc; ++c) work[c] *= conc[c];
         }
         for (size_t j = 0; j < rx->reactant_count; ++j) {
+            if (s->mechanism->algebraic[rx->reactants[j]]) continue;
             double *restrict dst = f + (size_t)rx->reactants[j] * nc;
             #pragma omp simd
             for (size_t c = 0; c < nc; ++c) dst[c] -= work[c];
         }
         for (size_t j = 0; j < rx->product_count; ++j) {
+            if (s->mechanism->algebraic[rx->products[j].species]) continue;
             double *restrict dst = f + (size_t)rx->products[j].species * nc;
             double yield = rx->products[j].yield;
             #pragma omp simd
             for (size_t c = 0; c < nc; ++c) dst[c] += yield * work[c];
         }
     }
+    for (size_t i = 0; i < d->external_model_count; ++i)
+        if (d->external_models[i].forcing)
+            d->external_models[i].forcing((ChemState *)s, y, f, d->external_models[i].context);
 }
 void chem_negative_jacobian(const ChemState *s, const double *y, double *jacobian)
 {
@@ -48,18 +53,26 @@ void chem_negative_jacobian(const ChemState *s, const double *y, double *jacobia
             for (size_t c = 0; c < nc; ++c) work[c] *= conc[c];
         }
         for (size_t j = 0; j < rx->reactant_count; ++j) if (j != deriv->skipped) {
+            if (m->algebraic[rx->reactants[j]]) continue;
             double *restrict dst = jacobian + m->index[(size_t)rx->reactants[j] * n + col] * nc;
             #pragma omp simd
             for (size_t c = 0; c < nc; ++c) dst[c] += work[c];
         }
         double *restrict diagonal = jacobian + m->diagonal[col] * nc;
-        #pragma omp simd
-        for (size_t c = 0; c < nc; ++c) diagonal[c] += work[c];
+        if (!m->algebraic[col]) {
+            #pragma omp simd
+            for (size_t c = 0; c < nc; ++c) diagonal[c] += work[c];
+        }
         for (size_t j = 0; j < rx->product_count; ++j) {
+            if (m->algebraic[rx->products[j].species]) continue;
             double *restrict dst = jacobian + m->index[(size_t)rx->products[j].species * n + col] * nc;
             double yield = rx->products[j].yield;
             #pragma omp simd
             for (size_t c = 0; c < nc; ++c) dst[c] -= yield * work[c];
         }
+    }
+    for (size_t i = 0; i < m->data->external_model_count; ++i) {
+        const ChemExternalModel *model = &m->data->external_models[i];
+        if (model->negative_jacobian) model->negative_jacobian((ChemState *)s, y, jacobian, model->context);
     }
 }

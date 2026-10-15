@@ -1,0 +1,53 @@
+"""Run explicit C ports, preserving every reference case ID and failure status."""
+from pathlib import Path
+import argparse
+import subprocess
+from test_constraints import CASES as CONSTRAINT_CASES
+from test_solvers import CASES as SOLVER_CASES
+from test_configs import CASES as CONFIG_CASES
+import supplemental
+PYTHON_CASES = {**CONSTRAINT_CASES, **SOLVER_CASES, **CONFIG_CASES}
+
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--filter', default='')
+    args = parser.parse_args()
+    binary = ROOT / 'bin/test_rates'
+    registered = set(subprocess.check_output([binary, '--list'], text=True).splitlines())
+    counts = {'PASS': 0, 'FAIL': 0, 'N/A': 0}
+    for line in (ROOT / 'tests/cases.txt').read_text().splitlines():
+        if not line or line.startswith('#'):
+            continue
+        case, kind = line.split()
+        if args.filter not in case:
+            continue
+        name = case.split(':', 1)[-1]
+        if name in PYTHON_CASES:
+            try:
+                PYTHON_CASES[name]()
+                status, reason = 'PASS', 'reference assertions'
+            except Exception as error:
+                status, reason = 'FAIL', f'{type(error).__name__}: {error}'
+        elif name in registered:
+            result = subprocess.run([binary, name], text=True, capture_output=True)
+            status = 'PASS' if result.returncode == 0 else 'FAIL'
+            reason = 'reference assertions' if status == 'PASS' else ' '.join(result.stderr.split())
+        else:
+            status, reason = 'FAIL', 'case port pending'
+        counts[status] += 1
+        print(f'{case} {status} {reason}', flush=True)
+    try:
+        supplemental.run()
+        print('supplemental PASS configuration equivalence and TS1 clamp regression', flush=True)
+    except Exception as error:
+        counts['FAIL'] += 1
+        print(f'supplemental FAIL {type(error).__name__}: {error}', flush=True)
+    print(' '.join(f'{key}={value}' for key, value in counts.items()), flush=True)
+    return int(counts['FAIL'] > 0)
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
