@@ -71,3 +71,13 @@
 - Version getters describe the supplied reference API and use the values in
   its actual include/micm/version.hpp (3.14.0), rather than inferring generated
   version metadata from the experiment description.
+- Analytical test fixtures retain the original source invocations and bounds.
+  C++ matrix-policy variants that have the same C representation share an
+  execution of the corresponding method/LU/group setting at the tightest bound.
+  One-cell helpers share a runtime representation for every group capacity.
+  CSR/CSC array storage and separate/combined LU behavior are also independently
+  exercised by their full matrix and linear-algebra case ports.
+- Analytical expected concentration tables are retained as numeric test data.
+  The tests run all original output times, including 999 one-second chain
+  solves, the long Robertson/E5 intervals, and 18,000 backward Euler substeps per
+  Oregonator output. Test execution never loads the reference implementation.

@@ -15,8 +15,11 @@ from test_system import CASES as SYSTEM_CASES
 from test_rate_store import CASES as STORE_CASES
 from test_jacobian import CASES as JACOBIAN_CASES
 from test_process_set import CASES as PROCESS_CASES
+from test_analytical import CASES as ANALYTICAL_CASES
+from test_terminator import CASES as TERMINATOR_CASES
+from test_dae_integration import CASES as DAE_CASES
 import supplemental
-PYTHON_CASES = {**CONSTRAINT_CASES, **SOLVER_CASES, **CONFIG_CASES, **ARRAY_CASES, **SPARSE_CASES, **GROUPED_CASES, **LINEAR_CASES, **STATE_CASES, **SYSTEM_CASES, **STORE_CASES, **JACOBIAN_CASES, **PROCESS_CASES}
+PYTHON_CASES = {**CONSTRAINT_CASES, **SOLVER_CASES, **CONFIG_CASES, **ARRAY_CASES, **SPARSE_CASES, **GROUPED_CASES, **LINEAR_CASES, **STATE_CASES, **SYSTEM_CASES, **STORE_CASES, **JACOBIAN_CASES, **PROCESS_CASES, **ANALYTICAL_CASES, **TERMINATOR_CASES, **DAE_CASES}
 
 ROOT = Path(__file__).resolve().parent.parent
 

@@ -4,8 +4,8 @@ Flags: `-O3 -DNDEBUG`, C11, OpenMP; no architecture or floating-point tuning.
 
 | Check | Clang | GCC 15 |
 |---|---:|---:|
-| Ported reference cases | 547 PASS | 547 PASS |
-| Cases still awaiting ports | 128 | 128 |
+| Ported reference cases | 593 PASS | 593 PASS |
+| Cases still awaiting ports | 82 | 82 |
 | C++ compile-time-only cases | 5 N/A | 5 N/A |
 | TS1, 100 cells, seed 1, 100 steps, 30 s | PASS | PASS |
 | TS1, 10,000 cells, seed 2026, 100 steps, 30 s | PASS | PASS |
@@ -25,6 +25,14 @@ four process cases, five process-set cases, and seven Jacobian-verification
 cases. LU reconstruction and solve residuals retain the original absolute or
 four-ULP bounds. Both compilers pass the condition-parameterization configuration
 equivalence check. Every outstanding FAIL is explicitly a pending case port.
+
+All 32 analytical integration cases now pass: the six rate-dependent chains and
+their fast-equilibrium variants, surface reactions, Robertson, HIRES, E5, and
+Oregonator. Method, LU, grouping, time intervals, reference concentrations, and
+tolerances are retained in the test fixtures. Both Terminator cases and all 12
+equilibrium/conservation DAE integration cases pass, including algebraic
+tolerance sensitivity, nonnegativity, coupled constraints, non-unit
+stoichiometry, state reordering, and the combined chlorine/Robertson mechanism.
 
 Both rate tutorial programs print exactly the retained reference output.
 Generated YAML/JSON mechanisms match independently assembled mechanisms through
@@ -53,8 +61,8 @@ internal steps per group per public solve. Statistics exclude the warm-up.
 
 ## Remaining work
 
-Port the remaining analytical, Chapman, regression, aerosol/external-model,
-DAE integration, solver-builder, termination, and tutorial cases; address
+Port the remaining Chapman, regression, aerosol/external-model,
+integrated reaction-rate, solver-builder, OpenMP, and tutorial cases; address
 any missing API behavior they identify. Then run the complete suite under both
 compilers, finish portability review, repeat representative benchmark gates, and
 replace this partial report with the completed evidence.
