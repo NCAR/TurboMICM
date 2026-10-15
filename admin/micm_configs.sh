@@ -1,23 +1,27 @@
 #!/bin/zsh
 # Benchmark MICM's 24 CPU solver configurations on TS1 against its default.
 #
-#   admin/micm_configs.sh ROOT OUT CELLS_CSV MICM_FINAL [THREADS] [ROUNDS]
+#   [THREADS=10] [ROUNDS=3] admin/micm_configs.sh ROOT OUT CELLS_CSV MICM_FINAL [NAME=COMMAND ...]
 #
 # micm_bench offers 24 CPU configurations: the matrix layout (standard ordering,
 # or vector ordering with 1, 2, 4, 8, or 128 cells interleaved), the LU storage
 # (in-place, or separate L and U factors), and the LU algorithm (Mozart or
 # Doolittle). The default is standard ordering with in-place Mozart LU. This
 # script:
-# 1. builds ROOT/reference/micm_ts1_ref.cpp in each configuration, through its
-#    TS1_VECTOR, TS1_LU_SEPARATE, and TS1_LU_DOOLITTLE macros, into OUT/bin;
+# 1. builds ROOT/reference/micm_ts1_ref.cpp in each configuration into OUT/bin,
+#    from a copy whose solver types are chosen by the TS1_VECTOR,
+#    TS1_LU_SEPARATE, and TS1_LU_DOOLITTLE macros (admin/micm_configs_source.py,
+#    which leaves the reference itself alone);
 # 2. runs each on the 100-cell example in ROOT/reference, on one thread, against
 #    MICM's result there (OUT/check.csv). The default must reproduce it exactly;
 # 3. times each, with one cell group per thread and with 32-cell groups, using
 #    admin/time_entries.py: 48 programs on CELLS_CSV (10,000 cells, 100 steps of
 #    30 s), at THREADS threads (default 10), for ROUNDS rounds (default 3), each
-#    run checked against MICM_FINAL (OUT/timing);
+#    run checked against MICM_FINAL (OUT/timing). Any NAME=COMMAND programs, such
+#    as the entries' bin/ts1_bench_cpu, are timed in the same rounds;
 # 4. writes OUT/configs.md: each configuration's median time, relative to the
-#    default with the same grouping, and its largest difference from MICM_FINAL.
+#    default with the same grouping, and its largest difference from MICM_FINAL,
+#    then the extra programs, relative to both defaults.
 # Confirm the fastest configurations with admin/time_entries.py, at 10 and 1
 # threads, alongside the entries.
 set -eu
@@ -26,8 +30,9 @@ root=${1:A}
 out=${2:A}
 cells_csv=${3:A}
 micm_final=${4:A}
-threads=${5:-10}
-rounds=${6:-3}
+shift 4
+threads=${THREADS:-10}
+rounds=${ROUNDS:-3}
 mkdir -p $out/bin $out/logs
 export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
@@ -40,6 +45,8 @@ for matrix in standard vector1 vector2 vector4 vector8 vector128; do
   done
 done
 default=standard-in-place-mozart
+source=$out/micm_ts1_ref_configs.cpp
+python3 $here/micm_configs_source.py $root/reference/micm_ts1_ref.cpp $source
 
 build() {
   local config=$1
@@ -49,7 +56,7 @@ build() {
   [[ $config == *-separate-* ]] && flags+=(-DTS1_LU_SEPARATE)
   [[ $config == *-doolittle ]] && flags+=(-DTS1_LU_DOOLITTLE)
   /usr/bin/clang++ -std=c++20 -O3 -DNDEBUG $flags -I $root/micm/include -I $root/micm/test/benchmark \
-      $root/reference/micm_ts1_ref.cpp -o $out/bin/micm-$config
+      $source -o $out/bin/micm-$config
 }
 
 echo "building ${#configs} configurations"
@@ -88,6 +95,6 @@ for config in $configs; do
   programs+=("micm-$config=$out/bin/micm-$config" "micm-$config-g32=$out/bin/micm-$config --group-size 32")
 done
 python3 $here/time_entries.py --input $cells_csv --reference $micm_final --out $out/timing \
-    --threads $threads --rounds $rounds $programs
+    --threads $threads --rounds $rounds $programs "$@"
 
 python3 $here/micm_configs_table.py $out $default

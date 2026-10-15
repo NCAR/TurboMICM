@@ -1,0 +1,1628 @@
+window.BENCHMARK_DATA = {
+  "lastUpdate": 1791905433823,
+  "repoUrl": "https://github.com/NCAR/micm",
+  "entries": {
+    "Chapman Wall-Clock Timing": [
+      {
+        "commit": {
+          "author": {
+            "email": "mattldawson@gmail.com",
+            "name": "Matt Dawson",
+            "username": "mattldawson"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "38411382debc5fd7419fc0d294f8630963c1bff6",
+          "message": "Add tool for identifying possible regressions (#1053)",
+          "timestamp": "2026-08-07T13:55:29-05:00",
+          "tree_id": "a5025974f3fdc6f15268c8379d6cf7987aa5c3ed",
+          "url": "https://github.com/NCAR/micm/commit/38411382debc5fd7419fc0d294f8630963c1bff6"
+        },
+        "date": 1786129124251,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1230.24,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1239.38,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 812.93,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 574.98,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 508.91,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 420.4,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0e3f1d1299cf456228d88988c6492f5642355c55",
+          "message": "Auto-format code changes (#1056)\n\nAuto-format code using Clang-Format\n\nCo-authored-by: GitHub Actions <actions@github.com>",
+          "timestamp": "2026-08-07T12:38:51-07:00",
+          "tree_id": "0808a0402701e22a6b98506c0488a75572e0c6c4",
+          "url": "https://github.com/NCAR/micm/commit/0e3f1d1299cf456228d88988c6492f5642355c55"
+        },
+        "date": 1786131714982,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1092.29,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1094.77,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 752.42,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 589.18,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 523.87,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 471.24,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kyle.shores44@gmail.com",
+            "name": "Kyle Shores",
+            "username": "K20shores"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "36d59591a047f0b78695977badf90b3b1beb7619",
+          "message": "Ts1 benchmark (#1057)\n\n* Add TS1 benchmark\n\n- refactor the benchmark so that we can share it between TS1, chapman\n- generate the TS1 mechanism header with python from the config file\n- chart the TS1 benchmarks in gh-pages\n- Add MICM_ENABLE_BENCHMARK, a dependent option on MICM_ENABLE_TESTS that\n  defaults to OFF.\n- set GLYOXAL diffusion coeffient to the other defaults instead of 1e300\n\nCo-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>",
+          "timestamp": "2026-08-11T14:19:36-05:00",
+          "tree_id": "564acc88fb6092878592ea1317296751dc377082",
+          "url": "https://github.com/NCAR/micm/commit/36d59591a047f0b78695977badf90b3b1beb7619"
+        },
+        "date": 1786476231156,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1254.13,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1268.86,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 796.86,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 556.72,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 492.74,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 409.86,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "40f2019d70d50f51ab8132ef5f9af87eb94a725d",
+          "message": "Auto-format code changes (#1058)\n\nAuto-format code using Clang-Format\n\nCo-authored-by: GitHub Actions <actions@github.com>",
+          "timestamp": "2026-08-11T15:35:40-05:00",
+          "tree_id": "bc3e2a66d1e5a8d363a6b118b24992b9f856e873",
+          "url": "https://github.com/NCAR/micm/commit/40f2019d70d50f51ab8132ef5f9af87eb94a725d"
+        },
+        "date": 1786480789266,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1260.41,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1268.98,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 781.1,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 559.97,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 492.85,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 407.14,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kyle.shores44@gmail.com",
+            "name": "Kyle Shores",
+            "username": "K20shores"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "95fa70322b57bc4e22ac67099a35558a4e8fcf1a",
+          "message": "Chart the CUDA solver on the GPU runner, not its CPU (#1059)\n\nChart the CUDA solver on the GPU runner\n\nThe CIRRUS a10 job called bench_chapman.sh and profile_chapman.sh with no\nbackend argument, and the scripts default to cpu. Explicitly pass gpu\nso that cirrus only reports gpu numbers\n\nAlso, remove valgrind for GPU runner because it cannot measure the\ninstruction count on the GPU and doesn't provide more information than\ncounting the cpu runs.\n\nCo-authored-by: Claude Opus 5 (1M context) <noreply@anthropic.com>",
+          "timestamp": "2026-08-11T15:50:01-05:00",
+          "tree_id": "03a0a93c80614b414d93501bdc476639d76d9acf",
+          "url": "https://github.com/NCAR/micm/commit/95fa70322b57bc4e22ac67099a35558a4e8fcf1a"
+        },
+        "date": 1786481661811,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1216.91,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1226.6,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 802.36,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 582.03,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 523.05,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 431.75,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kyle.shores44@gmail.com",
+            "name": "Kyle Shores",
+            "username": "K20shores"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6c1491ce289b51ef58d444a2b9176f43501868c3",
+          "message": "adding more detail to performance table and description (#1060)",
+          "timestamp": "2026-08-14T10:15:31-05:00",
+          "tree_id": "e240f5661808519cbd26a09f6d8af87868f4e520",
+          "url": "https://github.com/NCAR/micm/commit/6c1491ce289b51ef58d444a2b9176f43501868c3"
+        },
+        "date": 1786720774967,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1263.07,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1272.67,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 780.71,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 562.54,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 497.04,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 413.17,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kyle.shores44@gmail.com",
+            "name": "Kyle Shores",
+            "username": "K20shores"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "97ac9e5d8aadd345c242722ee8274d71dfe0f73e",
+          "message": "update python version to correct ci failure (#1061)",
+          "timestamp": "2026-08-14T10:17:55-05:00",
+          "tree_id": "7e9cd39e9e1beef97b5d3c7547b0b3dfd6cfe9b2",
+          "url": "https://github.com/NCAR/micm/commit/97ac9e5d8aadd345c242722ee8274d71dfe0f73e"
+        },
+        "date": 1786720915873,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1275.35,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1284.24,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 799.07,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 577.12,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 508.84,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 425.43,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "bbakernoaa@users.noreply.github.com",
+            "name": "Barry Baker",
+            "username": "bbakernoaa"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "359d392c96e6acd1b02c2d1af8cbf4b4c6a19f75",
+          "message": "Implement Kokkos support for MICM chemical kinetics and optimizations (#967)\n\n* feat: Add Kokkos support for chemical forcing and Jacobian terms\n\nThis commit implements a Kokkos backend for MICM, following the design of\nthe existing CUDA driver. It includes:\n- KokkosDenseMatrix and KokkosSparseMatrix using Kokkos Views\n- KokkosProcessSet with vectorized kernels for forcing and Jacobian\n- Integration into the CMake build system (MICM_ENABLE_KOKKOS)\n- Unit tests for the new Kokkos components\n\n* feat(kokkos): Add SetAlgebraicVariableIds method and optimize forcing/Jacobian indexing\n\n- Add SetAlgebraicVariableIds method to KokkosProcessSet for setting algebraic variable flags on device\n- Optimize forcing term indexing to use number_of_forcing_species instead of number_of_species\n- Optimize Jacobian term indexing by pre-computing jacobian_group_size and jac_group_offset to reduce redundant calculations\n- Refactor Jacobian index computation to use pre-computed offset for better performance\n- Update test file with copyright header and consolidate test utilities using shared test policy\n- Improve memory access patterns in AddForcingTerms and SubtractJacobianTerms kernels\n\n* style(kokkos): Format code for improved readability\n\n- Break long lines in loop assignments to improve code readability\n- Split long Kokkos::View declarations across multiple lines\n- Reformat assignment statements in SetJacobianFlatIds method\n- Improve line length consistency throughout kokkos_process_set.hpp\n- Update corresponding test file formatting to match header changes\n\n* ci(workflows): Add Kokkos CUDA GPU testing job\n\n- Add new kokkos_cuda_tests job to runner workflow\n- Configure NVIDIA GPU container with CUDA 13.0 support\n- Install required dependencies (cmake, g++)\n- Build with Kokkos CUDA enabled on Ampere architecture\n- Run full test suite on GPU hardware with parallel execution\n- Enable GPU resource allocation via Cirrus group configuration\n\n* chore(dependencies): Update Kokkos dependency from 4.4.01 to 4.7.04\n\n- Bump Kokkos version to 4.7.04 for improved performance and bug fixes\n- Ensures compatibility with latest Kokkos features and optimizations\n\n* refactor(kokkos): Replace auto with explicit template parameters in process set\n\n- Replace `auto` with explicit `StatePolicy` template parameter in `AddForcingTerms` method\n- Replace `auto` with explicit `StatePolicy` template parameter in `SubtractJacobianTerms` method\n- Improve code clarity and type safety by making state parameter types explicit\n- Enhance IDE support and type checking for Kokkos process operations\n\n* chore(kokkos): Update to Kokkos 5.1.0 and improve code formatting\n\n- Update Kokkos dependency from 4.7.04 to 5.1.0 in cmake/dependencies.cmake\n- Replace HostMirror type alias with explicit Kokkos::View<T*, Kokkos::HostSpace> in dense and sparse matrix headers\n- Remove RandomAccess memory trait from ProcessSetParam view declarations for improved compatibility\n- Add blank lines between include groups for better code organization\n- Reorder includes alphabetically (type_traits before vector)\n- Add braces to single-statement for loops for consistency and readability\n- Format GroupVectorSize() methods across multiple lines for improved readability\n\n* ci(workflows): Add Kokkos serial backend testing and refactor utilities\n\n- Add Kokkos serial backend CI jobs to macOS, Ubuntu, and Windows workflows\n- Remove kokkos_util.hpp header and consolidate utility includes in main Kokkos.hpp\n- Refactor KokkosProcessSet to remove redundant Initialize() calls and simplify device struct updates\n- Clean up trailing whitespace in workflow files\n- Reorganize include order in Kokkos.hpp for better dependency management\n- Update test CMakeLists.txt to remove kokkos_util.hpp references\n- Improve code formatting and consistency across Kokkos utility headers\n\n* refactor(kokkos): Optimize matrix synchronization with unmanaged host views\n\n- Remove persistent h_view_ member from KokkosDenseMatrix and KokkosSparseMatrix\n- Replace manual element-by-element loops with Kokkos::deep_copy for better performance\n- Use unmanaged host views in CopyToDevice() and CopyToHost() to avoid redundant allocations\n- Simplify constructor initialization by removing h_view_ creation\n- Add comprehensive documentation explaining device/host synchronization pattern\n- Improve Fill() method by removing unnecessary h_view_ management\n- Reduces memory overhead and aligns with CUDA matrix implementation pattern\n\n* test(kokkos): Add comprehensive unit tests for KokkosSparseMatrix\n\n- Add test_kokkos_sparse_matrix.cpp with full test coverage for KokkosSparseMatrix\n- Test zero matrix initialization and const zero matrix behavior\n- Test scalar assignment and diagonal operations\n- Test single and multi-block matrix operations with various ordering policies\n- Test print and print non-zero functionality across all vector orderings\n- Add using declaration for base class assignment operator in KokkosSparseMatrix\n- Register new test executable in CMakeLists.txt with proper linking and test configuration\n- Ensures KokkosSparseMatrix implementation is fully validated across different matrix configurations\n\n* test(kokkos): Expand KokkosSparseMatrix unit tests with BlockFunction coverage\n\n- Rename type aliases from KokkosVectorOrdering to KokkosOrdering for clarity\n- Add BlockFunction infrastructure tests (ArrayFunction, MultiMatrixArrayFunction)\n- Add temporary variable and view reuse tests (MultipleTemporaries, BlockViewReuse)\n- Add function reusability and multi-matrix structure tests\n- Add sparse + dense/vector matrix interaction tests\n- Add ordering compatibility and error condition tests\n- Organize tests into logical sections with comments for maintainability\n- Expand test coverage across all four vector orderings (1-4) where applicable\n\n* remove process set; add dockerfile; debug tests\n\n* remove process info structs\n\n* add kokkos view classes and no-op funcs for matrices\n\n* add kokkos dense matrix functions\n\n* add kokkos sparse matrix functions\n\n* add reducer functions\n\n* full vector support in matrix functions\n\n* add missing template parameter\n\n* create serial and cuda Kokkos docker files\n\n* update for cuda lambda reqs\n\n* update lambda syntax for kokkos\n\n* update dense matrix Function lambdas and add Kokkos tests\n\n* add copy and fill tests for Kokkos dense matrix\n\n* add reduce sum kokkos dense matrix support\n\n* add kokkos dense matrix support for remaining reducers\n\n* add remaining Kokkos dense matrix tests\n\n* add dense matrix vector capture test\n\n* updates to sparse matrices\n\n* add template arg to LU decomp classes\n\n* debug actions and cuda code\n\n* debug action failures\n\n* exclude unsupported cuda tests\n\n* debug runner action failure\n\n* add LU mozart in place Kokkos support and tests\n\n* add kokkos support and tests to all LU decomps\n\n* add kokkos support and tests to linear solvers\n\n* add Kokkos support and tests for process set\n\n* add kokkos support for rate constants\n\n* add kokkos support and tests for constraints\n\n* add kokkos support and tests for all solvers\n\n* move scalar views to state and debug a couple test failures\n\n* move index structs to types header and fix cuda rate constant function builds\n\n* debug cuda build; add kokkos serial docker action\n\n* debug action failures\n\n* debug action failures\n\n* debug actions\n\n* add clang tidy suppressions and debug benchmark action\n\n* clang format\n\n* tidy\n\n* tidier\n\n* tidiest\n\n* debug tidy action\n\n* most tidiest\n\n* exclude umbrella headers in clang-tidy scans\n\n* continue to debug clang tidy failure\n\n* actually tidy, for real this time\n\n* use lambda for solver clamping function\n\n* move host view to class member for kokkos matrices\n\n* add Kokkos solvers to benchmark and create Kokkos runner action\n\n* update comments\n\n* bump nvhpc image version in kokkos runner and try to sidestep compiler error\n\n* reduce parallel build cores for kokkos runner\n\n* address review comments\n\n* remove unneeded vector allocation and double division\n\n* remove unneeded structs\n\n* remove *Const*  view classes\n\n* remove unneeded vector and scalar views\n\n* address review comments\n\n* remove commented out tests\n\n* address review comments\n\n* address Claude suggestions\n\n* address review comments\n\n* add Kokkos::AUTO back to team policy constructors\n\n---------\n\nCo-authored-by: bbakernoaa <22104759+bbakernoaa@users.noreply.github.com>\nCo-authored-by: Matt Dawson <matt@cohere-llc.com>",
+          "timestamp": "2026-08-20T17:06:40-07:00",
+          "tree_id": "93c3dcc5a2964761dfc7a8e18b3ae7fc57954e3a",
+          "url": "https://github.com/NCAR/micm/commit/359d392c96e6acd1b02c2d1af8cbf4b4c6a19f75"
+        },
+        "date": 1787271001021,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 679.81,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 690.43,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 447.43,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 324.89,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 280.56,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 259.32,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f94aeddd622bba69cffe955449c0c60c2691ba7c",
+          "message": "Auto-format code changes (#1071)\n\nAuto-format code using Clang-Format\n\nCo-authored-by: GitHub Actions <actions@github.com>",
+          "timestamp": "2026-08-20T20:39:44-06:00",
+          "tree_id": "75f5bb50d306515e6114d38bf5a320d834b3c1ce",
+          "url": "https://github.com/NCAR/micm/commit/f94aeddd622bba69cffe955449c0c60c2691ba7c"
+        },
+        "date": 1787280240334,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1246.05,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1251.79,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 791.7,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 575.05,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 469.12,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 451.3,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mattldawson@gmail.com",
+            "name": "Matt Dawson",
+            "username": "mattldawson"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "189534168c7bffd5d6312697df31d21f8653f66a",
+          "message": "Remove some unneeded scalar views (#1076)\n\nremove some views",
+          "timestamp": "2026-08-21T13:13:22-06:00",
+          "tree_id": "33deb847d145828cd260dfa0f553ef0ce9e9fe7b",
+          "url": "https://github.com/NCAR/micm/commit/189534168c7bffd5d6312697df31d21f8653f66a"
+        },
+        "date": 1787339840667,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 922.28,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 946.17,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 621.95,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 438.24,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 375.54,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 355.67,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "336ae6400e5b1f1810f987f3b0595a86263fc073",
+          "message": "Auto-format code changes (#1077)\n\nAuto-format code using Clang-Format\n\nCo-authored-by: GitHub Actions <actions@github.com>",
+          "timestamp": "2026-08-21T13:16:08-06:00",
+          "tree_id": "be7fa93762ea5f85a8a025e85e5c2a32f0190290",
+          "url": "https://github.com/NCAR/micm/commit/336ae6400e5b1f1810f987f3b0595a86263fc073"
+        },
+        "date": 1787340023340,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1187.37,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1216.7,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 799.36,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 564.52,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 480.13,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 453.1,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sunjian@ucar.edu",
+            "name": "Jian Sun",
+            "username": "sjsprecious"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e2e21ed02e38f42a5368752a28f9ed32affc9b83",
+          "message": "Fix build, CI and packaging for Kokkos deps (#1075)\n\n* fix build, ci and packaging\n\n* fix the broken CI tests",
+          "timestamp": "2026-08-21T14:55:43-06:00",
+          "tree_id": "87ed9a7dc6ed9621c2458bc09e1421cebf3a6bd9",
+          "url": "https://github.com/NCAR/micm/commit/e2e21ed02e38f42a5368752a28f9ed32affc9b83"
+        },
+        "date": 1787345997386,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1236.65,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1256.97,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 789.72,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 543.67,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 461.35,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 429.62,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sunjian@ucar.edu",
+            "name": "Jian Sun",
+            "username": "sjsprecious"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3937e9db73329d459de09d44e7e8ffdd97a607d7",
+          "message": "Fix Kokkos tests (#1078)\n\n* update kokkos tests\n\n* fix broken kokkos ci tests\n\n* fix broken kokkos serial test\n\n* address matt's comments",
+          "timestamp": "2026-08-24T13:41:31-06:00",
+          "tree_id": "da20c7db603d64d1dac60d0dd069fd4468f10606",
+          "url": "https://github.com/NCAR/micm/commit/3937e9db73329d459de09d44e7e8ffdd97a607d7"
+        },
+        "date": 1787600752640,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1187.11,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1217.31,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 800.02,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 562.46,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 478.08,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 452.54,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "92f00b12a364fa38aa06578a4e3a591ba37ccaa0",
+          "message": "Auto-format code changes (#1079)\n\nAuto-format code using Clang-Format\n\nCo-authored-by: GitHub Actions <actions@github.com>",
+          "timestamp": "2026-08-24T13:42:40-06:00",
+          "tree_id": "c59d49e5a010597c9540d86e8b9802cfda565163",
+          "url": "https://github.com/NCAR/micm/commit/92f00b12a364fa38aa06578a4e3a591ba37ccaa0"
+        },
+        "date": 1787600838322,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1251.97,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1281.65,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 796.29,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 553.07,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 470.68,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 440.8,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sunjian@ucar.edu",
+            "name": "Jian Sun",
+            "username": "sjsprecious"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "692d465b9205a32548049c17a867cfdded331b8d",
+          "message": "Add a CI workflow for single precision (#1085)\n\nadd a CI test for single precision",
+          "timestamp": "2026-08-27T09:11:18-06:00",
+          "tree_id": "6b016a8afc77c488f042c521b82f220fd9cf85c8",
+          "url": "https://github.com/NCAR/micm/commit/692d465b9205a32548049c17a867cfdded331b8d"
+        },
+        "date": 1787843693778,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 944.82,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 930.46,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 649.26,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 505.73,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 454.99,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 428.97,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0b489c8a6098665e03a5e129a3c2aedd22b06e1e",
+          "message": "Auto-format code changes (#1086)\n\nAuto-format code using Clang-Format\n\nCo-authored-by: GitHub Actions <actions@github.com>",
+          "timestamp": "2026-08-27T09:12:35-06:00",
+          "tree_id": "8e37e9c287aac11bfadfce2b73e4c96b712d4d57",
+          "url": "https://github.com/NCAR/micm/commit/0b489c8a6098665e03a5e129a3c2aedd22b06e1e"
+        },
+        "date": 1787843807725,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1105.28,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1084.63,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 753.24,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 573.59,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 513.34,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 486.36,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sunjian@ucar.edu",
+            "name": "Jian Sun",
+            "username": "sjsprecious"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7c62ea7691ddbd816b06ee7622727d3a31840d66",
+          "message": "Fix the broken GPU benchmark PR comments (#1087)\n\nfix GPU pr comments",
+          "timestamp": "2026-08-28T10:45:48-06:00",
+          "tree_id": "daad4e7006aa865820e9778cf635a86b7ff8b681",
+          "url": "https://github.com/NCAR/micm/commit/7c62ea7691ddbd816b06ee7622727d3a31840d66"
+        },
+        "date": 1787935822250,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1203.52,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1226.39,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 796.41,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 549.71,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 480.31,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 443.49,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sunjian@ucar.edu",
+            "name": "Jian Sun",
+            "username": "sjsprecious"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bb291a5f284c23a5579e43d36ae4683bac27c614",
+          "message": "Fix the occasionally broken single-precision CI test (#1088)\n\nfix sp ci failure",
+          "timestamp": "2026-08-31T09:28:43-06:00",
+          "tree_id": "72dcbf43a2ace27e93cdae40f5cf3407ff6290de",
+          "url": "https://github.com/NCAR/micm/commit/bb291a5f284c23a5579e43d36ae4683bac27c614"
+        },
+        "date": 1788190381841,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1268.41,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1260.38,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 784.73,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 536.05,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 461.76,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 418.05,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "1524012+dwfncar@users.noreply.github.com",
+            "name": "David Fillmore",
+            "username": "dwfncar"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a585de2efa9616eaa5f6ddbfe6dc8c0c18c84f1b",
+          "message": "Fix/dae constraint tolerance measure (#1083)\n\n* Measure DAE constraint initialization in the weighted state space\n\nThe consistent-initial-condition projection stopped when the largest raw\nalgebraic residual fell below a fixed constant (1e-10). That test has no\ninvariant numerical meaning: a residual carries whatever units and scale its\nconstraint equation was written in, so multiplying a complete constraint row\nby a constant changed whether the same physical state was called converged.\nSmall row scales converged falsely; large row scales -- or simply species in\nnumber-density units, where cancellation floors |G| near eps*1e12 -- could\nnever converge, and Solve() returned ConstraintInitializationFailed.\n\nMeasure the Newton correction instead, in the same weighted state space that\ndefines integration accuracy:\n\n  scale_a = atol_a + rtol * max(|z_a|, |z_a + delta_a|)\n  q       = max_a |delta_a| / scale_a\n\nInitialization converges when q <= constraint_init_tolerance_, whose default\nbecomes 0.1: the remaining estimated algebraic correction must be no more than\na tenth of the state-error scale the caller configured. The measure is\ndimensionless and unchanged by any complete-row rescaling, since neither the\nNewton correction nor the state tolerance depends on it.\n\nAn exactly zero residual is still accepted without a factorization. The loop\nnow runs one pass beyond the update limit so that the correction remaining\nafter the final permitted update is measured, rather than reporting failure\nfor a state that reached the manifold on that update.\n\nconstraint_init_tolerance_ no longer denotes a raw residual threshold.\nApplications that set it explicitly should review the new dimensionless\nmeaning rather than carrying forward values such as 1e-10.\n\nThe float-precision workarounds in test_external_model_constraints.cpp existed\nonly to raise that threshold above the float residual floor, and are removed.\n\n* Reconcile with fix/dae-algebraic-error-measure\n\nBoth branches ported the same weighted-correction convergence test off main,\neach with something the other lacked. Take the union.\n\nFrom fix/dae-algebraic-error-measure:\n\n  - BuildScaledLinearConstraintSolver and two projection-level tests that call\n    InitializeConstraints directly rather than going through Solve(), so a\n    failure names the projection instead of the integrator.\n    WeightedCorrectionUsesStateTolerances pins the property neither branch\n    covered before: the same off-manifold state is already converged under\n    loose rtol/atol and needs a Newton update under tight ones, which is what\n    makes the tolerance a fraction of the caller's state-error scale rather\n    than a number of its own.\n  - The missing newline at the end of rosenbrock_solver_parameters.hpp.\n\nKept from this branch:\n\n  - Removal of the float-only constraint_init_tolerance_ = 1e-5 overrides in\n    test_external_model_constraints.cpp. Those raised the old raw-residual\n    threshold above the float roundoff floor; under the weighted measure 1e-5\n    is roughly four orders tighter than the 0.1 default and unreachable in\n    single precision. Left in place they fail 4 integration tests in a\n    MICM_USE_DOUBLE=OFF build.\n  - constraint_init_iterations_ counts iterations entered, preserving main's\n    original `iter + 1` meaning, so it tracks projection work (one residual\n    evaluation and, except when the residual is exactly zero, one\n    factorization each). The imported assertions are adjusted accordingly:\n    the count is one greater than the number of updates applied.\n\nAll three added tests fail against main's solver and pass here. Verified in\ndouble (65/65), Kokkos (90/90), and the constraint and DAE targets of a float\nbuild (38 tests).\n\n* Roll back a failed constraint projection to the caller's state\n\nInitializeConstraints applies Newton updates directly to state.variables_.\nWhen it gave up -- iteration limit exhausted, or a non-finite residual or\ncorrection -- it returned the failure status but left those updates in place.\nThe caller got back a half-applied Newton iterate that is neither the state\nthey passed in nor a solution, with nothing in the return value to say so.\n\nMeasured on the nonlinear constraint 2*[B] - [C]^2 = 0 (solution C = 1),\ncapped at one update: passing C = 100 returned ConstraintInitializationFailed\nwith C = 50.005 in the caller's state.\n\nSnapshot the variables and restore them on every failure path, so failure\nmeans the caller's state is untouched and they can retry or report against\ntheir original numbers. With several grid cells this also stops one bad cell\nfrom perturbing the algebraic variables of all the others.\n\nK_[0] is the buffer: no stage vector is read until the first stage of the\nintegration loop, which cannot start unless projection converged. The\nsnapshot is taken lazily, immediately before the first update, so the common\ncase -- a state still consistent from the previous Solve() -- converges with\nno copy at all.\n\nBoth added tests are pinned in the failing direction against the previous\ncommit. Verified in double (65/65), Kokkos (90/90), and the constraint and\nDAE targets of a float build (40 tests).",
+          "timestamp": "2026-09-01T08:27:02-05:00",
+          "tree_id": "f9fc664f24de50722286cbaff7382c0e8c6facb0",
+          "url": "https://github.com/NCAR/micm/commit/a585de2efa9616eaa5f6ddbfe6dc8c0c18c84f1b"
+        },
+        "date": 1788269498528,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1217.92,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1215.41,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 792.6,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 587.47,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 477.8,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 455.55,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sunjian@ucar.edu",
+            "name": "Jian Sun",
+            "username": "sjsprecious"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "05be6e14dca6ae03cb9afd1f165842bf5d53a698",
+          "message": "Fix broken GPU PR benchmark comment (second time) (#1089)\n\nfix broken gpu pr comment",
+          "timestamp": "2026-09-01T14:43:43-06:00",
+          "tree_id": "60b3f4709d50da4ab829dd49af699813c6704a38",
+          "url": "https://github.com/NCAR/micm/commit/05be6e14dca6ae03cb9afd1f165842bf5d53a698"
+        },
+        "date": 1788295707462,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1242.98,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1251.78,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 784.76,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 573.9,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 474.28,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 448.2,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kyle.shores44@gmail.com",
+            "name": "Kyle Shores",
+            "username": "K20shores"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8bd1f011107fad36c148fba66ccebea6253c530e",
+          "message": "Add Compiler Explorer badge to README (#1093)\n\nAdd Compiler Explorer badge and link to README\n\nLink to a godbolt.org session that runs the README example with micm 3.13.0.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-30T11:29:37-05:00",
+          "tree_id": "042f9c6f1d352161e422717f7f3b6ffc48f2d2e4",
+          "url": "https://github.com/NCAR/micm/commit/8bd1f011107fad36c148fba66ccebea6253c530e"
+        },
+        "date": 1790786009024,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 940.58,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 933.06,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 645.34,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 513.86,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 453.81,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 437.91,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mattldawson@gmail.com",
+            "name": "Matt Dawson",
+            "username": "mattldawson"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6339193f1b654cab7fb8f52fe7cd123771c399b8",
+          "message": "Add Kokkos support to external model API (#1080)\n\nExternal models now work with Kokkos matrices. The solver calls each\nmodel directly through new rates and constraint bundles, and the builder\nchecks that each declared Jacobian element is in the sparsity pattern.\n\nCo-authored-by: Kyle Shores <kshores@ucar.edu>\nCo-authored-by: Claude Opus 5.5 (1M context) <noreply@anthropic.com>",
+          "timestamp": "2026-09-30T14:57:54-05:00",
+          "tree_id": "4275a47d741a32ad60c7562806c8e58c2e0a3b16",
+          "url": "https://github.com/NCAR/micm/commit/6339193f1b654cab7fb8f52fe7cd123771c399b8"
+        },
+        "date": 1790798542478,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1268.81,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1264.9,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 800.18,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 552.86,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 478.35,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 440.56,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "770f0e43da32ccb0fdd23b11f8a06de9c13b7031",
+          "message": "Auto-format code changes (#1096)\n\nAuto-format code using Clang-Format\n\nCo-authored-by: GitHub Actions <actions@github.com>",
+          "timestamp": "2026-09-30T14:59:53-05:00",
+          "tree_id": "b164e05819514f14cada45457424dd57f33f47e5",
+          "url": "https://github.com/NCAR/micm/commit/770f0e43da32ccb0fdd23b11f8a06de9c13b7031"
+        },
+        "date": 1790798599778,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 839.59,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 870.53,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 589.82,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 470.49,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 442.06,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 421.06,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "55209567+boulderdaze@users.noreply.github.com",
+            "name": "Jiwon Gim",
+            "username": "boulderdaze"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0bac86ac15aa136632ec55b7d51207ef94a1c6b7",
+          "message": "Update the version to 3.14.0 (#1100)\n\nupdate the version to 3.14.0",
+          "timestamp": "2026-10-05T13:08:26-06:00",
+          "tree_id": "0a2d63eb810292a3f9da85f1600cb0f0c0f562d2",
+          "url": "https://github.com/NCAR/micm/commit/0bac86ac15aa136632ec55b7d51207ef94a1c6b7"
+        },
+        "date": 1791227513263,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 720.43,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 681.09,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 443.93,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 315.4,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 283.7,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 252.5,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "55209567+boulderdaze@users.noreply.github.com",
+            "name": "Jiwon Gim",
+            "username": "boulderdaze"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f2b7b0ae27f1465f8ce145a52fe2dd5630836185",
+          "message": "Fix NVHPC compiler error (#1101)\n\nfix nvc issue",
+          "timestamp": "2026-10-06T13:57:33-06:00",
+          "tree_id": "fc770065c58db3cbc9c420b04f99623c3e2685ca",
+          "url": "https://github.com/NCAR/micm/commit/f2b7b0ae27f1465f8ce145a52fe2dd5630836185"
+        },
+        "date": 1791316859438,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 856.92,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 889.83,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 640.83,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 483.86,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 452.6,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 430.08,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kyle.shores44@gmail.com",
+            "name": "Kyle Shores",
+            "username": "K20shores"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "28d84c04e27517ab6ec27da5b701e27192e6f40a",
+          "message": "Correct external process algebraic rows jacobian (#1095)\n\nStop adding the process jacobian terms to algebraic jacobian terms\n\n---------\n\nCo-authored-by: Claude Opus 5.5 (1M context) <noreply@anthropic.com>",
+          "timestamp": "2026-10-08T09:49:06-05:00",
+          "tree_id": "017eaec0672e58de6d4777582b5658682f48a1b3",
+          "url": "https://github.com/NCAR/micm/commit/28d84c04e27517ab6ec27da5b701e27192e6f40a"
+        },
+        "date": 1791471403296,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 644.13,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 643.02,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 408.06,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 293.74,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 259.65,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 232.97,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "1524012+dwfncar@users.noreply.github.com",
+            "name": "David Fillmore",
+            "username": "dwfncar"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "22a0e1ee8c7ebbc472307ad4052ba97c57749217",
+          "message": "Improve DAE Constraint Initialization (#1091)\n\nAdd a damped Newton backtracking line search to the DAE constraint\ninitialization. The solver holds the differential concentrations fixed\nand adjusts the algebraic guesses before the first time step.\n\n- Add constraint_init_max_backtracks_ (default 24, zero disables it)\n   and constraint_init_backtrack_factor_ (default 0.5)\n- Reject non-finite trial steps and restore the caller state on failure\n- Extend the cold-start test: the default succeeds, and disabled or\n   limited backtracking fails with the input restored\n\n  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-12T14:52:31-05:00",
+          "tree_id": "798f5ea28cdd766390779fc3e354d33a129b90f4",
+          "url": "https://github.com/NCAR/micm/commit/22a0e1ee8c7ebbc472307ad4052ba97c57749217"
+        },
+        "date": 1791834999945,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 959.22,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 954.16,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 621.14,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 457.02,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 373.04,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 352.37,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "55209567+boulderdaze@users.noreply.github.com",
+            "name": "Jiwon Gim",
+            "username": "boulderdaze"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f020eefb2013e8de8fb0e669beec622b8c58f702",
+          "message": "JPL-19 Ternary Chemical Activation rate constant (#1103)\n\n* add jpl tenerary definitions\n\n* add test, andn cuda",
+          "timestamp": "2026-10-12T15:31:13-06:00",
+          "tree_id": "f391bdf6e3340fba2981d5f5b58ccdea068f5891",
+          "url": "https://github.com/NCAR/micm/commit/f020eefb2013e8de8fb0e669beec622b8c58f702"
+        },
+        "date": 1791840925984,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1109.19,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1118.33,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 768.93,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 622.18,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 538.25,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 498.21,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "41898282+github-actions[bot]@users.noreply.github.com",
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ab6628c194542cf4e4241f9fbbc2a3c4c30448fd",
+          "message": "Auto-format code changes (#1104)\n\nAuto-format code using Clang-Format\n\nCo-authored-by: GitHub Actions <actions@github.com>",
+          "timestamp": "2026-10-13T09:58:14-05:00",
+          "tree_id": "cbb6f8099d7c9b5c52d944528052b04aedd926cd",
+          "url": "https://github.com/NCAR/micm/commit/ab6628c194542cf4e4241f9fbbc2a3c4c30448fd"
+        },
+        "date": 1791903768228,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 1272.29,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 1254.55,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 796.08,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 566.64,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 474.08,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 431.91,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kyle.shores44@gmail.com",
+            "name": "Kyle Shores",
+            "username": "K20shores"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e15898ce482a979594397144c76258e1ada6b79d",
+          "message": "handling more templated cases for miam (#1098)\n\n* handling more templated cases for miam\n* Add trailing underscores to test member names for clang-tidy\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-13T10:26:24-05:00",
+          "tree_id": "887d3515ee9050a665390ab9413be161bcb2431b",
+          "url": "https://github.com/NCAR/micm/commit/e15898ce482a979594397144c76258e1ada6b79d"
+        },
+        "date": 1791905433193,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "standard",
+            "value": 959.2,
+            "unit": "ms"
+          },
+          {
+            "name": "vector1",
+            "value": 955.77,
+            "unit": "ms"
+          },
+          {
+            "name": "vector2",
+            "value": 632.15,
+            "unit": "ms"
+          },
+          {
+            "name": "vector4",
+            "value": 451.67,
+            "unit": "ms"
+          },
+          {
+            "name": "vector8",
+            "value": 376.6,
+            "unit": "ms"
+          },
+          {
+            "name": "vector128",
+            "value": 343.86,
+            "unit": "ms"
+          }
+        ]
+      }
+    ]
+  }
+}
