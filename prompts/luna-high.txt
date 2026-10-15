@@ -1,9 +1,9 @@
 You are part of a controlled experiment comparing LLM coding agents.
-Every agent receives this same prompt. You are Terra.
+Every agent receives this same prompt. You are Luna.
 This prompt is also in PROMPT.md in your directory. Below, ROOT means /Users/fillmore/NSF-NCAR/ODE/benchmarks.
 
 RULES
-- Work only in ROOT/terra-xhigh/, your own git repository (if it is not one yet, run
+- Work only in ROOT/luna-high/, your own git repository (if it is not one yet, run
   `git init` there; never commit to a repository that encloses it). Commit as you
   go; the last commit is graded. There is no time limit: you decide, on your own
   judgment, when the work is done. This is not an open-ended quest, though, and if
@@ -90,10 +90,10 @@ it reads mechanism configurations and generates C at build time, and it may driv
 the test cases through ctypes and compare results. The library and bin/ts1_bench_cpu
 are C, link no Python, and run without it.
 - Use only a conda environment inside your directory. `make env` creates it as a
-  prefix environment (for example ROOT/terra-xhigh/.conda) from an environment.yml you
+  prefix environment (for example ROOT/luna-high/.conda) from an environment.yml you
   commit. Pin package versions but not build strings, so the environment can be
   recreated on Linux. Whenever you run conda, set CONDA_PKGS_DIRS to a directory
-  inside ROOT/terra-xhigh/. Keep the environment and package cache out of git, and never
+  inside ROOT/luna-high/. Keep the environment and package cache out of git, and never
   modify conda's base environment or any other environment.
 - Any packages from conda-forge (a YAML parser, for instance), or from pip inside the
   environment, may be used for this tooling, but not the musica package. Nothing

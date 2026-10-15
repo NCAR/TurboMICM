@@ -14,6 +14,16 @@ time permits, add a suffix: `sol-high-2`, `sol-high-3`. Each finished run is kep
 on the TurboMICM branch `runs/<model>/<effort>`, or `runs/<model>/<effort>-<n>`
 for a repeat.
 
+Contestant changes
+- 2026-10-15, before any Terra run: Terra was replaced by Luna. Terra was available
+  only as gpt-5.6-terra, which Codex lists as an "Older balanced model for
+  straightforward work", while every other contestant is its family's current
+  release. Luna is gpt-6-luna, "Fast and affordable model for easier tasks", with
+  high, xhigh, and max effort levels. The runs are luna-high, luna-xhigh, and
+  luna-max; the prompts differ from Terra's only in the name. The Claude side
+  (Sonnet, Opus, Fable) has no fast-tier counterpart; Claude Haiku would be the
+  match if one is added.
+
 Prompt changes
 - 2026-10-15, after the three Sol runs finished: RULES gained "and do not look at
   other solutions to this task, on this machine or online", because finished
