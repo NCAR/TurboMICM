@@ -28,6 +28,11 @@ assembled in C or generated from configurations. Mechanisms borrow descriptor
 arrays, which must remain alive until the mechanism and its states are freed.
 A mechanism can be shared by independent states on different threads.
 
+`chem_system.h` provides owned species properties, phase metadata, and surface
+rate construction. `chem_jacobian.h` provides finite-difference and sparsity
+diagnostics. Named state updates, independent state copies, explicit ownership
+transfer, and separate or combined LU factors are available through `chem.h`.
+
 `include/chem_array.h` supplies typed dense/grouped arrays, strided views,
 reusable functions, and reductions. `include/chem_sparse.h` supplies CSR/CSC
 matrices with the same view operations across blocks. Sparse numeric storage is

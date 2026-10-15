@@ -7,6 +7,23 @@
 static const double gas_constant = 1.380649e-23 * 6.02214076e23;
 static const double pi = 3.14159265358979323846;
 
+double chem_parameterization_evaluate(const ChemParameterization *p, double t, double pressure, double air)
+{ return p->constant + p->temperature * t + p->pressure * pressure + p->air_density * air; }
+
+ChemRateDerived chem_rate_derived(const ChemRate *r)
+{
+    ChemRateDerived result = {0};
+    if (r->type == CHEM_BRANCHED_ALKOXY || r->type == CHEM_BRANCHED_NITRATE) {
+        result.branch_k0 = 2e-22 * 6.02214076e23 * 1e-6 * exp(r->p[3]);
+        double ar = result.branch_k0 * (2.45e19 / 6.02214076e23 * 1e6);
+        double br = .43 * pow(293.0 / 298.0, -8.0);
+        double ref = ar / (1.0 + ar / br) * pow(.41, 1.0 / (1.0 + pow(log10(ar / br), 2.0)));
+        result.branch_z = ref * (1.0 - r->p[2]) / r->p[2];
+    }
+    if (r->type == CHEM_SURFACE) result.surface_speed_factor = 8.0 * gas_constant / (pi * r->p[1]);
+    return result;
+}
+
 static double arrhenius(const double *p, double t, double pressure)
 {
     return p[0] * exp(p[2] / t) * pow(t / p[3], p[1]) * (1.0 + p[4] * pressure);
@@ -43,11 +60,8 @@ double chem_rate_evaluate(const ChemRate *r, double t, double pressure, double a
         break;
     case CHEM_BRANCHED_ALKOXY:
     case CHEM_BRANCHED_NITRATE: {
-        double k0 = 2e-22 * 6.02214076e23 * 1e-6 * exp(p[3]);
-        double ar = k0 * (2.45e19 / 6.02214076e23 * 1e6);
-        double br = .43 * pow(293.0 / 298.0, -8.0);
-        double ref = ar / (1.0 + ar / br) * pow(.41, 1.0 / (1.0 + pow(log10(ar / br), 2.0)));
-        double z = ref * (1.0 - p[2]) / p[2];
+        ChemRateDerived derived = chem_rate_derived(r);
+        double k0 = derived.branch_k0, z = derived.branch_z;
         double a = k0 * air, b = .43 * pow(t / 298.0, -8.0);
         double av = a / (1.0 + a / b) * pow(.41, 1.0 / (1.0 + pow(log10(a / b), 2.0)));
         double pre = p[0] * exp(-p[1] / t);
@@ -69,7 +83,7 @@ double chem_rate_evaluate(const ChemRate *r, double t, double pressure, double a
         break;
     case CHEM_SURFACE: {
         double radius = custom[r->parameter], number = custom[r->parameter + 1];
-        double speed = sqrt((8.0 * gas_constant / (pi * p[1])) * t);
+        double speed = sqrt(chem_rate_derived(r).surface_speed_factor * t);
         value = 4.0 * number * pi * radius * radius / (radius / p[0] + 4.0 / (speed * p[2]));
         break;
     }
@@ -78,6 +92,8 @@ double chem_rate_evaluate(const ChemRate *r, double t, double pressure, double a
         break;
     }
     for (int i = 0; i < r->third_body_count; ++i) value *= air;
+    for (size_t i = 0; i < r->multiplier_count; ++i)
+        value *= chem_parameterization_evaluate(&r->multipliers[i], t, pressure, air);
     return value;
 }
 

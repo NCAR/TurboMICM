@@ -11,6 +11,11 @@ typedef enum {
 typedef double (*ChemRateFunction)(double temperature, double pressure,
                                    double air_density, const double *custom, void *context);
 typedef struct {
+    double constant, temperature, pressure, air_density;
+    int has_value;
+} ChemParameterization;
+double chem_parameterization_evaluate(const ChemParameterization *, double temperature, double pressure, double air_density);
+typedef struct {
     ChemRateType type;
     /* Arrhenius/Taylor: A B C D E, then polynomial coefficients.
        Troe/ternary: k0 A B C, kinf A B C, Fc N.
@@ -22,6 +27,9 @@ typedef struct {
     ChemRateFunction function;
     void *context;
     const char *name;
+    size_t multiplier_count;
+    const ChemParameterization *multipliers;
+    const char *const *multiplier_names; /* optional species names for diagnostics */
 } ChemRate;
 typedef struct { int species; double yield; } ChemProduct;
 typedef struct {
@@ -71,7 +79,8 @@ typedef struct {
     const ChemExternalModel *external_models;
 } ChemMechanismData;
 typedef enum { CHEM_OK, CHEM_INVALID, CHEM_MEMORY, CHEM_MAX_STEPS,
-               CHEM_SMALL_STEP, CHEM_NONFINITE, CHEM_SINGULAR, CHEM_UNCONVERGED, CHEM_INITIALIZATION_FAILED } ChemStatus;
+               CHEM_SMALL_STEP, CHEM_NONFINITE, CHEM_SINGULAR, CHEM_UNCONVERGED, CHEM_INITIALIZATION_FAILED,
+               CHEM_NOT_FOUND, CHEM_WRONG_TYPE } ChemStatus;
 typedef struct {
     size_t internal_steps, accepted, rejected, function_calls,
            jacobian_updates, decompositions, solves;
@@ -107,12 +116,50 @@ ChemStatus chem_mechanism_create(const ChemMechanismData *, ChemMechanism **);
 void chem_mechanism_free(ChemMechanism *);
 /* Callback rates can be replaced by name before updating state parameters. */
 ChemRate *chem_rate_by_name(ChemMechanism *, const char *name);
+typedef enum {
+    CHEM_RATE_ARRHENIUS, CHEM_RATE_TROE, CHEM_RATE_TERNARY, CHEM_RATE_JPL19,
+    CHEM_RATE_BRANCHED, CHEM_RATE_TUNNELING, CHEM_RATE_TAYLOR, CHEM_RATE_REVERSIBLE,
+    CHEM_RATE_USER, CHEM_RATE_SURFACE, CHEM_RATE_CALLBACK, CHEM_RATE_FAMILY_COUNT
+} ChemRateFamily;
+size_t chem_rate_family_count(const ChemMechanism *, ChemRateFamily);
+/* Offsets refer to a logical stable grouping by family, without changing
+   reaction accumulation order. Index queries return original reaction indices. */
+size_t chem_rate_family_offset(const ChemMechanism *, ChemRateFamily);
+size_t chem_rate_family_index(const ChemMechanism *, ChemRateFamily, size_t ordinal);
+const ChemRate *chem_rate_specification(const ChemMechanism *, size_t reaction_index);
+typedef struct { double branch_k0, branch_z, surface_speed_factor; } ChemRateDerived;
+ChemRateDerived chem_rate_derived(const ChemRate *);
+/* Version of the reference API represented by this port. */
+const char *chem_version(void);
+unsigned chem_version_major(void);
+unsigned chem_version_minor(void);
+unsigned chem_version_patch(void);
+unsigned chem_version_tweak(void);
 const ChemMechanismData *chem_mechanism_data(const ChemMechanism *);
 int chem_is_algebraic(const ChemMechanism *, size_t species);
 int chem_constraint_nonzero(const ChemMechanism *, size_t row, size_t column);
 size_t chem_jacobian_size(const ChemMechanism *);
 ChemStatus chem_state_create(const ChemMechanism *, size_t cells, ChemState **);
+/* NULL mechanism and zero cells create an empty, assignable state. Copies own
+   independent arrays but share the borrowed immutable mechanism descriptor. */
+ChemStatus chem_state_clone(const ChemState *, ChemState **);
+ChemStatus chem_state_assign(ChemState **destination, const ChemState *source);
+ChemStatus chem_state_move(ChemState **destination, ChemState **source);
 void chem_state_free(ChemState *);
+const ChemMechanism *chem_state_mechanism(const ChemState *);
+double chem_state_relative_tolerance(const ChemState *);
+size_t chem_species_index(const ChemMechanism *, const char *name);
+size_t chem_parameter_index(const ChemMechanism *, const char *name);
+/* Named columns alias the state's cells-contiguous storage, or return NULL.
+   Refresh a column after solving, because a solver may exchange allocations. */
+double *chem_species_column(ChemState *, const char *name);
+const double *chem_const_species_column(const ChemState *, const char *name);
+double *chem_parameter_column(ChemState *, const char *name);
+typedef struct { const char *name; size_t count; const double *values; } ChemNamedValues;
+ChemStatus chem_set_concentrations(ChemState *, size_t count, const ChemNamedValues *);
+ChemStatus chem_set_parameters(ChemState *, size_t count, const ChemNamedValues *);
+/* Unnamed parameter input is rows x columns in row-major order. */
+ChemStatus chem_set_parameter_matrix(ChemState *, size_t rows, size_t columns, const double *);
 /* Species-major and parameter-major arrays, with cells contiguous. */
 size_t chem_cell_count(const ChemState *);
 double *chem_concentrations(ChemState *);
@@ -126,8 +173,12 @@ void chem_relative_tolerance(ChemState *, double);
 ChemStatus chem_update_rates(ChemState *);
 const double *chem_rate_constants(const ChemState *);
 void chem_forcing(const ChemState *, const double *y, double *forcing);
+void chem_add_forcing(const ChemState *, const double *y, double *forcing);
 void chem_alpha_minus_jacobian(const ChemMechanism *, size_t cells, double *matrix, double alpha);
 void chem_negative_jacobian(const ChemState *, const double *y, double *jacobian);
+void chem_subtract_jacobian(const ChemState *, const double *y, double *jacobian);
+int chem_reaction_species_used(const ChemMechanism *, const char *name);
+int chem_kinetic_nonzero(const ChemMechanism *, size_t row, size_t column);
 /* Diagnostic row/column to storage index, SIZE_MAX if structural zero. */
 size_t chem_jacobian_index(const ChemMechanism *, size_t row, size_t column);
 void chem_constraint_forcing(const ChemState *, const double *y, double *forcing);
@@ -137,6 +188,15 @@ ChemStatus chem_initialize_constraints(ChemState *, const ChemRosenbrock *, Chem
 ChemRosenbrock chem_rosenbrock_parameters(int stages); /* 2, 3, 4, -4 (DA), 6 (DA) */
 ChemLinearSolver chem_linear_mozart(void);
 ChemLinearSolver chem_linear_doolittle(void);
+/* Separate factors use the mechanism's filled sparse pattern. The unused
+   triangle is zero and L has a unit diagonal. Input A is preserved. */
+ChemStatus chem_factor_separate(const ChemMechanism *, size_t cells,
+    const double *matrix, double *lower, double *upper, ChemLinearSolver);
+void chem_linear_solve_separate(const ChemMechanism *, size_t cells,
+    const double *lower, const double *upper, double *rhs);
+/* permutation[new_index] = original_index. Stable ties use original index. */
+ChemStatus chem_diagonal_markowitz(size_t order, size_t count,
+    const ChemMatrixIndex *, size_t *permutation);
 ChemStatus chem_set_linear_solver(ChemState *, ChemLinearSolver);
 ChemBackwardEuler chem_backward_euler_parameters(void);
 int chem_backward_euler_converged(const ChemState *, const ChemBackwardEuler *, const double *residual, const double *y);

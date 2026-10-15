@@ -29,6 +29,7 @@ static int valid_data(const ChemMechanismData *d)
             if (rate->parameter < 0 || (size_t)rate->parameter + needed > d->parameter_count) return 0;
         }
         if (rate->type == CHEM_SURFACE && (!(rate->p[0] > 0) || !(rate->p[1] > 0))) return 0;
+        if (rate->multiplier_count && !rate->multipliers) return 0;
     }
     if ((d->constraint_count && !d->constraints) || (d->external_model_count && !d->external_models)) return 0;
     for (size_t i = 0; i < d->constraint_count; ++i) {
@@ -177,8 +178,9 @@ size_t chem_jacobian_index(const ChemMechanism *m, size_t r, size_t c)
 const char *chem_status_string(ChemStatus s)
 {
     static const char *const names[] = {"converged", "invalid argument", "allocation failed", "maximum steps exceeded",
-        "step size too small", "nonfinite value", "singular matrix", "accepting unconverged integration", "Constraint Initialization Failed"};
-    return s >= CHEM_OK && s <= CHEM_INITIALIZATION_FAILED ? names[s] : "unknown status";
+        "step size too small", "nonfinite value", "singular matrix", "accepting unconverged integration", "Constraint Initialization Failed",
+        "property not found", "invalid property type"};
+    return s >= CHEM_OK && s <= CHEM_WRONG_TYPE ? names[s] : "unknown status";
 }
 
 int chem_is_algebraic(const ChemMechanism *m, size_t species)
@@ -196,3 +198,39 @@ ChemRate *chem_rate_by_name(ChemMechanism *m, const char *name)
         if (m->rate_specs[i].name && !strcmp(m->rate_specs[i].name, name)) return &m->rate_specs[i];
     return NULL;
 }
+
+static ChemRateFamily rate_family(ChemRateType t)
+{
+    static const ChemRateFamily families[] = {
+        CHEM_RATE_ARRHENIUS, CHEM_RATE_TROE, CHEM_RATE_TERNARY, CHEM_RATE_JPL19,
+        CHEM_RATE_TUNNELING, CHEM_RATE_BRANCHED, CHEM_RATE_BRANCHED,
+        CHEM_RATE_TAYLOR, CHEM_RATE_REVERSIBLE, CHEM_RATE_USER, CHEM_RATE_SURFACE, CHEM_RATE_CALLBACK
+    };
+    return families[t];
+}
+size_t chem_rate_family_count(const ChemMechanism *m, ChemRateFamily family)
+{
+    size_t count = 0;
+    if (m) for (size_t i = 0; i < m->data->reaction_count; ++i) count += rate_family(m->rate_specs[i].type) == family;
+    return count;
+}
+size_t chem_rate_family_offset(const ChemMechanism *m, ChemRateFamily family)
+{
+    size_t count = 0;
+    if (m) for (size_t i = 0; i < m->data->reaction_count; ++i) count += rate_family(m->rate_specs[i].type) < family;
+    return count;
+}
+size_t chem_rate_family_index(const ChemMechanism *m, ChemRateFamily family, size_t ordinal)
+{
+    if (m) for (size_t i = 0; i < m->data->reaction_count; ++i)
+        if (rate_family(m->rate_specs[i].type) == family && ordinal-- == 0) return i;
+    return SIZE_MAX;
+}
+const ChemRate *chem_rate_specification(const ChemMechanism *m, size_t i)
+{ return m && i < m->data->reaction_count ? &m->rate_specs[i] : NULL; }
+
+const char *chem_version(void) { return "3.14.0"; }
+unsigned chem_version_major(void) { return 3; }
+unsigned chem_version_minor(void) { return 14; }
+unsigned chem_version_patch(void) { return 0; }
+unsigned chem_version_tweak(void) { return 0; }

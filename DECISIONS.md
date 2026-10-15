@@ -50,3 +50,24 @@
   (or SIZE_MAX from index lookup) instead of an exception or a debug-only death.
   Checks remain enabled in Release. Read-only metadata and explicit callback
   write masks replace C++ const-reference overload selection.
+- Seeded random test inputs reproduce the supplied host build's minstd_rand,
+  MT19937, canonical uniform, and cached polar-normal sequences in local Python
+  tooling. This fixes the source tests' implementation-defined random choices
+  across C compilers and operating systems while retaining their matrix sizes,
+  distributions, block counts, and numerical assertion bounds.
+- Separate LU factors share the in-place algorithm's operation plan. They have
+  an explicit unit lower diagonal and zero unused triangles, preserve the input,
+  and overwrite every fill value. The temporary factor buffer belongs to the
+  invocation, so independent calls can run concurrently.
+- Species and phase metadata use owned C objects and typed properties. Missing
+  properties and unsupported property types have distinct error codes. An empty
+  state is represented by creation with a NULL mechanism and zero cells; explicit
+  clone, assignment, and move operations replace the corresponding C++ mechanics.
+- The `parameterization` species extension contains `constant`, `temperature`,
+  `pressure`, and `air density` coefficients. Such species do not occupy evolving
+  state columns; their reactant contributions become rate multipliers. The
+  existing `third body` extension keeps its direct air-density multiplication.
+  `configs/parameterized` exercises the full generated-versus-code path.
+- Version getters describe the supplied reference API and use the values in
+  its actual include/micm/version.hpp (3.14.0), rather than inferring generated
+  version metadata from the experiment description.

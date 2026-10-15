@@ -7,6 +7,10 @@ ChemStatus chem_state_create(const ChemMechanism *m, size_t cells, ChemState **o
 {
     if (!out) return CHEM_INVALID;
     *out = NULL;
+    if (!m && !cells) {
+        *out = calloc(1, sizeof(ChemState));
+        return *out ? CHEM_OK : CHEM_MEMORY;
+    }
     if (!m || !cells) return CHEM_INVALID;
     const ChemMechanismData *d = m->data;
     size_t n = d->species_count;
@@ -41,6 +45,96 @@ ChemStatus chem_state_create(const ChemMechanism *m, size_t cells, ChemState **o
     *out = s;
     return CHEM_OK;
 }
+
+ChemStatus chem_state_clone(const ChemState *source, ChemState **out)
+{
+    if (!source || !out) return CHEM_INVALID;
+    ChemStatus status = chem_state_create(source->mechanism, source->cells, out);
+    if (status != CHEM_OK || !source->mechanism) return status;
+    ChemState *copy = *out;
+    const ChemMechanismData *d = source->mechanism->data;
+    size_t cells = source->cells;
+    memcpy(copy->y, source->y, d->species_count * cells * sizeof(double));
+    memcpy(copy->custom, source->custom, d->parameter_count * cells * sizeof(double));
+    memcpy(copy->rates, source->rates, d->reaction_count * cells * sizeof(double));
+    memcpy(copy->temperature, source->temperature, cells * sizeof(double));
+    memcpy(copy->pressure, source->pressure, cells * sizeof(double));
+    memcpy(copy->air_density, source->air_density, cells * sizeof(double));
+    memcpy(copy->atol, source->atol, d->species_count * sizeof(double));
+    copy->rtol = source->rtol;
+    copy->linear = source->linear;
+    return CHEM_OK;
+}
+ChemStatus chem_state_assign(ChemState **destination, const ChemState *source)
+{
+    if (!destination) return CHEM_INVALID;
+    ChemState *copy = NULL;
+    ChemStatus status = chem_state_clone(source, &copy);
+    if (status != CHEM_OK) return status;
+    chem_state_free(*destination);
+    *destination = copy;
+    return CHEM_OK;
+}
+ChemStatus chem_state_move(ChemState **destination, ChemState **source)
+{
+    if (!destination || !source || destination == source) return CHEM_INVALID;
+    if (*destination && *destination == *source) return CHEM_INVALID;
+    chem_state_free(*destination);
+    *destination = *source;
+    *source = NULL;
+    return CHEM_OK;
+}
+const ChemMechanism *chem_state_mechanism(const ChemState *s) { return s ? s->mechanism : NULL; }
+double chem_state_relative_tolerance(const ChemState *s) { return s->rtol; }
+
+static size_t name_index(size_t count, const char *const *names, const char *name)
+{
+    if (name) for (size_t i = 0; i < count; ++i) if (!strcmp(names[i], name)) return i;
+    return SIZE_MAX;
+}
+size_t chem_species_index(const ChemMechanism *m, const char *name)
+{ return m ? name_index(m->data->species_count, m->data->species_names, name) : SIZE_MAX; }
+size_t chem_parameter_index(const ChemMechanism *m, const char *name)
+{ return m ? name_index(m->data->parameter_count, m->data->parameter_names, name) : SIZE_MAX; }
+const double *chem_const_species_column(const ChemState *s, const char *name)
+{
+    size_t i = s ? chem_species_index(s->mechanism, name) : SIZE_MAX;
+    return i == SIZE_MAX ? NULL : s->y + i * s->cells;
+}
+double *chem_species_column(ChemState *s, const char *name)
+{ return (double *)chem_const_species_column(s, name); }
+double *chem_parameter_column(ChemState *s, const char *name)
+{
+    size_t i = s ? chem_parameter_index(s->mechanism, name) : SIZE_MAX;
+    return i == SIZE_MAX ? NULL : s->custom + i * s->cells;
+}
+static ChemStatus set_named(ChemState *s, size_t count, const ChemNamedValues *values, int parameters)
+{
+    if (!s || !s->mechanism || (count && !values)) return CHEM_INVALID;
+    /* Validate the entire transaction before changing any state. */
+    for (size_t j = 0; j < count; ++j) {
+        size_t i = parameters ? chem_parameter_index(s->mechanism, values[j].name)
+                              : chem_species_index(s->mechanism, values[j].name);
+        if (i == SIZE_MAX || values[j].count != s->cells || !values[j].values) return CHEM_INVALID;
+    }
+    for (size_t j = 0; j < count; ++j) {
+        double *column = parameters ? chem_parameter_column(s, values[j].name) : chem_species_column(s, values[j].name);
+        memmove(column, values[j].values, s->cells * sizeof(double));
+    }
+    return CHEM_OK;
+}
+ChemStatus chem_set_concentrations(ChemState *s, size_t count, const ChemNamedValues *values)
+{ return set_named(s, count, values, 0); }
+ChemStatus chem_set_parameters(ChemState *s, size_t count, const ChemNamedValues *values)
+{ return set_named(s, count, values, 1); }
+ChemStatus chem_set_parameter_matrix(ChemState *s, size_t rows, size_t columns, const double *values)
+{
+    if (!s || !s->mechanism || rows != s->cells || columns != s->mechanism->data->parameter_count
+        || (rows && columns && !values)) return CHEM_INVALID;
+    for (size_t c = 0; c < rows; ++c)
+        for (size_t j = 0; j < columns; ++j) s->custom[j * rows + c] = values[c * columns + j];
+    return CHEM_OK;
+}
 void chem_state_free(ChemState *s)
 {
     if (!s) return;
@@ -67,6 +161,7 @@ void chem_relative_tolerance(ChemState *s, double rtol) { s->rtol = rtol; }
 const double *chem_rate_constants(const ChemState *s) { return s->rates; }
 ChemStatus chem_update_rates(ChemState *s)
 {
+    if (!s || !s->mechanism) return CHEM_INVALID;
     const ChemMechanismData *d = s->mechanism->data;
     size_t cells = s->cells;
     for (size_t c = 0; c < cells; ++c)

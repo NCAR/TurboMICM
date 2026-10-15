@@ -118,7 +118,7 @@ static void apply_correction(const ChemState *s, double *y, const double *delta,
 }
 ChemStatus chem_initialize_constraints(ChemState *s, const ChemRosenbrock *p, ChemStats *stats)
 {
-    if (!s || !p || !stats) return CHEM_INVALID;
+    if (!s || !s->mechanism || !p || !stats) return CHEM_INVALID;
     const ChemMechanism *m = s->mechanism;
     if (!m->data->constraint_count) return CHEM_OK;
     size_t nc = s->cells, n = m->data->species_count, bytes = n * nc * sizeof(double);

@@ -131,6 +131,29 @@ def robertson_equivalence():
             for name in a:assert abs(a[name]-b[name])<=1e-30+1e-12*abs(b[name]),(step,name,a[name],b[name])
 
 
+def parameterization_equivalence():
+    owner=C.CDLL(str(ROOT/'build/configs.so'))
+    data=Data.in_dll(owner,'parameterized_data')
+    r=rate(0,[.2,0,0,300,0])
+    r.multiplier_count=1
+    r.multipliers=(Parameterization*1)(Parameterization(2.,.03,1e-6,.82,1))
+    with make_from_data(data,owner) as configured, Mechanism(['A','B'],[([0],[(1,1.)],r)]) as hand:
+        for m in [configured,hand]:
+            for i,name in enumerate(names(m)):m.y[i]=1. if name=='A' else 0.
+            lib.chem_temperatures(m.state)[0]=285.
+            lib.chem_pressures(m.state)[0]=90000.
+            lib.chem_air_densities(m.state)[0]=42.
+            assert lib.chem_update_rates(m.state)==0
+            expected=.2*(2.+.03*285.+1e-6*90000.+.82*42.)
+            assert lib.chem_rate_constants(m.state)[0]==expected
+        for step in range(10):
+            for m in [configured,hand]:
+                status,stats=m.solve(.1)
+                assert status==0 and stats.final_time==.1
+            a,b=concentrations(configured),concentrations(hand)
+            for name in a:assert abs(a[name]-b[name])<=1e-30+1e-12*abs(b[name]),(step,name,a[name],b[name])
+
+
 if __name__=='__main__':
     verify_reader();program(False);program(True);robertson_equivalence()
     print('configuration checks PASS')

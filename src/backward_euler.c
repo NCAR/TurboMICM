@@ -22,7 +22,7 @@ int chem_backward_euler_converged(const ChemState *s, const ChemBackwardEuler *p
 }
 static ChemStatus integrate_backward_euler(ChemState *s, const ChemBackwardEuler *p, double dt, ChemStats *stats)
 {
-    if (!s || !p || !stats || !(dt > 0) || !isfinite(dt) || !p->max_iterations || p->reduction_count > 5) return CHEM_INVALID;
+    if (!s || !s->mechanism || !s->cells || !p || !stats || !(dt > 0) || !isfinite(dt) || !p->max_iterations || p->reduction_count > 5) return CHEM_INVALID;
     *stats = (ChemStats){0};
     const ChemMechanism *m = s->mechanism;
     size_t nc = s->cells, n = m->data->species_count, size = n * nc;

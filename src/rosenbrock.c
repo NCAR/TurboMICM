@@ -27,7 +27,7 @@ double chem_normalized_error(const ChemState *s, const double *old, const double
 }
 static ChemStatus integrate(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *stats)
 {
-    if (!s || !p || !stats || !(dt > 0) || !isfinite(dt) || p->stages < 1 || p->stages > 6
+    if (!s || !s->mechanism || !s->cells || !p || !stats || !(dt > 0) || !isfinite(dt) || p->stages < 1 || p->stages > 6
         || !(p->gamma[0] > 0) || !(s->rtol >= 0)) return CHEM_INVALID;
     *stats = (ChemStats){0};
     const ChemMechanism *m = s->mechanism;

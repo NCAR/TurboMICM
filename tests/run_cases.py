@@ -9,8 +9,14 @@ from test_configs import CASES as CONFIG_CASES
 from test_arrays import CASES as ARRAY_CASES
 from test_sparse_arrays import CASES as SPARSE_CASES
 from test_grouped import CASES as GROUPED_CASES
+from test_linear import CASES as LINEAR_CASES
+from test_state import CASES as STATE_CASES
+from test_system import CASES as SYSTEM_CASES
+from test_rate_store import CASES as STORE_CASES
+from test_jacobian import CASES as JACOBIAN_CASES
+from test_process_set import CASES as PROCESS_CASES
 import supplemental
-PYTHON_CASES = {**CONSTRAINT_CASES, **SOLVER_CASES, **CONFIG_CASES, **ARRAY_CASES, **SPARSE_CASES, **GROUPED_CASES}
+PYTHON_CASES = {**CONSTRAINT_CASES, **SOLVER_CASES, **CONFIG_CASES, **ARRAY_CASES, **SPARSE_CASES, **GROUPED_CASES, **LINEAR_CASES, **STATE_CASES, **SYSTEM_CASES, **STORE_CASES, **JACOBIAN_CASES, **PROCESS_CASES}
 
 ROOT = Path(__file__).resolve().parent.parent
 

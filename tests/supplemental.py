@@ -2,7 +2,7 @@
 import csv
 from pathlib import Path
 import subprocess
-from test_configs import verify_reader, robertson_equivalence
+from test_configs import verify_reader, robertson_equivalence, parameterization_equivalence
 
 ROOT=Path(__file__).resolve().parent.parent
 
@@ -10,6 +10,7 @@ ROOT=Path(__file__).resolve().parent.parent
 def run():
     verify_reader()
     robertson_equivalence()
+    parameterization_equivalence()
     directory=ROOT/'build/ts1-regression';directory.mkdir(exist_ok=True)
     for group in [1]:
         subprocess.run([ROOT/'bin/ts1_bench_cpu','--threads','2','--group-size',str(group),'1','100','30',

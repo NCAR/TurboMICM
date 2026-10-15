@@ -9,10 +9,14 @@ P = C.c_void_p
 DP = C.POINTER(D)
 IP = C.POINTER(I)
 
+class Parameterization(C.Structure):
+    _fields_ = [('constant', D), ('temperature', D), ('pressure', D), ('air_density', D), ('has_value', I)]
 
 class Rate(C.Structure):
     _fields_ = [('type', I), ('p', D * 24), ('parameter', I), ('coefficient_count', I),
-                ('third_body_count', I), ('function', P), ('context', P), ('name', C.c_char_p)]
+                ('third_body_count', I), ('function', P), ('context', P), ('name', C.c_char_p),
+                ('multiplier_count', Z), ('multipliers', C.POINTER(Parameterization)),
+                ('multiplier_names', C.POINTER(C.c_char_p))]
 
 
 class Product(C.Structure):

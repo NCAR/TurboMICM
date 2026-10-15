@@ -29,6 +29,9 @@ committed configuration.
   omit built-in chemical forcing; external model Jacobian contributions remain.
 - `linear.c`: in-place Mozart elimination and Doolittle factorization with the
   reference operation ordering, and forward/back substitution without pivoting.
+  Separate L/U outputs preserve the input and overwrite all fill entries,
+  independent of their initial values. Both forms use the same sparse plan and
+  numerical kernels. Runtime diagonal Markowitz ordering is also available.
 - `parameters.c`: all five Rosenbrock parameter sets.
 - `rosenbrock.c`: stage evaluations, the common weighted error norm, acceptance,
   rejection, and step-size policy. Public solves clamp differential species
@@ -38,12 +41,33 @@ committed configuration.
 - `constraints.c`: linear, equilibrium, and callback residuals/Jacobians, and
   transactional damped Newton initialization. Algebraic errors use the step
   change; stage coupling and alpha shifts include only differential rows.
+- `system.c` / `chem_system.h`: owned typed species properties and phase metadata.
+  Parameterized species are excluded from phase state variables. A single gas
+  phase forms a system; system variable names omit the phase prefix.
+- `jacobian.c` / `chem_jacobian.h`: central finite differences with a forward
+  fallback near zero, negative-Jacobian comparisons, and sparsity diagnostics.
 
 Storage is species-major inside each cell group: every operation on a species
 visits contiguous cells. Sparse entries use the same layout. Elementwise loops
 use `restrict` and OpenMP SIMD; error reduction retains a strict order. No
 intrinsics, compiler vector types, target tuning, or relaxed floating point is
 used.
+
+State clones allocate independent concentrations, conditions, parameters, rates,
+tolerances, and workspaces while borrowing the same mechanism. Assignment is
+transactional on allocation failure; explicit move transfers ownership and
+clears the source pointer. Named updates validate all labels and cell counts
+before writing. Named column access returns an alias into contiguous cell data.
+Callers refresh aliases after a solve, which may exchange the concentration
+and candidate allocations.
+
+Rates can carry arbitrary lists of linear condition multipliers. Each evaluates
+`constant + temperature*T + pressure*P + air_density*rho`; repeated parameterized
+reactants retain repeated multipliers. Third-body air factors retain their direct
+path. Rate-family counts/offsets describe a logical grouping, and family index
+queries return original reaction indices. This exposes store metadata without
+changing forcing accumulation order. Branched and surface derived coefficients
+share helpers with the numerical rate evaluations.
 
 ## Array and sparse utilities
 

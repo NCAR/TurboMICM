@@ -1,0 +1,12 @@
+{
+  "camp-data": [
+    {"type": "CHEM_SPEC", "name": "A"},
+    {"type": "CHEM_SPEC", "name": "B"},
+    {"type": "CHEM_SPEC", "name": "X", "parameterization": {
+      "constant": 2.0, "temperature": 0.03, "pressure": 0.000001, "air density": 0.82
+    }},
+    {"type": "MECHANISM", "name": "condition multiplier", "rate units": "mol m-3", "reactions": [
+      {"type": "ARRHENIUS", "A": 0.2, "reactants": {"A": {}, "X": {}}, "products": {"B": {}}}
+    ]}
+  ]
+}

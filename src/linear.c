@@ -2,6 +2,8 @@
    ordering. There is no numerical pivoting. Symbolic fill is computed once. */
 #include "internal.h"
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 ChemStatus chem_factor(const ChemMechanism *m, size_t nc, double *matrix)
 {
@@ -88,6 +90,94 @@ static ChemStatus factor_doolittle(const ChemMechanism *m, size_t nc, double *ma
 }
 ChemLinearSolver chem_linear_mozart(void) { return (ChemLinearSolver){chem_factor, chem_linear_solve}; }
 ChemLinearSolver chem_linear_doolittle(void) { return (ChemLinearSolver){factor_doolittle, chem_linear_solve}; }
+
+ChemStatus chem_factor_separate(const ChemMechanism *m, size_t nc,
+    const double *matrix, double *lower, double *upper, ChemLinearSolver solver)
+{
+    if (!m || !nc || !matrix || !lower || !upper || lower == upper
+        || matrix == lower || matrix == upper || !solver.factor
+        || m->nnz > SIZE_MAX / nc / sizeof(double)) return CHEM_INVALID;
+    size_t length = m->nnz * nc;
+    double *work = malloc(length * sizeof(*work));
+    if (!work) return CHEM_MEMORY;
+    memcpy(work, matrix, length * sizeof(*work));
+    ChemStatus status = solver.factor(m, nc, work);
+    if (status == CHEM_OK) {
+        memset(lower, 0, length * sizeof(*lower));
+        memset(upper, 0, length * sizeof(*upper));
+        for (size_t row = 0; row < m->data->species_count; ++row)
+            for (size_t j = m->row_start[row]; j < m->row_start[row + 1]; ++j) {
+                size_t column = m->entries[j].column;
+                for (size_t c = 0; c < nc; ++c) {
+                    if (column < row) lower[j * nc + c] = work[j * nc + c];
+                    else upper[j * nc + c] = work[j * nc + c];
+                    if (column == row) lower[j * nc + c] = 1.0;
+                }
+            }
+    }
+    free(work);
+    return status;
+}
+
+void chem_linear_solve_separate(const ChemMechanism *m, size_t nc,
+    const double *lower, const double *upper, double *x)
+{
+    size_t n = m->data->species_count;
+    for (size_t i = 0; i < n; ++i) {
+        double *restrict xi = x + i * nc;
+        for (size_t j = m->row_start[i]; j < m->diagonal[i]; ++j) {
+            const double *restrict lij = lower + j * nc;
+            const double *restrict xj = x + m->entries[j].column * nc;
+            #pragma omp simd
+            for (size_t c = 0; c < nc; ++c) xi[c] -= lij[c] * xj[c];
+        }
+    }
+    for (size_t ii = n; ii > 0; --ii) {
+        size_t i = ii - 1;
+        double *restrict xi = x + i * nc;
+        for (size_t j = m->diagonal[i] + 1; j < m->row_start[i + 1]; ++j) {
+            const double *restrict uij = upper + j * nc;
+            const double *restrict xj = x + m->entries[j].column * nc;
+            #pragma omp simd
+            for (size_t c = 0; c < nc; ++c) xi[c] -= uij[c] * xj[c];
+        }
+        const double *restrict uii = upper + m->diagonal[i] * nc;
+        #pragma omp simd
+        for (size_t c = 0; c < nc; ++c) xi[c] /= uii[c];
+    }
+}
+
+ChemStatus chem_diagonal_markowitz(size_t n, size_t count,
+    const ChemMatrixIndex *entries, size_t *permutation)
+{
+    if (!n || !permutation || (count && !entries) || n > SIZE_MAX / n) return CHEM_INVALID;
+    unsigned char *pattern = calloc(n * n, 1), *alive = malloc(n);
+    if (!pattern || !alive) { free(pattern); free(alive); return CHEM_MEMORY; }
+    memset(alive, 1, n);
+    for (size_t k = 0; k < count; ++k) {
+        if (entries[k].row >= n || entries[k].column >= n) {
+            free(pattern); free(alive); return CHEM_INVALID;
+        }
+        pattern[entries[k].row * n + entries[k].column] = 1;
+    }
+    for (size_t step = 0; step < n; ++step) {
+        size_t pivot = SIZE_MAX, best = SIZE_MAX;
+        for (size_t i = 0; i < n; ++i) if (alive[i]) {
+            size_t rows = 0, columns = 0;
+            for (size_t j = 0; j < n; ++j) if (alive[j]) {
+                rows += pattern[i * n + j]; columns += pattern[j * n + i];
+            }
+            size_t cost = (rows - 1) * (columns - 1);
+            if (pivot == SIZE_MAX || cost < best) { pivot = i; best = cost; }
+        }
+        permutation[step] = pivot;
+        alive[pivot] = 0;
+        for (size_t i = 0; i < n; ++i) if (alive[i] && pattern[i * n + pivot])
+            for (size_t j = 0; j < n; ++j) if (alive[j] && pattern[pivot * n + j]) pattern[i * n + j] = 1;
+    }
+    free(pattern); free(alive);
+    return CHEM_OK;
+}
 ChemStatus chem_set_linear_solver(ChemState *s, ChemLinearSolver linear)
 {
     if (!s || !linear.factor || !linear.solve) return CHEM_INVALID;

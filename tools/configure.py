@@ -67,7 +67,14 @@ def normalize(path):
     if len(set(names)) != len(names) or not names:
         raise ConfigurationError('species must have unique names and must not be empty')
     by_name = {s['name']: s for s in species}
-    dynamic = [s for s in species if not s.get('third body', False)]
+    for s in species:
+        if s.get('third body', False) and 'parameterization' in s:
+            raise ConfigurationError('third body and parameterization are mutually exclusive')
+        if 'parameterization' in s:
+            p = s['parameterization']
+            if not isinstance(p, dict) or set(p) - {'constant', 'temperature', 'pressure', 'air density'}:
+                raise ConfigurationError('parameterization requires condition coefficients')
+    dynamic = [s for s in species if not s.get('third body', False) and 'parameterization' not in s]
     ids = {s['name']: i for i, s in enumerate(dynamic)}
     parameters, initial_parameters, reactions = [], [], []
     conditions = {'temperature': 300, 'pressure': 101325}
@@ -103,7 +110,8 @@ def normalize(path):
         rr, pp = reactants(r.get('reactants', {})), products(r.get('products', {}))
         if any(n not in by_name for n in rr + [n for n, _ in pp]):
             raise ConfigurationError('reaction refers to unknown species')
-        third_body_count = sum(n not in ids for n in rr)
+        third_body_count = sum(bool(by_name[n].get('third body', False)) for n in rr)
+        multipliers = [(n, by_name[n]['parameterization']) for n in rr if 'parameterization' in by_name[n]]
         param = -1
         coeffs = []
         if kind == 'SURFACE':
@@ -151,7 +159,7 @@ def normalize(path):
         reactions.append(dict(reactants=[ids[n] for n in rr if n in ids],
                               products=[(ids[n], v) for n, v in pp if n in ids],
                               type=kind, values=values, parameter=param,
-                              coefficient_count=len(coeffs), third_body_count=third_body_count))
+                              coefficient_count=len(coeffs), third_body_count=third_body_count, multipliers=multipliers))
     return dict(species=dynamic, reactions=reactions, parameters=parameters,
                 initial_parameters=initial_parameters, conditions=conditions)
 
@@ -216,11 +224,18 @@ def emit_c(mech, symbol):
     for i, r in enumerate(mech['reactions']):
         array('int', f'reactants_{i}', [str(v) for v in r['reactants']])
         array('ChemProduct', f'products_{i}', ['{' + str(n) + ',' + number(v) + '}' for n, v in r['products']])
+        if r.get('multipliers'):
+            array('ChemParameterization', f'multipliers_{i}', ['{' + ','.join(
+                number(p.get(k, 0)) for k in ('constant', 'temperature', 'pressure', 'air density')) + ',1}'
+                for _, p in r['multipliers']])
+            array('char *const', f'multiplier_names_{i}', [json.dumps(n) for n, _ in r['multipliers']])
     lines.append('static const ChemReaction reactions[] = {')
     for i, r in enumerate(mech['reactions']):
-        lines.append('{%d,%d,reactants_%d,products_%d,{.type=CHEM_%s,.p={%s},.parameter=%d,.coefficient_count=%d,.third_body_count=%d}},' % (
+        multiplier_fields = ',.multiplier_count=%d,.multipliers=multipliers_%d,.multiplier_names=multiplier_names_%d' % (
+            len(r['multipliers']), i, i) if r.get('multipliers') else ''
+        lines.append('{%d,%d,reactants_%d,products_%d,{.type=CHEM_%s,.p={%s},.parameter=%d,.coefficient_count=%d,.third_body_count=%d%s}},' % (
             len(r['reactants']), len(r['products']), i, i, r['type'], ','.join(number(v) for v in r['values']),
-            r['parameter'], r['coefficient_count'], r['third_body_count']))
+            r['parameter'], r['coefficient_count'], r['third_body_count'], multiplier_fields))
     lines.append('};')
     fields = dict(species_count=str(len(mech['species'])), reaction_count=str(len(mech['reactions'])),
         parameter_count=str(len(mech['parameters'])), species_names='species_names', parameter_names='parameter_names',
