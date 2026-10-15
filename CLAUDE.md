@@ -128,6 +128,37 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - **Transcripts:** Codex stores reasoning only as encrypted content. The transcripts
   have every message, tool call, and output, but no readable reasoning.
 
+## Tier 2: algorithm design (approved 2026-10-15, not yet launched)
+
+- **Files:** `tier2/prompt.v1` is the template and `tier2/README.md` is the plan
+  and build list; the wiki page is Tier-2.
+- **Order:** finish OpenAI Tier 1 (Astra, Luna), run OpenAI Tier 2, then move to
+  the Claude models.
+- **Arms:**
+  - Sol and Astra at xhigh and max, a 2 x 2 matrix, each started from a clone of
+    the run's own Tier 1 repository (`<tier1_commit>` placeholder);
+  - Luna: one run at max, if its Tier 1 passes comfortably;
+  - Claude: the top two models at the same effort levels, after their Tier 1 runs.
+- **Rules:**
+  - any mechanism-generic method; no mechanism reduction or learned surrogates;
+  - the Tier 1 gate still passes;
+  - web search for the literature (`codex --search`), no copied code, every source
+    in REFERENCES.md;
+  - Python prototypes measure accuracy and operation counts, while speed comes only
+    from C, with a test checking each C method against its prototype;
+  - scans logged in scans/ and SCANS.md;
+  - the agent justifies its own accuracy target in ACCURACY.md.
+- **Yardstick:** significant digits (Sandu et al., 1997) against converged,
+  tight-tolerance MICM references, over species at or above 1e-14 mol m-3.
+  - The gate: no NaN or infinity, and no value below -1e-20 mol m-3.
+  - Rank by the fastest declared operating point that reaches L digits overall
+    and L - 1 digits per species on every scenario, at L = 2 and L = 3.
+  - Scenarios: f(t) photolysis applied per step, 24-hour day and night, 5–30
+    minute steps, clean and polluted cells, some held out.
+- **Before launch:** build the `ODE/benchmarks/tier2` root, the MICM scenario
+  driver, the scenarios and references, `score.py`, Tier 2 prompt generation and
+  run setup, and scenario timing (`tier2/README.md` has the list).
+
 ## Open items
 
 - Keep the SSE's Claude Code setup (plugins, hooks, memory, `.claude` settings) out
@@ -135,4 +166,5 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - Rank with an undisclosed seed, and run the blind review.
 - Consider Claude Haiku as the fast-tier match for Luna.
 - Time the entries on an x86-64 Linux machine.
+- Build the Tier 2 tooling before the Tier 2 launch.
 - Current status is in `admin/runs.md` and on the wiki's Results page.
