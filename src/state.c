@@ -101,6 +101,7 @@ void chem_update_rates(ChemState *s)
             s->rates[i * n + c] *= mult;
         }
     }
+    chem_constraints_update_parameters(s);
 }
 void chem_forcing(const ChemState *s, const double *restrict y, double *restrict f)
 {
@@ -117,17 +118,20 @@ void chem_forcing(const ChemState *s, const double *restrict y, double *restrict
             for (size_t c=0; c<n; ++c) work[c]*=v[c];
         }
         for (size_t j=0; j<p->reactant_count; ++j) {
+            if (m->algebraic[p->reactants[j]]) continue;
             double *restrict dst=f+p->reactants[j]*n;
             #pragma omp simd
             for (size_t c=0; c<n; ++c) dst[c]-=work[c];
         }
         for (size_t j=0; j<p->product_count; ++j) {
+            if (m->algebraic[p->products[j].species]) continue;
             double *restrict dst=f+p->products[j].species*n;
             double yield=p->products[j].yield;
             #pragma omp simd
             for (size_t c=0; c<n; ++c) dst[c]+=yield*work[c];
         }
     }
+    chem_constraints_forcing(s,y,f);
 }
 void chem_jacobian(const ChemState *s, const double *restrict y, double *restrict jac)
 {
@@ -148,11 +152,13 @@ void chem_jacobian(const ChemState *s, const double *restrict y, double *restric
                 for (size_t c=0;c<n;++c) work[c]*=v[c];
             }
             for (size_t k=0;k<p->reactant_count;++k) {
+                if (m->algebraic[p->reactants[k]]) continue;
                 double *restrict dst=jac+(p->reactants[k]*nv+independent)*n;
                 #pragma omp simd
                 for (size_t c=0;c<n;++c) dst[c]-=work[c];
             }
             for (size_t k=0;k<p->product_count;++k) {
+                if (m->algebraic[p->products[k].species]) continue;
                 double *restrict dst=jac+(p->products[k].species*nv+independent)*n;
                 double yield=p->products[k].yield;
                 #pragma omp simd
@@ -160,4 +166,5 @@ void chem_jacobian(const ChemState *s, const double *restrict y, double *restric
             }
         }
     }
+    chem_constraints_jacobian_add(s,y,jac,NULL,1);
 }

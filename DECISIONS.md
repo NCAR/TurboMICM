@@ -37,3 +37,17 @@
 - Sparse and dense layouts are selected by the C API instead of C++ template
   policies. State group size replaces compile-time vector length and is a
   runtime parameter. No floating-point compiler options are added.
+
+## Constraint representation
+
+The C constraint API uses tagged linear/equilibrium definitions with named
+terms. A mechanism owns deep copies and resolved variable indices. Installing
+constraints is transactional and must precede state and solver creation, just
+as mechanism reordering does. The mass matrix is represented by an algebraic
+row mask. No mechanism-specific code is generated for DAE enforcement.
+
+Constraint tests retain all original cells, coefficients, temperatures and
+bounds. Vector policy cases use the C contiguous-cell layout; group-size cases
+split the original cells into groups of the stated size, including partial
+groups. There are no inactive padded lanes to include in reductions. The
+initialization failure status string preserves MICM's exact spelling.

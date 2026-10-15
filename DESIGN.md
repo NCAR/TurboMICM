@@ -44,7 +44,20 @@ Out-of-place factorization interfaces are still required by the remaining port.
 step-size controller. Initial step size, rejection behavior, tolerances and
 statistics follow MICM's ODE path. Backward Euler in `src/backward_euler.c` shares the sparse linear algebra and
 implements the original Newton convergence criterion and step reductions.
-DAE constraints and their initialization remain to be implemented; this is not yet the complete CPU port.
+Built-in linear and equilibrium constraints are installed with
+`chem_mechanism_set_constraints` before creating states or solvers. Definitions
+are copied and species names resolved to indices. Algebraic rows replace kinetic
+rows in forcing and Jacobians, have zero mass-matrix diagonal, and use their
+step change in the error estimate. Equilibrium constants are updated alongside
+rates from the original Van't Hoff formula.
+
+`chem_initialize_constraints` performs the original weighted Newton projection
+and damped line search before integration. It modifies only algebraic variables
+and restores the full input state on failure. Projection uses the same sparse
+factor/solve callbacks as integration. `chem_add_mass_diagonal` and the finite-
+difference utilities in `chem_jacobian.h` expose independently testable numerical
+operations. External and aerosol models remain to be implemented; this is not
+yet the complete CPU port.
 
 To add a Rosenbrock method, add a method enum and a coefficient-set branch in
 `chem_rosenbrock_parameters`, then test the coefficients and stiff integration

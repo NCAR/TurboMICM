@@ -9,8 +9,9 @@ const char *chem_status_string(ChemStatus s)
 {
     static const char *const names[] = {"success", "invalid argument", "allocation failed",
         "not found", "dimension mismatch", "singular matrix", "maximum steps exceeded",
-        "step size too small", "constraint initialization failed", "accepting unconverged integration",
-        "NaN detected", "infinity detected"};
+        "step size too small", "Constraint Initialization Failed", "accepting unconverged integration",
+        "NaN detected", "infinity detected", "empty reactants", "empty products",
+        "invalid stoichiometry", "invalid equilibrium constant"};
     return (unsigned)s < sizeof(names)/sizeof(*names) ? names[s] : "unknown status";
 }
 void chem_ideal_air_density(ChemConditions *c)

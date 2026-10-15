@@ -19,6 +19,7 @@ void chem_mechanism_free(ChemMechanism *m)
         free(m->processes[i].products); free((void *)m->processes[i].rate.label);
     }
     if (m->custom_names) for (size_t i = 0; i < m->custom_count; ++i) free(m->custom_names[i]);
+    chem_constraints_free(m->constraints,m->constraint_count); free(m->algebraic);
     free(m->species); free(m->variable_species); free(m->processes); free(m->custom_names); free(m);
 }
 ChemStatus chem_mechanism_create(size_t ns, const ChemSpecies *species, size_t nr,
@@ -107,6 +108,9 @@ ChemStatus chem_mechanism_create(size_t ns, const ChemSpecies *species, size_t n
             if (!m->custom_names[j] || !m->custom_names[j+1]) goto fail;
         }
     }
+    m->reaction_custom_count=m->custom_count;
+    m->algebraic=chem_alloc(m->variable_count,1);
+    if (!m->algebraic) { status=CHEM_MEMORY; goto fail; }
     free(map); *out = m; return CHEM_OK;
 fail:
     free(map); chem_mechanism_free(m); return status;
@@ -161,6 +165,10 @@ unsigned char *chem_mechanism_pattern(const ChemMechanism *m)
             for (size_t k=0;k<p->product_count;++k) pattern[p->products[k].species*n+col]=1;
         }
     }
+    for (size_t row=0;row<n;++row) if (m->algebraic[row]) {
+        memset(pattern+row*n,0,n);
+        for (size_t col=0;col<n;++col) pattern[row*n+col]=(unsigned char)chem_constraint_has_element(m,row,col);
+    }
     return pattern;
 }
 ChemStatus chem_mechanism_reorder(ChemMechanism *m)
@@ -179,6 +187,13 @@ ChemStatus chem_mechanism_reorder(ChemMechanism *m)
         ChemProcess *p=&m->processes[r];
         for (size_t j=0;j<p->reactant_count;++j) p->reactants[j]=inverse[p->reactants[j]];
         for (size_t j=0;j<p->product_count;++j) p->products[j].species=inverse[p->products[j].species];
+    }
+    memset(m->algebraic,0,n);
+    for (size_t i=0;i<m->constraint_count;++i) {
+        ChemBoundConstraint *c=&m->constraints[i];
+        c->row=inverse[c->row]; m->algebraic[c->row]=1;
+        for (size_t j=0;j<c->definition.reactant_count;++j) c->reactants[j]=inverse[c->reactants[j]];
+        for (size_t j=0;j<c->definition.product_count;++j) c->products[j]=inverse[c->products[j]];
     }
 finish:
     free(pattern); free(perm); free(inverse); free(species); return status;

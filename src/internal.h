@@ -1,6 +1,8 @@
 #ifndef CHEM_INTERNAL_H
 #define CHEM_INTERNAL_H
 #include "chem.h"
+#include "chem_constraints.h"
+#include "chem_solver.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -10,6 +12,11 @@ typedef struct {
     ChemProduct *products;
     ChemRate rate;
 } ChemProcess;
+typedef struct {
+    ChemConstraint definition;
+    size_t row, parameter;
+    size_t *reactants, *products;
+} ChemBoundConstraint;
 struct ChemMechanism {
     size_t species_count, variable_count, reaction_count, custom_count;
     ChemSpecies *species;
@@ -17,7 +24,12 @@ struct ChemMechanism {
     ChemProcess *processes;
     char **custom_names;
     size_t offsets[CHEM_RATE_TYPE_COUNT + 1];
+    size_t constraint_count, reaction_custom_count;
+    ChemBoundConstraint *constraints;
+    unsigned char *algebraic;
 };
+void chem_constraints_free(ChemBoundConstraint *, size_t);
+void chem_constraints_jacobian_add(const ChemState *, const double *, double *, const ChemSparse *, double);
 unsigned char *chem_mechanism_pattern(const ChemMechanism *);
 static inline void *chem_alloc(size_t n, size_t size)
 {

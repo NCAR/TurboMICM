@@ -1,6 +1,6 @@
 # Validation progress
 
-The complete acceptance gate has **not** been met: 621 of the 680 case ports
+The complete acceptance gate has **not** been met: 545 of the 680 case ports
 remain pending. The test runner reports these as FAIL, not N/A.
 
 ## Current case results
@@ -10,11 +10,13 @@ OpenMP flags. The ported cases keep original or tighter numerical bounds.
 
 | Compiler | PASS | Pending FAIL | N/A |
 | --- | ---: | ---: | ---: |
-| Apple Clang 21 | 59 | 621 | 0 |
-| GCC 15.2 | 59 | 621 | 0 |
+| Apple Clang 21 | 135 | 545 | 0 |
+| GCC 15.2 | 135 | 545 | 0 |
 
-The 59 cases comprise 31 rate-constant tests, 16 in-place LU decomposition
-cases, 10 in-place linear-solver cases and 2 backward Euler cases. Additional
+The 135 cases comprise 31 rate-constant tests, 16 in-place LU decomposition
+cases, 10 in-place linear-solver cases, 2 backward Euler cases, 42 constraint
+definition/set cases, 12 constraint initialization cases, 8 DAE integration
+cases, 7 Rosenbrock utility cases and 7 Jacobian verification cases. Additional
 checks pass on both compilers: all three tutorial configurations versus
 independent hand-built mechanisms (one and seven cells, ten integration
 intervals), and a TS1 interval-clamp regression.
@@ -57,6 +59,6 @@ linear solves. MICM's larger groups report 9,000 internal/accepted steps,
 18,000 function calls, 9,000 Jacobian updates and decompositions, and 27,000
 solves. These counts sum over groups, not cells.
 
-Remaining validation includes the full case inventory, DAE/external models,
+Remaining validation includes the full case inventory, external/aerosol models,
 all solver regression and tutorial output checks, additional seeds and tuning
 values, and a final portability audit. See WORK_LOG.md for the completion ledger.

@@ -31,12 +31,21 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
 - Public solver post-interval concentration clamping is implemented; a retained
   TS1 fixture exercises the negative-intermediate-state case.
 
+- Linear and Van't Hoff equilibrium constraints, algebraic sparsity/row
+  replacement, mass-matrix coupling, algebraic step-change error estimates,
+  weighted Newton initialization and damped line search with rollback.
+- 76 additional cases (135 total) pass with Clang and GCC: 42 constraint
+  type/set cases, 12 initialization cases, 8 DAE integration/overshoot cases,
+  7 Rosenbrock utility cases and 7 finite-difference Jacobian utility cases.
+  Configuration and TS1 interval-clamp regressions still pass on both.
+
 ## Remaining work (required)
 
-- Port all remaining 621 cases, individually checking original test quantities.
+- Port all remaining 545 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
-- Constraints and their consistent initial-condition Newton/line-search
-  algorithm, algebraic error control, external model hooks and aerosol models.
+- External model hooks and aerosol models; additional linear-constraint
+  integration coverage. Built-in constraints and initialization now pass their
+  unit tests and equilibrium/overshoot integration tests.
 - Backward Euler analytical/regression coverage, reaction-rate tracking, solver status
   behavior, solver-builder validations and full species/property/phase APIs.
 - Dense/sparse matrix utilities, grouped views and operations, generic C
@@ -44,8 +53,9 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   compile-time-only cases may receive documented N/A reasons.
 - Out-of-place LU paths and their tests, solver regression/analytical tests,
   all eight complete tutorial programs with reference stdout comparisons.
-- Validate all five Rosenbrock parameter sets and rejected-step behavior. The
-  TS1 gate exercises only ROS3 with no rejections.
+- Complete analytical validation of all five Rosenbrock parameter sets and
+  rejected-step behavior. Error norms cover all five; constrained stiff
+  integration covers ROS3, ROS4, ROS4-DA and ROS6-DA.
 - Validate the configuration reader's malformed inputs and additional rate
   types beyond the three supplied examples; compare TS1 default fields by name.
 - Performance work using generic kernels; broader seeds/group sizes and both

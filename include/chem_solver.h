@@ -31,6 +31,7 @@ typedef enum { CHEM_ROS2, CHEM_ROS3, CHEM_ROS4, CHEM_ROS4_DA, CHEM_ROS6_DA } Che
 ChemRosenbrockParameters chem_rosenbrock_parameters(ChemRosenbrockMethod method);
 typedef struct {
     size_t internal_steps, accepted, rejected, function_calls, jacobian_updates, decompositions, solves;
+    size_t constraint_init_iterations;
     double final_time;
 } ChemSolverStats;
 
@@ -48,6 +49,10 @@ void chem_solver_set_controller(ChemSolver *, ChemStepController, void *context)
 void chem_solver_set_linear_solver(ChemSolver *, ChemLinearSolver);
 ChemStatus chem_solve(ChemSolver *, ChemState *, double dt,
                       const ChemRosenbrockParameters *, ChemSolverStats *);
+ChemStatus chem_initialize_constraints(ChemSolver *, ChemState *,
+                                       const ChemRosenbrockParameters *, ChemSolverStats *);
+/* Add alpha*M to a negative sparse Jacobian; M is zero on algebraic rows. */
+void chem_add_mass_diagonal(const ChemMechanism *,const ChemSparse *,size_t cells,double alpha,double *matrix);
 double chem_normalized_error(const ChemState *, const double *y, const double *next, const double *error);
 typedef struct {
     double small, h_start;
