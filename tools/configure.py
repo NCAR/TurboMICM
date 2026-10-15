@@ -45,8 +45,14 @@ def load(path, stack=()):
         data = json.load(stream) if path.suffix.lower() == '.json' else yaml.safe_load(stream)
     if not isinstance(data, dict):
         raise ConfigurationError(f'{path}: expected mapping')
-    entries = list(data.get('camp-data', []))
-    for child in data.get('camp-files', []):
+    entries = data.get('camp-data', [])
+    includes = data.get('camp-files', [])
+    if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):
+        raise ConfigurationError('camp-data must be a list of mappings')
+    if not isinstance(includes, list) or any(not isinstance(child, str) for child in includes):
+        raise ConfigurationError('camp-files must be a list of paths')
+    entries = list(entries)
+    for child in includes:
         included = load(path.parent / child, (*stack, path))
         entries.extend(included['camp-data'])
     return {**data, 'camp-data': entries}
@@ -60,10 +66,13 @@ class Mechanism:
     initial: dict
 
 
-def read(path):
+def _read(path):
     data = load(path)
     entries = data['camp-data']
     species = [dict(e) for e in entries if e.get('type') == 'CHEM_SPEC']
+    for item in species:
+        if not isinstance(item.get('name'), str) or not item['name'] or '\x00' in item['name']:
+            raise ConfigurationError('Species names must be nonempty strings without NUL')
     indices = {s['name']: i for i, s in enumerate(species)}
     if not species or len(indices) != len(species):
         raise ConfigurationError('Species must be nonempty and have unique names')
@@ -78,8 +87,10 @@ def read(path):
         result = []
         if isinstance(value, dict):
             for name, options in value.items():
+                if not isinstance(options, dict):
+                    raise ConfigurationError('Reactant options must be mappings')
                 qty = options.get('qty', 1)
-                if not isinstance(qty, int) or qty < 1:
+                if type(qty) is not int or qty < 1:
                     raise ConfigurationError('Reactant qty must be a positive integer')
                 result.extend([indices[name]] * qty)
         elif isinstance(value, list):
@@ -145,7 +156,7 @@ def read(path):
                         raise ConfigurationError('Surface reaction requires positive diffusion and molecular weight')
                 rate['type'] = TYPES[kind]
                 rate['label'] = raw.get('MUSICA name', raw.get('label'))
-                if TYPES[kind] in ('CK_USER', 'CK_SURFACE') and not isinstance(rate['label'], str):
+                if TYPES[kind] in ('CK_USER', 'CK_SURFACE') and (not isinstance(rate['label'], str) or not rate['label']):
                     raise ConfigurationError('User-defined/surface reaction needs a label')
                 if kind == 'TERNARY_CHEMICAL_ACTIVATION_JPL19':
                     for key in ('k0_D', 'kinf_D', 'kint_D'):
@@ -157,6 +168,15 @@ def read(path):
     if not result:
         raise ConfigurationError('No reactions')
     return Mechanism(' + '.join(names), species, result, data.get('initial state', {}))
+
+
+def read(path):
+    try:
+        return _read(path)
+    except ConfigurationError:
+        raise
+    except (KeyError, TypeError, AttributeError, ValueError, OverflowError) as error:
+        raise ConfigurationError(f'Invalid configuration: {error}') from error
 
 
 def number(value):

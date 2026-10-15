@@ -233,6 +233,22 @@ int test_process(const char *suite, const char *test)
     return 2;
   if (IS("Matrix") || IS("VectorMatrix"))
     return process_update();
+  if (IS("ChemicalReactionCopyAssignmentSucceeds"))
+  {
+    double scale = .82;
+    ck_species species[] = {
+        {.name = "foo", .molecular_weight = .025, .diffusion = 2.3e2},
+        {.name = "bar", .parameterized = 2, .function = density_scale, .context = &scale}};
+    size_t reactants[] = {0, 1};
+    ck_reaction original = {.nreactants = 2, .reactants = reactants, .rate = ck_rate_defaults(CK_ARRHENIUS)};
+    original.rate.A = 12.2;
+    original.rate.C = 300;
+    ck_reaction copy = original;
+    CHECK(!strcmp(species[copy.reactants[0]].name, species[original.reactants[0]].name));
+    CHECK(copy.nproducts == original.nproducts && copy.nproducts == 0);
+    CHECK(copy.rate.type == CK_ARRHENIUS && copy.rate.A == 12.2 && copy.rate.C == 300);
+    return 0;
+  }
   ck_species sp[] = {{.name = "O3"}, {.name = "NO"}, {.name = "NO2"}, {.name = "O2"}};
   size_t r[] = {0, 1};
   ck_product p[] = {{2, 1}, {3, 1}};

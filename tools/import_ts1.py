@@ -37,6 +37,8 @@ def translate(source):
         item['reactants'] = re.findall(r'SpeciesByName\(gas_phase, "([^"]+)"\)', reactant_block[1]) if reactant_block else []
         item['products'] = [{'species': name, 'yield': float(value)} for name, value in
                             re.findall(r'StoichSpecies\{\s*SpeciesByName\(gas_phase, "([^"]+)"\),\s*(' + NUMBER + r')\s*\}', product_block[1])] if product_block else []
+        if product_block and product_block[1].count('StoichSpecies') != len(item['products']):
+            raise ValueError('Unrecognized product yield in reaction ' + str(len(reactions)))
         for key, value in re.findall(r'\.(\w+)_\s*=\s*(' + NUMBER + r')', rate[2]):
             item[key] = float(value)
         label = re.search(r'\.label_ = "([^"]+)"', rate[2])
@@ -53,8 +55,12 @@ def translate(source):
     assert len(species) == 210, len(species)
     assert len(reactions) == 547, len(reactions)
     assert len(concentrations) == 209, len(concentrations)
+    temperature = re.search(r'temperature_\s*=\s*(' + NUMBER + r');', source)
+    pressure = re.search(r'pressure_\s*=\s*(' + NUMBER + r');', source)
+    if not temperature or not pressure:
+        raise ValueError('Missing initial conditions')
     return {'concentration units': 'mol m-3',
-            'initial state': {'temperature': 287.45, 'pressure': 101319.9, 'concentrations': concentrations, 'custom': custom},
+            'initial state': {'temperature': float(temperature[1]), 'pressure': float(pressure[1]), 'concentrations': concentrations, 'custom': custom},
             'camp-data': species + [{'name': 'TS1', 'type': 'MECHANISM', 'reactions': reactions}]}
 
 

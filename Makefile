@@ -30,7 +30,7 @@ env: .conda/bin/python
 cpu: bin/ts1_bench_cpu
 bench: cpu
 micm-ref: bin/micm_ts1_ref
-bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mechanism.hpp
+bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mechanism.hpp build/configuration.txt
 	@mkdir -p bin
 	clang++ -std=c++20 $(OPTFLAGS) -I../micm/include -I../micm/test/benchmark $< -o $@
 clean:
@@ -50,18 +50,19 @@ build/ts1.o: generated/ts1.c include/chem.h build/configuration.txt
 	@mkdir -p build
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-GROUP_SIZE ?= 128
+GROUP_SIZE ?= 32
 bin/ts1_bench_cpu: src/bench.c build/ts1.o build/libchem.a
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) -DCK_DEFAULT_GROUP_SIZE=$(GROUP_SIZE) $< build/ts1.o build/libchem.a $(LDLIBS) -o $@
 
 TUTORIAL_OBJECTS = build/tutorial_no.o build/tutorial_user.o build/tutorial_robertson.o
 TEST_SOURCES = tests/runner.c tests/test_rates.c tests/test_linear.c tests/test_constraints.c tests/test_integrators.c tests/test_initialization.c tests/tutorials.c tests/test_configuration.c tests/test_matrices.c tests/test_sparse.c tests/test_state.c tests/test_system.c tests/test_constraint_set.c tests/test_builder.c tests/test_verification.c tests/test_analytical.c tests/test_process.c tests/test_process_set.c tests/test_grouped.c tests/test_aerosol.c tests/test_external.c tests/test_dae.c tests/test_chemistry.c tests/test_chapman.c tests/test_stiff.c
-bin/test_cpu: $(TEST_SOURCES) tests/test.h $(TUTORIAL_OBJECTS) build/libchem.a
+bin/test_cpu: $(TEST_SOURCES) $(wildcard tests/*.h) $(TUTORIAL_OBJECTS) build/libchem.a
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) -Itests -Isrc $(TEST_SOURCES) $(TUTORIAL_OBJECTS) build/libchem.a $(LDLIBS) -o $@
 
 test-cpu: bin/test_cpu
+	@$(PYTHON) tools/test_configuration.py
 	@bin/test_cpu tests/cases.txt
 
 generated/tutorial_no.c: mechanisms/tutorial/rate_constants_no_user_defined/config.yaml mechanisms/tutorial/rate_constants_no_user_defined/species.yaml mechanisms/tutorial/rate_constants_no_user_defined/reactions.yaml tools/configure.py .conda/bin/python

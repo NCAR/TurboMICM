@@ -41,7 +41,7 @@ void ck_model_free(ck_model *m)
     if (m->products)
       free(m->products[r]);
   }
-  for (size_t j = 0; j < m->njobs; ++j)
+  for (size_t j = 0; m->jobs && j < m->njobs; ++j)
   {
     free(m->jobs[j].reactants);
     free(m->jobs[j].products);
@@ -272,6 +272,12 @@ ck_status ck_model_create_with_order(const ck_mechanism *desc, int reorder, ck_m
       error = CK_INVALID;
       goto fail;
     }
+  if (desc->nconstraints > SIZE_MAX - m->extra_custom ||
+      desc->nreactions > (SIZE_MAX - desc->nconstraints - m->extra_custom) / 2)
+  {
+    error = CK_INVALID;
+    goto fail;
+  }
   m->nr = desc->nreactions;
   m->species_to_variable = ck_allocate(desc->nspecies, sizeof(size_t));
   m->variable_to_species = ck_allocate(desc->nspecies, sizeof(size_t));

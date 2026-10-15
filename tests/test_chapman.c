@@ -1,5 +1,6 @@
 #include "test.h"
 #include "internal.h"
+#include "random.h"
 static const ck_species chapman_species[] = {{.name = "M"},   {.name = "Ar"}, {.name = "CO2"},
                                              {.name = "H2O"}, {.name = "N2"}, {.name = "O1D"},
                                              {.name = "O"},   {.name = "O2"}, {.name = "O3"}};
@@ -163,11 +164,12 @@ static int chapman_unit(const char *test)
   }
   else
   {
+    uint32_t seed = 739;
     double initial[] = {1, .392, .0169, 0, 32.9, 0, 0, 8.84, 0}, scale = IS("solve_10_times_larger")    ? 10
                                                                          : IS("solve_10_times_smaller") ? .1
                                                                                                         : 1;
     for (size_t j = 0; j < 9; ++j)
-      s->y[j] = IS("solve_with_random_number_densities") ? .01 + .1 * j : initial[j] * scale;
+      s->y[j] = IS("solve_with_random_number_densities") ? test_uniform(&seed) : initial[j] * scale;
     s->conditions[0] = (ck_conditions){273.15, 100000, 2.7e19};
     double photos[] = {1e-4, 1e-5, 1e-6};
     for (size_t j = 0; j < 3; ++j)
@@ -241,8 +243,12 @@ static int chapman_regression(const char *test)
   chapman_description(&d, rx, 0);
   ck_model *m;
   ck_state *s;
-  CHECK(ck_model_create_with_order(&d, 0, &m) == CK_OK);
+  uint32_t seed = 739;
+  CHECK(ck_model_create(&d, &m) == CK_OK);
   CHECK(ck_state_create(m, 3, &s) == CK_OK);
+  size_t indices[9];
+  for (size_t j = 0; j < 9; ++j)
+    CHECK(ck_species_index(m, chapman_species[j].name, indices + j) == CK_OK);
   double temperature[] = {284.19, 215.02, 299.31}, pressure[] = {101245, 100789.2, 101398},
          photos[][3] = {{1e-4, 1e-5, 1e-6}, {3.2e-4, 7.3e-5, 3.2e-6}, {5.2e-4, 8.2e-5, 4.6e-6}};
   for (size_t c = 0; c < 3; ++c)
@@ -271,10 +277,10 @@ static int chapman_regression(const char *test)
   {
     for (size_t j = 0; j < 9; ++j)
       for (size_t c = 0; c < 3; ++c)
-        s->y[j * 3 + c] = exp(-2 + .43 * j - .2 * c);
+        s->y[j * 3 + c] = test_lognormal(&seed, -2, strstr(test, "Jacobian") ? 4 : 2);
     for (size_t r = 0; r < 7; ++r)
       for (size_t c = 0; c < 3; ++c)
-        s->rates[r * 3 + c] = exp(-2 + .61 * r - .3 * c);
+        s->rates[r * 3 + c] = test_lognormal(&seed, -2, strstr(test, "Jacobian") ? 4 : 2);
     double f[27];
     double *j = calloc(ck_jacobian_size(m) * 3, sizeof(double));
     CHECK(j);
@@ -284,15 +290,16 @@ static int chapman_regression(const char *test)
     {
       double y[9], k[7], ef[9], ej[81];
       for (size_t v = 0; v < 9; ++v)
-        y[v] = s->y[v * 3 + c];
+        y[v] = s->y[indices[v] * 3 + c];
       for (size_t r = 0; r < 7; ++r)
         k[r] = s->rates[r * 3 + c];
       chapman_expected(k, y, ef, ej);
       for (size_t v = 0; v < 9; ++v)
-        NEAR(f[v * 3 + c], ef[v], (fabs(f[v * 3 + c]) + fabs(ef[v])) * 1e-8 + 1e-12);
+        NEAR(f[indices[v] * 3 + c], ef[v], (fabs(f[indices[v] * 3 + c]) + fabs(ef[v])) * 1e-8 + 1e-12);
       for (size_t p = 0; p < 23; ++p)
       {
-        size_t row = positions[p][0], col = positions[p][1], off = ck_jacobian_index(m, row, col);
+        size_t row = positions[p][0], col = positions[p][1],
+               off = ck_jacobian_index(m, indices[row], indices[col]);
         NEAR(j[off * 3 + c], -ej[row * 9 + col],
              (fabs(j[off * 3 + c]) + fabs(ej[row * 9 + col])) * 1e-8 + 1e-12);
       }
@@ -312,22 +319,25 @@ static int chapman_regression(const char *test)
     baseline.h_start = 1e-6;
     baseline.max_steps = 100;
     double initial[27], atol = 0;
-    for (size_t v = 0; v < 9; ++v)
-      for (size_t c = 0; c < 3; ++c)
+    test_reference_rng reference_rng = {.value = 1};
+    for (size_t c = 0; c < 3; ++c)
+      for (size_t v = 0; v < 9; ++v)
       {
-        double value = exp(-2 + .27 * v + .31 * c);
+        double value = test_reference_lognormal(&reference_rng);
         initial[v * 3 + c] = s->y[v * 3 + c] = value;
         atol = fmax(atol, value);
       }
     atol *= 1e-12;
+    ck_model *reference_model;
+    CHECK(ck_model_create_with_order(&d, 0, &reference_model) == CK_OK);
     ck_stats stats;
     CHECK(ck_solve(s, 500, &p, &stats) == CK_OK);
     for (size_t c = 0; c < 3; ++c)
     {
       ck_state *reference;
-      CHECK(ck_state_create(m, 1, &reference) == CK_OK);
+      CHECK(ck_state_create(reference_model, 1, &reference) == CK_OK);
       for (size_t v = 0; v < 9; ++v)
-        reference->y[v] = initial[v * 3 + c];
+        reference->y[v] = initial[indices[v] * 3 + c];
       reference->conditions[0] = s->conditions[c];
       reference->relative_tolerance = 1e-4;
       for (size_t j = 0; j < 3; ++j)
@@ -335,10 +345,11 @@ static int chapman_regression(const char *test)
       CHECK(ck_update_rates(reference) == CK_OK);
       CHECK(ck_solve(reference, 500, &baseline, &stats) == CK_OK);
       for (size_t v = 0; v < 9; ++v)
-        NEAR(s->y[v * 3 + c], reference->y[v],
-             (fabs(s->y[v * 3 + c]) + fabs(reference->y[v])) * (method == 2 ? 1e-2 : 1e-4) + atol);
+        NEAR(s->y[indices[v] * 3 + c], reference->y[v],
+             (fabs(s->y[indices[v] * 3 + c]) + fabs(reference->y[v])) * (method == 2 ? 1e-2 : 1e-4) + atol);
       ck_state_free(reference);
     }
+    ck_model_free(reference_model);
   }
   ck_state_free(s);
   ck_model_free(m);

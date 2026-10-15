@@ -188,6 +188,9 @@ void ck_post_solve_clamp(ck_state *s)
 }
 ck_status ck_solve(ck_state *s, double dt, const ck_rosenbrock_parameters *p, ck_stats *stats)
 {
+  if (!s || !p || !stats)
+    return CK_INVALID;
+  memset(stats, 0, sizeof *stats);
   ck_status status = ck_external_initialize(s);
   if (status)
     return status;

@@ -188,6 +188,11 @@ typedef struct
   const ck_external_model *external;
 } ck_mechanism;
 
+/* The header/species descriptors and all bound numerical structures are copied.
+   Strings, property tables, original reaction arrays and initial-default arrays
+   are borrowed immutable data and must outlive the model and its states.
+   External contexts are borrowed unless clone_context/destroy_context are set.
+   A model may be shared by threads; each thread needs an independent state. */
 ck_status ck_model_create(const ck_mechanism *description, ck_model **model);
 ck_status ck_model_create_with_order(const ck_mechanism *description, int reorder, ck_model **model);
 ck_status ck_markowitz_order(size_t n, const unsigned char *pattern, size_t *permutation);

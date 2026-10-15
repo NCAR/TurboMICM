@@ -9,7 +9,7 @@
 #include <string.h>
 
 #ifndef CK_DEFAULT_GROUP_SIZE
-#define CK_DEFAULT_GROUP_SIZE 128
+#define CK_DEFAULT_GROUP_SIZE 32
 #endif
 extern const ck_mechanism ts1;
 typedef struct
@@ -218,6 +218,7 @@ int main(int argc, char **argv)
   const char *arguments[4];
   size_t nargs = 0;
   const char *env_width = getenv("CK_GROUP_SIZE");
+  int explicit_width = env_width != NULL;
   if (env_width && (!size_argument(env_width, &width) || !width))
     goto usage;
   for (int a = 1; a < argc; ++a)
@@ -231,6 +232,7 @@ int main(int argc, char **argv)
     {
       if (++a >= argc || !size_argument(argv[a], &width) || !width)
         goto usage;
+      explicit_width = 1;
     }
     else if (nargs < 4)
       arguments[nargs++] = argv[a];
@@ -245,6 +247,16 @@ int main(int argc, char **argv)
   double dt = strtod(arguments[2], &end);
   if (errno || *end || !(dt > 0) || !isfinite(dt))
     goto usage;
+  if (!width)
+    goto usage;
+  if (!getenv("OMP_SCHEDULE"))
+    omp_set_schedule(omp_sched_static, 0);
+  if (!explicit_width)
+  {
+    size_t balanced = (cells - 1) / threads + 1;
+    if (width > balanced)
+      width = balanced;
+  }
   if (width > cells)
     width = cells;
   size_t ngroups = (cells - 1) / width + 1;
@@ -280,7 +292,7 @@ int main(int argc, char **argv)
     goto done;
   ck_rosenbrock_parameters parameters;
   ck_rosenbrock_parameters_init(3, &parameters);
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(runtime)
   for (size_t g = 0; g < ngroups; ++g)
   {
     ck_stats ignored;
@@ -293,7 +305,7 @@ int main(int argc, char **argv)
       goto done;
     }
   double t0 = omp_get_wtime();
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(runtime)
   for (size_t g = 0; g < ngroups; ++g)
   {
     for (size_t step = 0; step < steps; ++step)

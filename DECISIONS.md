@@ -10,8 +10,8 @@
   whose concentration is supplied by environmental conditions. `initial state`
   carries default temperature, pressure, concentrations, and custom parameters.
   These extensions preserve TS1's parameterized third body and InitState.
-- Generated kernels are derived from arbitrary parsed mechanisms. There are no
-  hand-written mechanism-specific runtime kernels.
+- Generation emits immutable C descriptors for arbitrary parsed mechanisms.
+  All forcing, Jacobian and solver kernels are shared, mechanism-generic C.
 - Tests must have concrete assertions for their named behavior. Unimplemented
   cases remain failures; N/A is reserved for C++-only language mechanics.
 - The default CAMP concentration unit is molecule cm^-3, matching the tutorials;
@@ -38,3 +38,25 @@
   remain checked. Fixtures were collected from the copied reference build.
 - State setters require exactly one value per cell, matching the reference's
   scalar/single-cell and vector/multiple-cell behavior; no implicit broadcast.
+
+- C++ matrix-policy instantiations use one runtime C implementation with explicit
+  element size, row/group width, CSR/CSC ordering, and writable-view metadata.
+  Policy variants that select the same solver layout use the same C numerical
+  path; all five Rosenbrock methods and both LU algorithms are exercised.
+- Five cases are N/A: four `ViewCategorySFINAE` compile-time category/concept
+  cases and `GroupedView.CategoryTagsAreDistinct`. Runtime access, mutability,
+  shape errors, iteration and grouped-view semantics have C checks.
+- The legacy hard-coded Chapman solver is represented by the generic Chapman
+  descriptor with its original three-stage method, tolerances and initial step.
+  Regression comparisons retain the original bounds. The solve comparison uses
+  the reference engine's frozen mathematical random stream, expressed in C, to
+  retain its particular input samples; otherwise loose legacy integration error
+  can exceed its comparison bound for different random samples. Forcing and
+  Jacobian expectations use independently written explicit equations.
+- Normalized error includes every algebraic variable. Its error component is
+  the step change, matching the reference's DAE fix; algebraic variables are
+  never hidden by the public post-solve clamp.
+- The benchmark uses independent groups with static scheduling by default.
+  `OMP_SCHEDULE` can select a different OpenMP runtime schedule, and
+  `OMP_NUM_THREADS` or `--threads` controls the thread limit. Positive group
+  sizes are configurable at build time or runtime; partial groups are unpadded.

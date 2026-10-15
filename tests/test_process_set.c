@@ -2,6 +2,7 @@
 #include "internal.h"
 #include "chem_verify.h"
 #include <float.h>
+#include "random.h"
 
 static void independent(const ck_mechanism *d, const ck_state *s, double *f, double *j)
 {
@@ -238,9 +239,9 @@ static int random_system(size_t cells, size_t nr, size_t n)
   CHECK(ck_model_create_with_order(&d, 0, &m) == CK_OK);
   CHECK(ck_state_create(m, cells, &s) == CK_OK);
   for (size_t i = 0; i < n * cells; ++i)
-    s->y[i] = exp(-2 + 4 * ((double)(random_value() % 10000) / 10000 - .5));
+    s->y[i] = test_lognormal(&random_state, -2, 4);
   for (size_t i = 0; i < nr * cells; ++i)
-    s->rates[i] = exp(-2 + 4 * ((double)(random_value() % 10000) / 10000 - .5));
+    s->rates[i] = test_lognormal(&random_state, -2, 4);
   double *f = malloc(n * cells * sizeof(double)), *ef = malloc(n * cells * sizeof(double)),
          *ej = calloc(n * n * cells, sizeof(double));
   CHECK(f && ef && ej);

@@ -1,6 +1,7 @@
 #include "test.h"
 #include "tutorials.h"
 #include <omp.h>
+#include "random.h"
 
 static int shared_solver(void)
 {
@@ -184,11 +185,12 @@ static int terminator(size_t cells, int combined)
   }
   else
   {
+    uint32_t seed = 739;
     double initial[8] = {0};
     for (size_t c = 0; c < cells; ++c)
     {
-      initial[c] = exp(-2 + 1.3 * c) * 1e-6;
-      initial[cells + c] = exp(-2 - .7 * c) * 1e-10;
+      initial[c] = test_lognormal(&seed, -2, 2) * 1e-6;
+      initial[cells + c] = test_lognormal(&seed, -2, 2) * 1e-10;
     }
     for (size_t step = 0; step < (size_t)floor(2 * CK_PI / .3); ++step)
     {
