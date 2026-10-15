@@ -3,8 +3,9 @@
 C11 chemistry integration with build-time YAML/JSON configuration reading,
 OpenMP across independent groups of cells, and SIMD across contiguous cells.
 
-The port is in progress. The full reference case gate currently reports pending
-cases as FAIL; see RESULTS.md for verified coverage and outstanding work.
+All 675 applicable reference cases pass with Clang and GCC; five cases concern
+C++ compile-time mechanics and have documented N/A reasons. See RESULTS.md for
+the TS1 accuracy checks and local timing observations.
 
 ## Build and test
 
@@ -27,6 +28,10 @@ uses Homebrew libomp; GCC and Linux Clang use `-fopenmp`.
 assembled in C or generated from configurations. Mechanisms borrow descriptor
 arrays, which must remain alive until the mechanism and its states are freed.
 A mechanism can be shared by independent states on different threads.
+`chem_builder.h` assembles gas species, external-model variables and parameters,
+and constraints before constructing a mechanism. Builder-produced descriptor
+tables are owned by the mechanism; callback contexts and equation arrays remain
+borrowed.
 
 `chem_system.h` provides owned species properties, phase metadata, and surface
 rate construction. `chem_jacobian.h` provides finite-difference and sparsity
@@ -39,8 +44,8 @@ matrices with the same view operations across blocks. Sparse numeric storage is
 a borrowed array of blocks by structural nonzeros, so callbacks can combine
 sparse elements, dense columns, and vectors through one interface.
 
-`make test-cpu` prints every supplied case ID and its status. A pending case is a
-failure, never an automatic pass. Supplemental checks verify configuration
+`make test-cpu` prints every supplied case ID and its status, including explicit
+reasons for five N/A cases. Supplemental checks verify configuration
 reading, configuration-versus-code equivalence, and a stiff TS1 regression.
 
 ## Benchmark

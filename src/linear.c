@@ -185,6 +185,20 @@ ChemStatus chem_set_linear_solver(ChemState *s, ChemLinearSolver linear)
     return CHEM_OK;
 }
 
+void chem_matrix_vector_product(const ChemMechanism *m, size_t nc,
+    const double *matrix, const double *vector, double *output)
+{
+    for (size_t row = 0; row < m->data->species_count; ++row) {
+        for (size_t cell = 0; cell < nc; ++cell) output[row * nc + cell] = 0;
+        for (size_t k = m->row_start[row]; k < m->row_start[row + 1]; ++k) {
+            size_t column = m->entries[k].column;
+            #pragma omp simd
+            for (size_t cell = 0; cell < nc; ++cell)
+                output[row * nc + cell] += matrix[k * nc + cell] * vector[column * nc + cell];
+        }
+    }
+}
+
 void chem_alpha_minus_jacobian(const ChemMechanism *m, size_t nc, double *matrix, double alpha)
 {
     for (size_t i = 0; i < m->data->species_count; ++i) if (!m->algebraic[i]) {

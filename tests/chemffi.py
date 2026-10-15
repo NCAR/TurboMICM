@@ -41,7 +41,7 @@ class MatrixIndex(C.Structure):
 
 class ExternalModel(C.Structure):
     _fields_ = [('nonzero_count', Z), ('nonzeros', C.POINTER(MatrixIndex)),
-                ('forcing', P), ('negative_jacobian', P), ('update', P), ('context', P)]
+                ('forcing', P), ('negative_jacobian', P), ('update', P), ('context', P), ('finalize', P)]
 
 
 class Data(C.Structure):
@@ -50,7 +50,8 @@ class Data(C.Structure):
                 ('initial_concentrations', DP), ('initial_parameters', DP), ('absolute_tolerances', DP),
                 ('temperature', D), ('pressure', D), ('reactions', C.POINTER(Reaction)),
                 ('constraint_count', Z), ('constraints', C.POINTER(Constraint)),
-                ('external_model_count', Z), ('external_models', C.POINTER(ExternalModel))]
+                ('external_model_count', Z), ('external_models', C.POINTER(ExternalModel)),
+                ('maximum_cells', Z), ('phase_name', C.c_char_p)]
 
 
 class Stats(C.Structure):
@@ -120,7 +121,7 @@ bind('chem_set_linear_solver', I, P, Linear)
 
 class Mechanism:
     """Own all borrowed descriptor arrays for the lifetime of the C mechanism."""
-    def __init__(self, names, reactions=(), constraints=(), parameters=(), cells=1, expected_status=0, atols=None):
+    def __init__(self, names, reactions=(), constraints=(), parameters=(), cells=1, expected_status=0, atols=None, create=True):
         self.keep = []
         self.n, self.nc = len(names), cells
         def array(typ, values):
@@ -145,6 +146,8 @@ class Mechanism:
             absolute_tolerances=array(D,atols) if atols is not None else None,
             constraint_count=len(cs), constraints=array(Constraint, cs))
         self.handle, self.state = P(), P()
+        if not create:
+            return
         status = lib.chem_mechanism_create(C.byref(self.data), C.byref(self.handle))
         assert status == expected_status, (status, expected_status)
         if status:

@@ -24,9 +24,17 @@ committed configuration.
 - `rates.c`: the reference rate formulas and default parameter values.
 - `mechanism.c`: descriptor validation, sparsity and fill construction, and
   elimination/derivative operation plans.
+- `builder.c` / `chem_builder.h`: merged state registration and reusable mechanism
+  construction. External definitions declare variables, parameters, constraints,
+  and used gas species; their configure callbacks resolve indices after merging.
+  Finalize callbacks receive the completed mechanism and can cache sparse indices.
+  Each successful build owns independent merged descriptor tables. Maximum cell
+  counts and gas-phase names are explicit runtime metadata.
 - `process.c`: mass-action forcing and analytic negative Jacobian. Repeated
   reactants retain their multiplicity and multiplication order. Algebraic rows
-  omit built-in chemical forcing; external model Jacobian contributions remain.
+  omit built-in chemical forcing. External process contributions to algebraic
+  forcing rows and their declared Jacobian entries are cleared before constraint
+  terms are applied; structural entries remain available to the sparse plan.
 - `linear.c`: in-place Mozart elimination and Doolittle factorization with the
   reference operation ordering, and forward/back substitution without pivoting.
   Separate L/U outputs preserve the input and overwrite all fill entries,
@@ -140,5 +148,8 @@ and a generated-versus-code mechanism check. A C function/context rate supports
 custom calculations without adding an enum value.
 
 External models provide declared Jacobian entries and callbacks for parameter
-updates, forcing, and negative Jacobian accumulation. Callback constraints
+updates, forcing, negative Jacobian accumulation, and finalization. The builder
+registers all model names before calling configure, constructs the sparse plan,
+and then calls finalize once per model. Reusing a builder creates a new mechanism;
+model contexts must keep the callback data for each live mechanism available. Callback constraints
 provide a residual and optional dense gradient with declared dependencies.

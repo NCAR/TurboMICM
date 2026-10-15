@@ -33,8 +33,8 @@
 - Post-solve nonnegativity is part of the public solver behavior. A retained TS1
   regression cell detects omission of this wrapper operation; checking convergence
   status and the usual 100-cell fixture alone did not detect that omission.
-- Pending case ports are printed as FAIL. N/A will be used only for a documented
-  case with no meaningful C counterpart. Current results are explicitly partial.
+- Missing case ports are reported as FAIL. All applicable cases are now ported;
+  N/A is reserved for five documented cases with no meaningful C counterpart.
 
 - Matrix template policies become runtime C element types and group lengths.
   CSR/CSC sparse matrices expose a blocks-by-nonzeros array, sharing callback and
@@ -81,3 +81,34 @@
   The tests run all original output times, including 999 one-second chain
   solves, the long Robertson/E5 intervals, and 18,000 backward Euler substeps per
   Oregonator output. Test execution never loads the reference implementation.
+
+- External model configuration is a two-phase C interface: declare state names,
+  then resolve indices against the merged descriptor. A finalization callback
+  runs after sparse construction. Builder-owned merged tables make repeated
+  builds independent, while borrowed model contexts and equations retain explicit
+  caller-managed lifetimes. The C descriptor preserves the supplied state order;
+  generic Markowitz ordering is separately available at build time and at runtime.
+- Algebraic filtering applies after external processes and before constraints.
+  External Jacobian coordinates remain in the structure even when their numeric
+  process contributions are cleared. Finite-difference, composition, and ordering
+  cases exercise this distinction.
+- The aerosol invocation fixture records every original method, LU, group, and
+  bound. Initial vectors and temperature-dependent parameters are copied from
+  the source helpers. The flow-tube CSV fixtures come from the source regression
+  expected_results directory, including all 3,601 rows.
+- The legacy Chapman regression oracle is ported independently in test-only
+  Python, with closed-form derivatives, dense Gaussian elimination, and the
+  original three-stage controller, start step, and tolerances. Production C has
+  no Chapman-specific numerical kernels. Random inputs retain the source's
+  extra concentration fill and padded vector storage consumption.
+- The six remaining tutorial programs are C programs using the public library.
+  Their output is compared with retained output of the supplied executables.
+  Only measured wall-clock durations and unsynchronized thread startup messages
+  are excluded from exact text comparison; concentrations and solver statistics
+  match the printed reference results. The shared-solver case separately requires
+  bit-identical results from eight concurrent states.
+- The vectorized tutorial's source Solve loop initially tests a false condition.
+  Its C port preserves the resulting parameter updates and unchanged state,
+  while substantive vectorized integrations are checked in the other case ports.
+  Integer labels encode its sparse string values so both storage orderings use
+  the existing typed C sparse API and print the same labels.

@@ -65,6 +65,7 @@ typedef struct {
     ChemModelFunction forcing, negative_jacobian;
     void (*update)(ChemState *, void *context);
     void *context;
+    void (*finalize)(const ChemMechanism *, void *context);
 } ChemExternalModel;
 typedef struct {
     size_t species_count, reaction_count, parameter_count;
@@ -77,6 +78,8 @@ typedef struct {
     const ChemConstraint *constraints;
     size_t external_model_count;
     const ChemExternalModel *external_models;
+    size_t maximum_cells; /* zero means no configured limit */
+    const char *phase_name; /* optional gas-phase metadata */
 } ChemMechanismData;
 typedef enum { CHEM_OK, CHEM_INVALID, CHEM_MEMORY, CHEM_MAX_STEPS,
                CHEM_SMALL_STEP, CHEM_NONFINITE, CHEM_SINGULAR, CHEM_UNCONVERGED, CHEM_INITIALIZATION_FAILED,
@@ -136,9 +139,15 @@ unsigned chem_version_minor(void);
 unsigned chem_version_patch(void);
 unsigned chem_version_tweak(void);
 const ChemMechanismData *chem_mechanism_data(const ChemMechanism *);
+size_t chem_maximum_cells(const ChemMechanism *);
+const char *chem_mechanism_phase_name(const ChemMechanism *);
 int chem_is_algebraic(const ChemMechanism *, size_t species);
 int chem_constraint_nonzero(const ChemMechanism *, size_t row, size_t column);
 size_t chem_jacobian_size(const ChemMechanism *);
+/* Multiply a supplied sparse matrix in the mechanism's layout by a
+   species-major vector. Input and output buffers must not overlap. */
+void chem_matrix_vector_product(const ChemMechanism *, size_t cells,
+    const double *matrix, const double *vector, double *output);
 ChemStatus chem_state_create(const ChemMechanism *, size_t cells, ChemState **);
 /* NULL mechanism and zero cells create an empty, assignable state. Copies own
    independent arrays but share the borrowed immutable mechanism descriptor. */

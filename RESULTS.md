@@ -1,57 +1,61 @@
-# Verification in progress
+# Verification results
 
 Flags: `-O3 -DNDEBUG`, C11, OpenMP; no architecture or floating-point tuning.
+Verified on the supplied Apple M5 system with Apple Clang 21 and GCC 15.2.
 
 | Check | Clang | GCC 15 |
 |---|---:|---:|
-| Ported reference cases | 593 PASS | 593 PASS |
-| Cases still awaiting ports | 82 | 82 |
+| Applicable reference cases | 675 PASS | 675 PASS |
+| Failures | 0 | 0 |
 | C++ compile-time-only cases | 5 N/A | 5 N/A |
 | TS1, 100 cells, seed 1, 100 steps, 30 s | PASS | PASS |
 | TS1, 10,000 cells, seed 2026, 100 steps, 30 s | PASS | PASS |
 | Largest relative difference in the 10,000-cell gate | 2.03e-13 | 2.14e-13 |
 
-The full 680-case gate is **not complete**. All pending cases report FAIL and
-make test-cpu exits nonzero. Current passes cover rate constants, linear and
-equilibrium constraints, constraint sets, Rosenbrock unit quantities, constraint
-initialization, backward Euler basics, callback replacement, two tutorials, all
-117 dense/vector-matrix cases, all 190 sparse-matrix cases, the 21 runtime grouped
-view cases, and runtime vector-view use. Five compile-time-only cases have
-individual N/A reasons in tests/not_applicable.json.
+Both `make test-cpu CC=clang` and `make test-cpu CC=gcc-15` exit successfully.
+Each prints all 680 supplied case IDs exactly once. The five N/A cases contain
+only C++ template/concept assertions; individual reasons are retained in
+`tests/not_applicable.json`. All numerical and runtime behavior cases are ported.
+The full builds produce no compiler warnings.
 
-Coverage also includes all 52 LU/linear-solver cases, 22 state cases, 14
-species/phase/system cases, five version cases, 11 reaction-rate-store cases,
-four process cases, five process-set cases, and seven Jacobian-verification
-cases. LU reconstruction and solve residuals retain the original absolute or
-four-ULP bounds. Both compilers pass the condition-parameterization configuration
-equivalence check. Every outstanding FAIL is explicitly a pending case port.
+Coverage includes the rate formulas, constraints and initialization, all five
+Rosenbrock methods, backward Euler, analytical and conservation DAE mechanisms,
+all dense/sparse/grouped views, both LU algorithms and separate factors, state
+ownership and named updates, system metadata, parameterized species, diagnostics,
+solver construction, aerosol/external models, Chapman and flow-tube regressions,
+and OpenMP shared-mechanism execution. The tests retain the source quantities,
+inputs, output times, and tolerance bounds. Independent test-only Python provides
+the legacy Chapman comparison; no test execution loads MICM or MUSICA.
 
-All 32 analytical integration cases now pass: the six rate-dependent chains and
-their fast-equilibrium variants, surface reactions, Robertson, HIRES, E5, and
-Oregonator. Method, LU, grouping, time intervals, reference concentrations, and
-tolerances are retained in the test fixtures. Both Terminator cases and all 12
-equilibrium/conservation DAE integration cases pass, including algebraic
-tolerance sensitivity, nonnegativity, coupled constraints, non-unit
-stoichiometry, state reordering, and the combined chlorine/Robertson mechanism.
+All eight plain-program tutorials run through C library code and match retained
+reference concentration tables and solver statistics. Comparisons exclude only
+measured timing values and the unsynchronized OpenMP thread startup messages.
+The eight-thread unit case requires bit-identical results across independent
+states sharing one mechanism.
 
-Both rate tutorial programs print exactly the retained reference output.
 Generated YAML/JSON mechanisms match independently assembled mechanisms through
-ten integration steps. Robertson configuration equivalence and deterministic TS1
-translation are also checked. The TS1 gate uses every temperature, pressure, and
-species value with `atol=1e-30`, `rtol=1e-10`.
+ten integration steps. The checks cover every supplied configuration example,
+condition-dependent species, Robertson, and deterministic TS1 translation.
+The TS1 gate compares all 2,110,000 temperature, pressure, and species values in
+the 10,000-cell result with `atol=1e-30`, `rtol=1e-10`. Both final compiler runs
+pass `../reference/compare_final.py` against the same retained MICM result.
 
-## Preliminary timing
+## Local timing
 
 Input: 10,000 cells, seed 2026, 100 timed steps of 30 s after one warm-up.
 These are individual local observations, not the experimenter's median-of-five
-ranking measurements. Reference and C programs were built with the same OPTFLAGS.
+ranking measurements. Reference and C programs use the same OPTFLAGS.
 
 | Program | Threads/groups | elapsed_ms |
 |---|---|---:|
-| C, Clang | OpenMP default, groups of 32 | 8,167.059 |
-| C, GCC 15 | OpenMP default, groups of 32 | 9,699.149 |
+| C, Clang | OpenMP default (10 threads), groups of 32 | 8,083.676 |
+| C, GCC 15 | OpenMP default (10 threads), groups of 32 | 9,634.764 |
 | MICM reference, Clang++ | 10 threads/groups | 27,409.392 |
 | MICM supplied baseline, Clang++ | 1 thread | 137,383 |
+
+The final Clang observation is approximately 3.39 times faster than the local
+10-thread MICM reference. The one-thread MICM baseline is the supplied median,
+not a new local measurement.
 
 Reference statistics for 10 groups: 9,000 internal steps, all accepted, 18,000
 function calls, 9,000 Jacobian updates/decompositions, 27,000 solves. C statistics
@@ -59,10 +63,7 @@ for 313 groups: 281,700 internal steps, all accepted, 563,400 function calls,
 281,700 Jacobian updates/decompositions, 845,100 solves. Both use nine accepted
 internal steps per group per public solve. Statistics exclude the warm-up.
 
-## Remaining work
-
-Port the remaining Chapman, regression, aerosol/external-model,
-integrated reaction-rate, solver-builder, OpenMP, and tutorial cases; address
-any missing API behavior they identify. Then run the complete suite under both
-compilers, finish portability review, repeat representative benchmark gates, and
-replace this partial report with the completed evidence.
+The source review found only ISO C11, standard library/libm calls, and CPU OpenMP
+in production C. No intrinsics, target attributes, relaxed floating-point flags,
+architecture tuning, third-party numerical libraries, or Python runtime links
+are used. Linux/x86-64 execution has not been measured in this environment.

@@ -11,7 +11,7 @@ ChemStatus chem_state_create(const ChemMechanism *m, size_t cells, ChemState **o
         *out = calloc(1, sizeof(ChemState));
         return *out ? CHEM_OK : CHEM_MEMORY;
     }
-    if (!m || !cells) return CHEM_INVALID;
+    if (!m || !cells || cells > chem_maximum_cells(m)) return CHEM_INVALID;
     const ChemMechanismData *d = m->data;
     size_t n = d->species_count;
     if (cells > SIZE_MAX / sizeof(double) / (n + m->nnz + d->reaction_count + d->parameter_count + 8)) return CHEM_INVALID;

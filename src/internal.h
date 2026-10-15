@@ -18,6 +18,8 @@ struct ChemMechanism {
     size_t derivative_count;
     ChemDerivative *derivatives;
     unsigned char *algebraic, *constraint_pattern;
+    void *owned_descriptor;
+    void (*free_descriptor)(void *);
 };
 struct ChemState {
     const ChemMechanism *mechanism;

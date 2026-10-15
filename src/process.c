@@ -39,6 +39,10 @@ void chem_add_forcing(const ChemState *s, const double *y, double *f)
     for (size_t i = 0; i < d->external_model_count; ++i)
         if (d->external_models[i].forcing)
             d->external_models[i].forcing((ChemState *)s, y, f, d->external_models[i].context);
+    int external_processes = 0;
+    for (size_t i = 0; i < d->external_model_count; ++i) external_processes |= d->external_models[i].forcing != NULL;
+    if (external_processes) for (size_t row = 0; row < d->species_count; ++row)
+        if (s->mechanism->algebraic[row]) memset(f + row * nc, 0, nc * sizeof(double));
 }
 void chem_negative_jacobian(const ChemState *s, const double *y, double *jacobian)
 {
@@ -82,6 +86,16 @@ void chem_subtract_jacobian(const ChemState *s, const double *y, double *jacobia
     for (size_t i = 0; i < m->data->external_model_count; ++i) {
         const ChemExternalModel *model = &m->data->external_models[i];
         if (model->negative_jacobian) model->negative_jacobian((ChemState *)s, y, jacobian, model->context);
+    }
+    /* Keep the declared process pattern, including entries outside constraint
+       dependencies, but clear external process values in algebraic rows. */
+    for (size_t i = 0; i < m->data->external_model_count; ++i) {
+        const ChemExternalModel *model = &m->data->external_models[i];
+        if (!model->negative_jacobian) continue;
+        for (size_t j = 0; j < model->nonzero_count; ++j) {
+            ChemMatrixIndex ij = model->nonzeros[j];
+            if (m->algebraic[ij.row]) memset(jacobian + m->index[ij.row * n + ij.column] * nc, 0, nc * sizeof(double));
+        }
     }
 }
 

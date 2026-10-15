@@ -13,6 +13,11 @@ static int valid_data(const ChemMechanismData *d)
         for (size_t j = 0; j < i; ++j)
             if (!strcmp(d->species_names[i], d->species_names[j])) return 0;
     }
+    for (size_t i = 0; i < d->parameter_count; ++i) {
+        if (!d->parameter_names[i]) return 0;
+        for (size_t j = 0; j < i; ++j)
+            if (!strcmp(d->parameter_names[i], d->parameter_names[j])) return 0;
+    }
     for (size_t i = 0; i < d->reaction_count; ++i) {
         const ChemReaction *r = &d->reactions[i];
         if ((r->reactant_count && !r->reactants) || (r->product_count && !r->products)) return 0;
@@ -154,6 +159,8 @@ ChemStatus chem_mechanism_create(const ChemMechanismData *d, ChemMechanism **out
         }
     free(pattern);
     *out = m;
+    for (size_t i = 0; i < d->external_model_count; ++i)
+        if (d->external_models[i].finalize) d->external_models[i].finalize(m, d->external_models[i].context);
     return CHEM_OK;
 memory_error:
     free(pattern);
@@ -166,9 +173,13 @@ void chem_mechanism_free(ChemMechanism *m)
     if (!m) return;
     free(m->index); free(m->row_start); free(m->entries); free(m->diagonal);
     free(m->lower_start); free(m->lower); free(m->operation_start);
-    free(m->rate_specs); free(m->operations); free(m->derivatives); free(m->algebraic); free(m->constraint_pattern); free(m);
+    free(m->rate_specs); free(m->operations); free(m->derivatives); free(m->algebraic); free(m->constraint_pattern);
+    if (m->free_descriptor) m->free_descriptor(m->owned_descriptor);
+    free(m);
 }
 const ChemMechanismData *chem_mechanism_data(const ChemMechanism *m) { return m->data; }
+size_t chem_maximum_cells(const ChemMechanism *m) { return m->data->maximum_cells ? m->data->maximum_cells : SIZE_MAX; }
+const char *chem_mechanism_phase_name(const ChemMechanism *m) { return m->data->phase_name ? m->data->phase_name : "gas"; }
 size_t chem_jacobian_size(const ChemMechanism *m) { return m->nnz; }
 size_t chem_jacobian_index(const ChemMechanism *m, size_t r, size_t c)
 {

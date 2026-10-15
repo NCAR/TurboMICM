@@ -40,8 +40,8 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mecha
 clean:
 	@for d in build bin; do if [ -d "$$d" ]; then rm -r "$$d"; fi; done
 
-LIBSRC = src/mechanism.c src/state.c src/rates.c src/process.c src/linear.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/array.c src/sparse.c src/system.c src/jacobian.c
-LIBHEADERS = include/chem.h include/chem_array.h include/chem_sparse.h include/chem_system.h include/chem_jacobian.h src/internal.h
+LIBSRC = src/mechanism.c src/state.c src/rates.c src/process.c src/linear.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/array.c src/sparse.c src/system.c src/jacobian.c src/builder.c
+LIBHEADERS = include/chem.h include/chem_array.h include/chem_sparse.h include/chem_system.h include/chem_jacobian.h include/chem_builder.h src/internal.h
 build/ts1.c: configs/ts1.json tools/configure.py .conda/.ready
 	@mkdir -p build
 	$(PYTHON) tools/configure.py $< $@ --symbol ts1_data
@@ -85,3 +85,8 @@ bin/rate_tutorial: build/compiler-flags $(LIBSRC) src/tutorial.c $(LIBHEADERS)
 	@mkdir -p bin
 	$(CC) $(CFLAGS) $(LIBSRC) src/tutorial.c -o $@ $(LDLIBS)
 test-cpu: bin/rate_tutorial
+
+bin/cpu_tutorials: build/compiler-flags $(LIBSRC) src/programs.c $(LIBHEADERS)
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $(LIBSRC) src/programs.c -o $@ $(LDLIBS)
+test-cpu: bin/cpu_tutorials
