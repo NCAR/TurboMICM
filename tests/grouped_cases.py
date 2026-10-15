@@ -20,7 +20,8 @@ def type_categories(_):
 
 @case('view_category_sfinae:ViewCategorySFINAE.RuntimeVectorUse')
 def runtime_vector(_):
-    equal(reduce([Vector([1,2,3,4,5]).view(True)],lambda acc,v:acc+v),15)
+    vector = Vector([1,2,3,4,5])
+    equal(reduce([vector.view(True)],lambda acc,v:acc+v),15)
 
 
 @case('grouped_views:GroupedView.MatrixColumnViewRoundTrip','grouped_views:GroupedView.VectorMatrixColumnViewContiguousBlock')

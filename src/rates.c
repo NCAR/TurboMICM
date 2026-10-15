@@ -46,11 +46,11 @@ double chem_rate_value(const ChemRate *r, const ChemConditions *c, const double 
       return k;
     }
     case CHEM_BRANCHED: {
-      double k0 = 2.0e-22 * 6.02214076e23 * 1.0e-6 * exp(r->n);
+      double k0 = r->k0 != 0.0 ? r->k0 : 2.0e-22 * 6.02214076e23 * 1.0e-6 * exp(r->n);
       double a_ref = k0 * (2.45e19 / 6.02214076e23 * 1.0e6);
       double b_ref = 0.43 * pow(293.0 / 298.0, -8.0);
       double v_ref = a_ref / (1.0 + a_ref / b_ref) * pow(0.41, 1.0 / (1.0 + pow(log10(a_ref / b_ref), 2.0)));
-      double z = v_ref * (1.0 - r->a0) / r->a0;
+      double z = r->k0 != 0.0 ? r->z : v_ref * (1.0 - r->a0) / r->a0;
       double a = k0 * density, b = 0.43 * pow(t / 298.0, -8.0);
       double v = a / (1.0 + a / b) * pow(0.41, 1.0 / (1.0 + pow(log10(a / b), 2.0)));
       double pre = r->X * exp(-r->Y / t);
@@ -70,7 +70,7 @@ double chem_rate_value(const ChemRate *r, const ChemConditions *c, const double 
       return u[r->custom_index] * r->A; /* A stores the scaling factor */
     case CHEM_SURFACE: {
       double radius = u[r->custom_index], number = u[r->custom_index + 1];
-      double speed_factor = 8.0 * CHEM_GAS_CONSTANT / (CHEM_PI * r->molecular_weight);
+      double speed_factor = r->mean_free_speed_factor != 0.0 ? r->mean_free_speed_factor : 8.0 * CHEM_GAS_CONSTANT / (CHEM_PI * r->molecular_weight);
       double speed = sqrt(speed_factor * t);
       return 4.0 * number * CHEM_PI * radius * radius / (radius / r->diffusion + 4.0 / (speed * r->probability));
     }

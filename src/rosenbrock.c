@@ -25,12 +25,15 @@ double chem_normalized_error(const ChemState *s, const double *y, const double *
   double error = sqrt(total/(s->cells*s->model->nvariables));
   return error < 1e-10 ? 1e-10 : error;
 }
-static void factor_shift(ChemSolver *solver, ChemState *s, double alpha, ChemStats *stats) {
+void chem_alpha_minus_jacobian(ChemState *s, double alpha) {
   for (size_t i = 0; i < s->model->nvariables; ++i) if (!s->model->algebraic[i]) {
     double *d = s->jacobian+s->model->diagonal[i]*s->stride;
     #pragma omp simd
     for (size_t c = 0; c < s->cells; ++c) d[c] += alpha;
   }
+}
+static void factor_shift(ChemSolver *solver, ChemState *s, double alpha, ChemStats *stats) {
+  chem_alpha_minus_jacobian(s,alpha);
   solver->factor(s->model, s->cells, s->stride, s->jacobian); ++stats->decompositions;
 }
 static ChemStatus finite_algebraic(const ChemState *s, const double *v, double *maximum) {

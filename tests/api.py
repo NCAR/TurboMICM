@@ -22,7 +22,7 @@ class Rate(C.Structure):
     _fields_ = [('type', I)] + [(name, D) for name in (
         'A B C D E k0_A k0_B k0_C k0_D kinf_A kinf_B kinf_C kinf_D kint_A kint_B kint_C kint_D Fc N X Y a0 n k0 z'.split())] + [
         ('branch', I), ('diffusion', D), ('molecular_weight', D), ('probability', D), ('coefficients', D*10),
-        ('ncoefficients', Z), ('label', C.c_char_p), ('custom_index', Z), ('function', P), ('context', P)]
+        ('ncoefficients', Z), ('label', C.c_char_p), ('custom_index', Z), ('function', P), ('context', P),('mean_free_speed_factor',D)]
 
 
 class Species(C.Structure):
@@ -36,7 +36,8 @@ class Reaction(C.Structure):
 
 class Constraint(C.Structure):
     _fields_ = [('type',I), ('algebraic',Z), ('nterms',Z), ('nreactants',Z), ('species',ZP), ('coefficients',DP),
-                ('constant',D), ('residual',P), ('jacobian',P), ('context',P)]
+                ('constant',D), ('residual',P), ('jacobian',P), ('context',P),('name',C.c_char_p),
+                ('delta_enthalpy',D),('reference_temperature',D),('custom_index',Z)]
 
 
 class Range(C.Structure):
@@ -59,7 +60,7 @@ class ModelData(C.Structure):
         (name,C.POINTER(Range)) for name in ('lower','upper','scale','updates')] + [
         (name,ZP) for name in ('lower_ids','upper_ids','scale_ids','lower_columns','upper_columns')] + [
         ('update_ops',C.POINTER(Triple)), ('njobs',Z), ('jobs',C.POINTER(JacJob))] + [
-        (name,P) for name in ('force_kernel','jacobian_kernel','external_force','external_jacobian','external_context')] + [('finalized',I)]
+        (name,P) for name in ('force_kernel','jacobian_kernel','external_force','external_jacobian','external_context')] + [('finalized',I),('declared_sparsity',C.POINTER(C.c_ubyte)),('ignore_unused',I),('setup',P),('setup_context',P)]
 
 
 class StateData(C.Structure):
@@ -101,9 +102,13 @@ bind('chem_model_free',None,MP)
 bind('chem_model_species',I,MP,C.c_char_p,D,I,ZP)
 bind('chem_model_reaction',I,MP,ZP,Z,ZP,DP,Z,Rate)
 bind('chem_model_constraint',I,MP,C.POINTER(Constraint))
+bind('chem_constraint_sparsity',I,MP,C.POINTER(C.c_ubyte),Z)
 bind('chem_model_reorder',I,MP)
 bind('chem_model_finalize',I,MP)
+bind('chem_model_sparsity',I,MP,C.POINTER(C.c_ubyte),Z)
 bind('chem_model_lambda',C.POINTER(Rate),MP,C.c_char_p)
+bind('chem_rate_offset',Z,MP,I)
+bind('chem_status_string',C.c_char_p,I)
 for _name in ('chem_species_id','chem_variable_id','chem_custom_id'):
     bind(_name,Z,MP,C.c_char_p)
 bind('chem_state_create',SP,MP,Z)
@@ -122,10 +127,13 @@ for _name in ('chem_generic_forcing','chem_generic_jacobian'):
 for _name in ('chem_lu_mozart','chem_lu_doolittle'):
     bind(_name,None,MP,Z,Z,DP)
 bind('chem_linear_solve',None,MP,Z,Z,DP,DP)
+bind('chem_lu_separate',I,MP,Z,Z,DP,DP,DP,I)
+bind('chem_linear_solve_separate',None,MP,Z,Z,DP,DP,DP)
 bind('chem_solver',Solver,I)
 bind('chem_solve',I,C.POINTER(Solver),D,SP,C.POINTER(Stats))
 bind('chem_initialize_constraints',I,C.POINTER(Solver),SP,C.POINTER(Stats))
 bind('chem_normalized_error',D,SP,DP,DP,DP)
+bind('chem_alpha_minus_jacobian',None,SP,D)
 bind('chem_markowitz',I,Z,C.POINTER(C.c_ubyte),ZP)
 bind('chem_euler_parameters',Euler)
 bind('chem_euler_converged',I,SP,D,DP,DP)
@@ -190,11 +198,13 @@ class Model:
         code = lib.chem_model_reaction(self.p,inds(rs),len(rs),inds(ps),arr([v for _,v in products]),len(ps),r)
         assert code == 0, code
 
-    def constraint(self,algebraic,terms,constant=1.0,equilibrium_reactants=None):
+    def constraint(self,algebraic,terms,constant=1.0,equilibrium_reactants=None,name=None,delta_enthalpy=0.0,reference_temperature=298.15):
         algebraic = self.var(algebraic) if isinstance(algebraic,str) else algebraic
         species = inds([self.var(s) if isinstance(s,str) else s for s,_ in terms])
         coeffs = arr([v for _,v in terms])
         q = Constraint(int(equilibrium_reactants is not None),algebraic,len(terms),equilibrium_reactants or 0,species,coeffs,constant,None,None,None)
+        q.name = name.encode() if name else None
+        q.delta_enthalpy = delta_enthalpy; q.reference_temperature = reference_temperature
         assert lib.chem_model_constraint(self.p,C.byref(q)) == 0
 
     def var(self,name):

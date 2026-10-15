@@ -12,6 +12,11 @@ import system_cases
 import matrix_cases
 import sparse_cases
 import grouped_cases
+import linear_cases
+import verify_cases
+import constraint_cases
+import process_cases
+import solver_cases
 
 
 def main():

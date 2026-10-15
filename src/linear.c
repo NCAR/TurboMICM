@@ -72,3 +72,36 @@ void chem_linear_solve(const ChemModel *m, size_t nc, size_t s, const double *a,
     for (size_t c = 0; c < nc; ++c) xi[c] /= diagonal[c];
   }
 }
+ChemStatus chem_lu_separate(const ChemModel *m, size_t nc, size_t s, const double *a, double *lower, double *upper, int doolittle) {
+  if (!m || !a || !lower || !upper || nc > s || m->nnz > SIZE_MAX/s/sizeof(double)) return CHEM_INVALID;
+  size_t n = m->nvariables;
+  double *work = calloc(m->nnz*s,sizeof(double)); if (!work) return CHEM_MEMORY;
+  for (size_t i = 0; i < n; ++i) for (size_t j = 0; j < n; ++j) {
+    int at = m->index[i*n+j];
+    if (at < 0 || (m->declared_sparsity && !m->declared_sparsity[i*n+j])) continue;
+    for (size_t c = 0; c < nc; ++c) work[(size_t)at*s+c] = a[(size_t)at*s+c];
+  }
+  if (doolittle) chem_lu_doolittle(m,nc,s,work); else chem_lu_mozart(m,nc,s,work);
+  memset(lower,0,m->nnz*s*sizeof(double)); memset(upper,0,m->nnz*s*sizeof(double));
+  for (size_t i = 0; i < n; ++i) for (size_t j = 0; j < n; ++j) {
+    int at = m->index[i*n+j]; if (at < 0) continue;
+    for (size_t c = 0; c < nc; ++c) {
+      if (i >= j) lower[(size_t)at*s+c] = i == j ? 1.0 : work[(size_t)at*s+c];
+      if (i <= j) upper[(size_t)at*s+c] = work[(size_t)at*s+c];
+    }
+  }
+  free(work); return CHEM_OK;
+}
+void chem_linear_solve_separate(const ChemModel *m, size_t nc, size_t s, const double *lower, const double *upper, double *x) {
+  for (size_t i = 0; i < m->nvariables; ++i) {
+    ChemRange range = m->lower[i];
+    for (size_t j = range.first; j < range.first+range.count; ++j)
+      for (size_t c = 0; c < nc; ++c) x[i*s+c] -= lower[m->lower_ids[j]*s+c]*x[m->lower_columns[j]*s+c];
+  }
+  for (size_t i = m->nvariables; i-- > 0;) {
+    ChemRange range = m->upper[i];
+    for (size_t j = range.first; j < range.first+range.count; ++j)
+      for (size_t c = 0; c < nc; ++c) x[i*s+c] -= upper[m->upper_ids[j]*s+c]*x[m->upper_columns[j]*s+c];
+    for (size_t c = 0; c < nc; ++c) x[i*s+c] /= upper[m->diagonal[i]*s+c];
+  }
+}

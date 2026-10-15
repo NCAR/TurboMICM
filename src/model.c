@@ -19,12 +19,12 @@ int chem_resize(void **p, size_t n, size_t size) {
 const char *chem_status_string(ChemStatus status) {
   static const char *names[] = { "Converged", "Invalid argument", "Allocation failed", "Unknown name",
     "Incorrect size", "Convergence exceeded maximum steps", "Step size too small", "NaN detected",
-    "Inf detected", "Constraint initialization failed", "Accepting unconverged integration" };
+    "Inf detected", "Constraint Initialization Failed", "Accepting unconverged integration" };
   return (unsigned)status < sizeof names / sizeof *names ? names[status] : "Unknown status";
 }
 ChemModel *chem_model_create(void) {
   ChemModel *m = calloc(1, sizeof *m);
-  if (m) { m->default_temperature = 300.0; m->default_pressure = 101325.0; }
+  if (m) { m->default_temperature = 300.0; m->default_pressure = 101325.0; m->ignore_unused = 1; }
   return m;
 }
 void chem_model_free(ChemModel *m) {
@@ -36,6 +36,7 @@ void chem_model_free(ChemModel *m) {
   }
   for (size_t i = 0; i < m->nconstraints; ++i) {
     free(m->constraints[i].species); free(m->constraints[i].coefficients);
+    free(m->constraints[i].name);
   }
   for (size_t i = 0; i < m->ncustom; ++i) free(m->custom_names[i]);
   free(m->species); free(m->reactions); free(m->constraints);
@@ -43,7 +44,7 @@ void chem_model_free(ChemModel *m) {
   free(m->index); free(m->diagonal); free(m->algebraic);
   free(m->lower); free(m->upper); free(m->lower_ids); free(m->upper_ids);
   free(m->lower_columns); free(m->upper_columns); free(m->scale); free(m->scale_ids);
-  free(m->updates); free(m->update_ops); free(m->jobs); free(m);
+  free(m->updates); free(m->update_ops); free(m->jobs); free(m->declared_sparsity); free(m);
 }
 size_t chem_species_id(const ChemModel *m, const char *name) {
   if (m && name) for (size_t i = 0; i < m->nspecies; ++i)
@@ -66,6 +67,11 @@ ChemRate *chem_model_lambda(ChemModel *m, const char *label) {
     if (r->type == CHEM_LAMBDA && r->label && !strcmp(r->label,label)) return r;
   }
   return NULL;
+}
+size_t chem_rate_offset(const ChemModel *m, ChemRateType type) {
+  size_t n = 0;
+  if (m) for (size_t i = 0; i < m->nreactions; ++i) n += m->reactions[i].rate.type < type;
+  return n;
 }
 ChemStatus chem_model_species(ChemModel *m, const char *name, double initial, int parameterized, size_t *id) {
   if (!m || !name || !*name || m->finalized || parameterized < 0 || parameterized > 2) return CHEM_INVALID;
@@ -111,14 +117,25 @@ ChemStatus chem_model_constraint(ChemModel *m, const ChemConstraint *c) {
   }
   for (size_t i = 0; i < m->nconstraints; ++i) if (c->algebraic == m->constraints[i].algebraic) return CHEM_INVALID;
   ChemConstraint d = *c;
+  d.name = chem_strdup(c->name); d.custom_index = SIZE_MAX;
   d.species = malloc(c->nterms * sizeof *d.species);
   d.coefficients = malloc(c->nterms * sizeof *d.coefficients);
-  if (!d.species || !d.coefficients || !chem_resize((void **)&m->constraints, m->nconstraints + 1, sizeof d)) {
-    free(d.species); free(d.coefficients); return CHEM_MEMORY;
+  if (!d.species || !d.coefficients || (c->name && !d.name) || !chem_resize((void **)&m->constraints, m->nconstraints + 1, sizeof d)) {
+    free(d.species); free(d.coefficients); free(d.name); return CHEM_MEMORY;
   }
   memcpy(d.species, c->species, c->nterms * sizeof *d.species);
   memcpy(d.coefficients, c->coefficients, c->nterms * sizeof *d.coefficients);
   m->constraints[m->nconstraints++] = d;
+  return CHEM_OK;
+}
+ChemStatus chem_constraint_sparsity(const ChemModel *m, unsigned char *pattern, size_t n) {
+  if (!m || !pattern || n != m->nvariables || n > SIZE_MAX/n) return CHEM_INVALID;
+  memset(pattern,0,n*n);
+  for (size_t i = 0; i < m->nconstraints; ++i) {
+    const ChemConstraint *q = &m->constraints[i];
+    pattern[q->algebraic*n+q->algebraic] = 1;
+    for (size_t j = 0; j < q->nterms; ++j) pattern[q->algebraic*n+q->species[j]] = 1;
+  }
   return CHEM_OK;
 }
 static ChemStatus custom_parameter(ChemModel *m, const char *label, size_t *index) {
@@ -130,9 +147,30 @@ static ChemStatus custom_parameter(ChemModel *m, const char *label, size_t *inde
   *index = m->ncustom; m->custom_names[m->ncustom] = s; m->custom_defaults[m->ncustom++] = 0.0;
   return CHEM_OK;
 }
+ChemStatus chem_model_sparsity(ChemModel *m, const unsigned char *pattern, size_t n) {
+  if (!m || !pattern || m->finalized || n != m->nvariables || !n || n > SIZE_MAX/n) return CHEM_INVALID;
+  unsigned char *copy = malloc(n*n); if (!copy) return CHEM_MEMORY;
+  memcpy(copy,pattern,n*n); free(m->declared_sparsity); m->declared_sparsity = copy; return CHEM_OK;
+}
 
 ChemStatus chem_model_finalize(ChemModel *m) {
   if (!m || !m->nvariables || m->finalized) return CHEM_INVALID;
+  if (!m->ignore_unused && !m->external_force) {
+    for (size_t s = 0; s < m->nspecies; ++s) {
+      int used = 0;
+      for (size_t i = 0; i < m->nreactions; ++i) {
+        const ChemReaction *r = &m->reactions[i];
+        for (size_t j = 0; j < r->nreactants; ++j) used |= r->reactants[j] == s;
+        for (size_t j = 0; j < r->nproducts; ++j) used |= r->products[j] == s;
+      }
+      for (size_t i = 0; i < m->nconstraints; ++i) {
+        const ChemConstraint *q = &m->constraints[i];
+        for (size_t j = 0; j < q->nterms; ++j) used |= q->species[j] == m->species[s].variable;
+        used |= q->algebraic == m->species[s].variable;
+      }
+      if (!used) return CHEM_UNKNOWN;
+    }
+  }
   /* Insertion sort is stable and runs only when a mechanism is built. */
   for (size_t i = 1; i < m->nreactions; ++i) {
     ChemReaction r = m->reactions[i]; size_t j = i;
@@ -141,6 +179,13 @@ ChemStatus chem_model_finalize(ChemModel *m) {
   }
   for (size_t r = 0; r < m->nreactions; ++r) {
     ChemRate *p = &m->reactions[r].rate;
+    if (p->type == CHEM_BRANCHED) {
+      p->k0 = 2.0e-22 * 6.02214076e23 * 1.0e-6 * exp(p->n);
+      double a = p->k0*(2.45e19/6.02214076e23*1.0e6), b = 0.43*pow(293.0/298.0,-8.0);
+      double value = a/(1.0+a/b)*pow(0.41,1.0/(1.0+pow(log10(a/b),2.0)));
+      p->z = value*(1.0-p->a0)/p->a0;
+    }
+    if (p->type == CHEM_SURFACE) p->mean_free_speed_factor = 8.0*CHEM_GAS_CONSTANT/(CHEM_PI*p->molecular_weight);
     if (p->type == CHEM_USER || p->type == CHEM_SURFACE) {
       if (!p->label) return CHEM_INVALID;
       if (p->type == CHEM_USER) {
@@ -158,6 +203,13 @@ ChemStatus chem_model_finalize(ChemModel *m) {
       }
     }
   }
+  for (size_t i = 0; i < m->nconstraints; ++i) {
+    ChemConstraint *q = &m->constraints[i];
+    if (q->type == CHEM_EQUILIBRIUM && q->name) {
+      ChemStatus code = custom_parameter(m,q->name,&q->custom_index); if (code) return code;
+      m->custom_defaults[q->custom_index] = q->constant;
+    }
+  }
   const size_t n = m->nvariables;
   if (n > SIZE_MAX / n || n * n > SIZE_MAX / sizeof(int)) return CHEM_MEMORY;
   unsigned char *pattern = calloc(n*n, 1);
@@ -167,6 +219,7 @@ ChemStatus chem_model_finalize(ChemModel *m) {
   m->scale = calloc(n, sizeof(ChemRange)); m->updates = calloc(n, sizeof(ChemRange));
   if (!pattern || !m->algebraic || !m->variable_species || !m->index || !m->diagonal || !m->lower ||
       !m->upper || !m->scale || !m->updates) { free(pattern); return CHEM_MEMORY; }
+  if (m->declared_sparsity) memcpy(pattern,m->declared_sparsity,n*n);
   for (size_t i = 0; i < m->nspecies; ++i) if (!m->species[i].parameterized) m->variable_species[m->species[i].variable] = i;
   for (size_t i = 0; i < m->nconstraints; ++i) m->algebraic[m->constraints[i].algebraic] = 1;
   for (size_t i = 0; i < n; ++i) pattern[i*n+i] = 1;
@@ -193,7 +246,7 @@ ChemStatus chem_model_finalize(ChemModel *m) {
     for (size_t j = 0; j < q->nterms; ++j) pattern[q->algebraic*n+q->species[j]] = 1;
   }
   /* External kernels declare conservative dense structure, including algebraic rows. */
-  if (m->external_jacobian) memset(pattern, 1, n*n);
+  if (m->external_jacobian && !m->declared_sparsity) memset(pattern, 1, n*n);
   for (size_t i = 0; i < n; ++i) for (size_t k = i+1; k < n; ++k) if (pattern[i*n+k])
     for (size_t j = i+1; j < n; ++j) if (pattern[j*n+i]) pattern[j*n+k] = 1;
   for (size_t i = 0; i < n*n; ++i) m->index[i] = pattern[i] ? (int)m->nnz++ : -1;
@@ -234,5 +287,6 @@ ChemStatus chem_model_finalize(ChemModel *m) {
   free(pattern);
   m->force_kernel = chem_generic_forcing; m->jacobian_kernel = chem_generic_jacobian;
   m->finalized = 1;
+  if (m->setup) m->setup(m,m->setup_context);
   return CHEM_OK;
 }

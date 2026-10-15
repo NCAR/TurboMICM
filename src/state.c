@@ -97,6 +97,13 @@ void chem_calculate_rates(ChemState *s) {
       }
       s->rates[r*s->stride+c] = k;
     }
+    for (size_t i = 0; i < m->nconstraints; ++i) {
+      const ChemConstraint *q = &m->constraints[i];
+      if (q->type == CHEM_EQUILIBRIUM && q->custom_index != SIZE_MAX) {
+        double tref = q->reference_temperature == 0.0 ? 298.15 : q->reference_temperature;
+        s->custom[q->custom_index*s->stride+c] = q->constant*exp(q->delta_enthalpy/CHEM_GAS_CONSTANT*(1.0/s->conditions[c].temperature-1.0/tref));
+      }
+    }
   }
   free(u);
 }

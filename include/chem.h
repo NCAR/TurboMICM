@@ -38,6 +38,7 @@ typedef struct {
   size_t custom_index;
   ChemRateFunction function;
   void *context;
+  double mean_free_speed_factor;
 } ChemRate;
 ChemRate chem_rate(ChemRateType type);
 double chem_rate_value(const ChemRate *rate, const ChemConditions *conditions, const double *custom);
@@ -72,6 +73,9 @@ typedef struct {
   ChemConstraintFunction residual;
   ChemConstraintJacobian jacobian;
   void *context;
+  char *name;
+  double delta_enthalpy, reference_temperature;
+  size_t custom_index;
 } ChemConstraint;
 
 typedef struct { size_t first, count; } ChemRange;
@@ -103,6 +107,10 @@ struct ChemModel {
   ChemExternalKernel external_force, external_jacobian;
   void *external_context;
   int finalized;
+  unsigned char *declared_sparsity;
+  int ignore_unused;
+  void (*setup)(const ChemModel *model, void *context);
+  void *setup_context;
 };
 ChemModel *chem_model_create(void);
 void chem_model_free(ChemModel *model);
@@ -110,10 +118,13 @@ ChemStatus chem_model_species(ChemModel *model, const char *name, double initial
 ChemStatus chem_model_reaction(ChemModel *model, const size_t *reactants, size_t nreactants,
                              const size_t *products, const double *yields, size_t nproducts, ChemRate rate);
 ChemStatus chem_model_constraint(ChemModel *model, const ChemConstraint *constraint);
+ChemStatus chem_constraint_sparsity(const ChemModel *model, unsigned char *row_major_pattern, size_t order);
 ChemStatus chem_model_finalize(ChemModel *model);
+ChemStatus chem_model_sparsity(ChemModel *model, const unsigned char *row_major_pattern, size_t order);
 ChemStatus chem_markowitz(size_t order, const unsigned char *pattern, size_t *permutation);
 ChemStatus chem_model_reorder(ChemModel *model);
 ChemRate *chem_model_lambda(ChemModel *model, const char *label);
+size_t chem_rate_offset(const ChemModel *model, ChemRateType type);
 size_t chem_species_id(const ChemModel *model, const char *name);
 size_t chem_variable_id(const ChemModel *model, const char *name);
 size_t chem_custom_id(const ChemModel *model, const char *name);
@@ -144,6 +155,10 @@ void chem_generic_jacobian(const ChemModel *, size_t, size_t, const double *, co
 void chem_lu_mozart(const ChemModel *model, size_t cells, size_t stride, double *matrix);
 void chem_lu_doolittle(const ChemModel *model, size_t cells, size_t stride, double *matrix);
 void chem_linear_solve(const ChemModel *model, size_t cells, size_t stride, const double *matrix, double *rhs);
+ChemStatus chem_lu_separate(const ChemModel *, size_t cells, size_t stride, const double *matrix,
+                            double *lower, double *upper, int doolittle);
+void chem_linear_solve_separate(const ChemModel *, size_t cells, size_t stride, const double *lower,
+                                const double *upper, double *rhs);
 
 typedef struct {
   int stages, new_function[6];
@@ -174,6 +189,7 @@ ChemRosenbrock chem_rosenbrock_parameters(int method);
 ChemSolver chem_solver(int method);
 double chem_default_controller(double error, const ChemRosenbrock *parameters, void *context);
 double chem_normalized_error(const ChemState *state, const double *old_y, const double *new_y, const double *errors);
+void chem_alpha_minus_jacobian(ChemState *state, double alpha);
 ChemStatus chem_initialize_constraints(ChemSolver *solver, ChemState *state, ChemStats *stats);
 ChemStatus chem_solve(ChemSolver *solver, double time_step, ChemState *state, ChemStats *stats);
 

@@ -75,7 +75,10 @@ void chem_constraints(const ChemState *s, const double *y, double *f, double *ja
         }
         value -= q->constant;
       } else if (q->type == CHEM_EQUILIBRIUM) {
-        double rp = q->constant, pp = 1.0;
+        double tref = q->reference_temperature == 0.0 ? 298.15 : q->reference_temperature;
+        double keq = q->custom_index != SIZE_MAX ? s->custom[q->custom_index*stride+c]
+          : q->constant*exp(q->delta_enthalpy/CHEM_GAS_CONSTANT*(1.0/s->conditions[c].temperature-1.0/tref));
+        double rp = keq, pp = 1.0;
         for (size_t i = 0; i < q->nterms; ++i) {
           double v = y[q->species[i]*stride+c];
           double factor = pow(v > 0.0 ? v : 0.0, q->coefficients[i]);
@@ -83,7 +86,7 @@ void chem_constraints(const ChemState *s, const double *y, double *f, double *ja
         }
         value = rp-pp;
         if (jac) for (size_t i = 0; i < q->nterms; ++i) {
-          double prod = i < q->nreactants ? q->constant : 1.0;
+          double prod = i < q->nreactants ? keq : 1.0;
           size_t begin = i < q->nreactants ? 0 : q->nreactants;
           size_t end = i < q->nreactants ? q->nreactants : q->nterms;
           for (size_t j = begin; j < end; ++j) if (j != i) {

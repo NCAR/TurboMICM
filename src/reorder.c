@@ -30,6 +30,7 @@ ChemStatus chem_model_reorder(ChemModel *m) {
   unsigned char *pattern = calloc(n*n, 1);
   size_t *perm = malloc(2*n*sizeof(size_t));
   if (!pattern || !perm) { free(pattern); free(perm); return CHEM_MEMORY; }
+  if (m->declared_sparsity) memcpy(pattern,m->declared_sparsity,n*n);
   for (size_t i = 0; i < n; ++i) pattern[i*n+i] = 1;
   for (size_t r = 0; r < m->nreactions; ++r) {
     ChemReaction *q = &m->reactions[r];
@@ -48,11 +49,16 @@ ChemStatus chem_model_reorder(ChemModel *m) {
     ChemConstraint *q = &m->constraints[i];
     for (size_t j = 0; j < q->nterms; ++j) pattern[q->algebraic*n+q->species[j]] = 1;
   }
-  if (m->external_jacobian) memset(pattern, 1, n*n);
+  if (m->external_jacobian && !m->declared_sparsity) memset(pattern, 1, n*n);
   ChemStatus status = chem_markowitz(n, pattern, perm);
   if (!status) {
     size_t *inverse = perm+n;
     for (size_t i = 0; i < n; ++i) inverse[perm[i]] = i;
+    if (m->declared_sparsity) {
+      for (size_t i = 0; i < n; ++i) for (size_t j = 0; j < n; ++j)
+        pattern[i*n+j] = m->declared_sparsity[perm[i]*n+perm[j]];
+      memcpy(m->declared_sparsity,pattern,n*n);
+    }
     for (size_t i = 0; i < m->nspecies; ++i) if (!m->species[i].parameterized) m->species[i].variable = inverse[m->species[i].variable];
     for (size_t i = 0; i < m->nconstraints; ++i) {
       ChemConstraint *q = &m->constraints[i]; q->algebraic = inverse[q->algebraic];
