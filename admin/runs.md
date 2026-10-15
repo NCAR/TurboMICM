@@ -41,7 +41,7 @@ Verification
   and gcc-15, their tests rerun and counted against the case list, their builds
   audited against the portability rules, and their TS1 timings replicated with
   `admin/time_entries.py` alongside MICM. The results are in
-  `results/2026-10-15-sol-verification/` and on the wiki's Results page.
+  `results/2026-10-15-sol-verification/` and on the wiki's Tier-1-Results page.
 
 Transcripts
 - Each finished run's session transcript is archived on the branch `transcripts`,

@@ -86,6 +86,11 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 ## Conventions
 
 - **Results:** the wiki shows verified numbers only, with tables updated in place.
+- **Wiki layout:** each tier has Design, Prompt, and Results pages (`Tier-1-*`,
+  `Tier-2-*`), plus Home, Running-the-Experiment, and
+  Role-of-Claude-in-the-Design.
+  - Inside a table, use `[text](Page)` links: the `|` in `[[text|Page]]` splits
+    the cell.
   Agents' self-reports appear only as a one-line finding.
 - **Naming:** call the user "the SSE" (scientific software engineer). Name them once,
   in the preamble of Role-of-Claude-in-the-Design, and use no pronouns for them.
@@ -131,7 +136,8 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 ## Tier 2: algorithm design (approved 2026-10-15, not yet launched)
 
 - **Files:** `tier2/prompt.v1` is the template and `tier2/README.md` is the plan
-  and build list; the wiki page is Tier-2.
+  and build list; the wiki pages are Tier-2-Design, Tier-2-Prompt, and
+  Tier-2-Results.
 - **Order:** finish OpenAI Tier 1 (Astra, Luna), run OpenAI Tier 2, then move to
   the Claude models.
 - **Arms:**
@@ -167,4 +173,5 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - Consider Claude Haiku as the fast-tier match for Luna.
 - Time the entries on an x86-64 Linux machine.
 - Build the Tier 2 tooling before the Tier 2 launch.
-- Current status is in `admin/runs.md` and on the wiki's Results page.
+- Current status is in `admin/runs.md` and on the wiki's Tier-1-Results and
+  Tier-2-Results pages.
