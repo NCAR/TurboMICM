@@ -6,6 +6,10 @@ import sys
 root = Path(__file__).resolve().parents[1]
 cases = [line.split()[0] for line in (root / "tests/cases.txt").read_text().splitlines()
          if line and not line.startswith("#")]
+extra = subprocess.run([root / "bin/test_config"], text=True, capture_output=True)
+sys.stderr.write(extra.stdout + extra.stderr)
+ts1 = subprocess.run([sys.executable, root / "tools/test_ts1.py"], text=True, capture_output=True)
+sys.stderr.write(ts1.stdout + ts1.stderr)
 result = subprocess.run([root / "bin/test_cpu"], text=True, capture_output=True)
 sys.stderr.write(result.stderr)
 observed = {}
@@ -20,4 +24,4 @@ for key in cases:
     counts[status] += 1
     print(key, status, reason)
 print(" ".join(f"{k}={v}" for k, v in counts.items()), file=sys.stderr)
-sys.exit(bool(result.returncode or counts["FAIL"]))
+sys.exit(bool(extra.returncode or ts1.returncode or result.returncode or counts["FAIL"]))

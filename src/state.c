@@ -6,7 +6,7 @@ void chem_state_free(ChemState *s)
 {
     if (!s) return;
     free(s->conditions); free(s->values); free(s->custom); free(s->rates);
-    free(s->absolute_tolerance); free(s);
+    free(s->absolute_tolerance); free(s->scratch); free(s);
 }
 ChemStatus chem_state_create(const ChemMechanism *m, size_t cells, ChemState **out)
 {
@@ -20,12 +20,13 @@ ChemStatus chem_state_create(const ChemMechanism *m, size_t cells, ChemState **o
         (m->custom_count && cells > SIZE_MAX / m->custom_count)) {
         free(s); return CHEM_MEMORY;
     }
+    s->scratch = chem_alloc(cells, sizeof(double));
     s->conditions = chem_alloc(cells, sizeof(*s->conditions));
     s->values = chem_alloc(cells * m->variable_count, sizeof(double));
     s->rates = chem_alloc(cells * m->reaction_count, sizeof(double));
     s->custom = chem_alloc(cells * m->custom_count, sizeof(double));
     s->absolute_tolerance = chem_alloc(m->variable_count, sizeof(double));
-    if (!s->conditions || !s->values || !s->rates || !s->custom || !s->absolute_tolerance) {
+    if (!s->conditions || !s->values || !s->rates || !s->custom || !s->absolute_tolerance || !s->scratch) {
         chem_state_free(s); return CHEM_MEMORY;
     }
     for (size_t i = 0; i < m->variable_count; ++i) {
@@ -85,7 +86,6 @@ void chem_update_rates(ChemState *s)
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemProcess *p = &m->processes[i];
         const ChemRate *r = &p->rate;
-        #pragma omp simd
         for (size_t c = 0; c < n; ++c) {
             double custom[2] = {0, 0};
             if (r->type == CHEM_USER || r->type == CHEM_SURFACE) custom[0] = s->custom[r->custom_index * n + c];
@@ -106,15 +106,26 @@ void chem_forcing(const ChemState *s, const double *restrict y, double *restrict
 {
     const ChemMechanism *m = s->mechanism;
     size_t n = s->cells;
+    double *restrict work = s->scratch;
     memset(f, 0, m->variable_count * n * sizeof(double));
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemProcess *p = &m->processes[i];
-        #pragma omp simd
-        for (size_t c = 0; c < n; ++c) {
-            double rate = s->rates[i * n + c];
-            for (size_t j = 0; j < p->reactant_count; ++j) rate *= y[p->reactants[j] * n + c];
-            for (size_t j = 0; j < p->reactant_count; ++j) f[p->reactants[j] * n + c] -= rate;
-            for (size_t j = 0; j < p->product_count; ++j) f[p->products[j].species * n + c] += p->products[j].yield * rate;
+        memcpy(work, s->rates + i*n, n*sizeof(double));
+        for (size_t j=0; j<p->reactant_count; ++j) {
+            const double *v=y+p->reactants[j]*n;
+            #pragma omp simd
+            for (size_t c=0; c<n; ++c) work[c]*=v[c];
+        }
+        for (size_t j=0; j<p->reactant_count; ++j) {
+            double *restrict dst=f+p->reactants[j]*n;
+            #pragma omp simd
+            for (size_t c=0; c<n; ++c) dst[c]-=work[c];
+        }
+        for (size_t j=0; j<p->product_count; ++j) {
+            double *restrict dst=f+p->products[j].species*n;
+            double yield=p->products[j].yield;
+            #pragma omp simd
+            for (size_t c=0; c<n; ++c) dst[c]+=yield*work[c];
         }
     }
 }
@@ -122,23 +133,30 @@ void chem_jacobian(const ChemState *s, const double *restrict y, double *restric
 {
     const ChemMechanism *m = s->mechanism;
     size_t n = s->cells, nv = m->variable_count;
+    double *restrict work=s->scratch;
     memset(jac, 0, nv * nv * n * sizeof(double));
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemProcess *p = &m->processes[i];
         for (size_t j = 0; j < p->reactant_count; ++j) {
             size_t independent = p->reactants[j];
-            #pragma omp simd
-            for (size_t c = 0; c < n; ++c) {
-                double rate = s->rates[i * n + c];
-                int skipped = 0;
-                for (size_t k = 0; k < p->reactant_count; ++k) {
-                    if (!skipped && p->reactants[k] == independent) { skipped = 1; continue; }
-                    rate *= y[p->reactants[k] * n + c];
-                }
-                for (size_t k = 0; k < p->reactant_count; ++k)
-                    jac[(p->reactants[k] * nv + independent) * n + c] -= rate;
-                for (size_t k = 0; k < p->product_count; ++k)
-                    jac[(p->products[k].species * nv + independent) * n + c] += p->products[k].yield * rate;
+            memcpy(work,s->rates+i*n,n*sizeof(double));
+            int skipped=0;
+            for (size_t k=0;k<p->reactant_count;++k) {
+                if (!skipped && p->reactants[k]==independent) { skipped=1; continue; }
+                const double *v=y+p->reactants[k]*n;
+                #pragma omp simd
+                for (size_t c=0;c<n;++c) work[c]*=v[c];
+            }
+            for (size_t k=0;k<p->reactant_count;++k) {
+                double *restrict dst=jac+(p->reactants[k]*nv+independent)*n;
+                #pragma omp simd
+                for (size_t c=0;c<n;++c) dst[c]-=work[c];
+            }
+            for (size_t k=0;k<p->product_count;++k) {
+                double *restrict dst=jac+(p->products[k].species*nv+independent)*n;
+                double yield=p->products[k].yield;
+                #pragma omp simd
+                for (size_t c=0;c<n;++c) dst[c]+=yield*work[c];
             }
         }
     }

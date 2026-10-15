@@ -145,3 +145,41 @@ ChemStatus chem_set_rate_callback(ChemMechanism *m, const char *name, ChemRateFu
     }
     return CHEM_NOT_FOUND;
 }
+
+#include "chem_solver.h"
+unsigned char *chem_mechanism_pattern(const ChemMechanism *m)
+{
+    size_t n=m->variable_count;
+    if (n && n>SIZE_MAX/n) return NULL;
+    unsigned char *pattern=chem_alloc(n*n,1);
+    if (!pattern) return NULL;
+    for (size_t r=0;r<m->reaction_count;++r) {
+        const ChemProcess *p=&m->processes[r];
+        for (size_t j=0;j<p->reactant_count;++j) {
+            size_t col=p->reactants[j];
+            for (size_t k=0;k<p->reactant_count;++k) pattern[p->reactants[k]*n+col]=1;
+            for (size_t k=0;k<p->product_count;++k) pattern[p->products[k].species*n+col]=1;
+        }
+    }
+    return pattern;
+}
+ChemStatus chem_mechanism_reorder(ChemMechanism *m)
+{
+    if (!m) return CHEM_INVALID;
+    size_t n=m->variable_count;
+    unsigned char *pattern=chem_mechanism_pattern(m);
+    size_t *perm=chem_alloc(n,sizeof(size_t)), *inverse=chem_alloc(n,sizeof(size_t)), *species=chem_alloc(n,sizeof(size_t));
+    ChemStatus status=CHEM_MEMORY;
+    if (!pattern || !perm || !inverse || !species) goto finish;
+    status=chem_markowitz(n,pattern,perm);
+    if (status) goto finish;
+    for (size_t i=0;i<n;++i) { inverse[perm[i]]=i; species[i]=m->variable_species[perm[i]]; }
+    memcpy(m->variable_species,species,n*sizeof(size_t));
+    for (size_t r=0;r<m->reaction_count;++r) {
+        ChemProcess *p=&m->processes[r];
+        for (size_t j=0;j<p->reactant_count;++j) p->reactants[j]=inverse[p->reactants[j]];
+        for (size_t j=0;j<p->product_count;++j) p->products[j].species=inverse[p->products[j].species];
+    }
+finish:
+    free(pattern); free(perm); free(inverse); free(species); return status;
+}

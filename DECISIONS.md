@@ -28,3 +28,12 @@
 - A missing test implementation is a FAIL, never an N/A. N/A will be used only
   for individually reviewed cases with no meaningful C behavior.
 - The supplied task prompt is an input, excluded from the submitted source tree.
+- C++ standard random engines and distributions are implementation-defined.
+  The C LU/linear test ports use a fixed Park-Miller uniform generator and
+  Box-Muller lognormal draws with the original distribution parameters, matrix
+  dimensions, sparsity probability and bounds. They test reconstruction of
+  every matrix element or right-hand-side element, including structural zeros.
+  Vector-policy cases test groups of 1, 2, 3 and 4 cells with partial tails.
+- Sparse and dense layouts are selected by the C API instead of C++ template
+  policies. State group size replaces compile-time vector length and is a
+  runtime parameter. No floating-point compiler options are added.

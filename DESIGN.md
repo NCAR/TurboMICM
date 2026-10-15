@@ -1,25 +1,85 @@
 # Design
 
-`include/chem.h` is the public C API. `src/rates.c` implements the rate formulas
-and preparation of derived parameters. `src/mechanism.c` owns species and
-reaction metadata and performs stable rate-type sorting. `src/state.c` manages
-cell-contiguous concentrations, parameters and rates, and evaluates mass-action
-forcing and Jacobians. The current dense Jacobian evaluator is also a reference
-path for validating the planned sparse evaluator.
+`include/chem.h` defines the mechanism, reaction-rate and state API.
+`include/chem_solver.h` defines sparse factorization, Rosenbrock parameters and
+solver extension points. The library owns copies of input species/reaction
+metadata. States and solvers borrow the mechanism and own their numerical
+storage. Destroy them before destroying the mechanism. A single state/solver
+pair is used by one thread at a time; many pairs can share the same mechanism.
 
-Configuration files pass through `tools/configure.py`: included CAMP records
-are collected, names and numeric values are validated, branched reactions are
-expanded, units converted, and a C builder emitted. Generated C is compiled by
-the Makefile with the selected compiler and optimization flags. The runtime
-requires no configuration parser or Python. TS1's data is retained in
-`mechanisms/ts1.json`; `tools/translate_ts1.py` reproduces it from the supplied
-read-only input.
+## Configuration and kinetics
 
-To add a rate type, add a tagged parameter member in `chem.h`, supply defaults,
-preparation and evaluation in `rates.c`, and add a configuration type mapping
-and independent reference tests. Callbacks have an explicit context pointer
-whose lifetime remains the caller's responsibility.
+`tools/configure.py` reads included CAMP records, validates names and finite
+numbers, expands branched reactions, converts rate units and generates a C
+builder using the public API. Generated C is compiled by the Makefile with the
+selected compiler and optimization flags. The runtime needs no parser or Python.
+TS1's data is retained in `mechanisms/ts1.json`; `tools/translate_ts1.py` reproduces
+it from the supplied read-only input. The three tutorial configurations are
+checked against independent C builders at one and seven cells, including ten
+integration intervals. Additional parser error tests remain to be implemented.
 
-Solver/controller/linear-solver interfaces and tuning parameters are under
-construction. They must be completed and documented before the full task is
-considered finished.
+`src/rates.c` supplies rate defaults, derived parameters and evaluations.
+`src/mechanism.c` performs a stable sort by MICM's rate-type order, retaining
+reaction order within each type. Parameterized species have no solution-vector
+entry; their values multiply rate constants once per reactant occurrence.
+
+Each variable is contiguous across cells: `values[variable * cells + cell]`.
+Forcing evaluates each reaction's rate product into a cell workspace, then
+applies reactant losses and product yields in source order. OpenMP SIMD acts on
+contiguous cell loops. Dense Jacobian evaluation is available as a reference
+path. Solver construction prepares a sparse derivative plan ordered by
+independent variable and reaction, avoiding name lookups during integration.
+
+## Linear algebra and integration
+
+`src/sparse.c` adds symbolic fill once and stores a plan for Mozart elimination.
+It implements in-place Mozart and Doolittle decomposition and forward/backward
+substitution, retaining the original arithmetic order. `chem_markowitz` selects
+the minimum degree-product pivot and accounts for fill; ties use original index
+order. `chem_mechanism_reorder` applies this permutation before state creation.
+Out-of-place factorization interfaces are still required by the remaining port.
+
+`src/rosenbrock_parameters.c` contains the five original coefficient sets.
+`src/rosenbrock.c` implements the common stage loop, weighted RMS error and
+step-size controller. Initial step size, rejection behavior, tolerances and
+statistics follow MICM's ODE path. Backward Euler in `src/backward_euler.c` shares the sparse linear algebra and
+implements the original Newton convergence criterion and step reductions.
+DAE constraints and their initialization remain to be implemented; this is not yet the complete CPU port.
+
+To add a Rosenbrock method, add a method enum and a coefficient-set branch in
+`chem_rosenbrock_parameters`, then test the coefficients and stiff integration
+behavior. The stage implementation reads coefficients from the passed structure
+and supports up to six stages without method-specific branches.
+
+To replace step-size control, supply a `ChemStepController` through
+`chem_solver_set_controller`. It returns the multiplicative step adjustment;
+acceptance/rejection and bounds remain in the solver. The default implements
+MICM's safety factor, local order and minimum/maximum adjustment factors.
+
+To replace linear algebra, provide factor and solve functions and an explicit
+context through `chem_solver_set_linear_solver`. They receive the symbolic
+pattern, cell count and matrix storage. The default factor is Mozart. A custom
+adapter can select Doolittle or another experimental implementation without
+changing the stage formulas.
+
+To add a rate type, add its parameter member and tag in `chem.h`, defaults,
+preparation and evaluation in `rates.c`, a configuration mapping, and independent
+reference tests. A callback rate takes conditions and a context pointer; the
+caller manages that context's lifetime.
+
+## Performance parameters
+
+| Parameter | Default | Control |
+| --- | --- | --- |
+| Cell group size | 32 | `CHEM_GROUP_SIZE` environment variable; positive integer |
+| Threads | OpenMP maximum, normally all cores | benchmark `--threads N` or OpenMP environment |
+| Group scheduling | OpenMP static | fixed policy; each group has its own adaptive state |
+| SIMD width | compiler-selected | portable `omp simd`, no target-specific width |
+| LU algorithm | Mozart | linear-solver callback; Doolittle is also provided |
+
+A final short group contains only its real cells. Error normalization includes
+every real cell and excludes no species. Each group performs the same warm-up
+and timed steps. Statistics sum over groups, so group size changes their totals.
+The benchmark uses the same generic mechanism and solver functions as the tests;
+there is no hand-written TS1 numerical kernel. Generated C currently supplies
+mechanism data, not specialized arithmetic.

@@ -11,7 +11,7 @@
 
 typedef enum {
     CHEM_OK, CHEM_INVALID, CHEM_MEMORY, CHEM_NOT_FOUND, CHEM_DIMENSION,
-    CHEM_SINGULAR, CHEM_MAX_STEPS, CHEM_STEP_TOO_SMALL, CHEM_CONSTRAINT_FAILURE
+    CHEM_SINGULAR, CHEM_MAX_STEPS, CHEM_STEP_TOO_SMALL, CHEM_CONSTRAINT_FAILURE, CHEM_UNCONVERGED, CHEM_NAN, CHEM_INF
 } ChemStatus;
 const char *chem_status_string(ChemStatus status);
 
@@ -97,6 +97,7 @@ typedef struct {
     size_t cells;
     ChemConditions *conditions;
     double *values, *custom, *rates, *absolute_tolerance;
+    double *scratch; /* private cell workspace; one state per concurrent solve */
     double relative_tolerance;
 } ChemState;
 ChemStatus chem_state_create(const ChemMechanism *, size_t cells, ChemState **out);

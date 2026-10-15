@@ -1,3 +1,4 @@
+.DEFAULT_GOAL := cpu
 ifeq ($(origin CC),default)
 CC = clang
 endif
@@ -36,17 +37,52 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp
 clean:
 	rm -rf build bin
 
-SOURCES = src/rates.c src/mechanism.c src/state.c
+SOURCES = src/rates.c src/mechanism.c src/state.c src/sparse.c src/rosenbrock.c src/rosenbrock_parameters.c src/backward_euler.c
 OBJECTS = $(SOURCES:src/%.c=build/%.o)
 cpu: build/libchem.a
-build/%.o: src/%.c include/chem.h src/internal.h
+build/%.o: src/%.c include/chem.h include/chem_solver.h src/internal.h
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/libchem.a: $(OBJECTS)
 	ar rcs $@ $(OBJECTS)
 
-bin/test_cpu: tests/main.c tests/test_rates.c tests/test.h build/libchem.a
+bin/test_cpu: tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c tests/test.h build/libchem.a
 	@mkdir -p bin
-	$(CC) $(CFLAGS) tests/main.c tests/test_rates.c build/libchem.a $(LDLIBS) -o $@
-test-cpu: env bin/test_cpu
+	$(CC) $(CFLAGS) tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c build/libchem.a $(LDLIBS) -o $@
+test-cpu: env bin/test_cpu bin/test_config bin/ts1_bench_cpu
 	$(PYTHON) tools/run_tests.py
+
+build/ts1.c: mechanisms/ts1.json tools/configure.py | env
+	$(PYTHON) tools/configure.py $< $@ --symbol ts1
+build/ts1.o: build/ts1.c include/chem.h
+	$(CC) $(CFLAGS) -c $< -o $@
+bin/ts1_bench_cpu: src/ts1_bench.c build/ts1.o build/libchem.a include/chem_solver.h
+	@mkdir -p bin
+	$(CC) $(CFLAGS) src/ts1_bench.c build/ts1.o build/libchem.a $(LDLIBS) -o $@
+cpu: bin/ts1_bench_cpu
+bench: bin/ts1_bench_cpu
+
+.PHONY: FORCE
+FORCE:
+build/compiler-settings: FORCE
+	@mkdir -p build
+	@printf '%s\n' '$(CC)' '$(CFLAGS)' '$(LDLIBS)' > build/compiler-settings.tmp
+	@cmp -s build/compiler-settings.tmp $@ || cp build/compiler-settings.tmp $@
+	@rm build/compiler-settings.tmp
+$(OBJECTS) build/ts1.o bin/test_cpu bin/ts1_bench_cpu: build/compiler-settings
+
+build/no_user.c: mechanisms/tutorial/rate_constants_no_user_defined/config.yaml mechanisms/tutorial/rate_constants_no_user_defined/species.yaml mechanisms/tutorial/rate_constants_no_user_defined/reactions.yaml tools/configure.py | env
+	$(PYTHON) tools/configure.py $< $@ --symbol no_user
+build/with_user.c: mechanisms/tutorial/rate_constants_user_defined/config.json mechanisms/tutorial/rate_constants_user_defined/species.json mechanisms/tutorial/rate_constants_user_defined/reactions.json tools/configure.py | env
+	$(PYTHON) tools/configure.py $< $@ --symbol with_user
+build/robertson.c: mechanisms/tutorial/robertson/config.json mechanisms/tutorial/robertson/species.json mechanisms/tutorial/robertson/reactions.json tools/configure.py | env
+	$(PYTHON) tools/configure.py $< $@ --symbol robertson
+build/no_user.o build/with_user.o build/robertson.o: build/%.o: build/%.c include/chem.h build/compiler-settings
+	$(CC) $(CFLAGS) -c $< -o $@
+bin/test_config: tests/config_equivalence.c tests/test.h build/no_user.o build/with_user.o build/robertson.o build/ts1.o build/libchem.a build/compiler-settings
+	$(CC) $(CFLAGS) tests/config_equivalence.c build/no_user.o build/with_user.o build/robertson.o build/ts1.o build/libchem.a $(LDLIBS) -o $@
+.PHONY: test-config
+test-config: bin/test_config
+	bin/test_config
+
+$(OBJECTS): src/solver_internal.h

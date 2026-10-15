@@ -18,6 +18,7 @@ struct ChemMechanism {
     char **custom_names;
     size_t offsets[CHEM_RATE_TYPE_COUNT + 1];
 };
+unsigned char *chem_mechanism_pattern(const ChemMechanism *);
 static inline void *chem_alloc(size_t n, size_t size)
 {
     if (size && n > SIZE_MAX / size) return NULL;
