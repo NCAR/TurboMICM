@@ -9,7 +9,7 @@
 
 typedef enum {
   CHEM_OK, CHEM_INVALID, CHEM_MEMORY, CHEM_UNKNOWN, CHEM_SIZE,
-  CHEM_MAX_STEPS, CHEM_SMALL_STEP, CHEM_NAN, CHEM_INF, CHEM_INIT_FAILED
+  CHEM_MAX_STEPS, CHEM_SMALL_STEP, CHEM_NAN, CHEM_INF, CHEM_INIT_FAILED, CHEM_UNCONVERGED
 } ChemStatus;
 const char *chem_status_string(ChemStatus status);
 
@@ -109,6 +109,9 @@ ChemStatus chem_model_reaction(ChemModel *model, const size_t *reactants, size_t
                              const size_t *products, const double *yields, size_t nproducts, ChemRate rate);
 ChemStatus chem_model_constraint(ChemModel *model, const ChemConstraint *constraint);
 ChemStatus chem_model_finalize(ChemModel *model);
+ChemStatus chem_markowitz(size_t order, const unsigned char *pattern, size_t *permutation);
+ChemStatus chem_model_reorder(ChemModel *model);
+ChemRate *chem_model_lambda(ChemModel *model, const char *label);
 size_t chem_species_id(const ChemModel *model, const char *name);
 size_t chem_variable_id(const ChemModel *model, const char *name);
 size_t chem_custom_id(const ChemModel *model, const char *name);
@@ -126,6 +129,7 @@ ChemState *chem_state_copy(const ChemState *state);
 void chem_state_free(ChemState *state);
 ChemStatus chem_state_set(ChemState *state, const char *species, const double *values, size_t count);
 ChemStatus chem_state_set_custom(ChemState *state, const char *label, const double *values, size_t count);
+ChemStatus chem_state_custom_array(ChemState *state, const double *row_major_values, size_t cells, size_t parameters);
 ChemStatus chem_state_tolerances(ChemState *state, double relative, const double *absolute, size_t count);
 void chem_calculate_rates(ChemState *state);
 void chem_forcing(const ChemState *state, const double *variables, double *forcing);
@@ -170,5 +174,16 @@ double chem_default_controller(double error, const ChemRosenbrock *parameters, v
 double chem_normalized_error(const ChemState *state, const double *old_y, const double *new_y, const double *errors);
 ChemStatus chem_initialize_constraints(ChemSolver *solver, ChemState *state, ChemStats *stats);
 ChemStatus chem_solve(ChemSolver *solver, double time_step, ChemState *state, ChemStats *stats);
+
+typedef struct {
+  double small, h_start;
+  size_t max_steps, nreductions;
+  double reductions[5];
+  ChemFactor factor;
+  ChemSolve solve;
+} ChemEuler;
+ChemEuler chem_euler_parameters(void);
+int chem_euler_converged(const ChemState *state, double small, const double *residual, const double *variables);
+ChemStatus chem_backward_euler(const ChemEuler *parameters, double time_step, ChemState *state, ChemStats *stats);
 
 #endif

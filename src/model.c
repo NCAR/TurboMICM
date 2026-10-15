@@ -18,7 +18,7 @@ int chem_resize(void **p, size_t n, size_t size) {
 const char *chem_status_string(ChemStatus status) {
   static const char *names[] = { "Converged", "Invalid argument", "Allocation failed", "Unknown name",
     "Incorrect size", "Convergence exceeded maximum steps", "Step size too small", "NaN detected",
-    "Inf detected", "Constraint initialization failed" };
+    "Inf detected", "Constraint initialization failed", "Accepting unconverged integration" };
   return (unsigned)status < sizeof names / sizeof *names ? names[status] : "Unknown status";
 }
 ChemModel *chem_model_create(void) {
@@ -57,6 +57,14 @@ size_t chem_custom_id(const ChemModel *m, const char *name) {
   if (m && name) for (size_t i = 0; i < m->ncustom; ++i)
     if (!strcmp(m->custom_names[i], name)) return i;
   return SIZE_MAX;
+}
+ChemRate *chem_model_lambda(ChemModel *m, const char *label) {
+  if (!m || !label) return NULL;
+  for (size_t i = 0; i < m->nreactions; ++i) {
+    ChemRate *r = &m->reactions[i].rate;
+    if (r->type == CHEM_LAMBDA && r->label && !strcmp(r->label,label)) return r;
+  }
+  return NULL;
 }
 ChemStatus chem_model_species(ChemModel *m, const char *name, double initial, int parameterized, size_t *id) {
   if (!m || !name || !*name || m->finalized || parameterized < 0 || parameterized > 2) return CHEM_INVALID;

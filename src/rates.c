@@ -20,6 +20,7 @@ ChemRate chem_rate(ChemRateType type) {
   r.N = r.probability = 1.0;
   r.custom_index = SIZE_MAX;
   r.diffusion = r.molecular_weight = NAN;
+  if (type == CHEM_TAYLOR) { r.ncoefficients = 1; r.coefficients[0] = 1.0; }
   return r;
 }
 

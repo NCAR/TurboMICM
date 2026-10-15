@@ -54,8 +54,8 @@ ChemState *chem_state_copy(const ChemState *s) {
 static ChemStatus set_values(ChemState *s, size_t index, double *array, const double *v, size_t count) {
   if (!s || !v) return CHEM_INVALID;
   if (index == SIZE_MAX) return CHEM_UNKNOWN;
-  if (count != 1 && count != s->cells) return CHEM_SIZE;
-  for (size_t c = 0; c < s->cells; ++c) array[index*s->stride+c] = v[count == 1 ? 0 : c];
+  if (count != s->cells) return CHEM_SIZE;
+  for (size_t c = 0; c < s->cells; ++c) array[index*s->stride+c] = v[c];
   return CHEM_OK;
 }
 ChemStatus chem_state_set(ChemState *s, const char *name, const double *v, size_t count) {
@@ -65,6 +65,13 @@ ChemStatus chem_state_set(ChemState *s, const char *name, const double *v, size_
 ChemStatus chem_state_set_custom(ChemState *s, const char *name, const double *v, size_t count) {
   if (!s) return CHEM_INVALID;
   return set_values(s, chem_custom_id(s->model, name), s->custom, v, count);
+}
+ChemStatus chem_state_custom_array(ChemState *s, const double *values, size_t cells, size_t parameters) {
+  if (!s || !values) return CHEM_INVALID;
+  if (cells < s->cells || parameters < s->model->ncustom) return CHEM_SIZE;
+  for (size_t c = 0; c < s->cells; ++c) for (size_t i = 0; i < s->model->ncustom; ++i)
+    s->custom[i*s->stride+c] = values[c*parameters+i];
+  return CHEM_OK;
 }
 ChemStatus chem_state_tolerances(ChemState *s, double relative, const double *absolute, size_t count) {
   if (!s || !(relative >= 0.0) || !absolute) return CHEM_INVALID;

@@ -91,6 +91,24 @@ def literal(value):
     return repr(value)
 
 
+def markowitz(n, pattern):
+    pattern = set(pattern)
+    alive = set(range(n))
+    order = []
+    while alive:
+        def cost(v):
+            rows = sum((v,j) in pattern for j in alive)
+            columns = sum((j,v) in pattern for j in alive)
+            return (rows-1)*(columns-1), v
+        pivot = min(alive, key=cost)
+        order.append(pivot)
+        alive.remove(pivot)
+        columns = [j for j in alive if (pivot,j) in pattern]
+        rows = [j for j in alive if (j,pivot) in pattern]
+        pattern.update((i,j) for i in rows for j in columns)
+    return order
+
+
 def generate(config, name):
     species, reactions, initial = config['species'], config['reactions'], config['initial']
     ids = {s['name']: i for i, s in enumerate(species)}
@@ -101,6 +119,10 @@ def generate(config, name):
         for col in (vmap[s] for s in r['reactants'] if s in vmap):
             for row in (vmap[s] for s in r['reactants']+[p['species'] for p in r['products']] if s in vmap):
                 pattern.add((row, col))
+    order = markowitz(n, pattern)
+    inverse = {old: new for new, old in enumerate(order)}
+    vmap = {key: inverse[value] for key, value in vmap.items()}
+    pattern = {(inverse[row],inverse[col]) for row,col in pattern}
     for i in range(n):
         for k in range(i+1, n):
             if (i, k) in pattern:
@@ -172,7 +194,7 @@ def generate(config, name):
         ys = ', '.join(literal(p['yield']) for p in r['products']) or '0'
         lines += [f'    const size_t reactants[] = {{{rs}}}, products[] = {{{ps}}};', f'    const double yields[] = {{{ys}}};',
                   f'    if (chem_model_reaction(m, reactants, {len(r["reactants"])}, products, yields, {len(r["products"])}, rate)) goto fail;', '  }']
-    lines.append('  if (chem_model_finalize(m)) goto fail;')
+    lines.append('  if (chem_model_reorder(m) || chem_model_finalize(m)) goto fail;')
     lines.append(f'  if (m->nnz != {len(indices)}) goto fail;')
     for key, field in [('temperature','default_temperature'), ('pressure','default_pressure')]:
         if key in initial:
