@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "chem_system.h"
 #include <stdio.h>
 
 char *chem_strdup(const char *s) {
@@ -28,7 +29,7 @@ ChemModel *chem_model_create(void) {
 }
 void chem_model_free(ChemModel *m) {
   if (!m) return;
-  for (size_t i = 0; i < m->nspecies; ++i) free(m->species[i].name);
+  for (size_t i = 0; i < m->nspecies; ++i) chem_species_destroy(&m->species[i]);
   for (size_t i = 0; i < m->nreactions; ++i) {
     free(m->reactions[i].reactants); free(m->reactions[i].products);
     free(m->reactions[i].yields); free(m->reactions[i].rate.label);

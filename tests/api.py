@@ -27,7 +27,7 @@ class Rate(C.Structure):
 
 class Species(C.Structure):
     _fields_ = [('name', C.c_char_p)] + [(name,D) for name in ('initial','absolute_tolerance','molecular_weight','diffusion')] + [
-        ('parameterized',I), ('parameterization',P), ('context',P), ('variable',Z)]
+        ('parameterized',I), ('parameterization',P), ('context',P), ('variable',Z), ('properties',P), ('nproperties',Z)]
 
 
 class Reaction(C.Structure):

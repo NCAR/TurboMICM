@@ -41,7 +41,9 @@ env: .conda/conda-meta/history
 	CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
 cpu: bin/libchem.a bin/libchem.$(SHARED_EXT) bin/ts1_bench_cpu
 bench: cpu
-$(BUILD)/%.o: src/%.c include/chem.h src/internal.h $(BUILD)/flags
+test-cpu: cpu
+	$(PYTHON) tests/run.py
+$(BUILD)/%.o: src/%.c $(wildcard include/*.h) src/internal.h $(BUILD)/flags
 	@mkdir -p $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $< -o $@
 $(BUILD)/ts1.o: generated/ts1.c include/chem.h $(BUILD)/flags

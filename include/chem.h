@@ -49,6 +49,8 @@ typedef struct {
   ChemRateFunction parameterization;
   void *context;
   size_t variable;
+  struct ChemProperty *properties;
+  size_t nproperties;
 } ChemSpecies;
 
 typedef struct {

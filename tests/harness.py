@@ -3,6 +3,10 @@ import math
 CASES = {}
 
 
+class NotApplicable(Exception):
+    pass
+
+
 def case(*identifiers):
     def register(function):
         for identifier in identifiers:

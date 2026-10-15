@@ -5,8 +5,13 @@ import traceback
 from collections import Counter
 from pathlib import Path
 
-from harness import CASES
+from harness import CASES, NotApplicable
 import rate_cases
+import state_cases
+import system_cases
+import matrix_cases
+import sparse_cases
+import grouped_cases
 
 
 def main():
@@ -28,6 +33,8 @@ def main():
             try:
                 reason = function(identifier) or 'assertions passed'
                 state = 'PASS'
+            except NotApplicable as error:
+                state,reason = 'N/A',str(error)
             except Exception as error:
                 state,reason = 'FAIL',str(error).replace('\n',' ')
                 if args.traceback:
