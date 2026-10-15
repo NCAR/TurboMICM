@@ -1,0 +1,25 @@
+date: 2026-10-15T14:38:55
+host: Gemini.local
+platform: macOS-27.0.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,2 | Apple M5 | 4 | 6
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=22872163)	96%; AC attached; not charging present: true
+uptime: 14:38  up 18:40, 3 users, load averages: 4.48 4.47 3.80
+input: <scratch>/timing/cells_10000_seed2026.csv
+reference: <scratch>/timing/ts1_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 10; rounds: 3
+program micm-standard-in-place-mozart: <out>/bin/micm-standard-in-place-mozart
+program micm-standard-in-place-mozart-g32: <out>/bin/micm-standard-in-place-mozart --group-size 32
+program micm-vector1-in-place-mozart: <out>/bin/micm-vector1-in-place-mozart
+program micm-vector1-in-place-mozart-g32: <out>/bin/micm-vector1-in-place-mozart --group-size 32
+program micm-vector2-in-place-mozart: <out>/bin/micm-vector2-in-place-mozart
+program micm-vector2-in-place-mozart-g32: <out>/bin/micm-vector2-in-place-mozart --group-size 32
+program micm-vector4-in-place-mozart: <out>/bin/micm-vector4-in-place-mozart
+program micm-vector4-in-place-mozart-g32: <out>/bin/micm-vector4-in-place-mozart --group-size 32
+program micm-vector8-in-place-mozart: <out>/bin/micm-vector8-in-place-mozart
+program micm-vector8-in-place-mozart-g32: <out>/bin/micm-vector8-in-place-mozart --group-size 32
+program micm-vector128-in-place-mozart: <out>/bin/micm-vector128-in-place-mozart
+program micm-vector128-in-place-mozart-g32: <out>/bin/micm-vector128-in-place-mozart --group-size 32
+program sol-high: <verify>/sol-high/bin/ts1_bench_cpu
+program sol-xhigh: <verify>/sol-xhigh/bin/ts1_bench_cpu
+program sol-max: <verify>/sol-max/bin/ts1_bench_cpu
+program astra-high: <verify>/astra-high/bin/ts1_bench_cpu

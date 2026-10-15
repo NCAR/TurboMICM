@@ -1,0 +1,12 @@
+config,internal_steps,identical_to_default,gate
+standard-in-place-mozart,900,yes,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 0 (rtol 1e-10, atol 1e-30)"
+standard-in-place-doolittle,900,no,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.64e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)"
+standard-separate-mozart,900,yes,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 0 (rtol 1e-10, atol 1e-30)"
+standard-separate-doolittle,900,no,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.64e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)"
+vector1-in-place-mozart,900,yes,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 0 (rtol 1e-10, atol 1e-30)"
+vector1-in-place-doolittle,900,no,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.64e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)"
+vector1-separate-mozart,900,yes,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 0 (rtol 1e-10, atol 1e-30)"
+vector1-separate-doolittle,900,no,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.64e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)"
+vector2-in-place-mozart,900,yes,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 0 (rtol 1e-10, atol 1e-30)"
+vector2-in-place-doolittle,900,no,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.64e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)"
+vector2-separate-mozart,900,yes,"PASS: 21100 values in 100 cells x 211 columns; largest relative difference 0 (rtol 1e-10, atol 1e-30)"
