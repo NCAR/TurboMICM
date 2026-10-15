@@ -12,6 +12,9 @@ void chem_sparse_free(ChemSparse *);
 size_t chem_sparse_order(const ChemSparse *);
 size_t chem_sparse_elements(const ChemSparse *);
 size_t chem_sparse_index(const ChemSparse *, size_t row, size_t column);
+/* Multiply unfactored sparse values by a column-major vector. Output must not
+ * overlap either input; writes order*cells values, including structural zeros. */
+void chem_sparse_multiply(const ChemSparse *,size_t cells,const double *values,const double *vector,double *output);
 ChemStatus chem_lu_factor(const ChemSparse *, size_t cells, double *values, ChemLuAlgorithm);
 /* Out-of-place factors use the same compact L/U storage; input is preserved.
  * Output must contain chem_sparse_elements(pattern)*cells doubles. */

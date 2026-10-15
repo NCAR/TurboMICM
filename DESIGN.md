@@ -86,6 +86,11 @@ caller-owned buffer with the same combined layout. `chem_lu_lower` and
 `chem_lu_upper` expose the triangular factors, including the implicit unit lower
 diagonal. Separate-factor and in-place paths share the arithmetic kernels.
 
+`chem_sparse_multiply` evaluates an unfactored sparse matrix against column-major
+cell arrays, using the same sparse index plan. Its output must not overlap either
+input. This also lets the old Chapman matrix/vector fixture exercise the generic
+library without introducing a mechanism-specific kernel.
+
 `src/rosenbrock_parameters.c` contains the five original coefficient sets.
 `src/rosenbrock.c` implements the common stage loop, weighted RMS error and
 step-size controller. Initial step size, rejection behavior, tolerances and

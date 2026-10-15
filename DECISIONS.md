@@ -195,3 +195,38 @@ intervals, 1e-8 solver relative tolerance, 1e-20 absolute tolerance and the
 original closed-form concentration checks (`1e-14 + 1e-6*abs(reference)`). The
 scalar and vector cases both exercise the column-major cell loop; the scalar
 case retains the source's repeated fixture runs.
+
+
+## Chapman reference representation
+
+The Chapman unit tests now construct the seven-reaction mechanism through the
+normal runtime API. The original 23-entry CSC LU fixtures are mapped by their
+(row, column) coordinates into the generic sparse factor storage. The old fixed
+solver stores reciprocal pivots; the factor checks compare those reciprocals
+with the generic solver's pivots using the original bounds. The matrix/vector
+fixture keeps the five inert diagonal placeholders zero, matching the original
+forcing derivative, and exercises the public generic sparse multiply routine.
+
+The separate hard-coded Chapman regression reference is translated into
+`tests/chapman_oracle.h`, compiled only into the test executable. It implements
+its own forcing, 23-entry Jacobian, factorization, triangular solves and ROS3
+stage/controller loop. Runtime mechanisms, the benchmark and production solver
+never call it. This preserves the independent reference comparison for all five
+modern parameter sets, rather than comparing two calls to the production
+integrator. The reference's 1e-3/1e-4 tolerances and 1e-6 initial step remain
+unchanged; modern comparisons retain the source 1e-2 (ROS2) or 1e-4 bounds.
+
+Random Chapman cases follow the already documented portable random convention,
+retaining the original lognormal parameters and three distinct cell conditions.
+The forcing/Jacobian regression seed defaults to 739 and accepts a validated
+`MICM_TEST_SEED` override. Vector cases exercise runtime batch widths 1–4 and
+compare every cell against the corresponding independent scalar reference.
+The integration fixture retains its different r4 Arrhenius parameters (B=0,
+C=2.4), original species declaration order, Markowitz reordering, 100 requested
+intervals, spectator invariants, oxygen conservation and photolysis checks.
+
+The two flow-tube CSV files in `tests/data` are unchanged copies of the supplied
+MICM regression fixtures. The tests run all 3600 one-second intervals, validate
+the header and 3601-row shape, and compare the original first ten concentration
+rows at 1e-10 absolute tolerance. They additionally require successful solves
+and forward progress; no expected values are regenerated from the C port.

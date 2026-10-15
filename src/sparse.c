@@ -17,6 +17,18 @@ size_t chem_sparse_order(const ChemSparse *a) { return a->n; }
 size_t chem_sparse_elements(const ChemSparse *a) { return a->nnz; }
 size_t chem_sparse_index(const ChemSparse *a, size_t r, size_t c)
 { return r < a->n && c < a->n ? a->map[r*a->n+c] : SIZE_MAX; }
+void chem_sparse_multiply(const ChemSparse *a,size_t cells,const double *values,const double *vector,double *output)
+{
+    for (size_t r=0;r<a->n;++r) {
+        double *restrict dst=output+r*cells;
+        for (size_t c=0;c<cells;++c) dst[c]=0;
+        for (size_t i=a->row_start[r];i<a->row_start[r+1];++i) {
+            const double *v=values+i*cells,*x=vector+a->columns[i]*cells;
+            #pragma omp simd
+            for (size_t c=0;c<cells;++c) dst[c]+=v[c]*x[c];
+        }
+    }
+}
 void chem_sparse_free(ChemSparse *a)
 {
     if (!a) return;

@@ -111,13 +111,23 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   Both builds have no warnings and configuration/TS1 regressions pass. These
   additions change tests only; the full-size numerical gate above remains valid.
 
+- Ported all 13 Chapman unit cases, the Chapman integration case, all 12
+  Chapman forcing/Jacobian/solver regression cases, and both flow-tube cases.
+  Chapman tests use generic runtime mechanisms and sparse operations, with a
+  separate test-only fixed Chapman oracle for the original comparisons. The
+  flow-tube data are retained unchanged and checked after all 3600 intervals.
+  All 28 additions pass on both compilers: 632 PASS / 48 pending FAIL / 0 N/A.
+  No warnings; configuration equivalence and TS1 clamp regression still pass.
+  The only production addition is generic unfactored sparse matrix/vector
+  multiplication; the existing benchmark kernels are unchanged.
+
 ## Remaining work (required)
 
-- Port all remaining 76 cases, individually checking original test quantities.
+- Port all remaining 48 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
 - Backward Euler analytical/regression coverage, solver status
   behavior and solver-builder validations.
-- Remaining solver regression/analytical tests,
+- Remaining analytical tests,
   all eight complete tutorial programs with reference stdout comparisons.
 - Complete analytical validation of all five Rosenbrock parameter sets and
   integration coverage. Rejected-step counts agree for separate Doolittle and

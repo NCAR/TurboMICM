@@ -3,6 +3,8 @@ int test_failures;
 int total_failures;
 int main(void)
 {
+    test_flowtube();
+    test_chapman();
     test_aerosol();
     test_external();
     test_constraint_initialization();
