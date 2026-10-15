@@ -121,18 +121,20 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   The only production addition is generic unfactored sparse matrix/vector
   multiplication; the existing benchmark kernels are unchanged.
 
+- Ported all 32 analytical integration cases, including the six rate-law chains,
+  their stiff reversible variants, surface uptake, Robertson, Oregonator, HIRES
+  and E5. All five Rosenbrock sets, backward Euler where present in the source,
+  both LU algorithms and both factor ownership modes retain original tolerances.
+  Clang and GCC: 664 PASS / 16 pending FAIL / 0 N/A, no compiler warnings.
+  Configuration equivalence and TS1 clamp regression pass. Production kernels
+  are unchanged by this test-only addition.
+
 ## Remaining work (required)
 
-- Port all remaining 48 cases, individually checking original test quantities.
+- Port all remaining 16 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
-- Backward Euler analytical/regression coverage, solver status
-  behavior and solver-builder validations.
-- Remaining analytical tests,
-  all eight complete tutorial programs with reference stdout comparisons.
-- Complete analytical validation of all five Rosenbrock parameter sets and
-  integration coverage. Rejected-step counts agree for separate Doolittle and
-  in-place Mozart factors. Error norms cover all five; constrained stiff
-  integration covers ROS3, ROS4, ROS4-DA and ROS6-DA.
+- Eight solver-builder validations and all eight complete tutorial programs
+  with reference stdout comparisons.
 - Validate the configuration reader's malformed inputs and additional rate
   types beyond the three supplied examples; compare TS1 default fields by name.
 - Performance work using generic kernels; broader seeds/group sizes and both

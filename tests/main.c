@@ -3,6 +3,7 @@ int test_failures;
 int total_failures;
 int main(void)
 {
+    test_analytical();
     test_flowtube();
     test_chapman();
     test_aerosol();

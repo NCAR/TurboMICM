@@ -230,3 +230,26 @@ MICM regression fixtures. The tests run all 3600 one-second intervals, validate
 the header and 3601-row shape, and compare the original first ten concentration
 rows at 1e-10 absolute tolerance. They additionally require successful solves
 and forward progress; no expected values are regenerated from the C port.
+
+
+## Analytical integration cases
+
+The analytical chain tests retain all three original cell conditions, initial
+concentrations, 999 requested one-second intervals and per-rate/per-method
+acceptance bounds. Expected rate constants are evaluated independently of the
+library rate implementation. The stiff cases retain the 4e10 and 3.6e10
+reversible rates. Runtime batches 1–4 exercise ROS3 and backward Euler, while
+all five Rosenbrock sets use the original shared three-cell error controller.
+Both LU algorithms and separate/in-place factor storage are checked.
+
+The fixed tables in `tests/analytical_reference.h` are copied unchanged from the
+source analytical policy. Robertson and E5 retain absolute output targets;
+HIRES retains the two growing intervals. Oregonator retains the corrected
+Hairer-to-reaction transformation, species-scaled absolute tolerances, twelve
+output intervals and backward Euler's 18,000 substeps per interval. Solves that
+reach the internal step limit resume using the returned elapsed time, with
+additional forward-progress checks. Every source reference quantity and
+acceptance bound is retained, including the source's ignored sink products.
+The scalar stiff systems have one logical cell, so their C policy coverage
+uses the canonical solver storage with both LU algorithms and factor ownership
+modes; separate utility tests cover padded matrix representations.
