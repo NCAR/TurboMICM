@@ -1,0 +1,7 @@
+# Decisions
+
+- The public library uses C11 and double precision. It has no runtime dependency on the reference implementation, Python, or a configuration parser.
+- Configuration parsing and optional specialization run in the private prefix environment at build time. Both generated and manually built mechanisms use the same public mechanism and solver interfaces.
+- The reference case identifiers are retained verbatim. C++ ownership and exception tests will exercise C allocation, copying, validation, and error returns where meaningful; any inapplicable language-only case will have an explicit reason.
+- Source formulas and numerical coefficients are translated from the provided reference snapshot. Attribution is preserved in translated source files.
+- TS1 format extensions are `reactant sequence` (ordered species names), `product sequence` (ordered objects with `species` and `yield`), species `parameterization: third body`, and top-level `initial state` containing `temperature`, `pressure`, `concentrations`, and `rate parameters`. Ordered sequences preserve repeated species and floating-point accumulation order without ambiguity. `USER_DEFINED` with `MUSICA name` and `scaling factor` represents the existing user-rate type directly. Surface reactions retain their source label and SI properties. All rate coefficients in the translated configuration are already in SI units, as in the C++ declarations.

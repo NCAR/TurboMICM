@@ -1,0 +1,13 @@
+.conda/
+.conda-pkgs/
+build/
+bin/
+generated/
+__pycache__/
+*.pyc
+ts1_final.csv
+reference-build/
+results/
+env-build.log
+build.log
+reference-build.log
