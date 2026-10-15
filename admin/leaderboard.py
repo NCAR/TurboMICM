@@ -30,6 +30,9 @@ from pathlib import Path
 LAYOUTS = ["standard", "vector1", "vector2", "vector4", "vector8", "vector128"]
 LUS = [("in-place", "mozart"), ("in-place", "doolittle"), ("separate", "mozart"), ("separate", "doolittle")]
 DEFAULT = "micm-standard-in-place-mozart"
+# Display names: the model as its harness lists it, then the reasoning effort.
+MODEL_NAMES = {"sol": "GPT-6.1-Sol", "astra": "GPT-6-Astra", "luna": "GPT-6-Luna"}
+EFFORT_NAMES = {"high": "High", "xhigh": "Extra High", "max": "Max"}
 # Each entry's own cell grouping, from its DESIGN.md and benchmark source.
 ENTRY_GROUPING = {"sol-high": "32 cells", "sol-xhigh": "32 cells", "sol-max": "32 cells", "astra-high": "32 cells"}
 PATTERN = re.compile(r"micm-(standard|vector\d+)-(in-place|separate)-(mozart|doolittle)(-g32)?$")
@@ -50,6 +53,15 @@ for path in args.timings:
 
 def median(program):
     return statistics.median(float(row["elapsed_ms"]) for row in runs[program])
+
+
+def display_name(run):
+    """GPT-6.1-Sol Max for sol-max; a repeat, sol-max-2, is GPT-6.1-Sol Max (run 2)."""
+    match = re.fullmatch(r"([a-z]+)-(high|xhigh|max)(?:-(\d+))?", run)
+    if not match or match.group(1) not in MODEL_NAMES:
+        return run
+    name = f"{MODEL_NAMES[match.group(1)]} {EFFORT_NAMES[match.group(2)]}"
+    return name + (f" (run {match.group(3)})" if match.group(3) else "")
 
 
 def describe(program):
@@ -75,9 +87,9 @@ for rank, program in enumerate(sorted(runs, key=median), 1):
     times = [float(row["elapsed_ms"]) for row in runs[program]]
     gates = sorted({row["gate"] for row in runs[program]})
     largest = [float(row["max_relative_difference"]) for row in runs[program] if row["max_relative_difference"]]
-    name = program if kind == "entry" else "MICM"
+    name = display_name(program) if kind == "entry" else "MICM"
     if kind == "entry":
-        configuration = "the agent's C port"
+        configuration = f"the agent's C port (`{program}`)"
         grouping = ENTRY_GROUPING.get(program, "its own")
     else:
         grouping = "32 cells" if grouping == "32-cell groups" else "one per thread"
