@@ -55,6 +55,11 @@ def median(program):
     return statistics.median(float(row["elapsed_ms"]) for row in runs[program])
 
 
+def blue_bold(number):
+    """Bold blue text in GitHub Markdown, through inline math: GitHub strips HTML colour styles."""
+    return "$\\color{blue}{\\mathbf{" + number + "\\times}}$"
+
+
 def display_name(run):
     """GPT-6.1-Sol Max for sol-max; a repeat, sol-max-2, is GPT-6.1-Sol Max (run 2)."""
     match = re.fullmatch(r"([a-z]+)-(high|xhigh|max)(?:-(\d+))?", run)
@@ -98,7 +103,7 @@ for rank, program in enumerate(sorted(runs, key=median), 1):
     lines.append(
         f"| {rank} | {'**' + name + '**' if kind == 'entry' else name} | {configuration} | {grouping} |"
         f" {median(program):,.0f} ({min(times):,.0f}–{max(times):,.0f}){flag} | {len(times)} |"
-        f" {default_ms / median(program):.2f}× | {fastest_ms / median(program):.2f}× | {', '.join(gates)} |"
+        f" {blue_bold(f'{default_ms / median(program):.2f}')} | {fastest_ms / median(program):.2f}× | {', '.join(gates)} |"
         f" {largest_text} |"
     )
 (args.out / "leaderboard.md").write_text("\n".join(lines) + "\n")
