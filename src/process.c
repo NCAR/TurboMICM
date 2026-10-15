@@ -66,6 +66,15 @@ void chem_jacobian(const ChemState *s, const double *y, double *j) {
     const ChemExternal *e = m->external_models+i;
     if (e->jacobian) e->jacobian(m,s,y,j,e->context);
   }
+  /* External process elements that overlap a constraint's Jacobian are replaced
+   * by that constraint. Keep other declared process elements in the same row. */
+  for (size_t q = 0; q < m->nconstraints; ++q) {
+    const ChemConstraint *constraint = m->constraints+q;
+    for (size_t k = 0; k < constraint->nterms; ++k) {
+      size_t at = (size_t)m->index[constraint->algebraic*m->nvariables+constraint->species[k]]*s->stride;
+      for (size_t c = 0; c < s->cells; ++c) j[at+c] = 0.0;
+    }
+  }
   if (m->nconstraints) chem_constraints(s, y, NULL, j);
 }
 

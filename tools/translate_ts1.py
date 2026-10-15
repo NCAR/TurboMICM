@@ -55,7 +55,7 @@ def translate(path):
         'concentrations': {name: float(v) for name, v in re.findall(r'concentration\("([^"]+)", (' + NUMBER + r')\);', text)},
         'rate parameters': {name: float(v) for name, v in re.findall(r'parameter\("([^"]+)", (' + NUMBER + r')\);', text)},
     }
-    return {'camp-data': species + [{'name': 'TS1', 'type': 'MECHANISM', 'reactions': reactions}], 'initial state': initial}
+    return {'concentration units':'mol m-3','camp-data': species + [{'name': 'TS1', 'type': 'MECHANISM', 'reactions': reactions}], 'initial state': initial}
 
 
 if __name__ == '__main__':

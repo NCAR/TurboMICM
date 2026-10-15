@@ -34,7 +34,7 @@ ChemStatus chem_advance_many(ChemStepFunction step, void *parameters, double dt,
   ChemStatus *status = malloc(count*sizeof *status);
   if (!status) return CHEM_MEMORY;
   int workers = threads ? threads : omp_get_max_threads();
-  #pragma omp parallel for schedule(static) num_threads(workers)
+  #pragma omp parallel for schedule(runtime) num_threads(workers)
   for (size_t i = 0; i < count; ++i) status[i] = chem_advance(step,parameters,dt,substeps,states[i],stats+i);
   ChemStatus result = CHEM_OK;
   for (size_t i = 0; i < count; ++i) if (status[i]) { result = status[i]; break; }

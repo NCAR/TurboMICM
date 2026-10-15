@@ -29,6 +29,7 @@ def construction(identifier):
     m = fixture(); s = State(m,3); copied = None
     try:
         equal(s.data.cells,3); equal(m.data.nvariables,4); equal(m.data.nreactions,10); equal(m.data.ncustom,2)
+        for c in range(3): equal((s.data.conditions[c].temperature,s.data.conditions[c].pressure,s.data.conditions[c].air_density),(0,0,0))
         for i,n in enumerate(NAMES):
             equal(m.var(n),i)
         for i,n in enumerate(('quux','corge')):

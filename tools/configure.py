@@ -16,7 +16,7 @@ def read_configuration(path):
     records, initial = [], {}
     active = set()
 
-    def visit(path):
+    def visit(path, inherited_units='molecule cm-3'):
         path = Path(path).resolve()
         if path in active:
             raise ValueError(f'cyclic camp-files inclusion: {path}')
@@ -24,16 +24,20 @@ def read_configuration(path):
         data = json.loads(path.read_text()) if path.suffix.lower() == '.json' else yaml.safe_load(path.read_text())
         if not isinstance(data, dict):
             raise ValueError(f'{path}: configuration must be an object')
+        units = data.get('concentration units',inherited_units)
+        if units not in ('molecule cm-3','mol m-3'):
+            raise ValueError(f'unsupported concentration units: {units}')
         for child in data.get('camp-files', []):
-            visit(path.parent / child)
-        records.extend(data.get('camp-data', []))
+            visit(path.parent / child,units)
+        for record in data.get('camp-data', []):
+            records.append(dict(record, **({'concentration units':record.get('concentration units',units)} if record.get('type') == 'MECHANISM' else {})))
         initial.update(data.get('initial state', {}))
         active.remove(path)
 
     visit(path)
     species = [dict(r) for r in records if r['type'] == 'CHEM_SPEC']
     known = {r['name'] for r in species}
-    if len(known) != len(species) or not species:
+    if len(known) != len(species) or not species or any(not isinstance(name,str) or not name or '\0' in name for name in known):
         raise ValueError('species names must be unique and nonempty')
     for r in records:
         if r['type'] not in ('CHEM_SPEC', 'MECHANISM'):
@@ -42,6 +46,7 @@ def read_configuration(path):
     for mechanism in (r for r in records if r['type'] == 'MECHANISM'):
         for raw in mechanism['reactions']:
             r = dict(raw)
+            r['concentration units'] = mechanism['concentration units']
             kind = r['type']
             reactants = r.get('reactant sequence')
             if reactants is None:
@@ -54,6 +59,8 @@ def read_configuration(path):
             products = r.get('product sequence')
             if products is None:
                 products = [{'species': name, 'yield': details.get('yield', 1.0)} for name, details in r.get('products', {}).items()]
+            else:
+                products = [dict(p,**{'yield':p.get('yield',1.0)}) for p in products]
             if kind == 'BRANCHED':
                 for branch, key in enumerate(['alkoxy products', 'nitrate products']):
                     if key not in r:
@@ -78,13 +85,30 @@ def read_configuration(path):
         for name in r['reactants'] + [p['species'] for p in r['products']]:
             if name not in known:
                 raise ValueError(f'unknown species {name}')
+    conversion = 1e-6*6.02214076e23
+    for r in reactions:
+        if r['concentration units'] == 'mol m-3':
+            continue
+        order,kind = len(r['reactants']),r['type']
+        if kind in ('TROE','TERNARY_CHEMICAL_ACTIVATION','TERNARY_CHEMICAL_ACTIVATION_JPL19'):
+            low_order = order-1 if kind == 'TERNARY_CHEMICAL_ACTIVATION' else order
+            r['k0_A'] = float(r.get('k0_A',1))*conversion**low_order
+            r['kinf_A'] = float(r.get('kinf_A',1))*conversion**(low_order-1)
+            if kind == 'TERNARY_CHEMICAL_ACTIVATION_JPL19': r['kint_A'] = float(r.get('kint_A',1))*conversion**(order-1)
+        elif kind not in ('SURFACE','USER_DEFINED'):
+            key = 'X' if kind == 'BRANCHED' else 'A'
+            r[key] = float(r.get(key,1))*conversion**(order-1)
     reactions.sort(key=lambda r: KINDS.index(r['type']))
     return {'species': species, 'reactions': reactions, 'initial': initial}
 
 
-def literal(value):
-    if isinstance(value, str):
-        return json.dumps(value, ensure_ascii=True)
+def literal(value, numeric=False):
+    if isinstance(value, str) and not numeric:
+        if '\0' in value:
+            raise ValueError('C names cannot contain a NUL character')
+        # Emit UTF-8 bytes using only the basic C source character set. Three-digit
+        # octal escapes avoid both surrogate escapes and hex-escape continuation.
+        return '"'+''.join('\\'+chr(b) if chr(b) in '\\"?' else chr(b) if 32 <= b < 127 else f'\\{b:03o}' for b in value.encode('utf-8'))+'"'
     value = float(value)
     if not math.isfinite(value):
         raise ValueError('configuration values must be finite')
@@ -109,7 +133,9 @@ def markowitz(n, pattern):
     return order
 
 
-def generate(config, name):
+def generate(config, name, kernel_chunk=32):
+    if kernel_chunk < 1:
+        raise ValueError('kernel chunk must be positive')
     species, reactions, initial = config['species'], config['reactions'], config['initial']
     ids = {s['name']: i for i, s in enumerate(species)}
     vmap = {s['name']: i for i, s in enumerate(s for s in species if not s.get('parameterization'))}
@@ -139,7 +165,7 @@ def generate(config, name):
                 rs = [vmap[s] for s in r['reactants'] if s in vmap]
                 body = [f'double rate = k[{ri}*s+c];'] + [f'rate *= y[{v}*s+c];' for v in rs]
                 body += [f'out[{v}*s+c] -= rate;' for v in rs]
-                body += [f'out[{vmap[p["species"]]}*s+c] += {literal(p["yield"])}*rate;' for p in r['products'] if p['species'] in vmap]
+                body += [f'out[{vmap[p["species"]]}*s+c] += {literal(p["yield"],True)}*rate;' for p in r['products'] if p['species'] in vmap]
                 blocks.append(body)
         else:
             for col in range(n):
@@ -151,14 +177,14 @@ def generate(config, name):
                         others = rs[:omitted]+rs[omitted+1:]
                         body = [f'double rate = k[{ri}*s+c];'] + [f'rate *= y[{v}*s+c];' for v in others]
                         body += [f'out[{indices[v,col]}*s+c] += rate;' for v in others+[col]]
-                        body += [f'out[{indices[vmap[p["species"]],col]}*s+c] -= {literal(p["yield"])}*rate;' for p in r['products'] if p['species'] in vmap]
+                        body += [f'out[{indices[vmap[p["species"]],col]}*s+c] -= {literal(p["yield"],True)}*rate;' for p in r['products'] if p['species'] in vmap]
                         blocks.append(body)
         funcs = []
-        for start in range(0, len(blocks), 32):
-            fname = f'{name}_{family}_{start//32}'
+        for start in range(0, len(blocks), kernel_chunk):
+            fname = f'{name}_{family}_{start//kernel_chunk}'
             funcs.append(fname)
             lines.append(f'static void {fname}(size_t nc, size_t s, const double *restrict y, const double *restrict k, double *restrict out) {{')
-            for block in blocks[start:start+32]:
+            for block in blocks[start:start+kernel_chunk]:
                 lines += ['  #pragma omp simd', '  for (size_t c = 0; c < nc; ++c) {'] + ['    '+stmt for stmt in block] + ['  }']
             lines.append('}')
         lines += [f'static void {name}_{family}(const ChemModel *m, size_t nc, size_t s, const double *y, const double *k, double *out) {{', '  (void)m;']
@@ -170,10 +196,10 @@ def generate(config, name):
         if param not in (None, 'third body'):
             raise ValueError(f'unknown parameterization: {param}')
         init = initial.get('concentrations', {}).get(s['name'], 0.0)
-        lines.append(f'  if (chem_model_species(m, {literal(s["name"])}, {literal(init)}, {int(bool(param))}, NULL)) goto fail;')
+        lines.append(f'  if (chem_model_species(m, {literal(s["name"])}, {literal(init,True)}, {int(bool(param))}, NULL)) goto fail;')
         for source, target in [('molecular weight [kg mol-1]', 'molecular_weight'), ('diffusion coefficient [m2 s-1]', 'diffusion'), ('absolute tolerance', 'absolute_tolerance')]:
             if source in s:
-                lines.append(f'  m->species[{ids[s["name"]]}].{target} = {literal(s[source])};')
+                lines.append(f'  m->species[{ids[s["name"]]}].{target} = {literal(s[source],True)};')
     rename = {'MUSICA name': 'label', 'scaling factor': 'A', 'reaction probability': 'probability', 'k_r': 'B'}
     fields = {'A', 'B', 'C', 'D', 'E', 'X', 'Y', 'a0', 'n', 'Fc', 'N', 'branch', 'k_r', 'MUSICA name', 'scaling factor', 'reaction probability'}
     fields |= {f'{kind}_{letter}' for kind in ('k0', 'kinf', 'kint') for letter in 'ABCD'}
@@ -182,25 +208,31 @@ def generate(config, name):
         lines += ['  {', f'    ChemRate rate = chem_rate(CHEM_{kind});']
         for key in sorted(fields & r.keys()):
             value = r[key]
-            lines.append(f'    rate.{rename.get(key,key)} = {literal(value)};')
+            lines.append(f'    rate.{rename.get(key,key)} = {literal(value,key != "MUSICA name")};')
+        if kind == 'TAYLOR':
+            coefficients = r.get('coefficients',[1.0])
+            if not isinstance(coefficients,list) or not 1 <= len(coefficients) <= 16:
+                raise ValueError('TAYLOR_SERIES requires 1 to 16 coefficients')
+            lines.append(f'    rate.ncoefficients = {len(coefficients)};')
+            lines += [f'    rate.coefficients[{i}] = {literal(value,True)};' for i,value in enumerate(coefficients)]
         if kind == 'SURFACE':
             sp = next(s for s in species if s['name'] == r['gas-phase reactant'])
             for source, target in [('molecular weight [kg mol-1]', 'molecular_weight'), ('diffusion coefficient [m2 s-1]', 'diffusion')]:
                 if source not in sp:
                     raise ValueError(f'surface reactant missing {source}')
-                lines.append(f'    rate.{target} = {literal(sp[source])};')
+                lines.append(f'    rate.{target} = {literal(sp[source],True)};')
         rs = ', '.join(str(ids[s]) for s in r['reactants']) or '0'
         ps = ', '.join(str(ids[p['species']]) for p in r['products']) or '0'
-        ys = ', '.join(literal(p['yield']) for p in r['products']) or '0'
+        ys = ', '.join(literal(p['yield'],True) for p in r['products']) or '0'
         lines += [f'    const size_t reactants[] = {{{rs}}}, products[] = {{{ps}}};', f'    const double yields[] = {{{ys}}};',
                   f'    if (chem_model_reaction(m, reactants, {len(r["reactants"])}, products, yields, {len(r["products"])}, rate)) goto fail;', '  }']
     lines.append('  if (chem_model_reorder(m) || chem_model_finalize(m)) goto fail;')
     lines.append(f'  if (m->nnz != {len(indices)}) goto fail;')
     for key, field in [('temperature','default_temperature'), ('pressure','default_pressure')]:
         if key in initial:
-            lines.append(f'  m->{field} = {literal(initial[key])};')
+            lines.append(f'  m->{field} = {literal(initial[key],True)};')
     for label, value in initial.get('rate parameters', {}).items():
-        lines += ['  {', f'    size_t i = chem_custom_id(m, {literal(label)});', '    if (i == SIZE_MAX) goto fail;', f'    m->custom_defaults[i] = {literal(value)};', '  }']
+        lines += ['  {', f'    size_t i = chem_custom_id(m, {literal(label)});', '    if (i == SIZE_MAX) goto fail;', f'    m->custom_defaults[i] = {literal(value,True)};', '  }']
     lines += ['  if (specialized) {', f'    m->force_kernel = {groups[0]}; m->jacobian_kernel = {groups[1]};', '  }', '  return m;', 'fail:', '  chem_model_free(m); return NULL;', '}']
     return '\n'.join(lines) + '\n'
 
@@ -210,8 +242,9 @@ if __name__ == '__main__':
     parser.add_argument('config')
     parser.add_argument('output')
     parser.add_argument('--name', required=True)
+    parser.add_argument('--kernel-chunk',type=int,default=32)
     args = parser.parse_args()
     if not re.fullmatch('[a-zA-Z_][a-zA-Z_0-9]*', args.name):
         parser.error('name must be a C identifier')
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.output).write_text(generate(read_configuration(args.config), args.name))
+    Path(args.output).write_text(generate(read_configuration(args.config), args.name,args.kernel_chunk))

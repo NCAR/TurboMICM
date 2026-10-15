@@ -150,6 +150,7 @@ def initialization(identifier):
         for scale in (1,1e-12,1e12):
             m = Model(['A','B','C']); m.reaction(['A'],[('B',1)],rate(A=.5)); m.constraint('C',[(n,scale) for n in ('A','B','C')],scale*1.3); m.finalize(); s = State(m)
             try:
+                s.data.conditions[0].temperature = 298.15
                 s.set('A',.7); s.set('B',.15); s.set('C',5); s.rates(); s.solve(.001,method=5)
                 near(s.get('C'),1.3-.7-.15,1e-5*(1.3-.7-.15)); results.append(s.get('C'))
             finally: s.close(); m.close()
@@ -173,7 +174,7 @@ def initialization(identifier):
     if name in ('FailedInitializationRestoresCallerState','SuccessfulInitializationKeepsTheCorrection'):
         m = Model(['B','C']); m.constraint('C',[('B',1),('C',2)],2,equilibrium_reactants=1,name='squared'); m.finalize(); s = State(m)
         try:
-            solver = lib.chem_solver(3); stats = Stats(); s.set('B',.5)
+            solver = lib.chem_solver(3); stats = Stats(); s.set('B',.5); s.data.conditions[0].temperature = 298.15
             if name.startswith('Failed'):
                 solver.parameters.init_iterations = 1; s.set('C',100); s.rates()
                 equal(lib.chem_initialize_constraints(C.byref(solver),s.p,C.byref(stats)),9); equal(s.get('C'),100); equal(s.get('B'),.5)

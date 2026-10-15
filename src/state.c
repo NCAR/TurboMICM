@@ -2,7 +2,8 @@
 
 ChemState *chem_state_create(const ChemModel *m, size_t cells) {
   if (!m || !m->finalized || !cells || m->nvariables > SIZE_MAX / cells / (10*sizeof(double)) ||
-      m->nnz > SIZE_MAX / cells / sizeof(double)) return NULL;
+      m->nnz > SIZE_MAX / cells / sizeof(double) || m->ncustom > SIZE_MAX/cells/sizeof(double) ||
+      m->nreactions > SIZE_MAX/cells/sizeof(double) || cells > SIZE_MAX/sizeof(ChemConditions)) return NULL;
   ChemState *s = calloc(1, sizeof *s);
   if (!s) return NULL;
   s->model = m; s->cells = s->stride = cells; s->relative_tolerance = 1e-6;
@@ -29,7 +30,7 @@ ChemState *chem_state_create(const ChemModel *m, size_t cells) {
   for (size_t c = 0; c < cells; ++c) {
     s->conditions[c].temperature = m->default_temperature;
     s->conditions[c].pressure = m->default_pressure;
-    chem_ideal_air_density(&s->conditions[c]);
+    if (s->conditions[c].temperature != 0.0) chem_ideal_air_density(&s->conditions[c]);
   }
   return s;
 }

@@ -1,0 +1,12 @@
+Running solver on thread Running solver on thread Running solver on thread 10
+
+2
+Thread 1
+         A,         B,         C
+  2.55e-01,  1.37e-06,  7.45e-01
+Thread 2
+         A,         B,         C
+  2.55e-01,  1.37e-06,  7.45e-01
+Thread 3
+         A,         B,         C
+  2.55e-01,  1.37e-06,  7.45e-01

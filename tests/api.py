@@ -21,7 +21,7 @@ class Conditions(C.Structure):
 class Rate(C.Structure):
     _fields_ = [('type', I)] + [(name, D) for name in (
         'A B C D E k0_A k0_B k0_C k0_D kinf_A kinf_B kinf_C kinf_D kint_A kint_B kint_C kint_D Fc N X Y a0 n k0 z'.split())] + [
-        ('branch', I), ('diffusion', D), ('molecular_weight', D), ('probability', D), ('coefficients', D*10),
+        ('branch', I), ('diffusion', D), ('molecular_weight', D), ('probability', D), ('coefficients', D*16),
         ('ncoefficients', Z), ('label', C.c_char_p), ('custom_index', Z), ('function', P), ('context', P),('mean_free_speed_factor',D)]
 
 

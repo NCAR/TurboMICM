@@ -1,6 +1,7 @@
 #include "chem.h"
 #include <errno.h>
 #include <math.h>
+#include <limits.h>
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -92,10 +93,11 @@ int main(int argc, char **argv) {
     arg += 2;
   }
   if (argc-arg != 4 || !positive_size(argv[arg], &cells, 0) || !positive_size(argv[arg+1], &steps, 1) ||
-      threads > 2147483647 || !group_size) goto usage;
+      threads > INT_MAX || !group_size) goto usage;
   char *end; errno = 0; double dt = strtod(argv[arg+2], &end);
   if (errno || *end || !isfinite(dt) || dt <= 0.0) goto usage;
   omp_set_num_threads((int)threads);
+  if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_static,0);
   Table table = {0};
   if (!table_read(argv[arg+3], &table, cells)) { table_free(&table); return 1; }
   ChemModel *m = chem_load_ts1(1);
@@ -112,7 +114,7 @@ int main(int argc, char **argv) {
   ChemStatus *statuses = calloc(groups, sizeof *statuses);
   if (!states || !statistics || !statuses) { free(states); free(statistics); free(statuses); table_free(&table); chem_model_free(m); return 1; }
   int failed = 0;
-  #pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(runtime)
   for (size_t g = 0; g < groups; ++g) {
     size_t first = g*group_size, count = cells-first < group_size ? cells-first : group_size;
     ChemState *s = states[g] = chem_state_create(m, count);
@@ -136,7 +138,7 @@ int main(int argc, char **argv) {
   for (size_t g = 0; g < groups; ++g) if (statuses[g]) { fprintf(stderr, "warm-up group %zu: %s\n", g, chem_status_string(statuses[g])); failed = 1; }
   double start = omp_get_wtime();
   if (!failed) {
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(runtime)
     for (size_t g = 0; g < groups; ++g) {
       ChemSolver solver = chem_solver(3);
       for (size_t step = 0; step < steps; ++step) {

@@ -60,7 +60,7 @@ def rate_store(identifier):
         elif name == 'ParameterizedMultipliers':
             s = State(m)
             try:
-                s.data.conditions[0].air_density = 5; s.rates(); near(s.data.rates[1],10,1e-14)
+                s.data.conditions[0] = Conditions(300,0,5); s.rates(); near(s.data.rates[1],10,1e-14)
             finally: s.close()
         else: equal(lib.chem_rate_offset(m.p,LAMBDA)+sum(m.data.reactions[i].rate.type == LAMBDA for i in range(m.data.nreactions)),m.data.nreactions)
     finally: m.close()
@@ -160,25 +160,30 @@ def masking(_):
     m = Model(['A','B','C','D']); m.reaction(['A','B'],[('C',1),('D',1)]); m.finalize(); s = State(m,2)
     try:
         m.data.algebraic[1] = m.data.algebraic[3] = 1
-        for c,values in enumerate([[1,2,3,4],[10,20,30,40]]):
+        for c,values in enumerate([[1,2,3,4],[5,6,7,8]]):
             for i,v in enumerate(values): s.data.variables[i*2+c] = v
-            s.data.rates[c] = 2 if c == 0 else 3
-        f = arr([1000]*8); jac = arr([100]*(m.data.nnz*2))
+            s.data.rates[c] = 10 if c == 0 else 20
+        f = arr([1000]*8); jac = arr([500]*(m.data.nnz*2))
         lib.chem_generic_forcing(m.p,2,2,s.data.variables,s.data.rates,f)
         lib.chem_generic_jacobian(m.p,2,2,s.data.variables,s.data.rates,jac)
         for c in range(2):
+            equal(f[c],1000-[20,600][c]); equal(f[4+c],1000+[20,600][c])
             equal(f[2+c],1000); equal(f[6+c],1000)
             for row in (1,3):
-                for col in (0,1): equal(jac_value(m,s,jac,row,col,c),100)
+                for col in (0,1): equal(jac_value(m,s,jac,row,col,c),500)
+            for row,sign in [(0,1),(2,-1)]:
+                for col,derivatives in [(0,[20,120]),(1,[10,100])]: equal(jac_value(m,s,jac,row,col,c),500+sign*derivatives[c])
     finally: s.close(); m.close()
 
 
 @case('process_set:ProcessSetFiniteDifferenceJacobian.Matrix')
 def process_fd(_):
     m = Model(['A','B','C'])
-    m.reaction(['A','B'],[('C',1)],rate(A=.5)); m.reaction(['B','B'],[('A',1)],rate(A=1.2)); m.reaction(['C'],[('A',1),('B',.5)],rate(A=.3)); m.finalize()
+    m.reaction(['A','B'],[('C',2)],rate(A=1)); m.reaction(['C'],[('A',1)],rate(A=1)); m.finalize()
     s = State(m,2)
     try:
-        for name,values in [('A',[.2,.5]),('B',[.3,.8]),('C',[.1,.4])]: s.set(name,values)
-        s.rates(); verify_jacobian(s)
+        for name,values in [('A',[1,.5]),('B',[2,4]),('C',[3,1.5])]: s.set(name,values)
+        for i,values in enumerate([[5,8],[10,12]]):
+            for c,v in enumerate(values): s.data.rates[i*2+c] = v
+        verify_jacobian(s)
     finally: s.close(); m.close()

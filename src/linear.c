@@ -84,7 +84,7 @@ void chem_linear_solve(const ChemModel *m, size_t nc, size_t s, const double *a,
   }
 }
 ChemStatus chem_lu_separate(const ChemModel *m, size_t nc, size_t s, const double *a, double *lower, double *upper, int doolittle) {
-  if (!m || !a || !lower || !upper || nc > s || m->nnz > SIZE_MAX/s/sizeof(double)) return CHEM_INVALID;
+  if (!m || !a || !lower || !upper || !nc || !s || nc > s || m->nnz > SIZE_MAX/s/sizeof(double)) return CHEM_INVALID;
   size_t n = m->nvariables;
   double *work = calloc(m->nnz*s,sizeof(double)); if (!work) return CHEM_MEMORY;
   for (size_t i = 0; i < n; ++i) for (size_t j = 0; j < n; ++j) {

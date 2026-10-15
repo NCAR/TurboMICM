@@ -24,7 +24,7 @@ const char *chem_status_string(ChemStatus status) {
 }
 ChemModel *chem_model_create(void) {
   ChemModel *m = calloc(1, sizeof *m);
-  if (m) { m->default_temperature = 300.0; m->default_pressure = 101325.0; m->ignore_unused = 1; }
+  if (m) m->ignore_unused = 1;
   return m;
 }
 void chem_model_free(ChemModel *m) {
@@ -89,7 +89,7 @@ ChemStatus chem_model_species(ChemModel *m, const char *name, double initial, in
 ChemStatus chem_model_reaction(ChemModel *m, const size_t *reactants, size_t nr,
                               const size_t *products, const double *yields, size_t np, ChemRate rate) {
   if (!m || m->finalized || (nr && !reactants) || (np && (!products || !yields)) ||
-      rate.type < CHEM_ARRHENIUS || rate.type > CHEM_LAMBDA || rate.ncoefficients > 10) return CHEM_INVALID;
+      rate.type < CHEM_ARRHENIUS || rate.type > CHEM_LAMBDA || rate.ncoefficients > 16) return CHEM_INVALID;
   for (size_t j = 0; j < nr; ++j) if (reactants[j] >= m->nspecies) return CHEM_UNKNOWN;
   for (size_t j = 0; j < np; ++j) if (products[j] >= m->nspecies) return CHEM_UNKNOWN;
   if (rate.type == CHEM_SURFACE && (isnan(rate.diffusion) || isnan(rate.molecular_weight))) return CHEM_INVALID;
@@ -129,7 +129,7 @@ ChemStatus chem_model_constraint(ChemModel *m, const ChemConstraint *c) {
   return CHEM_OK;
 }
 ChemStatus chem_constraint_sparsity(const ChemModel *m, unsigned char *pattern, size_t n) {
-  if (!m || !pattern || n != m->nvariables || n > SIZE_MAX/n) return CHEM_INVALID;
+  if (!m || !pattern || !n || n != m->nvariables || n > SIZE_MAX/n) return CHEM_INVALID;
   memset(pattern,0,n*n);
   for (size_t i = 0; i < m->nconstraints; ++i) {
     const ChemConstraint *q = &m->constraints[i];

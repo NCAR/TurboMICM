@@ -122,7 +122,7 @@ ChemStatus chem_solve(ChemSolver *solver, double time_step, ChemState *s, ChemSt
   double hstart = p->h_start == 0.0 ? 1e-6*time_step : fmin(hmax, p->h_start);
   double h = fmin(fmax(hmin, fabs(hstart)), fabs(hmax)), time = 0.0;
   ChemStatus status = chem_initialize_constraints(solver, s, stats);
-  if (status) return status;
+  if (status) goto finished;
   int reject_last = 0, reject_more = 0;
   while (time-time_step+p->roundoff <= 0.0) {
     if (stats->internal_steps > p->max_steps) { status = CHEM_MAX_STEPS; break; }
@@ -178,6 +178,15 @@ ChemStatus chem_solve(ChemSolver *solver, double time_step, ChemState *s, ChemSt
     }
   }
 finished:
+  /* The reference solver facade clamps differential variables after each call;
+   * algebraic variables retain the values imposed by their constraints. */
+  for (size_t i = 0; i < m->nvariables; ++i) if (!m->algebraic[i]) {
+    #pragma omp simd
+    for (size_t c = 0; c < s->cells; ++c) {
+      double v = s->variables[i*s->stride+c];
+      s->variables[i*s->stride+c] = m->nconstraints ? (v > 0.0 ? v : 0.0) : (v < 0.0 ? 0.0 : v);
+    }
+  }
   stats->final_time = time;
   return status;
 }

@@ -76,6 +76,9 @@ def taylor(_):
         r = rate(TAYLOR,A=a,C=c,coefficients=coeffs)
         expected = a*math.exp(c/301.24)*sum(v*301.24**j for j,v in enumerate(coeffs))
         near(value(r),expected,1e-13*expected)
+    coefficients = [10.0**(-4*j) for j in range(16)]
+    r = rate(TAYLOR,coefficients=coefficients)
+    near(value(r),sum(v*301.24**j for j,v in enumerate(coefficients)),1e-13)
 
 
 @case(*['troe_rate_constant:TroeRateConstant.'+name for name in (

@@ -21,6 +21,9 @@ import analytical_cases
 import chapman_cases
 import aerosol_cases
 import dae_integration_cases
+import external_constraint_cases
+import flow_tube_cases
+import program_cases
 
 
 def main():

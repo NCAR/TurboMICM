@@ -32,7 +32,7 @@ typedef struct {
   double X, Y, a0, n, k0, z;
   int branch;
   double diffusion, molecular_weight, probability;
-  double coefficients[10];
+  double coefficients[16];
   size_t ncoefficients;
   char *label;
   size_t custom_index;
