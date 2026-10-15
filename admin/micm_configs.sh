@@ -1,7 +1,8 @@
 #!/bin/zsh
 # Benchmark MICM's 24 CPU solver configurations on TS1 against its default.
 #
-#   [THREADS=10] [ROUNDS=3] admin/micm_configs.sh ROOT OUT CELLS_CSV MICM_FINAL [NAME=COMMAND ...]
+#   [THREADS=10] [ROUNDS=3] [ONLY=pattern] [LABEL=name] \
+#       admin/micm_configs.sh ROOT OUT CELLS_CSV MICM_FINAL [NAME=COMMAND ...]
 #
 # micm_bench offers 24 CPU configurations: the matrix layout (standard ordering,
 # or vector ordering with 1, 2, 4, 8, or 128 cells interleaved), the LU storage
@@ -19,7 +20,11 @@
 #    30 s), at THREADS threads (default 10), for ROUNDS rounds (default 3), each
 #    run checked against MICM_FINAL (OUT/timing). Any NAME=COMMAND programs, such
 #    as the entries' bin/ts1_bench_cpu, are timed in the same rounds;
-# 4. writes OUT/configs.md: each configuration's median time, relative to the
+#    ONLY, a zsh pattern such as '*-in-place-mozart', times only the matching
+#    configurations, plus the default as the baseline; each session's timings go
+#    to OUT/timing-LABEL (LABEL defaults to all). Binaries already built from an
+#    unchanged copy are reused;
+# 4. writes OUT/configs-LABEL.md: each configuration's median time, relative to the
 #    default with the same grouping, and its largest difference from MICM_FINAL,
 #    then the extra programs, relative to both defaults.
 # Confirm the fastest configurations with admin/time_entries.py, at 10 and 1
@@ -33,6 +38,8 @@ micm_final=${4:A}
 shift 4
 threads=${THREADS:-10}
 rounds=${ROUNDS:-3}
+only=${ONLY:-*}
+label=${LABEL:-all}
 mkdir -p $out/bin $out/logs
 export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
@@ -46,7 +53,8 @@ for matrix in standard vector1 vector2 vector4 vector8 vector128; do
 done
 default=standard-in-place-mozart
 source=$out/micm_ts1_ref_configs.cpp
-python3 $here/micm_configs_source.py $root/reference/micm_ts1_ref.cpp $source
+python3 $here/micm_configs_source.py $root/reference/micm_ts1_ref.cpp $source.new
+if cmp -s $source.new $source; then rm $source.new; else mv $source.new $source; fi
 
 build() {
   local config=$1
@@ -62,6 +70,7 @@ build() {
 echo "building ${#configs} configurations"
 i=0
 for config in $configs; do
+  [[ -x $out/bin/micm-$config && $out/bin/micm-$config -nt $source ]] && continue
   build $config > $out/logs/build-$config.log 2>&1 &
   (( ++i % 6 == 0 )) && wait
 done
@@ -89,12 +98,13 @@ for config in $configs; do
 done
 [[ $(command grep -c "^$default,[0-9]*,yes," $out/check.csv) == 1 ]] || { echo "the default configuration does not reproduce MICM's result"; exit 1; }
 
-echo "timing ${#configs} configurations x 2 groupings, $threads threads, $rounds rounds"
 programs=()
 for config in $configs; do
+  [[ $config == $default || $config == ${~only} ]] || continue
   programs+=("micm-$config=$out/bin/micm-$config" "micm-$config-g32=$out/bin/micm-$config --group-size 32")
 done
-python3 $here/time_entries.py --input $cells_csv --reference $micm_final --out $out/timing \
+echo "timing $(( ${#programs} / 2 )) configurations x 2 groupings, $threads threads, $rounds rounds -> $out/timing-$label"
+python3 $here/time_entries.py --input $cells_csv --reference $micm_final --out $out/timing-$label \
     --threads $threads --rounds $rounds $programs "$@"
 
-python3 $here/micm_configs_table.py $out $default
+python3 $here/micm_configs_table.py $out $default $label

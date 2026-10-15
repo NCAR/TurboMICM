@@ -52,13 +52,15 @@ Transcripts
 - 2026-10-15: sol-high, sol-xhigh, and sol-max archived. Their reasoning is
   encrypted by OpenAI and cannot be read; messages, tool calls with their full
   output, and token counts are complete.
+- 2026-10-15: astra-high archived. A scan for credentials found only chance
+  matches inside the encrypted reasoning.
 
 | Run | Model | Effort | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|
 | sol-high | gpt-6.1-sol | high | Codex CLI 0.162.1, interactive | 2026-10-14 21:55-23:32 | `1d944f4`, 23:32 (6 commits) | finished |
 | sol-xhigh | gpt-6.1-sol | xhigh | Codex CLI 0.162.1, interactive | 2026-10-15 03:54-05:29 | `171f54a`, 05:29 (6 commits) | finished |
 | sol-max | gpt-6.1-sol | max | Codex CLI 0.162.1, interactive | 2026-10-15 07:26-09:13 | `001fb64`, 09:13 (7 commits) | finished |
-| astra-high | gpt-6-astra | high | Codex CLI 0.162.1, interactive | 2026-10-15 12:10- | | running |
+| astra-high | gpt-6-astra | high | Codex CLI 0.162.1, interactive | 2026-10-15 12:10-14:26 | `4055d7c`, 14:26 (15 commits) | finished |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -110,7 +112,19 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Session start: 2026-10-15 12:10, `codex -c features.memories=false` in
   `benchmarks/astra-high`, with `~/.codex/config.toml` set to gpt-6-astra at high
   effort; the session record confirms both.
+- Goal: "read PROMPT.md and work until done, commit", with no push.
 - Codex session `01a140c1-b679-7082-aef7-62cd2c85941c`.
+- Tokens: 1,429,356 total; input 1,148,542 (plus 42,448,384 cached); output
+  280,814 (41,030 reasoning).
+- Final commit `4055d7c`, 14:26, "Validate complete CPU port and final TS1
+  acceptance gates". No remote; the working tree is clean; all deliverables are
+  present, plus a WORK_LOG.md.
+- Self-reported, not yet verified:
+  - all 680 cases pass with both compilers, none N/A: it wrote C equivalents of
+    the five C++-only cases;
+  - the TS1 gate passes;
+  - clang benchmark 9.63 s against MICM's 27.42 s (2.85 times faster);
+  - about 2 h 16 min of work.
 - Other load during the session: Tier 2 preparation ran from 13:24 to 13:34, using
   at most two threads at nice 10–15. It included two compiles, a few seconds of
   test runs, and the start of the reference computation. Astra ran no timing in

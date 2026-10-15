@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Tabulate admin/micm_configs.sh's results: OUT/configs.md.
 
-    admin/micm_configs_table.py OUT DEFAULT
+    admin/micm_configs_table.py OUT DEFAULT [LABEL]
+
+LABEL (default all) picks the timing session, OUT/timing-LABEL; the table goes
+to OUT/configs-LABEL.md. A configuration that session did not time is left blank.
 
 First come matrix tables, matrix layout by LU variant: the median elapsed_ms of
 each configuration and its speed relative to DEFAULT, one table per grouping,
@@ -20,7 +23,8 @@ import sys
 from pathlib import Path
 
 out, default = Path(sys.argv[1]), sys.argv[2]
-with open(out / "timing" / "timings.csv", newline="") as file:
+label = sys.argv[3] if len(sys.argv) > 3 else "all"
+with open(out / f"timing-{label}" / "timings.csv", newline="") as file:
     rows = list(csv.DictReader(file))
 with open(out / "check.csv", newline="") as file:
     configs = [row["config"] for row in csv.DictReader(file)]
@@ -49,7 +53,13 @@ for grouping, title in (("", "one cell group per thread"), ("-g32", "32-cell gro
         cells = []
         for storage, algorithm in LUS:
             timing = median_ms(f"micm-{layout}-{storage}-{algorithm}{grouping}")
-            cells.append(f"{timing[0]:,.0f} ({base[grouping][0] / timing[0]:.2f}×)" if timing and base[grouping] else "failed")
+            program = f"micm-{layout}-{storage}-{algorithm}{grouping}"
+            if not runs(program):
+                cells.append("")
+            elif timing and base[grouping]:
+                cells.append(f"{timing[0]:,.0f} ({base[grouping][0] / timing[0]:.2f}×)")
+            else:
+                cells.append("failed")
         lines.append(f"| {layout} | " + " | ".join(cells) + " |")
     lines.append("")
 lines += ["Largest relative difference of the final states from MICM_FINAL, over both groupings:", "", lu_header,
@@ -68,6 +78,8 @@ lines += [
     "|---|---:|---:|---:|---:|---:|---|---:|",
 ]
 for config in configs:
+    if not any(runs(f"micm-{config}{grouping}") for grouping in GROUPINGS):
+        continue
     cells, steps, gates, largest = [], [], set(), []
     for grouping in GROUPINGS:
         program = f"micm-{config}{grouping}"
@@ -101,5 +113,5 @@ if others:
         median, low, high = timing
         ratios = [f"{base[g][0] / median:.2f}×" if base[g] else "" for g in GROUPINGS]
         lines.append(f"| {name} | {median:,.0f} ({low:,.0f}–{high:,.0f}) | {ratios[0]} | {ratios[1]} | {gates} | {largest_text} |")
-(out / "configs.md").write_text("\n".join(lines) + "\n")
+(out / f"configs-{label}.md").write_text("\n".join(lines) + "\n")
 print("\n".join(lines))
