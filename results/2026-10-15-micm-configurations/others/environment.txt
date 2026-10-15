@@ -1,0 +1,49 @@
+date: 2026-10-15T15:02:55
+host: Gemini.local
+platform: macOS-27.0.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,2 | Apple M5 | 4 | 6
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=22872163)	96%; AC attached; not charging present: true
+uptime: 15:02  up 19:04, 3 users, load averages: 1.55 6.14 7.66
+input: <scratch>/timing/cells_10000_seed2026.csv
+reference: <scratch>/timing/ts1_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 10; rounds: 3
+program micm-standard-in-place-mozart: <out>/bin/micm-standard-in-place-mozart
+program micm-standard-in-place-mozart-g32: <out>/bin/micm-standard-in-place-mozart --group-size 32
+program micm-standard-in-place-doolittle: <out>/bin/micm-standard-in-place-doolittle
+program micm-standard-in-place-doolittle-g32: <out>/bin/micm-standard-in-place-doolittle --group-size 32
+program micm-standard-separate-mozart: <out>/bin/micm-standard-separate-mozart
+program micm-standard-separate-mozart-g32: <out>/bin/micm-standard-separate-mozart --group-size 32
+program micm-standard-separate-doolittle: <out>/bin/micm-standard-separate-doolittle
+program micm-standard-separate-doolittle-g32: <out>/bin/micm-standard-separate-doolittle --group-size 32
+program micm-vector1-in-place-doolittle: <out>/bin/micm-vector1-in-place-doolittle
+program micm-vector1-in-place-doolittle-g32: <out>/bin/micm-vector1-in-place-doolittle --group-size 32
+program micm-vector1-separate-mozart: <out>/bin/micm-vector1-separate-mozart
+program micm-vector1-separate-mozart-g32: <out>/bin/micm-vector1-separate-mozart --group-size 32
+program micm-vector1-separate-doolittle: <out>/bin/micm-vector1-separate-doolittle
+program micm-vector1-separate-doolittle-g32: <out>/bin/micm-vector1-separate-doolittle --group-size 32
+program micm-vector2-in-place-doolittle: <out>/bin/micm-vector2-in-place-doolittle
+program micm-vector2-in-place-doolittle-g32: <out>/bin/micm-vector2-in-place-doolittle --group-size 32
+program micm-vector2-separate-mozart: <out>/bin/micm-vector2-separate-mozart
+program micm-vector2-separate-mozart-g32: <out>/bin/micm-vector2-separate-mozart --group-size 32
+program micm-vector2-separate-doolittle: <out>/bin/micm-vector2-separate-doolittle
+program micm-vector2-separate-doolittle-g32: <out>/bin/micm-vector2-separate-doolittle --group-size 32
+program micm-vector4-in-place-doolittle: <out>/bin/micm-vector4-in-place-doolittle
+program micm-vector4-in-place-doolittle-g32: <out>/bin/micm-vector4-in-place-doolittle --group-size 32
+program micm-vector4-separate-mozart: <out>/bin/micm-vector4-separate-mozart
+program micm-vector4-separate-mozart-g32: <out>/bin/micm-vector4-separate-mozart --group-size 32
+program micm-vector4-separate-doolittle: <out>/bin/micm-vector4-separate-doolittle
+program micm-vector4-separate-doolittle-g32: <out>/bin/micm-vector4-separate-doolittle --group-size 32
+program micm-vector8-in-place-mozart: <out>/bin/micm-vector8-in-place-mozart
+program micm-vector8-in-place-mozart-g32: <out>/bin/micm-vector8-in-place-mozart --group-size 32
+program micm-vector8-in-place-doolittle: <out>/bin/micm-vector8-in-place-doolittle
+program micm-vector8-in-place-doolittle-g32: <out>/bin/micm-vector8-in-place-doolittle --group-size 32
+program micm-vector8-separate-mozart: <out>/bin/micm-vector8-separate-mozart
+program micm-vector8-separate-mozart-g32: <out>/bin/micm-vector8-separate-mozart --group-size 32
+program micm-vector8-separate-doolittle: <out>/bin/micm-vector8-separate-doolittle
+program micm-vector8-separate-doolittle-g32: <out>/bin/micm-vector8-separate-doolittle --group-size 32
+program micm-vector128-in-place-doolittle: <out>/bin/micm-vector128-in-place-doolittle
+program micm-vector128-in-place-doolittle-g32: <out>/bin/micm-vector128-in-place-doolittle --group-size 32
+program micm-vector128-separate-mozart: <out>/bin/micm-vector128-separate-mozart
+program micm-vector128-separate-mozart-g32: <out>/bin/micm-vector128-separate-mozart --group-size 32
+program micm-vector128-separate-doolittle: <out>/bin/micm-vector128-separate-doolittle
+program micm-vector128-separate-doolittle-g32: <out>/bin/micm-vector128-separate-doolittle --group-size 32

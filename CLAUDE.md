@@ -175,7 +175,9 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - Consider Claude Haiku as the fast-tier match for Luna.
 - Time the entries on an x86-64 Linux machine.
 - Finish the Tier 2 references, undisclosed scenarios, and scenario timing.
-- Time all 24 of `micm_bench`'s CPU configurations (`admin/micm_configs.sh`) and
-  report the entries against MICM's fastest, not only its default.
+- Time MICM's fastest configurations against the entries at 1 thread as well
+  (`admin/time_entries.py`, 5 rounds at 10 and 1 threads). All 24 configurations
+  are timed at 10 threads (`results/2026-10-15-micm-configurations`), and
+  `admin/leaderboard.py` regenerates the wiki's Leaderboard and matrices.
 - Current status is in `admin/runs.md` and on the wiki's Tier-1-Results and
   Tier-2-Results pages.
