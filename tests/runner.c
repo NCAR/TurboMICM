@@ -51,6 +51,26 @@ int main(int argc, char **argv)
         result = test_builder(suite, test);
       if (result == 2)
         result = test_verification(suite, test);
+      if (result == 2)
+        result = test_analytical(id, test);
+      if (result == 2)
+        result = test_process(suite, test);
+      if (result == 2)
+        result = test_process_set(suite, test);
+      if (result == 2)
+        result = test_grouped(suite, test);
+      if (result == 2)
+        result = test_aerosol(id, test);
+      if (result == 2)
+        result = test_external(id, test);
+      if (result == 2)
+        result = test_dae(suite, test);
+      if (result == 2)
+        result = test_chemistry(id, test);
+      if (result == 2)
+        result = test_chapman(id, suite, test);
+      if (result == 2)
+        result = test_stiff(id, suite, test);
     }
     if (result == 0)
     {
@@ -59,7 +79,7 @@ int main(int argc, char **argv)
     }
     else if (result == 3)
     {
-      printf("%s N/A C++ language-only behavior\n", id);
+      printf("%s N/A C++ compile-time concepts/overload categories; unified C view has no equivalent\n", id);
       ++na;
     }
     else

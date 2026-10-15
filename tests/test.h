@@ -26,6 +26,16 @@
     }                                                                                                        \
   } while (0)
 #define IS(name) (!strcmp(test, (name)))
+int test_stiff(const char *id, const char *suite, const char *test);
+int test_chapman(const char *id, const char *suite, const char *test);
+int test_chemistry(const char *id, const char *test);
+int test_dae(const char *suite, const char *test);
+int test_external(const char *id, const char *test);
+int test_aerosol(const char *id, const char *test);
+int test_grouped(const char *suite, const char *test);
+int test_process_set(const char *suite, const char *test);
+int test_process(const char *suite, const char *test);
+int test_analytical(const char *id, const char *test);
 int test_verification(const char *suite, const char *test);
 int test_builder(const char *suite, const char *test);
 int test_constraint_set(const char *suite, const char *test);

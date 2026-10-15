@@ -229,6 +229,10 @@ ck_status ck_state_move(ck_state **source, ck_state **destination);
 ck_status ck_model_set_lambda(ck_model *model, const char *name, ck_rate_function function, void *context);
 ck_status ck_model_validate_species_used(const ck_mechanism *description);
 ck_status ck_update_rates(ck_state *state);
+/* Accumulate chemical reactions only, preserving masked algebraic rows. */
+void ck_add_forcing(const ck_state *state, const double *y, double *forcing);
+void ck_subtract_jacobian(const ck_state *state, const double *y, double *negative_jacobian);
+/* Clear then accumulate chemical and external processes. */
 void ck_forcing(const ck_state *state, const double *y, double *forcing);
 void ck_jacobian(const ck_state *state, const double *y, double *negative_jacobian);
 void ck_constraint_forcing(const ck_state *state, const double *y, double *forcing);
@@ -251,6 +255,8 @@ ck_status ck_factor_separate(const ck_model *model, size_t cells, const double *
 void ck_linear_solve_separate(const ck_model *model, size_t cells, const double *lower, const double *upper,
                               double *rhs);
 void ck_alpha_minus_jacobian(const ck_model *model, size_t cells, double *matrix, double alpha);
+void ck_matrix_vector(const ck_model *model, size_t cells, const double *matrix, const double *x,
+                      double *result);
 void ck_factor(const ck_model *model, size_t cells, double *matrix, ck_lu_algorithm algorithm);
 void ck_linear_solve(const ck_model *model, size_t cells, const double *lu, double *rhs);
 

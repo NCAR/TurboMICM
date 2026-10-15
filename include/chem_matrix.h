@@ -65,6 +65,8 @@ ck_status ck_sparse_block_view(const ck_sparse *matrix, size_t flat_index, int w
 ck_status ck_vector_view(void *data, size_t rows, size_t element_size, int writable, ck_view *view);
 const void *ck_view_const_at(const ck_view *view, size_t row);
 void *ck_view_at(ck_view *view, size_t row);
+/* Precompute one contiguous group, including padding in its capacity. */
+ck_status ck_view_group(ck_view source, size_t group, ck_view *view);
 ck_status ck_view_fill(ck_view destination, const void *value, int strict);
 ck_status ck_view_copy(ck_view destination, ck_view source, int strict);
 /* Mutable slots must be obtained through ck_view_at; the callback returns a

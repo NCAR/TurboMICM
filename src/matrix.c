@@ -479,3 +479,22 @@ void ck_array_function_free(ck_array_function *f)
   free(f->prototypes);
   memset(f, 0, sizeof *f);
 }
+
+ck_status ck_view_group(ck_view source, size_t group, ck_view *view)
+{
+  if (!view)
+    return CK_INVALID;
+  size_t width = source.width ? source.width : 1;
+  if (group > SIZE_MAX / width || group * width >= source.rows)
+    return CK_INVALID;
+  size_t first = group * width, remaining = source.rows - first;
+  *view = source;
+  view->data = (void *)ck_view_const_at(&source, first);
+  view->offset = 0;
+  view->rows = remaining < width ? remaining : width;
+  view->capacity = width;
+  view->width = 0;
+  view->group_stride = 0;
+  view->lane_stride = 1;
+  return CK_OK;
+}

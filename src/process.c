@@ -2,12 +2,11 @@
 
 /* Arithmetic within each cell preserves reaction/derivative order. Each vector
    loop has contiguous independent cells, with no indirect scatter in SIMD loops. */
-void ck_forcing(const ck_state *s, const double *restrict y, double *restrict f)
+void ck_add_forcing(const ck_state *s, const double *restrict y, double *restrict f)
 {
   const ck_model *m = s->model;
   const size_t cells = s->cells;
   double *restrict rate = ((ck_workspace *)s->workspace)->scratch;
-  memset(f, 0, m->n * cells * sizeof(double));
   for (size_t r = 0; r < m->nr; ++r)
   {
     memcpy(rate, s->rates + r * cells, cells * sizeof(double));
@@ -38,6 +37,13 @@ void ck_forcing(const ck_state *s, const double *restrict y, double *restrict f)
         v[c] += yield * rate[c];
     }
   }
+}
+void ck_forcing(const ck_state *s, const double *restrict y, double *restrict f)
+{
+  const ck_model *m = s->model;
+  const size_t cells = s->cells;
+  memset(f, 0, m->n * cells * sizeof(double));
+  ck_add_forcing(s, y, f);
   for (size_t k = 0; k < m->nexternal; ++k)
     if (m->external[k].forcing)
       m->external[k].forcing(s, y, f, m->external[k].context);
@@ -46,12 +52,11 @@ void ck_forcing(const ck_state *s, const double *restrict y, double *restrict f)
       if (m->algebraic[j])
         memset(f + j * cells, 0, cells * sizeof(double));
 }
-void ck_jacobian(const ck_state *s, const double *restrict y, double *restrict a)
+void ck_subtract_jacobian(const ck_state *s, const double *restrict y, double *restrict a)
 {
   const ck_model *m = s->model;
   const size_t cells = s->cells;
   double *restrict rate = ((ck_workspace *)s->workspace)->scratch;
-  memset(a, 0, m->nnz * cells * sizeof(double));
   for (size_t job = 0; job < m->njobs; ++job)
   {
     const ck_derivative *d = &m->jobs[job];
@@ -84,6 +89,13 @@ void ck_jacobian(const ck_state *s, const double *restrict y, double *restrict a
         v[c] -= yield * rate[c];
     }
   }
+}
+void ck_jacobian(const ck_state *s, const double *restrict y, double *restrict a)
+{
+  const ck_model *m = s->model;
+  const size_t cells = s->cells;
+  memset(a, 0, m->nnz * cells * sizeof(double));
+  ck_subtract_jacobian(s, y, a);
   for (size_t k = 0; k < m->nexternal; ++k)
     if (m->external[k].jacobian_terms)
       m->external[k].jacobian_terms(s, y, a, m->external[k].context);
@@ -285,4 +297,13 @@ void ck_dispatch_solve(const ck_linear_operations *ops, const ck_model *m, size_
     ops->solve(m, cells, lu, rhs, ops->context);
   else
     ck_linear_solve(m, cells, lu, rhs);
+}
+
+void ck_matrix_vector(const ck_model *m, size_t cells, const double *matrix, const double *x, double *result)
+{
+  memset(result, 0, m->n * cells * sizeof(double));
+  for (size_t row = 0; row < m->n; ++row)
+    for (size_t p = m->row_start[row]; p < m->row_start[row + 1]; ++p)
+      for (size_t c = 0; c < cells; ++c)
+        result[row * cells + c] += matrix[p * cells + c] * x[m->columns[p] * cells + c];
 }

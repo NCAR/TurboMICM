@@ -1,13 +1,12 @@
 # Validation status
 
-This is a development checkpoint; the full correctness gate is not yet met.
-Every missing reference case is reported FAIL by `make test-cpu`.
+All reference case IDs are covered. Final benchmark and portability checks are in progress.
 
 | Check (`-O3 -DNDEBUG`) | Apple clang 21 | GCC 15.2 |
 |---|---:|---:|
-| Reference cases passing | 520 | 520 |
-| Remaining reference cases (FAIL) | 156 | 156 |
-| C++-only compile-time cases (N/A) | 4 | 4 |
+| Reference cases passing | 675 | 675 |
+| Failing reference cases | 0 | 0 |
+| C++-only compile-time cases (N/A) | 5 | 5 |
 | TS1, 100 cells, 100 x 30 s, group size 31, 2 threads | PASS, bit-identical | PASS, max relative 3.27e-14 |
 
 All eight tutorial programs match the reference's printed numerical results and
