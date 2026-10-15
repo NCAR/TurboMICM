@@ -8,7 +8,9 @@ Every COMMAND is a TS1 benchmark taking `[--threads N] CELLS STEPS DT CELLS_CSV`
 like reference/micm_ts1_ref and an entry's bin/ts1_bench_cpu, and may carry its
 own options, for example "micm_ts1_ref --group-size 32". Each round runs every
 program at every thread count with the same arguments and input, rotating the
-program order from round to round so that no program always runs first or last.
+program order from round to round so that no program always runs first or last:
+each round starts an equal share of the list further on (one program further,
+when there are as many rounds as programs).
 Each run gets a fresh working directory. Its ts1_final.csv is checked against
 MICM_FINAL with reference/compare_final.py and then deleted.
 
@@ -89,7 +91,7 @@ with open(table, "w", newline="") as file:
     csv.writer(file).writerow(fields)
 
 for round_number in range(1, args.rounds + 1):
-    shift = (round_number - 1) % len(programs)
+    shift = (round_number - 1) * len(programs) // args.rounds % len(programs)
     order = programs[shift:] + programs[:shift]
     for threads in thread_counts:
         for name, command in order:

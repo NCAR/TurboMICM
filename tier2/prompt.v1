@@ -4,8 +4,8 @@ This prompt is also in PROMPT.md in your directory. Below, ROOT means <root>.
 
 This is Tier 2. In Tier 1 you ported MICM's CPU solver to portable C and made it
 fast while keeping MICM's numerical methods. Your directory, ROOT/<run>/, is a copy
-of your own Tier 1 repository at commit <tier1_commit>; its history, including the
-Tier 1 prompt, is in git. In Tier 2 the numerical methods are yours to research,
+of your own Tier 1 repository at commit <tier1_commit>, with its history; PROMPT.md
+now holds this prompt. In Tier 2 the numerical methods are yours to research,
 choose, design, and test. The aim is the fastest solution of atmospheric chemistry
 that is accurate enough for an atmospheric model.
 

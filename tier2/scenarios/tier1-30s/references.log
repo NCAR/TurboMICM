@@ -1,0 +1,6 @@
+# tier1-30s: 1000 cells (seed 2026, NOx x1); 101 steps of 30 s; constant photolysis
+default: elapsed_ms=6751.470 internal_steps=1818 accepted=1818 rejected=0 function_calls=3636 jacobian_updates=1818 decompositions=1818 solves=5454 
+tight: elapsed_ms=33095.066 internal_steps=5020 accepted=5010 rejected=0 function_calls=30110 jacobian_updates=5020 decompositions=5020 solves=30120 
+tighter: elapsed_ms=60976.666 internal_steps=8845 accepted=8833 rejected=0 function_calls=53058 jacobian_updates=8845 decompositions=8845 solves=53070 
+convergence (tight against tighter): overall 10.77 digits over 175291 values (177 species, 1000 rows); worst species: BR 9.73, OH 9.95, PHENO 10.32, MCO3 10.37, ISOPO2VBS 10.43
+MICM default against tighter: overall 4.63 digits over 175291 values (177 species, 1000 rows); worst species: C6H5O2 4.03, MEKO2 4.17, XYLENO2 4.19, MTERPO2VBS 4.22, HOBR 4.24

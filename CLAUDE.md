@@ -27,7 +27,8 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   - `transcripts`: an orphan branch of gzipped, redacted session transcripts.
 - **Keep the two copies identical:** `prompt.v3`, `prompts/`, `reference/`, and the
   prompt and setup scripts exist in both the run root and this repo. Check with
-  `diff -r`.
+  `diff -r`. `tier2/` likewise mirrors the committed files of
+  `ODE/benchmarks/tier2` (`git ls-files benchmarks/tier2` in ODE).
 - **Contestants:**
   - Codex CLI 0.162.1: gpt-6.1-sol, gpt-6-astra, and gpt-6-luna. Luna replaced
     gpt-5.6-terra on 2026-10-15.
@@ -161,9 +162,10 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
     and L - 1 digits per species on every scenario, at L = 2 and L = 3.
   - Scenarios: f(t) photolysis applied per step, 24-hour day and night, 5–30
     minute steps, clean and polluted cells, some held out.
-- **Before launch:** build the `ODE/benchmarks/tier2` root, the MICM scenario
-  driver, the scenarios and references, `score.py`, Tier 2 prompt generation and
-  run setup, and scenario timing (`tier2/README.md` has the list).
+- **Before launch:** the tooling is built (`tier2/README.md` has the table).
+  Remaining: five of the six references (suspended while astra-high ran), the
+  undisclosed scenarios (kept outside the run root), and scenario timing in
+  `admin/time_entries.py`.
 
 ## Open items
 
@@ -172,6 +174,8 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - Rank with an undisclosed seed, and run the blind review.
 - Consider Claude Haiku as the fast-tier match for Luna.
 - Time the entries on an x86-64 Linux machine.
-- Build the Tier 2 tooling before the Tier 2 launch.
+- Finish the Tier 2 references, undisclosed scenarios, and scenario timing.
+- Time all 24 of `micm_bench`'s CPU configurations (`admin/micm_configs.sh`) and
+  report the entries against MICM's fastest, not only its default.
 - Current status is in `admin/runs.md` and on the wiki's Tier-1-Results and
   Tier-2-Results pages.

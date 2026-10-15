@@ -6,8 +6,9 @@ from its own Tier 1 solution, researches the literature, prototypes and scans
 method structures, and implements the fastest methods it can justify as accurate
 enough for an atmospheric model.
 
-Status: designed and approved on 2026-10-15; not yet launched. The prompt template
-is `prompt.v1`.
+Status: designed and approved on 2026-10-15; tooling built; not yet launched.
+The prompt template is `prompt.v1`. This directory mirrors the committed files of
+the Tier 2 run root, `ODE/benchmarks/tier2`; keep the two identical.
 
 ## Plan
 
@@ -47,29 +48,23 @@ is `prompt.v1`.
 - `<tier1_commit>`: the run's final Tier 1 commit, for example `001fb64` for
   sol-max.
 
-## To build before launch
+## Tooling
 
-1. The Tier 2 run root, `ODE/benchmarks/tier2`, with `micm/` and `reference/`
-   linked to Tier 1's, so the entries' Makefiles still work, and a new
-   `scenarios/`.
-2. A MICM scenario driver: photolysis rates updated at the start of each step
-   from f(t), tight-tolerance settings, and snapshot output. Check it against
-   `micm_ts1_ref` on Tier 1's scenario.
-3. The scenarios:
-   - Tier 1's benchmark;
-   - 24-hour day-night runs, with f(t) from the solar zenith angle, at 5, 10,
-     and 30 minute steps;
-   - clean and polluted cell sets;
-   - undisclosed variants: other seeds, latitudes, seasons, and 48-hour runs.
-4. High-accuracy references: MICM's Rosenbrock at very tight tolerances, checked
-   for convergence.
-5. `scenarios/score.py` (significant digits overall and per species, the NaN and
-   negativity checks) and `scenarios/README.md` (the scenario file format and
-   the ts1_snapshots.csv format).
-6. Prompt generation and setup for Tier 2: the `<tier1_commit>` placeholder, and
-   run directories cloned from `runs/<model>/<effort>`.
-7. Scenario support in the timing harness.
-8. MICM's own accuracy and time on every scenario, for context.
+| Path | Purpose | Status |
+|---|---|---|
+| `prompts/make_prompts.py` | fills the template; `<tier1_commit>` is the Tier 1 run's last commit | built; sol-xhigh and sol-max prompts made |
+| `admin/setup_runs.py` | clones each Tier 1 run repository into the Tier 2 root (no shared files, no remote), writes PROMPT.md, links `micm/` and `reference/` | built and tested; sol-xhigh and sol-max set up |
+| `scenarios/micm_scenario.cpp` | MICM on a scenario: f(t) photolysis at the start of each step, any MICM Rosenbrock method and tolerances, snapshots | built; bit-identical to `micm_ts1_ref` on Tier 1's scenario |
+| `admin/make_scenarios.sh`, `scenarios/make_scenario.py` | the six disclosed scenarios, and 10,000-cell versions for timing | built; regenerates the disclosed set byte for byte |
+| `admin/make_references.sh` | references: MICM's six-stage Rosenbrock at 1e-10 relative and 1e-23 absolute, checked against 1e-9 and 1e-22 | tier1-30s done (converged to 10.8 digits; MICM's default reaches 4.6); the other five suspended while astra-high runs |
+| `scenarios/score.py` | significant digits overall and per species, and the gate | built |
+| `scenarios/README.md` | the scenario, output, and scoring formats, for the agents | written |
+
+Still to do before launch:
+- the five remaining references, on an idle machine;
+- the undisclosed scenarios, made the same way and kept outside the run root;
+- scenario timing in `admin/time_entries.py`, then MICM's time on every
+  scenario, for context.
 
 ## Launch
 

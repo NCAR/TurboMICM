@@ -111,3 +111,9 @@ Token counts are as Codex reports them: total = uncached input + output.
   `benchmarks/astra-high`, with `~/.codex/config.toml` set to gpt-6-astra at high
   effort; the session record confirms both.
 - Codex session `01a140c1-b679-7082-aef7-62cd2c85941c`.
+- Other load during the session: Tier 2 preparation ran from 13:24 to 13:34, using
+  at most two threads at nice 10–15. It included two compiles, a few seconds of
+  test runs, and the start of the reference computation. Astra ran no timing in
+  that window; it was porting the sparse-matrix tests. At 13:34 the reference
+  computation was suspended (SIGSTOP) until the run finished, to keep the machine
+  idle. No other work from the experiment ran during the Sol sessions.

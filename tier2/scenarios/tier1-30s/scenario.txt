@@ -1,0 +1,5 @@
+# 1000 cells (seed 2026, NOx x1); 101 steps of 30 s; constant photolysis
+cells = cells.csv
+dt = 30
+steps = 101
+photolysis = photolysis.csv
