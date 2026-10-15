@@ -80,3 +80,24 @@ broadcast scalars implicitly; the state-case port corrected that mismatch.
 Explicit fill APIs now provide broadcasting for configuration defaults and
 hand-built configuration comparison fixtures. The original error checks and
 all state tests pass without relaxed bounds.
+
+## Matrix utility API
+
+`ChemMatrix` selects real or integer storage and row-major (`group=0`) or
+grouped column-vector (`group>0`) layout at runtime. Grouped allocations retain
+padding so the original storage offsets and non-strict reductions are observable.
+The solver's existing contiguous-cell buffers are unaffected by this utility API.
+Owning outputs start zero-initialized and must be freed before reuse; borrowed
+arrays/views never free data. Typed element pointers provide direct native
+integer/real access. Numeric callbacks use double values, with checked integer
+conversion on write.
+
+C callbacks plus borrowed context replace lambdas and their captures. Function
+creation records argument kinds, scalar types, column counts and mutability;
+invocation checks equal row counts while allowing them to differ from creation.
+Row callbacks receive a snapshot of arguments and write back mutable arguments.
+Their default iteration excludes padding so caller-owned vectors need no extra
+allocation. Reductions explicitly select logical or padded rows. Const view
+writes and out-of-range columns return errors, including release builds where
+the corresponding C++ assertion would be disabled. Tests retain all original
+checks, add those release-mode errors, and use groups 1, 2, 3 and 4 as specified.

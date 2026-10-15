@@ -38,6 +38,21 @@ Bulk named setters use `ChemNamedValues`; the custom-matrix setter transposes
 checked row-major input into the library layout. Named concentration accessors
 return contiguous columns for mutable or const access.
 
+## Matrix utilities
+
+`include/chem_matrix.h` exposes owning dense matrices and borrowed array/column
+views. Group zero selects row-major storage; a positive group size stores each
+column contiguously within the group and pads the final group. Real and native
+integer storage share shape and ownership operations. Scalar fill/min/max touch
+allocated padding, while element arithmetic visits logical entries.
+
+Reusable array functions capture a callback and caller-owned context, with a
+schema derived from prototypes. Invocation checks types, kinds, columns,
+mutability and agreement of row counts before calling user code. Row counts may
+change between calls. Views support copies, fills, row callbacks, and reductions
+with an explicit strict flag controlling padding. Const views reject writes.
+These utilities provide the C equivalent of MICM's matrix-policy operations.
+
 ## Linear algebra and integration
 
 `src/sparse.c` adds symbolic fill once and stores a plan for Mozart elimination.

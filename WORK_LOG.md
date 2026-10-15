@@ -55,16 +55,23 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   dimensions. Named setters now require one value per cell, matching MICM;
   explicit fill functions broadcast, including generated configuration inputs.
 
+- All 59 matrix and 58 vector-matrix cases pass on both compilers (321 total).
+  The utility API supports real/integer storage, row-major and grouped layouts,
+  deep copies, checked row assignment, scalar operations, element callbacks,
+  reusable shape-checked functions, borrowed const/mutable views, row temporaries,
+  vector arguments, and strict/non-strict reductions. Group sizes 1–4 retain
+  original raw offsets, padding, dimensions and numerical assertions.
+
 ## Remaining work (required)
 
-- Port all remaining 476 cases, individually checking original test quantities.
+- Port all remaining 359 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
 - External model hooks and aerosol models. Built-in constraints and
   initialization now pass their unit tests, equilibrium/overshoot integrations,
   and the combined Terminator–Robertson conservation test.
 - Backward Euler analytical/regression coverage, reaction-rate tracking, solver status
   behavior, solver-builder validations and full species/property/phase APIs.
-- Dense/sparse matrix utilities, grouped views and operations, generic C
+- Sparse matrix utilities, grouped views and operations, generic C
   equivalents of C++ ownership and dimension checks. Only genuinely
   compile-time-only cases may receive documented N/A reasons.
 - Remaining solver regression/analytical tests,
