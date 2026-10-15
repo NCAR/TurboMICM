@@ -1,0 +1,10 @@
+Solver state: Converged
+accepted: 18
+function_calls: 36
+jacobian_updates: 18
+number_of_steps: 18
+accepted: 18
+rejected: 0
+decompositions: 18
+solves: 54
+final simulation time: 200

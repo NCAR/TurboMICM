@@ -17,10 +17,12 @@ compiled C artifacts automatically. On Linux, use `CC=gcc` or `CC=clang` with an
 installed OpenMP runtime. No third-party runtime library other than OpenMP is
 required by the C implementation.
 
-`make test-cpu` prints all 680 reference case identifiers and reports unported
-cases as FAIL; it also runs configuration equivalence checks. The task is not
-complete. See RESULTS.md and WORK_LOG.md for verified progress and remaining work.
-`make test-config` runs the configuration checks separately.
+`make test-cpu` prints all 680 reference case identifiers and checks all ported cases, including eight tutorial stdout comparisons; it also
+runs configuration equivalence checks. Both compilers currently pass all 680
+cases. See RESULTS.md and WORK_LOG.md for the remaining final validation.
+`make test-config` runs the configuration checks separately. Run an individual
+tutorial with `bin/tutorial_cpu README_example` (or another program identifier
+from `tests/cases.txt`).
 
 Build and run the TS1 benchmark:
 

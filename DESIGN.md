@@ -131,7 +131,7 @@ callbacks must keep mutable per-cell values in the state.
 The integration tests implement two aerosol models through this public callback
 interface, with added phase species, number concentrations, temperature-updated
 parameters and user-set parameters. Both solvers use the same mechanism and
-sparse kernels. The complete CPU port still requires the pending case inventory.
+sparse kernels. All 680 reference cases are exercised by the test runner.
 
 To add a Rosenbrock method, add a method enum and a coefficient-set branch in
 `chem_rosenbrock_parameters`, then test the coefficients and stiff integration
@@ -153,6 +153,24 @@ To add a rate type, add its parameter member and tag in `chem.h`, defaults,
 preparation and evaluation in `rates.c`, a configuration mapping, and independent
 reference tests. A callback rate takes conditions and a context pointer; the
 caller manages that context's lifetime.
+
+## Solver plans
+
+`chem_builder.h` offers an owning high-level construction path over the same
+mechanism and numerical solvers. A builder borrows input metadata during build;
+its resulting plan owns copied system, reactions, constraints and model contexts.
+It resolves names, optionally rejects unused variables, reorders the mechanism
+and finalizes model indices against the sparse pattern. Dense/sparse storage
+descriptors expose the canonical cell layout and the configured cell limit.
+A full model finalizer receives both descriptors; a sparse-only callback remains
+available for adapters that do not use dense storage information.
+
+Plans create independent states and workspaces, enforce an optional cell limit
+and retain Rosenbrock or backward Euler options. Passing an override to
+`chem_solver_plan_solve` updates the retained options; passing NULL reuses them.
+Free states/workspaces before their plan. Shared plans may be read concurrently,
+but replacing retained options requires serialization. The lower-level APIs
+remain available when the caller manages mechanism ownership and parameters.
 
 ## Performance parameters
 

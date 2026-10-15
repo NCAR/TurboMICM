@@ -11,7 +11,7 @@ const char *chem_status_string(ChemStatus s)
         "not found", "dimension mismatch", "singular matrix", "maximum steps exceeded",
         "step size too small", "Constraint Initialization Failed", "accepting unconverged integration",
         "NaN detected", "infinity detected", "empty reactants", "empty products",
-        "invalid stoichiometry", "invalid equilibrium constant", "missing block index"};
+        "invalid stoichiometry", "invalid equilibrium constant", "missing block index", "missing system", "unused species"};
     return (unsigned)s < sizeof(names)/sizeof(*names) ? names[s] : "unknown status";
 }
 void chem_ideal_air_density(ChemConditions *c)

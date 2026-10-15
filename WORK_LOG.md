@@ -129,12 +129,17 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   Configuration equivalence and TS1 clamp regression pass. Production kernels
   are unchanged by this test-only addition.
 
+- Added the owning solver-plan builder, retained solve options, explicit cell
+  limits, unused-species validation and external model finalization callbacks.
+  All eight builder cases retain their original counts and parameter checks.
+- Ported all eight standalone tutorials; captured reference stdout from the
+  copied MICM build and compare every printed numerical result and counter.
+  Duration measurements and concurrent announcement order are validated then
+  normalized. Both compiler suites now report 680 PASS / 0 FAIL / 0 N/A.
+  All supplementary configuration and TS1 clamp checks pass without warnings.
+
 ## Remaining work (required)
 
-- Port all remaining 16 cases, individually checking original test quantities.
-  Read each source/policy; do not assign a PASS based on a related smoke test.
-- Eight solver-builder validations and all eight complete tutorial programs
-  with reference stdout comparisons.
 - Validate the configuration reader's malformed inputs and additional rate
   types beyond the three supplied examples; compare TS1 default fields by name.
 - Performance work using generic kernels; broader seeds/group sizes and both

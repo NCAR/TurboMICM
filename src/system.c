@@ -208,7 +208,8 @@ ChemStatus chem_reaction_info_assign(ChemReactionInfo **dst,const ChemReactionIn
 }
 static double parameter(const ChemConditions *c,void *ctx)
 {return chem_species_parameter_value(ctx,c);}
-ChemStatus chem_system_mechanism(const ChemSystem *s,size_t n,const ChemReactionInfo *const *reactions,ChemMechanism **out)
+ChemStatus chem_system_mechanism_with_models(const ChemSystem *s,size_t n,const ChemReactionInfo *const *reactions,
+    size_t model_count,const ChemExternalModel *models,ChemMechanism **out)
 {
     if(!s||!out||(n&&!reactions))return CHEM_INVALID;
     ChemSystem *owned=NULL;ChemStatus status=chem_system_create(s->gas_phase,&owned);if(status!=CHEM_OK)return status;
@@ -231,10 +232,13 @@ ChemStatus chem_system_mechanism(const ChemSystem *s,size_t n,const ChemReaction
         for(size_t j=0;j<r->reactant_count;++j){status=phase_index(phase,chem_reaction_reactant(reactions[i],j),reactants+j);if(status!=CHEM_OK)goto done;}
         for(size_t j=0;j<r->product_count;++j){status=phase_index(phase,chem_reaction_product(reactions[i],j),&products[j].species);products[j].yield=r->products[j].yield;if(status!=CHEM_OK)goto done;}
     }
-    status=chem_mechanism_create(phase->count,species,n,rs,out);
+    status=chem_mechanism_create_with_models(phase->count,species,n,rs,model_count,models,out);
     if(status==CHEM_OK){(*out)->system=owned;owned=NULL;}
 done:
     for(size_t i=0;i<n;++i){free((void *)rs[i].reactants);free((void *)rs[i].products);}
     free(rs);free(species);chem_system_free(owned);return status;
 }
 const ChemSystem *chem_mechanism_system(const ChemMechanism *m){return m?m->system:NULL;}
+
+ChemStatus chem_system_mechanism(const ChemSystem *s,size_t n,const ChemReactionInfo *const *reactions,ChemMechanism **out)
+{ return chem_system_mechanism_with_models(s,n,reactions,0,NULL,out); }

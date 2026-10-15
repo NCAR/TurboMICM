@@ -1,7 +1,7 @@
 # Validation progress
 
-The complete acceptance gate has **not** been met: 16 of the 680 case ports
-remain pending. The test runner reports these as FAIL, not N/A.
+All 680 reference cases pass on both compilers. Final configuration, broader
+benchmark and portability audits remain before declaring the task complete.
 
 ## Current case results
 
@@ -10,10 +10,10 @@ OpenMP flags. The ported cases keep original or tighter numerical bounds.
 
 | Compiler | PASS | Pending FAIL | N/A |
 | --- | ---: | ---: | ---: |
-| Apple Clang 21 | 664 | 16 | 0 |
-| GCC 15.2 | 664 | 16 | 0 |
+| Apple Clang 21 | 680 | 0 | 0 |
+| GCC 15.2 | 680 | 0 | 0 |
 
-The 664 cases comprise 31 rate-constant tests, 11 rate-store cases, 22 state
+The 680 cases comprise 31 rate-constant tests, 11 rate-store cases, 22 state
 cases, 32 LU decomposition
 cases, 20 linear-solver cases, 2 backward Euler cases, 42 constraint
 definition/set cases, 12 constraint initialization cases, 12 DAE integration
@@ -23,7 +23,10 @@ cases, 5 version cases, callback-rate override, OpenMP state-isolation, and all
 190 sparse matrix cases, 27 grouped-view/view-category cases, 20 external-model
 constraint cases, 18 aerosol integration cases and two Terminator integration
 cases, 13 Chapman unit cases, one Chapman integration case, 12 Chapman
-regression cases, and two flow-tube regression cases, plus all 32 analytical integration cases. Additional
+regression cases, and two flow-tube regression cases, plus all 32 analytical integration cases, eight solver-builder cases and
+eight complete tutorial programs. Tutorial comparisons preserve every printed
+result and counter; measured durations and thread announcement interleaving are
+validated and normalized as documented in DECISIONS.md. Additional
 checks pass on both compilers: all three tutorial configurations versus
 independent hand-built mechanisms (one and seven cells, ten integration
 intervals), and a TS1 interval-clamp regression.
@@ -66,6 +69,5 @@ linear solves. MICM's larger groups report 9,000 internal/accepted steps,
 18,000 function calls, 9,000 Jacobian updates and decompositions, and 27,000
 solves. These counts sum over groups, not cells.
 
-Remaining validation includes the full case inventory,
-all solver regression and tutorial output checks, additional seeds and tuning
-values, and a final portability audit. See WORK_LOG.md for the completion ledger.
+Remaining validation includes malformed configuration inputs and additional
+rate types, additional seeds and tuning values, and a final portability audit. See WORK_LOG.md for the completion ledger.

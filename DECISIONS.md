@@ -253,3 +253,38 @@ acceptance bound is retained, including the source's ignored sink products.
 The scalar stiff systems have one logical cell, so their C policy coverage
 uses the canonical solver storage with both LU algorithms and factor ownership
 modes; separate utility tests cover padded matrix representations.
+
+
+## Solver builders and standalone programs
+
+The C builder returns an owning solver plan, with separate per-cell-group state
+and scratch workspace. The unbounded policy reports SIZE_MAX; a bounded policy
+reports its explicit runtime cell limit and rejects larger allocations. This
+replaces compile-time vector capacities while retaining the source's system
+snapshot, missing-system/unused-species errors and persisted option overrides.
+External-model finalizers receive resolved bindings and actual dense/sparse
+storage descriptors once per plan build. A sparse-only signature supports the
+legacy callback case. Both use the canonical variable-major cell layout; the
+source's template type checks become descriptor and capacity checks.
+
+All eight tutorial programs are executable modes of `bin/tutorial_cpu`. Their
+reference stdout files were captured by running the supplied executables from
+`build/micm-test-copy`, a complete local copy of MICM's build directory. Every
+printed concentration, solver counter, time coordinate, label and spacing is
+compared byte-for-byte. The measured nanosecond durations in solver_configuration
+cannot be reproduced between two runs of the original program; the comparison
+requires five finite nonnegative durations and normalizes only those values.
+The OpenMP program's three thread announcements can interleave even within a
+line; the comparator verifies precisely three announcements and IDs 0, 1 and 2,
+then compares all three ordered result tables exactly. The C program serializes
+its announcement lines, preserving their content without nondeterministic
+character interleaving.
+
+The vectorized tutorial's original inner solve condition is false initially,
+so it updates rates but never integrates. The port retains that observable
+behavior and documents it next to the loop. Its displayed dense/sparse ordering
+is exercised through the real matrix utilities. Integer IDs represent the
+sparse string labels and are decoded only for printing, preserving the original
+storage-index demonstration. Configuration comparisons and the two rate-law
+tutorials share independent hand-built C mechanism definitions, so both paths
+continue to exercise the same runtime library used by TS1.

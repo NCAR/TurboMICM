@@ -25,6 +25,11 @@ ChemStatus chem_model_jacobian_add(ChemModelJacobian *,size_t row,size_t column,
 typedef void (*ChemModelUpdate)(const ChemModelBinding *,const void *,ChemState *);
 typedef void (*ChemModelForcing)(const ChemModelBinding *,const void *,const ChemState *,const double *,double *);
 typedef void (*ChemModelDerivative)(const ChemModelBinding *,const void *,const ChemState *,const double *,ChemModelJacobian *);
+/* Solver storage descriptors replace C++ policy type information. Dense
+ * values are variable-major contiguous cell blocks; sparse values use the
+ * supplied pattern with the same contiguous cell blocks. No padding is added. */
+typedef struct { size_t maximum_cells;int variable_major; } ChemDenseStorage;
+typedef struct { size_t maximum_cells;const ChemSparse *pattern; } ChemSparseStorage;
 typedef struct {
     size_t additional_species_count;
     const ChemSpecies *additional_species;
@@ -41,6 +46,11 @@ typedef struct {
     ChemModelUpdate update_process_parameters, update_constraint_parameters;
     ChemModelForcing add_forcing, constraint_residual;
     ChemModelDerivative process_jacobian, constraint_jacobian;
+    /* Called once by chem_solver_build after index resolution and reordering.
+     * Store indices, not borrowed descriptor pointers. Full signature takes
+     * precedence when both are supplied. The context is the owned model copy. */
+    ChemStatus (*finalize)(const ChemModelBinding *,void *,const ChemDenseStorage *,const ChemSparseStorage *);
+    ChemStatus (*finalize_sparse)(const ChemModelBinding *,void *,const ChemSparseStorage *);
 } ChemExternalModel;
 /* Inputs may be reused for multiple builds and released after construction.
  * Reaction indices address the initial species followed by each model's added

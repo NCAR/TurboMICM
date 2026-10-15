@@ -105,7 +105,7 @@ ChemStatus chem_mechanism_create_with_models(size_t ns,const ChemSpecies *specie
         b->callbacks=(ChemExternalModel){.destroy=d->destroy,.update_process_parameters=d->update_process_parameters,
             .update_constraint_parameters=d->update_constraint_parameters,.add_forcing=d->add_forcing,
             .constraint_residual=d->constraint_residual,.process_jacobian=d->process_jacobian,
-            .constraint_jacobian=d->constraint_jacobian};
+            .constraint_jacobian=d->constraint_jacobian,.finalize=d->finalize,.finalize_sparse=d->finalize_sparse};
         if (d->context) {
             b->context=d->clone?d->clone(d->context):malloc(d->context_size);
             status=CHEM_MEMORY;if (!b->context) goto fail;

@@ -3,6 +3,7 @@
 #ifndef CHEM_SYSTEM_H
 #define CHEM_SYSTEM_H
 #include "chem.h"
+#include "chem_external.h"
 
 typedef enum { CHEM_PROPERTY_REAL, CHEM_PROPERTY_STRING, CHEM_PROPERTY_INT, CHEM_PROPERTY_BOOL } ChemPropertyType;
 typedef union { double real;const char *string;int integer;int boolean; } ChemPropertyValue;
@@ -68,5 +69,7 @@ const char *chem_reaction_product(const ChemReactionInfo *,size_t);
  * coefficients. Input metadata and reaction definitions may be freed afterward. */
 ChemStatus chem_system_mechanism(const ChemSystem *,size_t reaction_count,
     const ChemReactionInfo *const *reactions,ChemMechanism **);
+ChemStatus chem_system_mechanism_with_models(const ChemSystem *,size_t,const ChemReactionInfo *const *,
+    size_t,const ChemExternalModel *,ChemMechanism **);
 const ChemSystem *chem_mechanism_system(const ChemMechanism *);
 #endif
