@@ -44,7 +44,7 @@ void chem_model_free(ChemModel *m) {
   free(m->index); free(m->diagonal); free(m->algebraic);
   free(m->lower); free(m->upper); free(m->lower_ids); free(m->upper_ids);
   free(m->lower_columns); free(m->upper_columns); free(m->scale); free(m->scale_ids);
-  free(m->updates); free(m->update_ops); free(m->jobs); free(m->declared_sparsity); free(m);
+  free(m->updates); free(m->update_ops); free(m->jobs); free(m->declared_sparsity); free(m->external_models); free(m);
 }
 size_t chem_species_id(const ChemModel *m, const char *name) {
   if (m && name) for (size_t i = 0; i < m->nspecies; ++i)
@@ -147,6 +147,18 @@ static ChemStatus custom_parameter(ChemModel *m, const char *label, size_t *inde
   *index = m->ncustom; m->custom_names[m->ncustom] = s; m->custom_defaults[m->ncustom++] = 0.0;
   return CHEM_OK;
 }
+ChemStatus chem_model_custom(ChemModel *m, const char *label, double initial, size_t *index) {
+  if (!m || m->finalized || !label || !*label || !index || !isfinite(initial)) return CHEM_INVALID;
+  ChemStatus status = custom_parameter(m,label,index);
+  if (!status) m->custom_defaults[*index] = initial;
+  return status;
+}
+ChemStatus chem_model_external(ChemModel *m, ChemExternal external) {
+  if (!m || m->finalized) return CHEM_INVALID;
+  if (!chem_resize((void **)&m->external_models,m->nexternal_models+1,sizeof external)) return CHEM_MEMORY;
+  m->external_models[m->nexternal_models++] = external;
+  return CHEM_OK;
+}
 ChemStatus chem_model_sparsity(ChemModel *m, const unsigned char *pattern, size_t n) {
   if (!m || !pattern || m->finalized || n != m->nvariables || !n || n > SIZE_MAX/n) return CHEM_INVALID;
   unsigned char *copy = malloc(n*n); if (!copy) return CHEM_MEMORY;
@@ -155,7 +167,7 @@ ChemStatus chem_model_sparsity(ChemModel *m, const unsigned char *pattern, size_
 
 ChemStatus chem_model_finalize(ChemModel *m) {
   if (!m || !m->nvariables || m->finalized) return CHEM_INVALID;
-  if (!m->ignore_unused && !m->external_force) {
+  if (!m->ignore_unused && !m->external_force && !m->nexternal_models) {
     for (size_t s = 0; s < m->nspecies; ++s) {
       int used = 0;
       for (size_t i = 0; i < m->nreactions; ++i) {
@@ -246,7 +258,7 @@ ChemStatus chem_model_finalize(ChemModel *m) {
     for (size_t j = 0; j < q->nterms; ++j) pattern[q->algebraic*n+q->species[j]] = 1;
   }
   /* External kernels declare conservative dense structure, including algebraic rows. */
-  if (m->external_jacobian && !m->declared_sparsity) memset(pattern, 1, n*n);
+  if ((m->external_jacobian || m->nexternal_models) && !m->declared_sparsity) memset(pattern, 1, n*n);
   for (size_t i = 0; i < n; ++i) for (size_t k = i+1; k < n; ++k) if (pattern[i*n+k])
     for (size_t j = i+1; j < n; ++j) if (pattern[j*n+i]) pattern[j*n+k] = 1;
   for (size_t i = 0; i < n*n; ++i) m->index[i] = pattern[i] ? (int)m->nnz++ : -1;
@@ -288,5 +300,9 @@ ChemStatus chem_model_finalize(ChemModel *m) {
   m->force_kernel = chem_generic_forcing; m->jacobian_kernel = chem_generic_jacobian;
   m->finalized = 1;
   if (m->setup) m->setup(m,m->setup_context);
+  for (size_t i = 0; i < m->nexternal_models; ++i) {
+    const ChemExternal *e = m->external_models+i;
+    if (e->setup) e->setup(m,e->context);
+  }
   return CHEM_OK;
 }

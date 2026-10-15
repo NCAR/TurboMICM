@@ -83,6 +83,10 @@ ChemStatus chem_state_tolerances(ChemState *s, double relative, const double *ab
 }
 void chem_calculate_rates(ChemState *s) {
   const ChemModel *m = s->model;
+  for (size_t i = 0; i < m->nexternal_models; ++i) {
+    const ChemExternal *e = m->external_models+i;
+    if (e->update) e->update(s,e->context);
+  }
   double *u = malloc((m->ncustom+1)*sizeof(double));
   if (!u) { for (size_t i = 0; i < m->nreactions*s->stride; ++i) s->rates[i] = NAN; return; }
   for (size_t c = 0; c < s->cells; ++c) {

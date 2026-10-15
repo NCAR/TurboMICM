@@ -17,6 +17,10 @@ import verify_cases
 import constraint_cases
 import process_cases
 import solver_cases
+import analytical_cases
+import chapman_cases
+import aerosol_cases
+import dae_integration_cases
 
 
 def main():

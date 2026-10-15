@@ -2,6 +2,17 @@
  * SPDX-License-Identifier: Apache-2.0 */
 #include "internal.h"
 
+void chem_sparse_multiply(const ChemModel *m, size_t cells, size_t stride, const double *a,
+                          const double *x, double *product) {
+  memset(product,0,m->nvariables*stride*sizeof(double));
+  for (size_t i = 0; i < m->nvariables; ++i) for (size_t j = 0; j < m->nvariables; ++j) {
+    int at = m->index[i*m->nvariables+j];
+    if (at < 0) continue;
+    #pragma omp simd
+    for (size_t c = 0; c < cells; ++c) product[i*stride+c] += a[(size_t)at*stride+c]*x[j*stride+c];
+  }
+}
+
 void chem_lu_mozart(const ChemModel *m, size_t nc, size_t s, double *a) {
   double *inverse = malloc(nc*sizeof(double));
   if (!inverse) { for (size_t c = 0; c < nc; ++c) a[m->diagonal[0]*s+c] = NAN; return; }

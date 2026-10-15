@@ -85,6 +85,12 @@ typedef struct ChemModel ChemModel;
 typedef struct ChemState ChemState;
 typedef void (*ChemKernel)(const ChemModel *, size_t, size_t, const double *, const double *, double *);
 typedef void (*ChemExternalKernel)(const ChemModel *, const ChemState *, const double *, double *, void *);
+typedef struct {
+  ChemExternalKernel forcing, jacobian;
+  void (*update)(ChemState *, void *context);
+  void (*setup)(const ChemModel *, void *context);
+  void *context; /* Borrowed; the caller keeps this alive until the model is freed. */
+} ChemExternal;
 struct ChemModel {
   size_t nspecies, nvariables, nreactions, ncustom, nconstraints;
   ChemSpecies *species;
@@ -111,6 +117,8 @@ struct ChemModel {
   int ignore_unused;
   void (*setup)(const ChemModel *model, void *context);
   void *setup_context;
+  ChemExternal *external_models;
+  size_t nexternal_models;
 };
 ChemModel *chem_model_create(void);
 void chem_model_free(ChemModel *model);
@@ -118,6 +126,8 @@ ChemStatus chem_model_species(ChemModel *model, const char *name, double initial
 ChemStatus chem_model_reaction(ChemModel *model, const size_t *reactants, size_t nreactants,
                              const size_t *products, const double *yields, size_t nproducts, ChemRate rate);
 ChemStatus chem_model_constraint(ChemModel *model, const ChemConstraint *constraint);
+ChemStatus chem_model_custom(ChemModel *, const char *label, double initial, size_t *index);
+ChemStatus chem_model_external(ChemModel *, ChemExternal external);
 ChemStatus chem_constraint_sparsity(const ChemModel *model, unsigned char *row_major_pattern, size_t order);
 ChemStatus chem_model_finalize(ChemModel *model);
 ChemStatus chem_model_sparsity(ChemModel *model, const unsigned char *row_major_pattern, size_t order);
@@ -155,6 +165,8 @@ void chem_generic_jacobian(const ChemModel *, size_t, size_t, const double *, co
 void chem_lu_mozart(const ChemModel *model, size_t cells, size_t stride, double *matrix);
 void chem_lu_doolittle(const ChemModel *model, size_t cells, size_t stride, double *matrix);
 void chem_linear_solve(const ChemModel *model, size_t cells, size_t stride, const double *matrix, double *rhs);
+void chem_sparse_multiply(const ChemModel *, size_t cells, size_t stride, const double *matrix,
+                          const double *vector, double *product);
 ChemStatus chem_lu_separate(const ChemModel *, size_t cells, size_t stride, const double *matrix,
                             double *lower, double *upper, int doolittle);
 void chem_linear_solve_separate(const ChemModel *, size_t cells, size_t stride, const double *lower,
@@ -203,5 +215,12 @@ typedef struct {
 ChemEuler chem_euler_parameters(void);
 int chem_euler_converged(const ChemState *state, double small, const double *residual, const double *variables);
 ChemStatus chem_backward_euler(const ChemEuler *parameters, double time_step, ChemState *state, ChemStats *stats);
+typedef ChemStatus (*ChemStepFunction)(void *parameters, double time_step, ChemState *, ChemStats *);
+ChemStatus chem_step_rosenbrock(void *solver, double time_step, ChemState *, ChemStats *);
+ChemStatus chem_step_euler(void *parameters, double time_step, ChemState *, ChemStats *);
+/* Complete an interval, continuing positive-progress maximum-step returns. */
+ChemStatus chem_advance(ChemStepFunction step, void *parameters, double time_step, size_t substeps, ChemState *, ChemStats *);
+ChemStatus chem_advance_many(ChemStepFunction step, void *parameters, double time_step, size_t substeps,
+                            ChemState **states, size_t count, int threads, ChemStats *stats);
 
 #endif

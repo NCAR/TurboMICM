@@ -10,4 +10,5 @@ reference-build/
 results/
 env-build.log
 build.log
+build-gcc.log
 reference-build.log

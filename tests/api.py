@@ -60,7 +60,7 @@ class ModelData(C.Structure):
         (name,C.POINTER(Range)) for name in ('lower','upper','scale','updates')] + [
         (name,ZP) for name in ('lower_ids','upper_ids','scale_ids','lower_columns','upper_columns')] + [
         ('update_ops',C.POINTER(Triple)), ('njobs',Z), ('jobs',C.POINTER(JacJob))] + [
-        (name,P) for name in ('force_kernel','jacobian_kernel','external_force','external_jacobian','external_context')] + [('finalized',I),('declared_sparsity',C.POINTER(C.c_ubyte)),('ignore_unused',I),('setup',P),('setup_context',P)]
+        (name,P) for name in ('force_kernel','jacobian_kernel','external_force','external_jacobian','external_context')] + [('finalized',I),('declared_sparsity',C.POINTER(C.c_ubyte)),('ignore_unused',I),('setup',P),('setup_context',P),('external_models',P),('nexternal_models',Z)]
 
 
 class StateData(C.Structure):
@@ -95,6 +95,14 @@ def bind(name, result, *arguments):
 
 
 MP, SP = C.POINTER(ModelData), C.POINTER(StateData)
+class External(C.Structure):
+    _fields_ = [(name,P) for name in ('forcing','jacobian','update','setup','context')]
+
+ExternalKernel = C.CFUNCTYPE(None,MP,SP,DP,DP,P)
+ExternalUpdate = C.CFUNCTYPE(None,SP,P)
+ExternalSetup = C.CFUNCTYPE(None,MP,P)
+bind('chem_model_external',I,MP,External)
+bind('chem_model_custom',I,MP,C.c_char_p,D,ZP)
 bind('chem_rate',Rate,I)
 bind('chem_rate_value',D,C.POINTER(Rate),C.POINTER(Conditions),DP)
 bind('chem_model_create',MP)
@@ -127,6 +135,7 @@ for _name in ('chem_generic_forcing','chem_generic_jacobian'):
 for _name in ('chem_lu_mozart','chem_lu_doolittle'):
     bind(_name,None,MP,Z,Z,DP)
 bind('chem_linear_solve',None,MP,Z,Z,DP,DP)
+bind('chem_sparse_multiply',None,MP,Z,Z,DP,DP,DP)
 bind('chem_lu_separate',I,MP,Z,Z,DP,DP,DP,I)
 bind('chem_linear_solve_separate',None,MP,Z,Z,DP,DP,DP)
 bind('chem_solver',Solver,I)
@@ -138,6 +147,8 @@ bind('chem_markowitz',I,Z,C.POINTER(C.c_ubyte),ZP)
 bind('chem_euler_parameters',Euler)
 bind('chem_euler_converged',I,SP,D,DP,DP)
 bind('chem_backward_euler',I,C.POINTER(Euler),D,SP,C.POINTER(Stats))
+bind('chem_advance',I,P,P,D,Z,SP,C.POINTER(Stats))
+bind('chem_advance_many',I,P,P,D,Z,C.POINTER(SP),Z,I,C.POINTER(Stats))
 
 ARRHENIUS,TROE,TERNARY,JPL19,BRANCHED,TUNNELING,TAYLOR,REVERSIBLE,USER,SURFACE,LAMBDA = range(11)
 
@@ -254,4 +265,12 @@ class State:
         stats = Stats()
         code = lib.chem_solve(C.byref(solver),dt,self.p,C.byref(stats))
         assert code == 0, (code,stats.final_time,stats.internal_steps)
+        return stats
+
+    def advance(self,dt,method=3,parameters=None,substeps=1):
+        parameters = parameters if parameters is not None else (lib.chem_euler_parameters() if method == 0 else lib.chem_solver(method))
+        step = lib.chem_step_euler if isinstance(parameters,Euler) else lib.chem_step_rosenbrock
+        stats = Stats()
+        code = lib.chem_advance(C.cast(step,P),C.byref(parameters),dt,substeps,self.p,C.byref(stats))
+        assert code == 0,(code,stats.final_time,stats.internal_steps)
         return stats

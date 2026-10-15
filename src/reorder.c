@@ -49,7 +49,7 @@ ChemStatus chem_model_reorder(ChemModel *m) {
     ChemConstraint *q = &m->constraints[i];
     for (size_t j = 0; j < q->nterms; ++j) pattern[q->algebraic*n+q->species[j]] = 1;
   }
-  if (m->external_jacobian && !m->declared_sparsity) memset(pattern, 1, n*n);
+  if ((m->external_jacobian || m->nexternal_models) && !m->declared_sparsity) memset(pattern, 1, n*n);
   ChemStatus status = chem_markowitz(n, pattern, perm);
   if (!status) {
     size_t *inverse = perm+n;

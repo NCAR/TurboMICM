@@ -33,6 +33,7 @@ LDLIBS := $(OMPLIBS) -lm
 BUILD := build/$(notdir $(CC))
 SOURCES := $(filter-out src/bench.c,$(wildcard src/*.c))
 OBJECTS := $(patsubst src/%.c,$(BUILD)/%.o,$(SOURCES))
+GENERATED_OBJECTS := $(BUILD)/ts1.o
 
 .PHONY: all env cpu test-cpu bench micm-ref clean
 all: cpu
@@ -56,14 +57,21 @@ $(BUILD)/flags: force
 	@mkdir -p $(BUILD)
 	@echo '$(CC) $(CFLAGS) $(CPPFLAGS) $(LDLIBS)' > $(BUILD)/flags.new
 	@cmp -s $(BUILD)/flags.new $@ || cp $(BUILD)/flags.new $@
-bin/libchem.a: $(OBJECTS)
+$(BUILD)/libchem.a: $(OBJECTS) $(GENERATED_OBJECTS)
+	ar rcs $@ $(OBJECTS) $(GENERATED_OBJECTS)
+$(BUILD)/libchem.$(SHARED_EXT): $(OBJECTS) $(GENERATED_OBJECTS)
+	$(CC) $(OPTFLAGS) $(SHARED_FLAG) $(OBJECTS) $(GENERATED_OBJECTS) $(LDLIBS) -o $@
+$(BUILD)/ts1_bench_cpu: $(BUILD)/bench.o $(BUILD)/libchem.a
+	$(CC) $(OPTFLAGS) $(BUILD)/bench.o $(BUILD)/libchem.a $(LDLIBS) -o $@
+bin/libchem.a: $(BUILD)/libchem.a force
 	@mkdir -p bin
-	ar rcs $@ $(OBJECTS)
-bin/libchem.$(SHARED_EXT): $(OBJECTS)
+	cp $< $@
+bin/libchem.$(SHARED_EXT): $(BUILD)/libchem.$(SHARED_EXT) force
 	@mkdir -p bin
-	$(CC) $(OPTFLAGS) $(SHARED_FLAG) $(OBJECTS) $(LDLIBS) -o $@
-bin/ts1_bench_cpu: $(BUILD)/bench.o $(BUILD)/ts1.o bin/libchem.a
-	$(CC) $(OPTFLAGS) $(BUILD)/bench.o $(BUILD)/ts1.o bin/libchem.a $(LDLIBS) -o $@
+	cp $< $@
+bin/ts1_bench_cpu: $(BUILD)/ts1_bench_cpu force
+	@mkdir -p bin
+	cp $< $@
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: $(ROOT)/reference/micm_ts1_ref.cpp
 	@mkdir -p bin

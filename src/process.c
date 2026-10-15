@@ -51,6 +51,10 @@ void chem_forcing(const ChemState *s, const double *y, double *f) {
   memset(f, 0, m->nvariables*s->stride*sizeof(double));
   m->force_kernel(m, s->cells, s->stride, y, s->rates, f);
   if (m->external_force) m->external_force(m, s, y, f, m->external_context);
+  for (size_t i = 0; i < m->nexternal_models; ++i) {
+    const ChemExternal *e = m->external_models+i;
+    if (e->forcing) e->forcing(m,s,y,f,e->context);
+  }
   if (m->nconstraints) chem_constraints(s, y, f, NULL);
 }
 void chem_jacobian(const ChemState *s, const double *y, double *j) {
@@ -58,6 +62,10 @@ void chem_jacobian(const ChemState *s, const double *y, double *j) {
   memset(j, 0, m->nnz*s->stride*sizeof(double));
   m->jacobian_kernel(m, s->cells, s->stride, y, s->rates, j);
   if (m->external_jacobian) m->external_jacobian(m, s, y, j, m->external_context);
+  for (size_t i = 0; i < m->nexternal_models; ++i) {
+    const ChemExternal *e = m->external_models+i;
+    if (e->jacobian) e->jacobian(m,s,y,j,e->context);
+  }
   if (m->nconstraints) chem_constraints(s, y, NULL, j);
 }
 
