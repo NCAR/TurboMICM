@@ -162,10 +162,14 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
     and L - 1 digits per species on every scenario, at L = 2 and L = 3.
   - Scenarios: f(t) photolysis applied per step, 24-hour day and night, 5–30
     minute steps, clean and polluted cells, some held out.
-- **Before launch:** the tooling is built (`tier2/README.md` has the table).
-  Remaining: five of the six references (suspended while astra-high ran), the
-  undisclosed scenarios (kept outside the run root), and scenario timing in
-  `admin/time_entries.py`.
+- **Before launch:** the tooling, the six disclosed scenarios, and their
+  references (converged to 10.2–10.8 digits) are done; see `tier2/README.md`.
+  - MICM's default fails on 3 of the 5 day–night scenarios (absolute tolerance
+    1e-3 mol m-3); 1e-15 fixes it.
+  - Remaining: the undisclosed scenarios, whose parameters the SSE chooses and
+    which are kept outside the run root; a test of `admin/time_entries.py`'s
+    scenario mode; and a MICM baseline per scenario at tolerances that reach 2
+    and 3 digits.
 
 ## Open items
 
@@ -174,7 +178,9 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - Rank with an undisclosed seed, and run the blind review.
 - Consider Claude Haiku as the fast-tier match for Luna.
 - Time the entries on an x86-64 Linux machine.
-- Finish the Tier 2 references, undisclosed scenarios, and scenario timing.
+- Tier 2: undisclosed scenarios, scenario timing, and a MICM baseline per scenario.
+- Verification worktrees of `runs/*` are built in a session scratchpad. If it is
+  gone, `git worktree prune` and rebuild per "Verify an entry".
 - Time MICM's fastest configurations against the entries at 1 thread as well
   (`admin/time_entries.py`, 5 rounds at 10 and 1 threads). All 24 configurations
   are timed at 10 threads (`results/2026-10-15-micm-configurations`), and
