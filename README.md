@@ -28,6 +28,12 @@ assembled in C or generated from configurations. Mechanisms borrow descriptor
 arrays, which must remain alive until the mechanism and its states are freed.
 A mechanism can be shared by independent states on different threads.
 
+`include/chem_array.h` supplies typed dense/grouped arrays, strided views,
+reusable functions, and reductions. `include/chem_sparse.h` supplies CSR/CSC
+matrices with the same view operations across blocks. Sparse numeric storage is
+a borrowed array of blocks by structural nonzeros, so callbacks can combine
+sparse elements, dense columns, and vectors through one interface.
+
 `make test-cpu` prints every supplied case ID and its status. A pending case is a
 failure, never an automatic pass. Supplemental checks verify configuration
 reading, configuration-versus-code equivalence, and a stiff TS1 regression.

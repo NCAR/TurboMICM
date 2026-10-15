@@ -1,0 +1,7 @@
+{
+  "view_category_sfinae:ViewCategorySFINAE.VectorTypes": "C++ template concept specialization for standard containers has no C equivalent",
+  "view_category_sfinae:ViewCategorySFINAE.MatrixViews": "C++ view-category template constraints have no C equivalent; C views carry explicit strides",
+  "view_category_sfinae:ViewCategorySFINAE.SparseMatrixViews": "C++ sparse-view template constraints have no C equivalent; runtime sparse views are tested",
+  "view_category_sfinae:ViewCategorySFINAE.MatrixTypesExcluded": "C++ VectorLike concept exclusion is compile-time overload machinery absent from C",
+  "grouped_views:GroupedView.CategoryTagsAreDistinct": "C++ overload-dispatch tag types are absent from the shared C strided-view representation"
+}

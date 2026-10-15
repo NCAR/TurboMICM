@@ -4,8 +4,9 @@ Flags: `-O3 -DNDEBUG`, C11, OpenMP; no architecture or floating-point tuning.
 
 | Check | Clang | GCC 15 |
 |---|---:|---:|
-| Ported reference cases | 98 PASS | 98 PASS |
-| Cases still awaiting ports | 582 | 582 |
+| Ported reference cases | 427 PASS | 427 PASS |
+| Cases still awaiting ports | 248 | 248 |
+| C++ compile-time-only cases | 5 N/A | 5 N/A |
 | TS1, 100 cells, seed 1, 100 steps, 30 s | PASS | PASS |
 | TS1, 10,000 cells, seed 2026, 100 steps, 30 s | PASS | PASS |
 | Largest relative difference in the 10,000-cell gate | 2.03e-13 | 2.14e-13 |
@@ -13,7 +14,10 @@ Flags: `-O3 -DNDEBUG`, C11, OpenMP; no architecture or floating-point tuning.
 The full 680-case gate is **not complete**. All pending cases report FAIL and
 make test-cpu exits nonzero. Current passes cover rate constants, linear and
 equilibrium constraints, constraint sets, Rosenbrock unit quantities, constraint
-initialization, backward Euler basics, callback replacement, and two tutorials.
+initialization, backward Euler basics, callback replacement, two tutorials, all
+117 dense/vector-matrix cases, all 190 sparse-matrix cases, the 21 runtime grouped
+view cases, and runtime vector-view use. Five compile-time-only cases have
+individual N/A reasons in tests/not_applicable.json.
 
 Both rate tutorial programs print exactly the retained reference output.
 Generated YAML/JSON mechanisms match independently assembled mechanisms through
@@ -42,7 +46,7 @@ internal steps per group per public solve. Statistics exclude the warm-up.
 
 ## Remaining work
 
-Port the remaining matrix/view, state/system, process, sparse LU, analytical,
+Port the remaining state/system, process, sparse LU, analytical,
 regression, aerosol/external-model, DAE integration, and tutorial cases; address
 any missing API behavior they identify. Then run the complete suite under both
 compilers, finish portability review, repeat representative benchmark gates, and

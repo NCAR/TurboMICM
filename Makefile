@@ -40,11 +40,11 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mecha
 clean:
 	@for d in build bin; do if [ -d "$$d" ]; then rm -r "$$d"; fi; done
 
-LIBSRC = src/mechanism.c src/state.c src/rates.c src/process.c src/linear.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c
+LIBSRC = src/mechanism.c src/state.c src/rates.c src/process.c src/linear.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/array.c src/sparse.c
 build/ts1.c: configs/ts1.json tools/configure.py .conda/.ready
 	@mkdir -p build
 	$(PYTHON) tools/configure.py $< $@ --symbol ts1_data
-bin/ts1_bench_cpu: build/compiler-flags $(LIBSRC) src/bench.c include/chem.h src/internal.h build/ts1.c
+bin/ts1_bench_cpu: build/compiler-flags $(LIBSRC) src/bench.c include/chem.h include/chem_array.h include/chem_sparse.h src/internal.h build/ts1.c
 	@mkdir -p bin
 	$(CC) $(CFLAGS) $(LIBSRC) src/bench.c build/ts1.c -o $@ $(LDLIBS)
 
@@ -59,11 +59,11 @@ SHAREDFLAGS = -dynamiclib
 else
 SHAREDFLAGS = -shared -fPIC
 endif
-build/libchem.so: build/compiler-flags $(LIBSRC) include/chem.h src/internal.h
+build/libchem.so: build/compiler-flags $(LIBSRC) include/chem.h include/chem_array.h include/chem_sparse.h src/internal.h
 	$(CC) $(CFLAGS) $(SHAREDFLAGS) $(LIBSRC) -o $@ $(LDLIBS)
 test-cpu: cpu
 	$(PYTHON) tests/run_cases.py
-bin/test_rates: build/compiler-flags $(LIBSRC) tests/rate_cases.c include/chem.h src/internal.h
+bin/test_rates: build/compiler-flags $(LIBSRC) tests/rate_cases.c include/chem.h include/chem_array.h include/chem_sparse.h src/internal.h
 	@mkdir -p bin
 	$(CC) $(CFLAGS) $(LIBSRC) tests/rate_cases.c -o $@ $(LDLIBS)
 
@@ -78,7 +78,7 @@ build/robertson.c: configs/robertson/config.json configs/robertson/species.json 
 build/configs.so: build/compiler-flags build/no_user.c build/user.c build/robertson.c include/chem.h
 	$(CC) $(CFLAGS) $(SHAREDFLAGS) build/no_user.c build/user.c build/robertson.c -o $@ $(LDLIBS)
 test-cpu: build/configs.so
-bin/rate_tutorial: build/compiler-flags $(LIBSRC) src/tutorial.c include/chem.h src/internal.h
+bin/rate_tutorial: build/compiler-flags $(LIBSRC) src/tutorial.c include/chem.h include/chem_array.h include/chem_sparse.h src/internal.h
 	@mkdir -p bin
 	$(CC) $(CFLAGS) $(LIBSRC) src/tutorial.c -o $@ $(LDLIBS)
 test-cpu: bin/rate_tutorial

@@ -1,12 +1,16 @@
 """Run explicit C ports, preserving every reference case ID and failure status."""
 from pathlib import Path
 import argparse
+import json
 import subprocess
 from test_constraints import CASES as CONSTRAINT_CASES
 from test_solvers import CASES as SOLVER_CASES
 from test_configs import CASES as CONFIG_CASES
+from test_arrays import CASES as ARRAY_CASES
+from test_sparse_arrays import CASES as SPARSE_CASES
+from test_grouped import CASES as GROUPED_CASES
 import supplemental
-PYTHON_CASES = {**CONSTRAINT_CASES, **SOLVER_CASES, **CONFIG_CASES}
+PYTHON_CASES = {**CONSTRAINT_CASES, **SOLVER_CASES, **CONFIG_CASES, **ARRAY_CASES, **SPARSE_CASES, **GROUPED_CASES}
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -18,6 +22,7 @@ def main():
     binary = ROOT / 'bin/test_rates'
     registered = set(subprocess.check_output([binary, '--list'], text=True).splitlines())
     counts = {'PASS': 0, 'FAIL': 0, 'N/A': 0}
+    not_applicable = json.loads((ROOT / 'tests/not_applicable.json').read_text())
     for line in (ROOT / 'tests/cases.txt').read_text().splitlines():
         if not line or line.startswith('#'):
             continue
@@ -25,9 +30,12 @@ def main():
         if args.filter not in case:
             continue
         name = case.split(':', 1)[-1]
-        if name in PYTHON_CASES:
+        key = case if case in PYTHON_CASES else name
+        if case in not_applicable:
+            status, reason = 'N/A', not_applicable[case]
+        elif key in PYTHON_CASES:
             try:
-                PYTHON_CASES[name]()
+                PYTHON_CASES[key]()
                 status, reason = 'PASS', 'reference assertions'
             except Exception as error:
                 status, reason = 'FAIL', f'{type(error).__name__}: {error}'

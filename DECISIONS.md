@@ -35,3 +35,18 @@
   status and the usual 100-cell fixture alone did not detect that omission.
 - Pending case ports are printed as FAIL. N/A will be used only for a documented
   case with no meaningful C counterpart. Current results are explicitly partial.
+
+- Matrix template policies become runtime C element types and group lengths.
+  CSR/CSC sparse matrices expose a blocks-by-nonzeros array, sharing callback and
+  view primitives with dense matrices and vectors. This preserves shape errors,
+  aliasing, padding, and strict/non-strict reductions without C++ type machinery.
+- Matrix function creation captures columns and types but does not require equal
+  row counts. Invocation performs row-count validation. This distinction is
+  explicitly tested in the reference and is retained in C.
+- Five cases are N/A because they contain exclusively C++ template/concept tag
+  assertions. Their individual IDs and reasons are in tests/not_applicable.json.
+  Runtime vector, dense, sparse, and grouped-view cases are ported and executed.
+- Sparse/array invalid dimensions and structural-zero accesses return CHEM_INVALID
+  (or SIZE_MAX from index lookup) instead of an exception or a debug-only death.
+  Checks remain enabled in Release. Read-only metadata and explicit callback
+  write masks replace C++ const-reference overload selection.

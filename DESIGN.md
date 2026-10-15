@@ -45,6 +45,35 @@ use `restrict` and OpenMP SIMD; error reduction retains a strict order. No
 intrinsics, compiler vector types, target tuning, or relaxed floating point is
 used.
 
+## Array and sparse utilities
+
+`chem_array.h` and `chem_sparse.h` provide the C counterparts of the reference's
+CPU matrix policies. Double, integer, and boolean elements are selected at run
+time. Group length zero uses row-major storage; positive lengths interleave rows
+within each group. The final group is padded. Sparse matrices store only unique
+structural coordinates in CSR or CSC order, with a shared pattern across blocks.
+Their values are an array of blocks by nonzeros and use the same grouped layout.
+
+A `ChemView` records its base pointer, logical length, padded capacity, and
+strides within and between blocks. Views borrow storage. Group-scoped views
+precompute their base and provide contiguous access for interleaved layouts.
+The common view operations implement fill, overlapping-safe copy, callback
+iteration, and reduction. Strict reduction excludes padding; ordinary reduction
+includes it. Read-only flags prevent declaring a const view writable.
+
+`ChemArrayFunction` captures column counts, element types, group length, and
+argument mutability. Creation permits different row counts; invocation requires
+equal logical row counts among all arguments and compatible captured shapes.
+Rows can change between invocations. Callback element pointers preserve aliasing.
+Callbacks own their context and must obey the declared mutability mask. The
+function metadata is immutable and each invocation owns its argument workspace.
+
+Dense copies and AXPY can operate across layouts directly. Callback functions
+require a common effective group length (row-major and group length one are
+compatible), preserving the reference's ordering validation. Sparse descriptors
+borrow no coordinate arrays after construction: the library owns their maps,
+compressed indices, and numeric storage. Clones own independent allocations.
+
 ## Tuning parameters
 
 | Parameter | Default | Selection |
