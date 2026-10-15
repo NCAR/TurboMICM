@@ -185,3 +185,13 @@ one of the source cases and is not used to represent it. No method coefficient,
 solver tolerance or original acceptance bound was changed. Solver matrices have
 a canonical layout; CSR/CSC data-view behavior is covered by the separate sparse
 utility ports rather than duplicate integrator implementations.
+
+
+The Terminator integration port uses the same portable Park–Miller/Box–Muller
+random convention as the linear-algebra ports, with the original lognormal mean
+-2 and standard deviation 2 and concentration scaling. It retains all cell
+counts, twenty longitude samples, latitude-dependent photolysis, 30-second
+intervals, 1e-8 solver relative tolerance, 1e-20 absolute tolerance and the
+original closed-form concentration checks (`1e-14 + 1e-6*abs(reference)`). The
+scalar and vector cases both exercise the column-major cell loop; the scalar
+case retains the source's repeated fixture runs.

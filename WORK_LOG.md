@@ -102,11 +102,20 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   state comparisons retain exact Clang agreement and GCC maximum relative error
   1.43e-13. The three configuration comparisons and clamp regression also pass.
 
+- Added the two algebraic-error sensitivity regressions (cascade equilibrium
+  tolerance sensitivity and ultra-stiff overshoot), both Terminator cases across
+  one through four cells and all twenty longitudes, and integrated reaction-rate
+  monotonicity across 100 intervals with a switched-off rate after interval 50.
+  The original analytical bounds and solver settings are retained. All five pass
+  on both compilers, bringing coverage to 604 PASS / 76 pending FAIL / 0 N/A.
+  Both builds have no warnings and configuration/TS1 regressions pass. These
+  additions change tests only; the full-size numerical gate above remains valid.
+
 ## Remaining work (required)
 
-- Port all remaining 81 cases, individually checking original test quantities.
+- Port all remaining 76 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
-- Backward Euler analytical/regression coverage, reaction-rate tracking, solver status
+- Backward Euler analytical/regression coverage, solver status
   behavior and solver-builder validations.
 - Remaining solver regression/analytical tests,
   all eight complete tutorial programs with reference stdout comparisons.

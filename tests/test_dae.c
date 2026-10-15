@@ -5,6 +5,7 @@
 #include "chem_constraints.h"
 #include "chem_solver.h"
 #include <float.h>
+#include <stdint.h>
 
 static ChemConstraint eq(const char *name,const char *row,const ChemConstraintTerm *r,const ChemConstraintTerm *p,double k,double h)
 {
@@ -160,8 +161,99 @@ static void terminator_robertson(void)
 finish:
     chem_solver_free(solver);chem_state_free(state);chem_mechanism_free(m);
 }
+typedef struct { double gas,product,minimum;size_t accepted,rejected; } CascadeResult;
+static CascadeResult cascade(double balance_atol,double k,double k1,double k2)
+{
+    ChemSpecies species[]={{.name="A_gas"},{.name="A_aq"},{.name="B_aq"},{.name="P"}};
+    size_t r=2;ChemProduct product={3,1};ChemReaction rxn=reaction(&r,&product,k);
+    ChemConstraintTerm gas={"A_gas",1},aq={"A_aq",1},bq={"B_aq",1};
+    ChemConstraintTerm terms[]={{"A_aq",1},{"B_aq",1},{"P",1},{"A_gas",1}};
+    ChemConstraint constraints[]={eq("eq1","A_aq",&gas,&aq,k1,0),eq("eq2","B_aq",&aq,&bq,k2,0),
+        {.type=CHEM_LINEAR_CONSTRAINT,.name="mass",.algebraic_species="A_gas",.reactant_count=4,
+         .reactants=terms,.constant=1e-6}};
+    ChemMechanism *m=NULL;ChemState *state=NULL;ChemSolver *solver=NULL;
+    CHECK(chem_mechanism_create(4,species,1,&rxn,&m)==CHEM_OK);
+    CHECK(chem_mechanism_set_constraints(m,3,constraints)==CHEM_OK);
+    CHECK(chem_state_create(m,1,&state)==CHEM_OK);CHECK(chem_solver_create(m,1,&solver)==CHEM_OK);
+    state->relative_tolerance=1e-6;
+    double atols[]={balance_atol,1e-8,1e-8,1e-12};memcpy(state->absolute_tolerance,atols,sizeof(atols));
+    double ag0=1e-6/(1+k1+k1*k2);
+    state->values[0]=ag0;state->values[1]=k1*ag0;state->values[2]=k2*k1*ag0;
+    state->conditions[0]=(ChemConditions){298,101325,0};chem_update_rates(state);
+    ChemRosenbrockParameters options=chem_rosenbrock_parameters(CHEM_ROS4_DA);ChemSolverStats stats;
+    CascadeResult result={.minimum=1e99};double advanced=0;
+    while (advanced<30) {
+        ChemStatus status=chem_solve(solver,state,30-advanced,&options,&stats);CHECK(status==CHEM_OK);
+        if (status) break;
+        CHECK(stats.final_time>0);if (!(stats.final_time>0)) break;
+        advanced+=stats.final_time;result.accepted+=stats.accepted;result.rejected+=stats.rejected;
+        result.minimum=fmin(result.minimum,state->values[0]);
+    }
+    result.gas=state->values[0];result.product=state->values[3];
+    chem_solver_free(solver);chem_state_free(state);chem_mechanism_free(m);return result;
+}
+static void balance_tolerance(int overshoot)
+{
+    if (overshoot) {
+        CascadeResult result=cascade(1e-8,1e4,100,50);
+        CHECK(result.minimum>=-1e-8);NEAR(result.product,1e-6,1e-8);NEAR(result.gas,0,1e-10);
+    } else {
+        CascadeResult loose=cascade(1e-3,100,2,2),tight=cascade(1e-8,100,2,2);
+        CHECK(tight.accepted>loose.accepted);
+    }
+}
+static double terminator_draw(uint64_t *seed)
+{
+    *seed=*seed*48271%2147483647;double u=(double)*seed/2147483647;
+    *seed=*seed*48271%2147483647;double v=(double)*seed/2147483647;
+    return exp(-2+2*sqrt(-2*log(u))*cos(2*CHEM_PI*v));
+}
+static void terminator(size_t cells)
+{
+    ChemSpecies species[]={{.name="Cl2",.absolute_tolerance=1e-20},{.name="Cl",.absolute_tolerance=1e-20}};
+    size_t r0=0,r1[]={1,1};ChemProduct p0={1,2},p1={0,1};
+    ChemRate photo=chem_rate_default(CHEM_USER),thermal=chem_rate_default(CHEM_ARRHENIUS);
+    photo.label="toy_k1";thermal.data.arrhenius.A=1;
+    ChemReaction reactions[]={{1,1,&r0,&p0,photo},{2,1,r1,&p1,thermal}};
+    ChemMechanism *m=NULL;ChemState *state=NULL;ChemSolver *solver=NULL;
+    CHECK(chem_mechanism_create(2,species,2,reactions,&m)==CHEM_OK);
+    CHECK(chem_mechanism_reorder(m)==CHEM_OK);
+    CHECK(chem_state_create(m,cells,&state)==CHEM_OK);CHECK(chem_solver_create(m,cells,&solver)==CHEM_OK);
+    size_t cl,cl2;CHECK(chem_species_index(m,"Cl",&cl)==CHEM_OK);CHECK(chem_species_index(m,"Cl2",&cl2)==CHEM_OK);
+    double initial_cl[4],initial_cl2[4],rates[4];uint64_t seed=1;
+    for (size_t c=0;c<cells;++c) { initial_cl2[c]=terminator_draw(&seed)*1e-6;initial_cl[c]=terminator_draw(&seed)*1e-10; }
+    state->relative_tolerance=1e-8;
+    ChemRosenbrockParameters options=chem_rosenbrock_parameters(CHEM_ROS3);options.max_steps=100000;
+    for (size_t step=0;step<(size_t)floor(2*CHEM_PI/.3);++step) {
+        double lon=step*.3,lat_center=CHEM_PI*20/180,lon_center=CHEM_PI*300/180;
+        for (size_t c=0;c<cells;++c) {
+            double lat=CHEM_PI/180*(c*(90.0/cells));
+            rates[c]=fmax(0,sin(lat)*sin(lat_center)+cos(lat)*cos(lat_center)*cos(lon-lon_center));
+            state->values[cl*cells+c]=initial_cl[c];state->values[cl2*cells+c]=initial_cl2[c];
+            state->conditions[c]=(ChemConditions){298,101300,42};
+        }
+        CHECK(chem_state_set_custom(state,"toy_k1",rates,cells)==CHEM_OK);chem_update_rates(state);
+        ChemSolverStats stats;CHECK(chem_solve(solver,state,30,&options,&stats)==CHEM_OK);
+        for (size_t c=0;c<cells;++c) {
+            double r=rates[c]/4,ci=initial_cl[c],c2i=initial_cl2[c],cly=ci+2*c2i;
+            double det=sqrt(r*r+2*r*cly),e=exp(-4*det*30);
+            double l=det*30>1e-16?(1-e)/det/30:4;
+            double cf=-l*(ci-det+r)*(ci+det+r)/(1+e+30*l*(ci+r)),c2f=-cf/2;
+            double cref=ci+30*cf,c2ref=c2i+30*c2f;
+            NEAR(state->values[cl*cells+c],cref,fabs(cref)*1e-6+1e-14);
+            NEAR(state->values[cl2*cells+c],c2ref,fabs(c2ref)*1e-6+1e-14);
+        }
+    }
+    chem_solver_free(solver);chem_state_free(state);chem_mechanism_free(m);
+}
+static void terminator_suite(int vector)
+{ for (int repeat=0;repeat<(vector?1:2);++repeat) for (size_t cells=1;cells<=4;++cells) terminator(cells); }
 void test_dae(void)
 {
+    RUN("terminator:RosenbrockSolver.Terminator",terminator_suite(0));
+    RUN("terminator:RosenbrockSolver.VectorTerminator",terminator_suite(1));
+    RUN("dae_algebraic_error_insensitivity:DAEAlgebraicError.ErrorSensitiveToBalanceAtol",balance_tolerance(0));
+    RUN("dae_algebraic_error_insensitivity:DAEAlgebraicError.AlgebraicVariableDoesNotOvershootDeeply",balance_tolerance(1));
 #define E(name,call) RUN("equilibrium_constraint:EquilibriumIntegration." name,call)
     E("SetConstraintsAPIWorks",equilibrium_integration(0));E("SetConstraintsAPIMultipleConstraints",equilibrium_integration(1));
     E("DAESolveWithConstraint",equilibrium_integration(2));E("DAESolveWithConstraintAndReorderState",equilibrium_integration(3));

@@ -1,6 +1,6 @@
 # Validation progress
 
-The complete acceptance gate has **not** been met: 81 of the 680 case ports
+The complete acceptance gate has **not** been met: 76 of the 680 case ports
 remain pending. The test runner reports these as FAIL, not N/A.
 
 ## Current case results
@@ -10,18 +10,19 @@ OpenMP flags. The ported cases keep original or tighter numerical bounds.
 
 | Compiler | PASS | Pending FAIL | N/A |
 | --- | ---: | ---: | ---: |
-| Apple Clang 21 | 599 | 81 | 0 |
-| GCC 15.2 | 599 | 81 | 0 |
+| Apple Clang 21 | 604 | 76 | 0 |
+| GCC 15.2 | 604 | 76 | 0 |
 
-The 599 cases comprise 31 rate-constant tests, 11 rate-store cases, 22 state
+The 604 cases comprise 31 rate-constant tests, 11 rate-store cases, 22 state
 cases, 32 LU decomposition
 cases, 20 linear-solver cases, 2 backward Euler cases, 42 constraint
-definition/set cases, 12 constraint initialization cases, 10 DAE integration
-cases, 8 Rosenbrock utility/regression cases, 9 process cases and 7 Jacobian
+definition/set cases, 12 constraint initialization cases, 12 DAE integration
+cases, 8 Rosenbrock utility/regression cases, 10 process cases and 7 Jacobian
 verification cases, all 117 dense/vector matrix cases, 14 species/phase/system
 cases, 5 version cases, callback-rate override, OpenMP state-isolation, and all
 190 sparse matrix cases, 27 grouped-view/view-category cases, 20 external-model
-constraint cases, and 18 aerosol integration cases. Additional
+constraint cases, 18 aerosol integration cases and two Terminator integration
+cases. Additional
 checks pass on both compilers: all three tutorial configurations versus
 independent hand-built mechanisms (one and seven cells, ten integration
 intervals), and a TS1 interval-clamp regression.

@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Process and process-set policy ports, including accumulated forcing/Jacobians. */
 #include "test.h"
+#include "chem_solver.h"
 #include "chem_constraints.h"
 #include "chem_jacobian.h"
 #include <stdint.h>
@@ -157,8 +158,32 @@ static void random_system(size_t cells,size_t nr,size_t ns)
     free(forcing);chem_state_free(s);chem_mechanism_free(m);free(species);free(names);free(reactions);free(reactants);free(products);
 }
 static void random_suite(void) { random_system(200,50,40);random_system(300,30,20);random_system(400,100,80); }
+static void integrated_rates(void)
+{
+    ChemSpecies species[]={{.name="a"},{.name="b"},{.name="c"},{.name="irr_1"},{.name="irr_2"}};
+    size_t r0=0,r1=1;ChemProduct p0[]={{1,1},{3,1}},p1[]={{2,1},{4,1}};
+    ChemRate k0=chem_rate_default(CHEM_ARRHENIUS),k1=chem_rate_default(CHEM_USER);
+    k0.data.arrhenius.A=2.15e-11;k0.data.arrhenius.B=0;k0.data.arrhenius.C=110;k1.label="r2";
+    ChemReaction reactions[]={{1,2,&r0,p0,k0},{1,2,&r1,p1,k1}};
+    ChemMechanism *m=NULL;ChemState *s=NULL;ChemSolver *solver=NULL;
+    CHECK(chem_mechanism_create(5,species,2,reactions,&m)==CHEM_OK);
+    CHECK(chem_mechanism_reorder(m)==CHEM_OK);CHECK(chem_state_create(m,1,&s)==CHEM_OK);
+    CHECK(chem_solver_create(m,1,&solver)==CHEM_OK);
+    CHECK(chem_state_fill_concentration(s,"a",1)==CHEM_OK);CHECK(chem_state_fill_custom(s,"r2",1)==CHEM_OK);
+    s->conditions[0]=(ChemConditions){273,1000,0};size_t irr1,irr2;
+    CHECK(chem_species_index(m,"irr_1",&irr1)==CHEM_OK);CHECK(chem_species_index(m,"irr_2",&irr2)==CHEM_OK);
+    ChemRosenbrockParameters options=chem_rosenbrock_parameters(CHEM_ROS3);ChemSolverStats stats;
+    for (size_t t=0;t<100;++t) {
+        if (t>50) CHECK(chem_state_fill_custom(s,"r2",0)==CHEM_OK);
+        chem_update_rates(s);double first=s->values[irr1],second=s->values[irr2];
+        CHECK(chem_solve(solver,s,30,&options,&stats)==CHEM_OK);
+        CHECK(s->values[irr1]>=first);CHECK(s->values[irr2]>=second);
+    }
+    chem_solver_free(solver);chem_state_free(s);chem_mechanism_free(m);
+}
 void test_process(void)
 {
+    RUN("integrated_reaction_rates:ChapmanIntegration.CanBuildChapmanSystem",integrated_rates());
     RUN("process:Process.Matrix",process_rates(5));
     RUN("process:Process.VectorMatrix",for (size_t g=1;g<=4;++g) process_rates(g));
     RUN("process_set:ProcessSet.Matrix",process_set(2));
