@@ -38,6 +38,7 @@ Verification
 | sol-high | gpt-6.1-sol | high | Codex CLI 0.162.1, interactive | 2026-10-14 21:55-23:32 | `1d944f4`, 23:32 (6 commits) | finished |
 | sol-xhigh | gpt-6.1-sol | xhigh | Codex CLI 0.162.1, interactive | 2026-10-15 03:54-05:29 | `171f54a`, 05:29 (6 commits) | finished |
 | sol-max | gpt-6.1-sol | max | Codex CLI 0.162.1, interactive | 2026-10-15 07:26-09:13 | `001fb64`, 09:13 (7 commits) | finished |
+| astra-high | gpt-6-astra | high | Codex CLI 0.162.1, interactive | 2026-10-15 12:10- | | running |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -83,3 +84,10 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Self-reported, not yet verified: 675 PASS, 5 N/A, no failures with both
   compilers; all TS1 accuracy gates pass; 10,000-cell clang median 6.94 s against
   MICM's 26.01 s (3.75 times faster); about 1 h 47 min of work.
+
+## astra-high
+
+- Session start: 2026-10-15 12:10, `codex -c features.memories=false` in
+  `benchmarks/astra-high`, with `~/.codex/config.toml` set to gpt-6-astra at high
+  effort; the session record confirms both.
+- Codex session `01a140c1-b679-7082-aef7-62cd2c85941c`.
