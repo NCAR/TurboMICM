@@ -55,9 +55,10 @@ def median(program):
     return statistics.median(float(row["elapsed_ms"]) for row in runs[program])
 
 
-def blue_bold(number):
-    """Bold blue text in GitHub Markdown, through inline math: GitHub strips HTML colour styles."""
-    return "$\\color{blue}{\\mathbf{" + number + "\\times}}$"
+def highlight(number):
+    """A bold number with an orange marker. GitHub strips colour styles from HTML,
+    and colouring through inline math would change the font."""
+    return f"🔶 **{number}×**"
 
 
 def display_name(run):
@@ -103,7 +104,7 @@ for rank, program in enumerate(sorted(runs, key=median), 1):
     lines.append(
         f"| {rank} | {'**' + name + '**' if kind == 'entry' else name} | {configuration} | {grouping} |"
         f" {median(program):,.0f} ({min(times):,.0f}–{max(times):,.0f}){flag} | {len(times)} |"
-        f" {blue_bold(f'{default_ms / median(program):.2f}')} | {fastest_ms / median(program):.2f}× | {', '.join(gates)} |"
+        f" {highlight(f'{default_ms / median(program):.2f}')} | {fastest_ms / median(program):.2f}× | {', '.join(gates)} |"
         f" {largest_text} |"
     )
 (args.out / "leaderboard.md").write_text("\n".join(lines) + "\n")
