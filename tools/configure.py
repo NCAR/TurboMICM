@@ -27,6 +27,8 @@ TYPES = {
 }
 
 def number(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise ValueError("Expected a configuration number")
     value = float(value)
     if not math.isfinite(value):
         raise ValueError("Nonfinite configuration number")
@@ -44,16 +46,27 @@ def records(path: Path, stack=()):
     if path in stack:
         raise ValueError(f"Configuration include cycle: {path}")
     doc = load_document(path)
-    result = list(doc.get("camp-data", []))
-    for filename in doc.get("camp-files", []):
+    data, files = doc.get("camp-data", []), doc.get("camp-files", [])
+    if not isinstance(data, list) or any(not isinstance(r, dict) or not isinstance(r.get("type"), str) for r in data):
+        raise ValueError("camp-data must be a list of typed records")
+    if not isinstance(files, list) or any(not isinstance(f, str) or not f for f in files):
+        raise ValueError("camp-files must be a list of filenames")
+    result = list(data)
+    for filename in files:
         result.extend(records(path.parent / filename, (*stack, path)))
     return result
 
 def reactants(value):
     if isinstance(value, list):
+        if any(not isinstance(v, str) or not v for v in value):
+            raise ValueError("Reactants must name species")
         return list(value)  # ordered occurrences extension
     result = []
+    if not isinstance(value, dict):
+        raise ValueError("Reactants must be a mapping or ordered list")
     for name, spec in value.items():
+        if spec is not None and not isinstance(spec, dict):
+            raise ValueError("Reactant attributes must be a mapping")
         qty = number((spec or {}).get("qty", 1))
         if qty < 1 or not qty.is_integer():
             raise ValueError("Reactant qty must be a positive integer")
@@ -63,16 +76,23 @@ def reactants(value):
 def products(value):
     if isinstance(value, list):
         return [(v["species"], number(v.get("yield", 1))) for v in value]
+    if not isinstance(value, dict) or any(spec is not None and not isinstance(spec, dict) for spec in value.values()):
+        raise ValueError("Products must be a mapping or ordered list")
     return [(name, number((spec or {}).get("yield", 1))) for name, spec in value.items()]
 
 def read_mechanism(path):
     data = records(Path(path))
     species = [copy.deepcopy(r) for r in data if r["type"] == "CHEM_SPEC"]
-    names = [s["name"] for s in species]
+    names = [s.get("name") for s in species]
+    if any(not isinstance(n, str) or not n or "\0" in n for n in names):
+        raise ValueError("Species names must be nonempty strings without NUL")
     if len(set(names)) != len(names):
         raise ValueError("Duplicate species name")
     by_name = {s["name"]: s for s in species}
     for s in species:
+        for key in ("absolute tolerance", "molecular weight [kg mol-1]", "diffusion coefficient [m2 s-1]"):
+            if key in s and number(s[key]) < 0:
+                raise ValueError(f"Negative species property {key}")
         if s.get("parameterization") not in {None, "air density"}:
             raise ValueError("Unknown species parameterization")
     reactions = []
@@ -82,8 +102,13 @@ def read_mechanism(path):
             continue
         if record["type"] != "MECHANISM":
             raise ValueError(f"Unknown CAMP record type {record['type']}")
-        initial.update(record.get("initial state", {}))
-        for source in record.get("reactions", []):
+        state, definitions = record.get("initial state", {}), record.get("reactions", [])
+        if not isinstance(state, dict) or not isinstance(definitions, list):
+            raise ValueError("Expected initial-state mapping and reactions list")
+        initial.update(state)
+        for source in definitions:
+            if not isinstance(source, dict) or not isinstance(source.get("type"), str):
+                raise ValueError("Expected a typed reaction mapping")
             r = copy.deepcopy(source)
             kind = r["type"]
             if kind in {"PHOTOLYSIS", "FIRST_ORDER_LOSS", "EMISSION"}:
@@ -132,7 +157,11 @@ def read_mechanism(path):
                 normal["coefficients"] = [number(x) for x in r.get("coefficients", [1])]
                 if not 1 <= len(normal["coefficients"]) <= 16:
                     raise ValueError("Taylor series requires 1 to 16 coefficients")
+            if not isinstance(normal["label"], str) or "\0" in normal["label"]:
+                raise ValueError("Rate labels must be strings without NUL")
             if kind == "BRANCHED":
+                if params["n"] < 0 or not params["n"].is_integer() or params["n"] > 4294967295:
+                    raise ValueError("Branched n must be a nonnegative integer")
                 for branch, key in enumerate(("alkoxy products", "nitrate products")):
                     item = copy.deepcopy(normal)
                     item["params"]["branch"] = branch
@@ -142,6 +171,17 @@ def read_mechanism(path):
                     reactions.append(item)
             else:
                 reactions.append(normal)
+    labels = set()
+    for r in reactions:
+        if r["type"] == "USER":
+            labels.add(r["label"])
+        elif r["type"] == "SURFACE":
+            labels.update((r["label"] + ".effective radius [m]", r["label"] + ".particle number concentration [# m-3]"))
+    variables = {s["name"] for s in species if not s.get("parameterization")}
+    for key, value in initial.items():
+        if key not in variables | labels | {"temperature", "pressure"}:
+            raise ValueError(f"Unknown initial-state field {key}")
+        number(value)
     return dict(species=species, reactions=reactions, initial=initial)
 
 def literal(v):

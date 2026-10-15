@@ -288,3 +288,23 @@ sparse string labels and are decoded only for printing, preserving the original
 storage-index demonstration. Configuration comparisons and the two rate-law
 tutorials share independent hand-built C mechanism definitions, so both paths
 continue to exercise the same runtime library used by TS1.
+
+
+## Final configuration and portability checks
+
+Malformed configuration records, names, units, integer stoichiometry, branched
+integer parameters, nonfinite values, unknown initial fields and include cycles
+are rejected before emitting C. Empty mechanisms remain valid. Additional
+fixtures exercise generated JPL19, Taylor and reversible rates against
+independent formulas. The committed TS1 defaults fixture is an unchanged copy
+of the supplied reference CSV; all 379 fields are compared by name with the
+compiled generated initializer. The TS1 importer was also rerun and its parsed
+output compared exactly with the committed configuration.
+
+The benchmark uses OpenMP runtime scheduling with an explicit static default.
+`OMP_SCHEDULE` selects other standard policies without altering the chemistry or
+group error controllers. Final validation covers static, dynamic and guided
+schedules, multiple thread counts, single-cell groups, partial groups and a
+group request larger than the cell count. Optimization flags remain exactly the
+required default. Source checks found no extended floating type, intrinsics,
+compiler vector extensions, target-specific flags/pragmas, or OS APIs in C.

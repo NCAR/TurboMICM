@@ -135,8 +135,9 @@ int main(int argc,char **argv)
     }
     if (!load_cells(argv[arg+3],groups,cells,group_size,m)) goto finish;
     omp_set_num_threads(threads);
+    if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_static,0);
     ChemRosenbrockParameters parameters=chem_rosenbrock_parameters(CHEM_ROS3);
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(runtime)
     for (size_t g=0;g<ng;++g) {
         chem_update_rates(groups[g].state);
         groups[g].status=chem_solve(groups[g].solver,groups[g].state,dt,&parameters,&groups[g].stats);
@@ -145,7 +146,7 @@ int main(int argc,char **argv)
         fprintf(stderr,"Warm-up: %s\n",chem_status_string(groups[g].status));goto finish;
     }
     double start=omp_get_wtime();
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(runtime)
     for (size_t g=0;g<ng;++g) {
         memset(&groups[g].stats,0,sizeof(ChemSolverStats));
         for (size_t step=0;step<steps;++step) {

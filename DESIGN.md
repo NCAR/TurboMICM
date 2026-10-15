@@ -16,7 +16,10 @@ selected compiler and optimization flags. The runtime needs no parser or Python.
 TS1's data is retained in `mechanisms/ts1.json`; `tools/translate_ts1.py` reproduces
 it from the supplied read-only input. The three tutorial configurations are
 checked against independent C builders at one and seven cells, including ten
-integration intervals. Additional parser error tests remain to be implemented.
+integration intervals. Forty-nine parser validation checks cover malformed
+records, names, units, stoichiometry, include cycles and finite numbers. Three
+additional generated rate types are checked against independent formulas, and
+all 379 generated TS1 initial fields match the reference exactly by name.
 
 `src/rates.c` supplies rate defaults, derived parameters and evaluations.
 `src/mechanism.c` performs a stable sort by MICM's rate-type order, retaining
@@ -178,7 +181,7 @@ remain available when the caller manages mechanism ownership and parameters.
 | --- | --- | --- |
 | Cell group size | 32 | `CHEM_GROUP_SIZE` environment variable; positive integer |
 | Threads | OpenMP maximum, normally all cores | benchmark `--threads N` or OpenMP environment |
-| Group scheduling | OpenMP static | fixed policy; each group has its own adaptive state |
+| Group scheduling | OpenMP static | `OMP_SCHEDULE`; runtime static, dynamic or guided policy |
 | SIMD width | compiler-selected | portable `omp simd`, no target-specific width |
 | LU algorithm | Mozart | linear-solver callback; Doolittle is also provided |
 

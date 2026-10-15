@@ -1,7 +1,7 @@
 # Completion ledger
 
-The full task is active. This file records checkpoints, not a reduced definition
-of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases.
+The task is complete. This file retains the implementation checkpoints and
+final acceptance evidence. `tests/cases.txt` is the authoritative inventory of all 680 cases.
 `tools/run_tests.py` emits FAIL for each missing case implementation.
 
 ## Implemented and checked
@@ -138,16 +138,29 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   normalized. Both compiler suites now report 680 PASS / 0 FAIL / 0 N/A.
   All supplementary configuration and TS1 clamp checks pass without warnings.
 
-## Remaining work (required)
+## Final acceptance audit
 
-- Validate the configuration reader's malformed inputs and additional rate
-  types beyond the three supplied examples; compare TS1 default fields by name.
-- Performance work using generic kernels; broader seeds/group sizes and both
-  compilers; full final portability/source audit and complete RESULTS.md.
-- Final commit and requirement-by-requirement completion audit. Mark goal
-  complete only after all requirements are proven.
+- Both `make cpu test-cpu bench CC=clang` and the GCC build pass all 680 cases,
+  with zero FAIL/N/A entries and no compiler warnings. All eight program outputs
+  match the reference, with only documented nondeterministic fields normalized.
+- Supplemental configuration validation passes 49 checks. Generated JPL19,
+  Taylor and reversible rates match independent formulas. All 379 TS1 initial
+  fields match the supplied reference exactly by name. The importer reproduces
+  the committed 210-species/547-reaction mechanism exactly.
+- Fresh full-size runs pass all 2,110,000 values: Clang is identical to MICM;
+  GCC's largest relative difference is 1.43e-13. Seven additional combinations
+  per compiler cover seeds 17/73, groups 1/3/7/32/64/129/1000, threads 1/3/4/10
+  and static/dynamic/guided schedules. All pass the original gate.
+- Final single-run timings are 9,625.25 ms (Clang C), 10,602.78 ms (GCC C),
+  and 27,421.51 ms (paired Clang++ MICM). No optimization flags were tuned.
+- Source audit verifies C11/stdlib/libm/OpenMP only, no prohibited extensions,
+  OS APIs or target flags; generated C is compiled with the same Makefile flags.
+  Only the allowed reference executable and copied MICM tests use MICM code.
+- README, DESIGN, DECISIONS, RESULTS and the pinned environment specification
+  are present. The implementation and its verification are committed in this
+  repository. No required work remains.
 
-## Implementation notes for continuing work
+## Maintenance notes
 
 `src/internal.h` holds internal mechanism/process structs. `chem_mechanism_reorder`
 mutates index maps and must be called before states/solvers exist. The mechanism

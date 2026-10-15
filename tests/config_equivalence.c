@@ -64,8 +64,21 @@ finish:
     chem_solver_free(as);chem_solver_free(bs);chem_state_free(sa);chem_state_free(sb);
     chem_mechanism_free(a);chem_mechanism_free(b);
 }
-int main(void)
+static int dump_defaults(void)
 {
+    ChemMechanism *m=NULL;ChemState *s=NULL;
+    CHECK(ts1_create(&m)==CHEM_OK);CHECK(chem_state_create(m,1,&s)==CHEM_OK);CHECK(ts1_initialize(s)==CHEM_OK);
+    printf("temperature,pressure");
+    for (size_t v=0;v<chem_species_count(m);++v) printf(",%s",chem_species_name(m,v));
+    for (size_t v=0;v<chem_custom_count(m);++v) printf(",%s",chem_custom_name(m,v));
+    printf("\n%.17g,%.17g",s->conditions[0].temperature,s->conditions[0].pressure);
+    for (size_t v=0;v<chem_species_count(m);++v) printf(",%.17g",s->values[v]);
+    for (size_t v=0;v<chem_custom_count(m);++v) printf(",%.17g",s->custom[v]);
+    putchar('\n');chem_state_free(s);chem_mechanism_free(m);return test_failures?1:0;
+}
+int main(int argc,char **argv)
+{
+    if (argc==2 && !strcmp(argv[1],"--defaults")) return dump_defaults();
     for (int which=0;which<3;++which) { compare(which,1);compare(which,7); }
     ChemMechanism *m=NULL;ChemState *s=NULL;
     CHECK(ts1_create(&m)==CHEM_OK);

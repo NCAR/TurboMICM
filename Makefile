@@ -84,6 +84,8 @@ bin/test_config: tests/config_equivalence.c tests/test.h build/no_user.o build/w
 .PHONY: test-config
 test-config: bin/test_config
 	bin/test_config
+	bin/test_config_extra
+	$(PYTHON) tools/test_configuration.py
 
 $(OBJECTS): src/solver_internal.h
 
@@ -91,3 +93,11 @@ bin/tutorial_cpu: tests/tutorials.c tests/tutorial_mechanisms.h build/libchem.a 
 	$(CC) $(CFLAGS) tests/tutorials.c build/libchem.a $(LDLIBS) -o $@
 bin/test_config: tests/tutorial_mechanisms.h
 test-cpu: bin/tutorial_cpu
+
+build/config_extra.c: mechanisms/config_extra.json tools/configure.py | env
+	$(PYTHON) tools/configure.py $< $@ --symbol extra
+build/config_extra.o: build/config_extra.c include/chem.h build/compiler-settings
+	$(CC) $(CFLAGS) -c $< -o $@
+bin/test_config_extra: tests/config_extra.c tests/test.h build/config_extra.o build/libchem.a build/compiler-settings
+	$(CC) $(CFLAGS) tests/config_extra.c build/config_extra.o build/libchem.a $(LDLIBS) -o $@
+test-cpu test-config: bin/test_config_extra

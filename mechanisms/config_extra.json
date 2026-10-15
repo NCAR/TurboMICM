@@ -1,0 +1,9 @@
+{"camp-data":[
+ {"type":"CHEM_SPEC","name":"A"},
+ {"type":"CHEM_SPEC","name":"B"},
+ {"type":"MECHANISM","rate units":"mol m-3","reactions":[
+  {"type":"TERNARY_CHEMICAL_ACTIVATION_JPL19","reactants":{"A":{}},"products":{"B":{}},"k0_A":0.013,"k0_B":1.2,"k0_C":2,"k0_D":290,"kinf_A":0.7,"kinf_B":0.3,"kinf_C":8,"kinf_D":280,"kint_A":0.002,"kint_B":0.1,"kint_C":9,"kint_D":270,"Fc":0.8,"N":1.1},
+  {"type":"TAYLOR_SERIES","reactants":{"A":{}},"products":{"B":{}},"A":0.004,"B":0.7,"C":14,"D":280,"E":0.00001,"coefficients":[1,0.001,0.000001]},
+  {"type":"REVERSIBLE","reactants":{"A":{}},"products":{"B":{}},"A":2,"C":-30,"reverse_rate":0.8}
+ ]}
+]}
