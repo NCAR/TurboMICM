@@ -21,6 +21,18 @@ Prompt changes
   prompts/ carries it. The Sol runs received the prompt without it, which the
   experimenter judged immaterial to their solutions.
 
+Reference changes
+- 2026-10-15: `reference/micm_ts1_ref.cpp` gained `--group-size G`, so MICM can be
+  timed with the same cell grouping as an entry. Its default, one group per
+  thread, is unchanged and gives bit-identical results.
+
+Verification
+- 2026-10-15: the three Sol entries were rebuilt from their branches with clang
+  and gcc-15, their tests rerun and counted against the case list, their builds
+  audited against the portability rules, and their TS1 timings replicated with
+  `admin/time_entries.py` alongside MICM. The results are in
+  `results/2026-10-15-sol-verification/` and on the wiki's Results page.
+
 | Run | Model | Effort | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|
 | sol-high | gpt-6.1-sol | high | Codex CLI 0.162.1, interactive | 2026-10-14 21:55-23:32 | `1d944f4`, 23:32 (6 commits) | finished |

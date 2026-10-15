@@ -1,6 +1,6 @@
 // MICM reference run of the TS1 benchmark for the MICM-to-C experiment.
 //
-//   micm_ts1_ref [--threads N] CELLS STEPS DT CELLS_CSV
+//   micm_ts1_ref [--threads N] [--group-size G] CELLS STEPS DT CELLS_CSV
 //   micm_ts1_ref --write-defaults FILE
 //
 // Builds TS1 from ROOT/micm/test/benchmark/ts1_mechanism.hpp with MICM's
@@ -12,8 +12,13 @@
 // One untimed warm-up step is followed by STEPS timed steps of DT seconds. The
 // program prints elapsed_ms and the solver statistics summed over the timed
 // steps, and writes the final state to ts1_final.csv in the working directory.
-// With N threads (default: all cores) the cells are split into N contiguous
-// groups, each with its own solver and state.
+//
+// Cells are solved in groups, each group a MICM state with its own step-size
+// control. By default there is one group per thread: with N threads (default:
+// all cores) the cells are split into N contiguous groups. With --group-size G
+// the cells are split into groups of G, and each thread takes a contiguous block
+// of groups, as an OpenMP static schedule does, solving each group's STEPS steps
+// in turn with one solver per thread.
 //
 // --write-defaults writes TS1's InitState for one cell, as a CSV with the same
 // columns that make_cells_csv.py writes.
@@ -203,13 +208,20 @@ namespace
     }
   };
 
-  /// @brief One group of cells, run by one thread.
+  /// @brief One group of cells: one MICM state.
   struct Group
   {
     std::size_t first_cell_{};
     micm::Index num_cells_{};
-    Statistics statistics_{};
     std::vector<double> final_state_{};  // cell-major: num_cells_ x species
+  };
+
+  /// @brief One thread and its contiguous block of groups.
+  struct Worker
+  {
+    std::size_t first_group_{};
+    std::size_t num_groups_{};
+    Statistics statistics_{};
     std::string error_{};
   };
 
@@ -253,7 +265,7 @@ namespace
   }
 
   constexpr const char* kUsage =
-      "usage: micm_ts1_ref [--threads N] CELLS STEPS DT CELLS_CSV\n"
+      "usage: micm_ts1_ref [--threads N] [--group-size G] CELLS STEPS DT CELLS_CSV\n"
       "       micm_ts1_ref --write-defaults FILE";
 }  // namespace
 
@@ -262,6 +274,7 @@ int main(int argc, char** argv)
   try
   {
     std::size_t threads = std::max(1u, std::thread::hardware_concurrency());
+    std::size_t group_size = 0;  // 0: one group per thread
     std::vector<std::string> positional;
     for (int i = 1; i < argc; ++i)
     {
@@ -273,6 +286,15 @@ int main(int argc, char** argv)
       if (arg == "--threads" && i + 1 < argc)
       {
         threads = std::stoul(argv[++i]);
+      }
+      else if (arg == "--group-size" && i + 1 < argc)
+      {
+        group_size = std::stoul(argv[++i]);
+        if (group_size < 1)
+        {
+          std::cerr << kUsage << std::endl;
+          return 2;
+        }
       }
       else
       {
@@ -302,83 +324,111 @@ int main(int argc, char** argv)
       species = NamesByIndex(state.variable_map_);
     }
 
-    threads = std::min(threads, num_cells);
-    std::vector<Group> groups(threads);
-    for (std::size_t g = 0, first = 0; g < threads; ++g)
+    // Groups of cells: one per thread by default, or groups of group_size.
+    std::vector<Group> groups;
+    const std::size_t num_groups = group_size ? (num_cells + group_size - 1) / group_size : std::min(threads, num_cells);
+    for (std::size_t g = 0, first = 0; g < num_groups; ++g)
     {
-      groups[g].first_cell_ = first;
-      groups[g].num_cells_ = num_cells / threads + (g < num_cells % threads ? 1 : 0);
-      first += groups[g].num_cells_;
+      const std::size_t count =
+          group_size ? std::min(group_size, num_cells - first) : num_cells / num_groups + (g < num_cells % num_groups ? 1 : 0);
+      groups.push_back(Group{ first, count, {} });
+      first += count;
     }
 
-    // The main thread and every group meet here twice: after the warm-up, and
+    // Each thread takes a contiguous block of groups, as an OpenMP static schedule does.
+    threads = std::min(threads, num_groups);
+    std::vector<Worker> workers(threads);
+    for (std::size_t t = 0, first = 0; t < threads; ++t)
+    {
+      workers[t].first_group_ = first;
+      workers[t].num_groups_ = num_groups / threads + (t < num_groups % threads ? 1 : 0);
+      first += workers[t].num_groups_;
+    }
+
+    // The main thread and every worker meet here twice: after the warm-up, and
     // after the timed steps. The time between the two meetings is elapsed_ms.
     std::barrier sync(static_cast<std::ptrdiff_t>(threads + 1));
-    auto run_group = [&](Group& group)
+    auto run_worker = [&](Worker& worker)
     {
       try
       {
         auto solver = BuildSolver();
-        auto state = solver.GetState(group.num_cells_);
-        Initialize(state, group.num_cells_, table, group.first_cell_);
-        solver.UpdateStateParameters(state);
-        auto warmup = solver.Solve(dt, state);
-        if (warmup.state_ != micm::SolverState::Converged)
+        std::vector<decltype(solver.GetState(1))> states;
+        states.reserve(worker.num_groups_);
+        for (std::size_t k = 0; k < worker.num_groups_ && worker.error_.empty(); ++k)
         {
-          group.error_ = "warm-up solve: " + micm::SolverStateToString(warmup.state_);
-        }
-        sync.arrive_and_wait();
-        for (std::size_t step = 0; step < num_steps && group.error_.empty(); ++step)
-        {
-          auto result = solver.Solve(dt, state);
-          group.statistics_.Add(result.stats_);
-          if (result.state_ != micm::SolverState::Converged)
+          const auto& group = groups[worker.first_group_ + k];
+          states.push_back(solver.GetState(group.num_cells_));
+          auto& state = states.back();
+          Initialize(state, group.num_cells_, table, group.first_cell_);
+          solver.UpdateStateParameters(state);
+          auto warmup = solver.Solve(dt, state);
+          if (warmup.state_ != micm::SolverState::Converged)
           {
-            group.error_ = "timed step " + std::to_string(step) + ": " + micm::SolverStateToString(result.state_);
+            worker.error_ = "warm-up solve: " + micm::SolverStateToString(warmup.state_);
           }
         }
         sync.arrive_and_wait();
-        group.final_state_.resize(group.num_cells_ * species.size());
-        for (micm::Index cell = 0; cell < group.num_cells_; ++cell)
+        for (std::size_t k = 0; k < states.size() && worker.error_.empty(); ++k)
         {
-          for (std::size_t i = 0; i < species.size(); ++i)
+          for (std::size_t step = 0; step < num_steps && worker.error_.empty(); ++step)
           {
-            group.final_state_[cell * species.size() + i] = state.variables_[cell][i];
+            auto result = solver.Solve(dt, states[k]);
+            worker.statistics_.Add(result.stats_);
+            if (result.state_ != micm::SolverState::Converged)
+            {
+              worker.error_ = "timed step " + std::to_string(step) + ": " + micm::SolverStateToString(result.state_);
+            }
+          }
+        }
+        sync.arrive_and_wait();
+        for (std::size_t k = 0; k < states.size(); ++k)
+        {
+          auto& group = groups[worker.first_group_ + k];
+          group.final_state_.resize(group.num_cells_ * species.size());
+          for (micm::Index cell = 0; cell < group.num_cells_; ++cell)
+          {
+            for (std::size_t i = 0; i < species.size(); ++i)
+            {
+              group.final_state_[cell * species.size() + i] = states[k].variables_[cell][i];
+            }
           }
         }
       }
       catch (const std::exception& e)
       {
         // Keep the meetings balanced so the other threads can finish.
-        group.error_ = e.what();
+        worker.error_ = e.what();
         sync.arrive_and_drop();
       }
     };
 
-    std::vector<std::thread> workers;
-    for (auto& group : groups)
+    std::vector<std::thread> threads_running;
+    for (auto& worker : workers)
     {
-      workers.emplace_back(run_group, std::ref(group));
+      threads_running.emplace_back(run_worker, std::ref(worker));
     }
     sync.arrive_and_wait();
     const auto t0 = std::chrono::steady_clock::now();
     sync.arrive_and_wait();
     const auto t1 = std::chrono::steady_clock::now();
-    for (auto& worker : workers)
+    for (auto& thread : threads_running)
     {
-      worker.join();
+      thread.join();
     }
 
     Statistics statistics;
-    for (const auto& group : groups)
+    for (const auto& worker : workers)
     {
-      if (!group.error_.empty())
+      if (!worker.error_.empty())
       {
-        std::cerr << "cells " << group.first_cell_ << "-" << group.first_cell_ + group.num_cells_ - 1
-                  << " did not converge: " << group.error_ << std::endl;
+        const auto& first = groups[worker.first_group_];
+        const auto& last = groups[worker.first_group_ + worker.num_groups_ - 1];
+        std::cerr << "cells " << first.first_cell_ << "-" << last.first_cell_ + last.num_cells_ - 1
+                  << " did not converge: " << worker.error_ << std::endl;
         return 1;
       }
-      statistics.Add(group.statistics_);
+      statistics.Add(worker.statistics_);
     }
 
     std::ofstream file("ts1_final.csv");

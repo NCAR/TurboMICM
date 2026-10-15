@@ -37,7 +37,7 @@ links only with SDKROOT set:
         -I ROOT/micm/include -I ROOT/micm/test/benchmark \
         ROOT/reference/micm_ts1_ref.cpp -o bin/micm_ts1_ref
 
-    bin/micm_ts1_ref [--threads N] CELLS STEPS DT CELLS_CSV
+    bin/micm_ts1_ref [--threads N] [--group-size G] CELLS STEPS DT CELLS_CSV
     bin/micm_ts1_ref --write-defaults FILE
 
 - Solver: MICM's three-stage Rosenbrock with its default parameters and
@@ -50,10 +50,14 @@ links only with SDKROOT set:
 - One untimed warm-up step, then STEPS timed steps of DT seconds. Prints
   `elapsed_ms=` and the solver statistics summed over the timed steps, and writes
   the final state to `ts1_final.csv` in the working directory.
-- With N threads (default: all cores) the cells are split into N contiguous
-  groups, each with its own solver and state; the statistics are summed over the
-  groups. On the 100-cell input below, 1 and 4 threads give identical final
-  states.
+- Cells are solved in groups, each group a MICM state with its own step-size
+  control, and the statistics are summed over the groups. By default there is
+  one group per thread: with N threads (default: all cores) the cells are split
+  into N contiguous groups. With `--group-size G` (added 2026-10-15) the cells are
+  split into groups of G, and each thread takes a contiguous block of groups, as
+  an OpenMP static schedule does, solving each group's STEPS steps in turn with
+  one solver per thread. On the 100-cell input below, 1 and 4 threads, and groups
+  of 7 or 32 cells, all give identical final states.
 
 `ts1_defaults.csv` is TS1's `InitState` for one cell (`--write-defaults`).
 

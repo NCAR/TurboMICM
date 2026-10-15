@@ -1,0 +1,14 @@
+date: 2026-10-15T10:53:48
+host: Gemini.local
+platform: macOS-27.0.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,2 | Apple M5 | 4 | 6
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=22872163)	96%; AC attached; not charging present: true
+uptime: 10:53  up 14:55, 3 users, load averages: 1.29 1.47 1.55
+input: <scratch>/timing/cells_10000_seed2026.csv
+reference: <scratch>/timing/ts1_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 10,1; rounds: 5
+program micm: <scratch>/bin/micm_ts1_ref_final
+program micm-g32: <scratch>/bin/micm_ts1_ref_final --group-size 32
+program sol-high: <verify>/sol-high/bin/ts1_bench_cpu
+program sol-xhigh: <verify>/sol-xhigh/bin/ts1_bench_cpu
+program sol-max: <verify>/sol-max/bin/ts1_bench_cpu
