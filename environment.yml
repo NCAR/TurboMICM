@@ -4,3 +4,4 @@ channels:
 dependencies:
   - python=3.12.12
   - pyyaml=6.0.3
+  - clang-format=21.1.8

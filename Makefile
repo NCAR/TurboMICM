@@ -25,7 +25,8 @@ LDLIBS = $(OMPLIBS) -lm
 .PHONY: env cpu bench test-cpu micm-ref clean FORCE
 env: .conda/bin/python
 .conda/bin/python: environment.yml
-	CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml
+	@if test -x $@; then CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env update --prefix $(CURDIR)/.conda --file environment.yml; else CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml; fi
+	@touch $@
 cpu: bin/ts1_bench_cpu
 bench: cpu
 micm-ref: bin/micm_ts1_ref
@@ -35,9 +36,9 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mecha
 clean:
 	rm -rf build bin generated
 
-LIB_SOURCES = src/rates.c src/model.c src/state.c src/process.c src/parameters.c src/solver.c src/constraints.c src/backward_euler.c
+LIB_SOURCES = src/rates.c src/model.c src/state.c src/process.c src/parameters.c src/solver.c src/constraints.c src/backward_euler.c src/matrix.c src/system.c src/external.c src/verify.c
 LIB_OBJECTS = $(LIB_SOURCES:src/%.c=build/%.o)
-build/%.o: src/%.c include/chem.h src/internal.h build/configuration.txt
+build/%.o: src/%.c $(wildcard include/*.h) src/internal.h build/configuration.txt
 	@mkdir -p build
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 build/libchem.a: $(LIB_OBJECTS)
@@ -54,9 +55,12 @@ bin/ts1_bench_cpu: src/bench.c build/ts1.o build/libchem.a
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) -DCK_DEFAULT_GROUP_SIZE=$(GROUP_SIZE) $< build/ts1.o build/libchem.a $(LDLIBS) -o $@
 
-bin/test_cpu: tests/runner.c tests/test_rates.c tests/test_linear.c tests/test_constraints.c tests/test_integrators.c tests/test_initialization.c tests/tutorials.c tests/test_configuration.c tests/test.h build/tutorial_no.o build/tutorial_user.o build/tutorial_robertson.o build/libchem.a
+TUTORIAL_OBJECTS = build/tutorial_no.o build/tutorial_user.o build/tutorial_robertson.o
+TEST_SOURCES = tests/runner.c tests/test_rates.c tests/test_linear.c tests/test_constraints.c tests/test_integrators.c tests/test_initialization.c tests/tutorials.c tests/test_configuration.c tests/test_matrices.c tests/test_sparse.c tests/test_state.c tests/test_system.c tests/test_constraint_set.c tests/test_builder.c tests/test_verification.c
+bin/test_cpu: $(TEST_SOURCES) tests/test.h $(TUTORIAL_OBJECTS) build/libchem.a
 	@mkdir -p bin
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Itests -Isrc tests/runner.c tests/test_rates.c tests/test_linear.c tests/test_constraints.c tests/test_integrators.c tests/test_initialization.c tests/tutorials.c tests/test_configuration.c $(TUTORIAL_OBJECTS) build/libchem.a $(LDLIBS) -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -Itests -Isrc $(TEST_SOURCES) $(TUTORIAL_OBJECTS) build/libchem.a $(LDLIBS) -o $@
+
 test-cpu: bin/test_cpu
 	@bin/test_cpu tests/cases.txt
 
@@ -69,8 +73,7 @@ generated/tutorial_robertson.c: mechanisms/tutorial/robertson/config.json mechan
 build/tutorial_%.o: generated/tutorial_%.c include/chem.h build/configuration.txt
 	@mkdir -p build
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
-TUTORIAL_OBJECTS = build/tutorial_no.o build/tutorial_user.o build/tutorial_robertson.o
-bin/tutorial_cpu: tests/tutorial_main.c tests/tutorials.c tests/test_configuration.c tests/test_configuration.c $(TUTORIAL_OBJECTS) build/libchem.a
+bin/tutorial_cpu: tests/tutorial_main.c tests/tutorials.c tests/test_configuration.c $(TUTORIAL_OBJECTS) build/libchem.a
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) -Itests -Isrc tests/tutorial_main.c tests/tutorials.c tests/test_configuration.c $(TUTORIAL_OBJECTS) build/libchem.a $(LDLIBS) -o $@
 

@@ -9,3 +9,4 @@ ts1_final.csv
 results/*.csv
 results/*.log
 PROMPT.md
+results/

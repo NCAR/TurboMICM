@@ -5,19 +5,30 @@
 #include <string.h>
 ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *p)
 {
-  if (!p) return CK_INVALID;
+  if (!p)
+    return CK_INVALID;
   memset(p, 0, sizeof *p);
-  p->max_steps = 1000; p->round_off = DBL_EPSILON;
-  p->factor_min = 0.2; p->factor_max = 6; p->rejection_decrease = 0.1; p->safety = 0.9;
-  p->constraint_init_max_iterations = 10; p->constraint_init_max_backtracks = 24;
-  p->constraint_init_tolerance = 0.1; p->constraint_init_backtrack_factor = 0.5; p->constraint_init_sufficient_decrease = 1e-4;
-  switch (method) {
-  case 2: {
+  p->max_steps = 1000;
+  p->round_off = DBL_EPSILON;
+  p->factor_min = 0.2;
+  p->factor_max = 6;
+  p->rejection_decrease = 0.1;
+  p->safety = 0.9;
+  p->constraint_init_max_iterations = 10;
+  p->constraint_init_max_backtracks = 24;
+  p->constraint_init_tolerance = 0.1;
+  p->constraint_init_backtrack_factor = 0.5;
+  p->constraint_init_sufficient_decrease = 1e-4;
+  switch (method)
+  {
+  case 2:
+  {
     double g = 1.0 + 1.0 / sqrt(2.0);
     p->stages = 2;
     p->a[0] = 1.0 / g;
     p->c[0] = -2.0 / g;
-    for (size_t j = 0; j < 6; ++j) p->new_function[j] = 1;
+    for (size_t j = 0; j < 6; ++j)
+      p->new_function[j] = 1;
     p->m[0] = (3.0) / (2.0 * g);
     p->m[1] = (1.0) / (2.0 * g);
     p->e[0] = 1.0 / (2.0 * g);
@@ -27,8 +38,10 @@ ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *p)
     p->alpha[1] = 1.0;
     p->gamma[0] = g;
     p->gamma[1] = -g;
-    return CK_OK; }
-  case 3: {
+    return CK_OK;
+  }
+  case 3:
+  {
     p->stages = 3;
     p->a[0] = 1;
     p->a[1] = 1;
@@ -52,8 +65,10 @@ ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *p)
     p->gamma[0] = 0.43586652150845899941601945119356;
     p->gamma[1] = 0.24291996454816804366592249683314;
     p->gamma[2] = 0.21851380027664058511513169485832e+01;
-    return CK_OK; }
-  case 4: {
+    return CK_OK;
+  }
+  case 4:
+  {
     p->stages = 4;
     p->a[0] = 0.2000000000000000E+01;
     p->a[1] = 0.1867943637803922E+01;
@@ -88,8 +103,10 @@ ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *p)
     p->gamma[1] = -0.1769193891319233E+01;
     p->gamma[2] = 0.7592633437920482;
     p->gamma[3] = -0.1049021087100450;
-    return CK_OK; }
-  case 43: {
+    return CK_OK;
+  }
+  case 43:
+  {
     p->stages = 4;
     p->a[0] = 0.0;
     p->a[1] = 2.0;
@@ -115,8 +132,10 @@ ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *p)
     p->alpha[3] = 1.0;
     p->gamma[0] = 0.5;
     p->gamma[1] = 1.5;
-    return CK_OK; }
-  case 6: {
+    return CK_OK;
+  }
+  case 6:
+  {
     p->stages = 6;
     p->alpha[0] = 0.000;
     p->alpha[1] = 0.386;
@@ -167,9 +186,12 @@ ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *p)
     p->m[4] = 1.0;
     p->m[5] = 1.0;
     p->e[5] = 1.0;
-    for (size_t j = 0; j < 6; ++j) p->new_function[j] = 1;
+    for (size_t j = 0; j < 6; ++j)
+      p->new_function[j] = 1;
     p->order = 4.0;
-    return CK_OK; }
-  default: return CK_INVALID;
+    return CK_OK;
+  }
+  default:
+    return CK_INVALID;
   }
 }
