@@ -1,0 +1,140 @@
+#include "internal.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
+static int valid_data(const ChemMechanismData *d)
+{
+    if (!d || !d->species_count || !d->species_names || (d->reaction_count && !d->reactions)
+        || (d->parameter_count && !d->parameter_names) || d->species_count > SIZE_MAX / d->species_count)
+        return 0;
+    for (size_t i = 0; i < d->species_count; ++i) {
+        if (!d->species_names[i]) return 0;
+        for (size_t j = 0; j < i; ++j)
+            if (!strcmp(d->species_names[i], d->species_names[j])) return 0;
+    }
+    for (size_t i = 0; i < d->reaction_count; ++i) {
+        const ChemReaction *r = &d->reactions[i];
+        if ((r->reactant_count && !r->reactants) || (r->product_count && !r->products)) return 0;
+        for (size_t j = 0; j < r->reactant_count; ++j)
+            if (r->reactants[j] < 0 || (size_t)r->reactants[j] >= d->species_count) return 0;
+        for (size_t j = 0; j < r->product_count; ++j)
+            if (r->products[j].species < 0 || (size_t)r->products[j].species >= d->species_count
+                || !isfinite(r->products[j].yield)) return 0;
+        const ChemRate *rate = &r->rate;
+        if (rate->type < CHEM_ARRHENIUS || rate->type > CHEM_CALLBACK || rate->third_body_count < 0
+            || rate->coefficient_count < 0 || rate->coefficient_count > 19) return 0;
+        if (rate->type == CHEM_USER || rate->type == CHEM_SURFACE) {
+            size_t needed = rate->type == CHEM_SURFACE ? 2 : 1;
+            if (rate->parameter < 0 || (size_t)rate->parameter + needed > d->parameter_count) return 0;
+        }
+        if (rate->type == CHEM_SURFACE && (!(rate->p[0] > 0) || !(rate->p[1] > 0))) return 0;
+    }
+    return 1;
+}
+
+ChemStatus chem_mechanism_create(const ChemMechanismData *d, ChemMechanism **out)
+{
+    if (!out) return CHEM_INVALID;
+    *out = NULL;
+    if (!valid_data(d)) return CHEM_INVALID;
+    const size_t n = d->species_count;
+    ChemMechanism *m = calloc(1, sizeof(*m));
+    unsigned char *pattern = calloc(n * n, 1);
+    if (!m || !pattern) { free(m); free(pattern); return CHEM_MEMORY; }
+    m->data = d;
+    for (size_t i = 0; i < n; ++i) pattern[i * n + i] = 1;
+    for (size_t r = 0; r < d->reaction_count; ++r) {
+        const ChemReaction *rx = &d->reactions[r];
+        m->derivative_count += rx->reactant_count;
+        for (size_t j = 0; j < rx->reactant_count; ++j) {
+            size_t col = (size_t)rx->reactants[j];
+            for (size_t k = 0; k < rx->reactant_count; ++k) pattern[rx->reactants[k] * n + col] = 1;
+            for (size_t k = 0; k < rx->product_count; ++k) pattern[rx->products[k].species * n + col] = 1;
+        }
+    }
+    for (size_t i = 0; i < n; ++i)
+        for (size_t k = i + 1; k < n; ++k) if (pattern[i * n + k])
+            for (size_t j = i + 1; j < n; ++j) if (pattern[j * n + i]) pattern[j * n + k] = 1;
+    for (size_t i = 0; i < n * n; ++i) m->nnz += pattern[i] != 0;
+    m->index = malloc(n * n * sizeof(*m->index));
+    m->row_start = calloc(n + 1, sizeof(*m->row_start));
+    m->entries = malloc(m->nnz * sizeof(*m->entries));
+    m->diagonal = malloc(n * sizeof(*m->diagonal));
+    m->lower_start = calloc(n + 1, sizeof(*m->lower_start));
+    m->lower = malloc(m->nnz * sizeof(*m->lower));
+    m->operation_start = calloc(n + 1, sizeof(*m->operation_start));
+    m->derivatives = calloc(m->derivative_count + 1, sizeof(*m->derivatives));
+    if (!m->index || !m->row_start || !m->entries || !m->diagonal || !m->lower_start
+        || !m->lower || !m->operation_start || !m->derivatives) goto memory_error;
+    size_t count = 0;
+    for (size_t i = 0; i < n; ++i) {
+        m->row_start[i] = count;
+        for (size_t j = 0; j < n; ++j) {
+            m->index[i * n + j] = pattern[i * n + j] ? count : SIZE_MAX;
+            if (pattern[i * n + j]) { m->entries[count] = (ChemEntry){count, j}; ++count; }
+        }
+        m->diagonal[i] = m->index[i * n + i];
+    }
+    m->row_start[n] = count;
+    size_t lower_count = 0, operations = 0;
+    for (size_t i = 0; i < n; ++i) {
+        m->lower_start[i] = lower_count;
+        m->operation_start[i] = operations;
+        for (size_t j = i + 1; j < n; ++j)
+            if (pattern[j * n + i]) m->lower[lower_count++] = m->index[j * n + i];
+        for (size_t k = i + 1; k < n; ++k) if (pattern[i * n + k])
+            for (size_t j = i + 1; j < n; ++j) if (pattern[j * n + i]) ++operations;
+    }
+    m->lower_start[n] = lower_count;
+    m->operation_start[n] = operations;
+    m->operations = malloc((operations + 1) * sizeof(*m->operations));
+    if (!m->operations) goto memory_error;
+    count = 0;
+    for (size_t i = 0; i < n; ++i)
+        for (size_t k = i + 1; k < n; ++k) if (pattern[i * n + k])
+            for (size_t j = i + 1; j < n; ++j) if (pattern[j * n + i])
+                m->operations[count++] = (ChemElimination){m->index[j * n + k], m->index[j * n + i], m->index[i * n + k]};
+    count = 0;
+    /* Match the reference's stable independent-variable, reaction ordering.
+       Repeated reactants produce repeated derivative jobs, each skipping the
+       first matching occurrence, and hence the correct multiplicity. */
+    for (size_t col = 0; col < n; ++col)
+        for (size_t r = 0; r < d->reaction_count; ++r) {
+            const ChemReaction *rx = &d->reactions[r];
+            size_t first = SIZE_MAX;
+            for (size_t j = 0; j < rx->reactant_count; ++j)
+                if ((size_t)rx->reactants[j] == col) {
+                    if (first == SIZE_MAX) first = j;
+                    m->derivatives[count++] = (ChemDerivative){r, col, first};
+                }
+        }
+    free(pattern);
+    *out = m;
+    return CHEM_OK;
+memory_error:
+    free(pattern);
+    chem_mechanism_free(m);
+    return CHEM_MEMORY;
+}
+
+void chem_mechanism_free(ChemMechanism *m)
+{
+    if (!m) return;
+    free(m->index); free(m->row_start); free(m->entries); free(m->diagonal);
+    free(m->lower_start); free(m->lower); free(m->operation_start);
+    free(m->operations); free(m->derivatives); free(m);
+}
+const ChemMechanismData *chem_mechanism_data(const ChemMechanism *m) { return m->data; }
+size_t chem_jacobian_size(const ChemMechanism *m) { return m->nnz; }
+size_t chem_jacobian_index(const ChemMechanism *m, size_t r, size_t c)
+{
+    size_t n = m->data->species_count;
+    return r < n && c < n ? m->index[r * n + c] : SIZE_MAX;
+}
+const char *chem_status_string(ChemStatus s)
+{
+    static const char *const names[] = {"converged", "invalid argument", "allocation failed", "maximum steps exceeded",
+        "step size too small", "nonfinite value", "singular matrix"};
+    return s >= CHEM_OK && s <= CHEM_SINGULAR ? names[s] : "unknown status";
+}
