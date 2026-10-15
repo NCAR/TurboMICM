@@ -24,3 +24,17 @@
   its stable tie-breaking, before generating sparse LU schedules. The input
   configuration keeps its original species ordering. Default absolute tolerance
   is 1e-3, as set by MICM's builder, and relative tolerance is 1e-6.
+- Public solves apply MICM's post-solve nonnegative clamp only to differential
+  variables. `ck_solve_raw` exposes the underlying integrator for direct tests.
+- Reference random linear-algebra tests use C++ implementation-specific random
+  distributions. Their C equivalents use a portable seeded generator with the
+  same lognormal distributions and test the same reconstruction quantities and
+  bounds. Random numbers are test inputs, never expected solver results.
+- The vectorized tutorial's original loop condition never enters integration.
+  Preserve that program's printed behavior; numerical integration is exercised
+  by the solver tests and the other tutorials.
+- Tutorial fixture comparisons omit elapsed timing and OpenMP startup-log
+  interleaving, both nondeterministic. All printed numerical states/statistics
+  remain checked. Fixtures were collected from the copied reference build.
+- State setters require exactly one value per cell, matching the reference's
+  scalar/single-cell and vector/multiple-cell behavior; no implicit broadcast.

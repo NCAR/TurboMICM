@@ -147,7 +147,10 @@ def read(path):
                 rate['label'] = raw.get('MUSICA name', raw.get('label'))
                 if TYPES[kind] in ('CK_USER', 'CK_SURFACE') and not isinstance(rate['label'], str):
                     raise ConfigurationError('User-defined/surface reaction needs a label')
-                rate['coefficients'] = [finite(v) for v in raw.get('coefficients', [])]
+                if kind == 'TERNARY_CHEMICAL_ACTIVATION_JPL19':
+                    for key in ('k0_D', 'kinf_D', 'kint_D'):
+                        rate[key] = finite(raw.get(key, 298))
+                rate['coefficients'] = [finite(v) for v in raw.get('coefficients', [1] if kind == 'TAYLOR_SERIES' else [])]
                 if len(rate['coefficients']) > 16:
                     raise ConfigurationError('At most 16 Taylor coefficients')
                 result.append(dict(reactants=rr, products=pp, rate=rate))

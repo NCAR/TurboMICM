@@ -11,7 +11,7 @@
 
 typedef enum {
   CK_OK, CK_INVALID, CK_MEMORY, CK_UNKNOWN, CK_MAX_STEPS, CK_STEP_SMALL,
-  CK_NAN, CK_INF, CK_CONSTRAINT_FAILED, CK_SINGULAR
+  CK_NAN, CK_INF, CK_CONSTRAINT_FAILED, CK_SINGULAR, CK_UNCONVERGED
 } ck_status;
 const char *ck_status_string(ck_status status);
 
@@ -55,6 +55,16 @@ typedef struct {
   const ck_product *products;
   ck_rate rate;
 } ck_reaction;
+typedef enum { CK_LINEAR_CONSTRAINT, CK_EQUILIBRIUM_CONSTRAINT } ck_constraint_type;
+typedef struct {
+  ck_constraint_type type;
+  const char *name;
+  size_t algebraic_species;
+  size_t nreactants, nproducts;
+  const ck_product *reactants, *products; /* yield is coefficient/exponent */
+  double constant, equilibrium_ref, enthalpy, gas_constant, reference_temperature;
+} ck_constraint;
+ck_status ck_constraint_validate(const ck_constraint *constraint);
 typedef struct { const char *name; double value; } ck_named_value;
 typedef struct {
   const char *name;
@@ -64,6 +74,8 @@ typedef struct {
   double temperature, pressure;
   size_t ncustom_defaults;
   const ck_named_value *custom_defaults;
+  size_t nconstraints;
+  const ck_constraint *constraints;
 } ck_mechanism;
 
 typedef struct ck_model ck_model;
@@ -99,12 +111,20 @@ ck_status ck_state_tolerances(ck_state *state, double relative, const double *ab
 ck_status ck_update_rates(ck_state *state);
 void ck_forcing(const ck_state *state, const double *y, double *forcing);
 void ck_jacobian(const ck_state *state, const double *y, double *negative_jacobian);
+void ck_constraint_forcing(const ck_state *state, const double *y, double *forcing);
+void ck_constraint_jacobian(const ck_state *state, const double *y, double *negative_jacobian);
+size_t ck_model_nconstraints(const ck_model *model);
+int ck_is_algebraic(const ck_model *model, size_t variable);
 size_t ck_jacobian_size(const ck_model *model);
 size_t ck_jacobian_index(const ck_model *model, size_t row, size_t column);
 
 /* Sparse symbolic fill is independent of numeric values. Both algorithms use
    unit lower diagonal and retain U's diagonal. No pivoting is introduced. */
 typedef enum { CK_LU_MOZART, CK_LU_DOOLITTLE } ck_lu_algorithm;
+ck_status ck_linear_model_create(size_t order, const unsigned char *pattern, ck_model **model);
+ck_status ck_factor_separate(const ck_model *model, size_t cells, const double *matrix, double *lower, double *upper, ck_lu_algorithm algorithm);
+void ck_linear_solve_separate(const ck_model *model, size_t cells, const double *lower, const double *upper, double *rhs);
+void ck_alpha_minus_jacobian(const ck_model *model, size_t cells, double *matrix, double alpha);
 void ck_factor(const ck_model *model, size_t cells, double *matrix, ck_lu_algorithm algorithm);
 void ck_linear_solve(const ck_model *model, size_t cells, const double *lu, double *rhs);
 
@@ -115,16 +135,31 @@ typedef struct {
   int new_function[6];
   double a[15], c[15], m[6], e[6], alpha[6], gamma[6];
   ck_lu_algorithm lu;
+  size_t constraint_init_max_iterations, constraint_init_max_backtracks;
+  double constraint_init_tolerance, constraint_init_backtrack_factor, constraint_init_sufficient_decrease;
 } ck_rosenbrock_parameters;
 /* methods: 2, 3, 4, 43 (four-stage DAE), 6 (six-stage DAE). */
 ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *parameters);
 typedef struct {
   uint64_t internal_steps, accepted, rejected, function_calls, jacobian_updates, decompositions, solves;
+  uint64_t constraint_init_iterations;
   double final_time;
 } ck_stats;
 void ck_stats_add(ck_stats *destination, const ck_stats *source);
 double ck_normalized_error(const ck_state *state, const double *y, const double *next, const double *errors);
 double ck_next_step_factor(const ck_rosenbrock_parameters *parameters, double error);
+typedef struct {
+  double small, h_start;
+  size_t max_iterations, nreductions;
+  double reductions[16];
+  ck_lu_algorithm lu;
+} ck_backward_euler_parameters;
+ck_backward_euler_parameters ck_backward_euler_defaults(void);
+int ck_backward_euler_converged(const ck_state *state, const double *residual, const double *y, double small);
+ck_status ck_backward_euler_solve(ck_state *state, double dt, const ck_backward_euler_parameters *parameters, ck_stats *stats);
+ck_status ck_initialize_constraints(ck_state *state, const ck_rosenbrock_parameters *parameters, ck_stats *stats);
+void ck_post_solve_clamp(ck_state *state);
+ck_status ck_solve_raw(ck_state *state, double dt, const ck_rosenbrock_parameters *parameters, ck_stats *stats);
 ck_status ck_solve(ck_state *state, double dt, const ck_rosenbrock_parameters *parameters, ck_stats *stats);
 
 #endif

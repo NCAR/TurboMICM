@@ -1,22 +1,32 @@
 #include "internal.h"
 
-/* Every operation on a species/reaction vector traverses contiguous cells.
-   The reaction and derivative order matches the reference, including duplicate
-   reactants and products; cancellations are deliberately not folded. */
+/* Arithmetic within each cell preserves reaction/derivative order. Each vector
+   loop has contiguous independent cells, with no indirect scatter in SIMD loops. */
 void ck_forcing(const ck_state *s, const double *restrict y, double *restrict f)
 {
   const ck_model *m = s->model;
   const size_t cells = s->cells;
+  double *restrict rate = ((ck_workspace *)s->workspace)->scratch;
   memset(f, 0, m->n * cells * sizeof(double));
   for (size_t r = 0; r < m->nr; ++r) {
-    const double *restrict k = s->rates + r * cells;
-    /* Cell-local rate avoids a temporary allocation or shared workspace. */
-    #pragma omp simd
-    for (size_t c = 0; c < cells; ++c) {
-      double rate = k[c];
-      for (size_t j = 0; j < m->nreactants[r]; ++j) rate *= y[m->reactants[r][j] * cells + c];
-      for (size_t j = 0; j < m->nreactants[r]; ++j) f[m->reactants[r][j] * cells + c] -= rate;
-      for (size_t j = 0; j < m->nproducts[r]; ++j) f[m->products[r][j].species * cells + c] += m->products[r][j].yield * rate;
+    memcpy(rate, s->rates + r * cells, cells * sizeof(double));
+    for (size_t j = 0; j < m->nreactants[r]; ++j) {
+      const double *restrict v = y + m->reactants[r][j] * cells;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) rate[c] *= v[c];
+    }
+    for (size_t j = 0; j < m->nreactants[r]; ++j) {
+      if (m->algebraic[m->reactants[r][j]]) continue;
+      double *restrict v = f + m->reactants[r][j] * cells;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) v[c] -= rate[c];
+    }
+    for (size_t j = 0; j < m->nproducts[r]; ++j) {
+      if (m->algebraic[m->products[r][j].species]) continue;
+      double *restrict v = f + m->products[r][j].species * cells;
+      double yield = m->products[r][j].yield;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) v[c] += yield * rate[c];
     }
   }
 }
@@ -24,16 +34,29 @@ void ck_jacobian(const ck_state *s, const double *restrict y, double *restrict a
 {
   const ck_model *m = s->model;
   const size_t cells = s->cells;
+  double *restrict rate = ((ck_workspace *)s->workspace)->scratch;
   memset(a, 0, m->nnz * cells * sizeof(double));
   for (size_t job = 0; job < m->njobs; ++job) {
     const ck_derivative *d = &m->jobs[job];
-    const double *restrict k = s->rates + d->reaction * cells;
-    #pragma omp simd
-    for (size_t c = 0; c < cells; ++c) {
-      double rate = k[c];
-      for (size_t j = 0; j < d->nreactants; ++j) rate *= y[d->reactants[j] * cells + c];
-      for (size_t j = 0; j <= d->nreactants; ++j) a[d->targets[j] * cells + c] += rate;
-      for (size_t j = 0; j < d->nproducts; ++j) a[d->targets[d->nreactants + 1 + j] * cells + c] -= d->products[j].yield * rate;
+    memcpy(rate, s->rates + d->reaction * cells, cells * sizeof(double));
+    for (size_t j = 0; j < d->nreactants; ++j) {
+      const double *restrict v = y + d->reactants[j] * cells;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) rate[c] *= v[c];
+    }
+    for (size_t j = 0; j <= d->nreactants; ++j) {
+      size_t row = j < d->nreactants ? d->reactants[j] : d->independent;
+      if (m->algebraic[row]) continue;
+      double *restrict v = a + d->targets[j] * cells;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) v[c] += rate[c];
+    }
+    for (size_t j = 0; j < d->nproducts; ++j) {
+      if (m->algebraic[d->products[j].species]) continue;
+      double *restrict v = a + d->targets[d->nreactants + 1 + j] * cells;
+      double yield = d->products[j].yield;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) v[c] -= yield * rate[c];
     }
   }
 }
@@ -110,5 +133,59 @@ void ck_linear_solve(const ck_model *m, size_t cells, const double *restrict a, 
     const double *restrict diag = a + m->diagonal[i] * cells;
     #pragma omp simd
     for (size_t c = 0; c < cells; ++c) xi[c] /= diag[c];
+  }
+}
+
+ck_status ck_factor_separate(const ck_model *m, size_t cells, const double *a, double *l, double *u, ck_lu_algorithm algorithm)
+{
+  if (!m || !cells || !a || !l || !u) return CK_INVALID;
+  double *packed = ck_allocate(m->nnz * cells, sizeof(double));
+  if (!packed) return CK_MEMORY;
+  memcpy(packed, a, m->nnz * cells * sizeof(double));
+  ck_factor(m, cells, packed, algorithm);
+  memset(l, 0, m->nnz * cells * sizeof(double));
+  memset(u, 0, m->nnz * cells * sizeof(double));
+  for (size_t i = 0; i < m->n; ++i) {
+    for (size_t p = m->row_start[i]; p < m->row_start[i + 1]; ++p) {
+      if (m->columns[p] < i) memcpy(l + p * cells, packed + p * cells, cells * sizeof(double));
+      else memcpy(u + p * cells, packed + p * cells, cells * sizeof(double));
+    }
+    for (size_t c = 0; c < cells; ++c) l[m->diagonal[i] * cells + c] = 1;
+  }
+  free(packed); return CK_OK;
+}
+void ck_linear_solve_separate(const ck_model *m, size_t cells, const double *restrict l, const double *restrict u, double *restrict x)
+{
+  for (size_t i = 0; i < m->n; ++i) {
+    double *restrict xi = x + i * cells;
+    for (size_t p = m->row_start[i]; p < m->diagonal[i]; ++p) {
+      const double *restrict v = l + p * cells, *restrict xj = x + m->columns[p] * cells;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) xi[c] -= v[c] * xj[c];
+    }
+    const double *restrict diagonal = l + m->diagonal[i] * cells;
+    #pragma omp simd
+    for (size_t c = 0; c < cells; ++c) xi[c] /= diagonal[c];
+  }
+  for (size_t i = m->n; i-- > 0;) {
+    double *restrict xi = x + i * cells;
+    for (size_t p = m->diagonal[i] + 1; p < m->row_start[i + 1]; ++p) {
+      const double *restrict v = u + p * cells, *restrict xj = x + m->columns[p] * cells;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) xi[c] -= v[c] * xj[c];
+    }
+    const double *restrict diagonal = u + m->diagonal[i] * cells;
+    #pragma omp simd
+    for (size_t c = 0; c < cells; ++c) xi[c] /= diagonal[c];
+  }
+}
+
+void ck_alpha_minus_jacobian(const ck_model *m, size_t cells, double *restrict a, double alpha)
+{
+  for (size_t i = 0; i < m->n; ++i) {
+    double scaled_alpha = alpha * !ck_is_algebraic(m, i);
+    double *restrict diagonal = a + m->diagonal[i] * cells;
+    #pragma omp simd
+    for (size_t c = 0; c < cells; ++c) diagonal[c] += scaled_alpha;
   }
 }

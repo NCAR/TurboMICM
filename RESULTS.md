@@ -10,3 +10,19 @@ Initial clang validation (`-O3 -DNDEBUG`): the C TS1 benchmark with one thread,
 (21,100 values; largest relative difference 9.7e-13). Timed integration: 608 ms.
 This is a development measurement, not a ranking claim. The 680-case suite and
 GCC validation remain outstanding.
+
+Current development checkpoint:
+
+| Check | clang | gcc-15 |
+|---|---:|---:|
+| Implemented reference cases passing | 140 | 140 |
+| Remaining reference cases (reported FAIL) | 540 | 540 |
+| N/A | 0 | 0 |
+| TS1, 100 cells, 100 x 30 s, groups of 31, 2 threads | PASS (bit-identical) | PASS (max relative 3.27e-14) |
+
+All eight tutorial programs match the reference's printed numerical results and
+statistics. The configuration tutorial's elapsed time and OpenMP's interleaved
+startup logging are nondeterministic and excluded from textual equality. The
+rate tutorials and Robertson configuration additionally compare generated and
+C-built mechanisms at full precision: rate constants, forcing and Jacobians
+(1e-13 relative), and integrated states (1e-12 relative).

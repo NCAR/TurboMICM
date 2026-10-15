@@ -6,7 +6,7 @@ const char *ck_status_string(ck_status status)
 {
   static const char *const names[] = {"Converged", "Invalid argument", "Allocation failed", "Unknown name",
     "Convergence exceeded maximum steps", "Step size too small", "NaN detected", "Inf detected",
-    "Constraint initialization failed", "Singular matrix"};
+    "Constraint Initialization Failed", "Singular matrix", "Accepting unconverged integration"};
   return (unsigned)status < sizeof names / sizeof *names ? names[status] : "Unknown status";
 }
 void ck_ideal_air_density(ck_conditions *c) { c->air_density = c->pressure / (CK_GAS_CONSTANT * c->temperature); }
@@ -16,6 +16,8 @@ ck_rate ck_rate_defaults(ck_rate_type type)
   r.type = type; r.A = 1; r.D = 300; r.scaling = 1;
   r.k0_A = r.kinf_A = 1; r.k0_D = r.kinf_D = r.kint_D = 300;
   r.Fc = 0.6; r.N = 1; r.probability = 1;
+  if (type == CK_TERNARY_JPL19) r.k0_D = r.kinf_D = r.kint_D = 298;
+  if (type == CK_TAYLOR) { r.ncoefficients = 1; r.coefficients[0] = 1; }
   return r;
 }
 ck_status ck_rate_prepare(ck_rate *r)

@@ -9,6 +9,8 @@ ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *p)
   memset(p, 0, sizeof *p);
   p->max_steps = 1000; p->round_off = DBL_EPSILON;
   p->factor_min = 0.2; p->factor_max = 6; p->rejection_decrease = 0.1; p->safety = 0.9;
+  p->constraint_init_max_iterations = 10; p->constraint_init_max_backtracks = 24;
+  p->constraint_init_tolerance = 0.1; p->constraint_init_backtrack_factor = 0.5; p->constraint_init_sufficient_decrease = 1e-4;
   switch (method) {
   case 2: {
     double g = 1.0 + 1.0 / sqrt(2.0);
