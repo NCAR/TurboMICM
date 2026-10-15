@@ -63,6 +63,26 @@ static void equilibrium_integration(int which)
     }
     chem_solver_free(solver);chem_state_free(state);chem_mechanism_free(m);
 }
+static void nonunit_stoichiometry(void)
+{
+    ChemSpecies species[]={{.name="A"},{.name="B"},{.name="C"}};
+    size_t reactant=2;ChemProduct product={0,1};ChemReaction rxn=reaction(&reactant,&product,.5);
+    ChemConstraintTerm a={"A",2},b={"B",1};ChemConstraint constraint=eq("A2_B_eq","B",&a,&b,10,-2400);
+    ChemMechanism *m=NULL;ChemState *state=NULL;ChemSolver *solver=NULL;
+    CHECK(chem_mechanism_create(3,species,1,&rxn,&m)==CHEM_OK);
+    CHECK(chem_mechanism_set_constraints(m,1,&constraint)==CHEM_OK);
+    CHECK(chem_state_create(m,1,&state)==CHEM_OK);CHECK(chem_solver_create(m,1,&solver)==CHEM_OK);
+    state->values[0]=.1;state->values[1]=10*.1*.1;state->values[2]=1;
+    state->conditions[0]=(ChemConditions){298,101325,0};chem_update_rates(state);
+    double expected=10*exp((-2400/CHEM_GAS_CONSTANT)*(1/298.0-1/298.15));NEAR(state->custom[0],expected,1e-10);
+    ChemRosenbrockParameters options=chem_rosenbrock_parameters(CHEM_ROS3);ChemSolverStats stats;
+    for (double time=0;time<.05;time+=.001) {
+        chem_update_rates(state);ChemStatus status=chem_solve(solver,state,.001,&options,&stats);CHECK(status==CHEM_OK);
+        if (status) break;
+        NEAR(state->custom[0]*state->values[0]*state->values[0]-state->values[1],0,1e-5);
+    }
+    chem_solver_free(solver);chem_state_free(state);chem_mechanism_free(m);
+}
 static void overshoot(ChemRosenbrockMethod method,int equilibrium)
 {
     ChemSpecies species[]={{.name=equilibrium?"A_gas":"A"},{.name=equilibrium?"A_aq":"B"},{.name=equilibrium?"P":"C"}};
@@ -96,15 +116,61 @@ static void overshoot(ChemRosenbrockMethod method,int equilibrium)
 }
 static void all_orders(void)
 { for (int method=CHEM_ROS3;method<=CHEM_ROS6_DA;++method) overshoot((ChemRosenbrockMethod)method,0); }
+
+static void terminator_robertson(void)
+{
+    ChemSpecies species[]={{.name="Cl2",.absolute_tolerance=1e-20},{.name="Cl",.absolute_tolerance=1e-20},
+        {.name="A"},{.name="B"},{.name="C"}};
+    size_t r0=0,r1[]={1,1},r2=2,r3[]={3,3},r4[]={3,4};
+    ChemProduct p0={1,2},p1={0,1},p2={3,1},p3[]={{3,1},{4,1}},p4[]={{2,1},{4,1}};
+    ChemRate rates[5];const char *labels[]={"terminator_k1",NULL,"robertson_r1","robertson_r2","robertson_r3"};
+    for (size_t i=0;i<5;++i) { rates[i]=chem_rate_default(i==1?CHEM_ARRHENIUS:CHEM_USER);rates[i].label=labels[i]; }
+    rates[1].data.arrhenius.A=1;
+    ChemReaction reactions[]={{1,1,&r0,&p0,rates[0]},{2,1,r1,&p1,rates[1]},{1,1,&r2,&p2,rates[2]},
+        {2,2,r3,p3,rates[3]},{2,2,r4,p4,rates[4]}};
+    ChemConstraintTerm terms[]={{"A",1},{"B",1},{"C",1}};
+    ChemConstraint constraint={.type=CHEM_LINEAR_CONSTRAINT,.name="mass_conservation",.algebraic_species="C",
+        .reactant_count=3,.reactants=terms,.constant=1};
+    ChemMechanism *m=NULL;ChemState *state=NULL;ChemSolver *solver=NULL;
+    CHECK(chem_mechanism_create(5,species,5,reactions,&m)==CHEM_OK);
+    CHECK(chem_mechanism_set_constraints(m,1,&constraint)==CHEM_OK);
+    CHECK(chem_state_create(m,1,&state)==CHEM_OK);CHECK(chem_solver_create(m,1,&solver)==CHEM_OK);
+    state->relative_tolerance=1e-8;double k[]={.04,3e7,1e4};
+    for (size_t i=0;i<3;++i) CHECK(chem_state_set_custom(state,labels[i+2],k+i,1)==CHEM_OK);
+    double initial[]={1.8e-10,1.2e-6,1,0,0};memcpy(state->values,initial,sizeof(initial));
+    state->conditions[0]=(ChemConditions){298,101300,42};chem_update_rates(state);
+    const double chlorine=2*1.8e-10+1.2e-6;
+    ChemRosenbrockParameters options=chem_rosenbrock_parameters(CHEM_ROS4_DA);ChemSolverStats stats;
+    double dt=1;
+    for (size_t i=0;i<12;++i,dt*=10) {
+        double advanced=0;
+        while (advanced<dt) {
+            ChemStatus status=chem_solve(solver,state,dt-advanced,&options,&stats);
+            CHECK(status==CHEM_OK || status==CHEM_MAX_STEPS);CHECK(advanced+stats.final_time>advanced);
+            if ((status!=CHEM_OK && status!=CHEM_MAX_STEPS) || advanced+stats.final_time<=advanced) goto finish;
+            advanced+=stats.final_time;
+        }
+        double *y=state->values;
+        NEAR(y[2]+y[3]+y[4],1,1e-10);REL(2*y[0]+y[1],chlorine,1e-6);
+        for (size_t j=0;j<5;++j) { CHECK(isfinite(y[j]));CHECK(y[j]>=0); }
+        if (!i) { CHECK(y[2]<.99);CHECK(y[3]>0);CHECK(y[4]>1e-3); }
+    }
+    CHECK(state->values[4]>.95);CHECK(state->values[2]<.05);
+    CHECK(state->values[0]>.4*chlorine);CHECK(state->values[1]<.1*chlorine);
+finish:
+    chem_solver_free(solver);chem_state_free(state);chem_mechanism_free(m);
+}
 void test_dae(void)
 {
 #define E(name,call) RUN("equilibrium_constraint:EquilibriumIntegration." name,call)
     E("SetConstraintsAPIWorks",equilibrium_integration(0));E("SetConstraintsAPIMultipleConstraints",equilibrium_integration(1));
     E("DAESolveWithConstraint",equilibrium_integration(2));E("DAESolveWithConstraintAndReorderState",equilibrium_integration(3));
     E("DAESolveWithTwoCoupledConstraints",equilibrium_integration(4));
+    E("DAESolveWithNonUnitStoichiometry",nonunit_stoichiometry());
 #undef E
 #define O(name,call) RUN("dae_constraint_overshoot:DAEConstraintOvershoot." name,call)
     O("AlgebraicVariableStaysNonNegative",overshoot(CHEM_ROS4_DA,0));
     O("EquilibriumPlusConservation",overshoot(CHEM_ROS4_DA,1));O("AllRosenbrockOrdersConstrained",all_orders());
 #undef O
+    RUN("linear_constraint:DAESolveWithConstraint.TerminatorAndRobertson",terminator_robertson());
 }

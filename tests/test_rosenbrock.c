@@ -85,11 +85,40 @@ static void normalized_suite(int vector,int constraints)
         if (vector) { const size_t cells[]={1,2,3,5,3};for (size_t i=0;i<5;++i) normalized(cells[i],0,CHEM_ROS3); }
     }
 }
+typedef struct { double *values;size_t count; } SeparateFactors;
+static ChemStatus separate_factor(const ChemSparse *pattern,size_t cells,double *matrix,void *context)
+{
+    SeparateFactors *f=context;size_t count=chem_sparse_elements(pattern)*cells;
+    if (count>f->count) {
+        double *next=realloc(f->values,count*sizeof(double));if (!next) return CHEM_MEMORY;
+        f->values=next;f->count=count;
+    }
+    return chem_lu_factor_copy(pattern,cells,matrix,f->values,CHEM_LU_DOOLITTLE);
+}
+static void separate_solve(const ChemSparse *pattern,size_t cells,const double *matrix,double *rhs,void *context)
+{ (void)matrix;SeparateFactors *f=context;chem_lu_solve(pattern,cells,f->values,rhs); }
+static void rejected_step(void)
+{
+    ChemSolverStats results[2];ChemRosenbrockParameters p=chem_rosenbrock_parameters(CHEM_ROS3);p.h_start=1e3;
+    for (size_t mode=0;mode<2;++mode) {
+        ChemMechanism *m=mechanism();ChemState *state=NULL;ChemSolver *solver=NULL;SeparateFactors factors={0};
+        CHECK(chem_state_create(m,1,&state)==CHEM_OK);CHECK(chem_solver_create(m,1,&solver)==CHEM_OK);
+        if (!mode) chem_solver_set_linear_solver(solver,(ChemLinearSolver){separate_factor,separate_solve,&factors});
+        for (size_t i=0;i<5;++i) state->values[i]=1e12;
+        state->conditions[0].temperature=298.15;chem_update_rates(state);
+        CHECK(chem_solve(solver,state,p.h_start,&p,results+mode)==CHEM_OK);
+        CHECK(results[mode].internal_steps-results[mode].accepted>=2);
+        free(factors.values);chem_solver_free(solver);chem_state_free(state);chem_mechanism_free(m);
+    }
+    CHECK(results[0].internal_steps==results[1].internal_steps);
+    CHECK(results[0].accepted==results[1].accepted);CHECK(results[0].rejected==results[1].rejected);
+}
 void test_rosenbrock(void)
 {
 #define R(name,call) RUN("rosenbrock:RosenbrockSolver." name,call)
     R("StandardAlphaMinusJacobian",alpha_suite(0));R("VectorAlphaMinusJacobian",alpha_suite(1));R("CanSetTolerances",tolerances());
     R("StandardNormalizedError",normalized_suite(0,0));R("VectorNormalizedError",normalized_suite(1,0));
     R("StandardNormalizedErrorWithConstraints",normalized_suite(0,1));R("VectorNormalizedErrorWithConstraints",normalized_suite(1,1));
+    R("RejectedStepAlphaMatchesInPlaceSolver",rejected_step());
 #undef R
 }

@@ -37,7 +37,10 @@ It implements in-place Mozart and Doolittle decomposition and forward/backward
 substitution, retaining the original arithmetic order. `chem_markowitz` selects
 the minimum degree-product pivot and accounts for fill; ties use original index
 order. `chem_mechanism_reorder` applies this permutation before state creation.
-Out-of-place factorization interfaces are still required by the remaining port.
+`chem_lu_factor_copy` preserves the matrix and puts factors in a separate
+caller-owned buffer with the same combined layout. `chem_lu_lower` and
+`chem_lu_upper` expose the triangular factors, including the implicit unit lower
+diagonal. Separate-factor and in-place paths share the arithmetic kernels.
 
 `src/rosenbrock_parameters.c` contains the five original coefficient sets.
 `src/rosenbrock.c` implements the common stage loop, weighted RMS error and

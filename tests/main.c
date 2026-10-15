@@ -7,6 +7,7 @@ int main(void)
     test_dae();
     test_rosenbrock();
     test_jacobian_verification();
+    test_process();
     test_constraints();
     test_rates();
     test_sparse();

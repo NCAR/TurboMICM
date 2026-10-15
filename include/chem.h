@@ -107,6 +107,11 @@ void chem_state_free(ChemState *);
 ChemStatus chem_state_set_concentration(ChemState *, const char *, const double *, size_t count);
 ChemStatus chem_state_set_custom(ChemState *, const char *, const double *, size_t count);
 void chem_update_rates(ChemState *);
+/* Kinetic accumulation leaves existing values and algebraic rows intact. */
+void chem_add_kinetic_forcing(const ChemState *,const double *values,double *forcing);
+void chem_subtract_kinetic_jacobian(const ChemState *,const double *values,double *jacobian);
+int chem_reactions_use_species(const ChemMechanism *,const char *name);
+int chem_kinetic_has_element(const ChemMechanism *,size_t row,size_t column);
 void chem_forcing(const ChemState *, const double *values, double *forcing);
 /* Dense column-major blocks indexed [(row * species + column) * cells + cell]. */
 void chem_jacobian(const ChemState *, const double *values, double *jacobian);

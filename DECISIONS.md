@@ -51,3 +51,17 @@ bounds. Vector policy cases use the C contiguous-cell layout; group-size cases
 split the original cells into groups of the stated size, including partial
 groups. There are no inactive padded lanes to include in reductions. The
 initialization failure status string preserves MICM's exact spelling.
+
+## Separate factors and process accumulation
+
+Out-of-place LU keeps input and output buffers separate, while storing L and U
+in one output buffer with an implicit unit lower diagonal. This retains MICM's
+Mozart and Doolittle arithmetic and avoids duplicating numerical kernels solely
+for storage layout. Triangular accessors support reconstruction tests. The
+rejected-step regression installs separate Doolittle factors using the public
+linear-solver callbacks and compares its statistics with in-place Mozart.
+
+The public kinetic accumulation functions leave the destination's initial
+values intact and skip algebraic rows. Full forcing/Jacobian functions clear
+outputs and then apply kinetics and constraints. This preserves ProcessSet's
+additive contract without forcing callers to allocate a temporary array.

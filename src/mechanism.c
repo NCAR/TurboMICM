@@ -198,3 +198,29 @@ ChemStatus chem_mechanism_reorder(ChemMechanism *m)
 finish:
     free(pattern); free(perm); free(inverse); free(species); return status;
 }
+
+int chem_reactions_use_species(const ChemMechanism *m,const char *name)
+{
+    for (size_t i=0;i<m->reaction_count;++i) {
+        const ChemProcess *p=&m->processes[i];
+        for (size_t j=0;j<p->reactant_count;++j)
+            if (!strcmp(chem_species_name(m,p->reactants[j]),name)) return 1;
+        for (size_t j=0;j<p->product_count;++j)
+            if (!strcmp(chem_species_name(m,p->products[j].species),name)) return 1;
+        for (size_t j=0;j<p->parameter_count;++j)
+            if (!strcmp(m->species[p->parameters[j]].name,name)) return 1;
+    }
+    return 0;
+}
+int chem_kinetic_has_element(const ChemMechanism *m,size_t row,size_t column)
+{
+    for (size_t i=0;i<m->reaction_count;++i) {
+        const ChemProcess *p=&m->processes[i];int independent=0,dependent=0;
+        for (size_t j=0;j<p->reactant_count;++j) {
+            independent|=p->reactants[j]==column;dependent|=p->reactants[j]==row;
+        }
+        for (size_t j=0;j<p->product_count;++j) dependent|=p->products[j].species==row;
+        if (independent && dependent) return 1;
+    }
+    return 0;
+}

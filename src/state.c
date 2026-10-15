@@ -103,12 +103,11 @@ void chem_update_rates(ChemState *s)
     }
     chem_constraints_update_parameters(s);
 }
-void chem_forcing(const ChemState *s, const double *restrict y, double *restrict f)
+void chem_add_kinetic_forcing(const ChemState *s, const double *restrict y, double *restrict f)
 {
     const ChemMechanism *m = s->mechanism;
     size_t n = s->cells;
     double *restrict work = s->scratch;
-    memset(f, 0, m->variable_count * n * sizeof(double));
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemProcess *p = &m->processes[i];
         memcpy(work, s->rates + i*n, n*sizeof(double));
@@ -131,14 +130,18 @@ void chem_forcing(const ChemState *s, const double *restrict y, double *restrict
             for (size_t c=0; c<n; ++c) dst[c]+=yield*work[c];
         }
     }
+}
+void chem_forcing(const ChemState *s,const double *y,double *f)
+{
+    memset(f,0,s->mechanism->variable_count*s->cells*sizeof(double));
+    chem_add_kinetic_forcing(s,y,f);
     chem_constraints_forcing(s,y,f);
 }
-void chem_jacobian(const ChemState *s, const double *restrict y, double *restrict jac)
+static void kinetic_jacobian_add(const ChemState *s, const double *restrict y, double *restrict jac,double sign)
 {
     const ChemMechanism *m = s->mechanism;
     size_t n = s->cells, nv = m->variable_count;
     double *restrict work=s->scratch;
-    memset(jac, 0, nv * nv * n * sizeof(double));
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemProcess *p = &m->processes[i];
         for (size_t j = 0; j < p->reactant_count; ++j) {
@@ -155,16 +158,24 @@ void chem_jacobian(const ChemState *s, const double *restrict y, double *restric
                 if (m->algebraic[p->reactants[k]]) continue;
                 double *restrict dst=jac+(p->reactants[k]*nv+independent)*n;
                 #pragma omp simd
-                for (size_t c=0;c<n;++c) dst[c]-=work[c];
+                for (size_t c=0;c<n;++c) dst[c]-=sign*work[c];
             }
             for (size_t k=0;k<p->product_count;++k) {
                 if (m->algebraic[p->products[k].species]) continue;
                 double *restrict dst=jac+(p->products[k].species*nv+independent)*n;
                 double yield=p->products[k].yield;
                 #pragma omp simd
-                for (size_t c=0;c<n;++c) dst[c]+=yield*work[c];
+                for (size_t c=0;c<n;++c) dst[c]+=sign*yield*work[c];
             }
         }
     }
+}
+void chem_subtract_kinetic_jacobian(const ChemState *s,const double *y,double *jac)
+{ kinetic_jacobian_add(s,y,jac,-1); }
+void chem_jacobian(const ChemState *s,const double *y,double *jac)
+{
+    size_t nv=s->mechanism->variable_count;
+    memset(jac,0,nv*nv*s->cells*sizeof(double));
+    kinetic_jacobian_add(s,y,jac,1);
     chem_constraints_jacobian_add(s,y,jac,NULL,1);
 }

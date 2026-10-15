@@ -19,9 +19,9 @@ static double lognormal(double sigma)
     double z=sqrt(-2*log(uniform()))*cos(2*CHEM_PI*uniform());
     return exp(-2+sigma*z);
 }
-static void matrix_test(int kind,int linear,ChemLuAlgorithm algorithm,size_t blocks,size_t group,double initial)
+static void matrix_test(int kind,int linear,ChemLuAlgorithm algorithm,size_t blocks,size_t group,double initial,int separate)
 {
-    size_t n=kind==0?3:kind==2?6:kind==3?(linear?30:5):10;
+    size_t n=kind==0?3:kind==2?6:kind==3?(linear?30:separate?10:5):10;
     unsigned char *pattern=calloc(n*n,1);
     double *original=calloc(n*n*blocks,sizeof(double)),*rhs=calloc(n*blocks,sizeof(double));
     CHECK(pattern && original && rhs);
@@ -34,7 +34,7 @@ static void matrix_test(int kind,int linear,ChemLuAlgorithm algorithm,size_t blo
     for (size_t i=0;i<n;++i) for (size_t j=0;j<n;++j) if (pattern[i*n+j]) {
         double shared=kind==0?dense[i*n+j]:lognormal(kind==2?4:2);
         for (size_t c=0;c<blocks;++c)
-            original[(i*n+j)*blocks+c]=linear && kind!=0?lognormal(kind==2?4:2):shared;
+            original[(i*n+j)*blocks+c]=(linear || (separate && kind!=3)) && kind!=0?lognormal(kind==2?4:2):shared;
     }
     for (size_t i=0;i<n;++i) for (size_t c=0;c<blocks;++c) rhs[i*blocks+c]=kind==0?b[i]:lognormal(kind==2?4:2);
     ChemSparse *a=NULL;
@@ -52,7 +52,18 @@ static void matrix_test(int kind,int linear,ChemLuAlgorithm algorithm,size_t blo
             if (k==SIZE_MAX) continue;
             for (size_t c=0;c<cells;++c) lu[k*cells+c]=original[(i*n+j)*blocks+start+c];
         }
-        CHECK(chem_lu_factor(a,cells,lu,algorithm)==CHEM_OK);
+        if (separate) {
+            size_t count=chem_sparse_elements(a)*cells;
+            double *input=malloc(count*sizeof(double));CHECK(input!=NULL);
+            memcpy(input,lu,count*sizeof(double));
+            for (size_t i=0;i<count;++i) lu[i]=initial;
+            CHECK(chem_lu_factor_copy(a,cells,input,lu,algorithm)==CHEM_OK);
+            for (size_t i=0;i<n;++i) for (size_t j=0;j<n;++j) {
+                size_t k=chem_sparse_index(a,i,j);if (k==SIZE_MAX) continue;
+                for (size_t c=0;c<cells;++c) CHECK(input[k*cells+c]==original[(i*n+j)*blocks+start+c]);
+            }
+            free(input);
+        } else CHECK(chem_lu_factor(a,cells,lu,algorithm)==CHEM_OK);
         if (linear) {
             for (size_t i=0;i<n;++i) for (size_t c=0;c<cells;++c) x[i*cells+c]=rhs[i*blocks+start+c];
             chem_lu_solve(a,cells,lu,x);
@@ -67,12 +78,16 @@ static void matrix_test(int kind,int linear,ChemLuAlgorithm algorithm,size_t blo
         } else {
             for (size_t c=0;c<cells;++c) for (size_t i=0;i<n;++i) for (size_t j=0;j<n;++j) {
                 double sum=0;
-                for (size_t k=0;k<=j;++k) {
+                if (separate) {
+                    for (size_t k=0;k<n;++k) sum+=chem_lu_lower(a,cells,lu,c,i,k)*chem_lu_upper(a,cells,lu,c,k,j);
+                    CHECK(i>=j || chem_lu_lower(a,cells,lu,c,i,j)==0);
+                    CHECK(j>=i || chem_lu_upper(a,cells,lu,c,i,j)==0);
+                } else for (size_t k=0;k<=j;++k) {
                     size_t ukj=chem_sparse_index(a,k,j),lik=chem_sparse_index(a,i,k);
                     if (k==i && ukj!=SIZE_MAX) sum+=lu[ukj*cells+c];
                     else if (k<i && lik!=SIZE_MAX && ukj!=SIZE_MAX) sum+=lu[lik*cells+c]*lu[ukj*cells+c];
                 }
-                NEAR(sum,original[(i*n+j)*blocks+start+c],kind==0 || kind==2?1e-10:1e-12);
+                NEAR(sum,original[(i*n+j)*blocks+start+c],kind==0 || kind==2?1e-10:separate?1e-9:1e-12);
             }
         }
         free(lu);free(x);
@@ -81,17 +96,17 @@ static void matrix_test(int kind,int linear,ChemLuAlgorithm algorithm,size_t blo
 done:
     free(pattern);free(original);free(rhs);
 }
-static void matrix_cases(int kind,int linear,ChemLuAlgorithm algorithm,int vector)
+static void matrix_cases(int kind,int linear,ChemLuAlgorithm algorithm,int vector,int separate)
 {
     double initials[]={-INFINITY,-1,0,1,INFINITY};
     size_t max_group=vector?4:5;
     for (size_t group=vector?1:5;group<=max_group;++group) {
         if (kind==3) for (size_t v=0;v<5;++v) {
             size_t blocks=linear && vector && group<=2?group:5;
-            matrix_test(kind,linear,algorithm,blocks,group,initials[v]);
+            matrix_test(kind,linear,algorithm,blocks,group,initials[v],separate);
         } else {
-            matrix_test(kind,linear,algorithm,kind==0?1:5,group,0);
-            if (!linear && kind==1 && !vector) matrix_test(kind,linear,algorithm,1,1,0);
+            matrix_test(kind,linear,algorithm,kind==0?1:5,group,0,separate);
+            if (!linear && kind==1 && !vector) matrix_test(kind,linear,algorithm,1,1,0,separate);
         }
     }
 }
@@ -117,14 +132,25 @@ void test_sparse(void)
     char id[200];
     for (int algorithm=0;algorithm<2;++algorithm) for (int test=0;test<8;++test) {
         snprintf(id,sizeof(id),"lu_decomposition_%s_in_place:LuDecomposition%sInPlace.%s",algorithm?"doolittle":"mozart",algorithm?"Doolittle":"Mozart",suffix[test]);
-        RUN(id,matrix_cases(test%4,0,(ChemLuAlgorithm)algorithm,test>=4));
+        RUN(id,matrix_cases(test%4,0,(ChemLuAlgorithm)algorithm,test>=4,0));
     }
     const char *linear_suffix[]={"DenseMatrixStandardOrdering","RandomMatrixStandardOrdering","DiagonalMatrixStandardOrdering","StandardOrderingAgnosticToInitialValue",
         "DenseMatrixVectorOrdering","RandomMatrixVectorOrdering","DiagonalMatrixVectorOrdering","VectorOrderingAgnosticToInitialValue"};
     for (int test=0;test<8;++test) {
         snprintf(id,sizeof(id),"linear_solver_in_place:LinearSolverInPlace.%s",linear_suffix[test]);
-        RUN(id,matrix_cases(test%4,1,CHEM_LU_MOZART,test>=4));
+        RUN(id,matrix_cases(test%4,1,CHEM_LU_MOZART,test>=4,0));
     }
     RUN("linear_solver_in_place:LinearSolverInPlace.DiagonalMarkowitzReorder",markowitz_test());
     RUN("linear_solver_in_place:LinearSolverInPlace.VectorDiagonalMarkowitzReordering",markowitz_test());
+    for (int algorithm=0;algorithm<2;++algorithm) for (int test=0;test<8;++test) {
+        snprintf(id,sizeof(id),"lu_decomposition_%s:LuDecomposition%s.%s",algorithm?"doolittle":"mozart",algorithm?"Doolittle":"Mozart",suffix[test]);
+        RUN(id,matrix_cases(test%4,0,(ChemLuAlgorithm)algorithm,test>=4,1));
+    }
+    for (int test=0;test<8;++test) {
+        snprintf(id,sizeof(id),"linear_solver:LinearSolver.%s",linear_suffix[test]);
+        RUN(id,matrix_cases(test%4,1,CHEM_LU_DOOLITTLE,test>=4,1));
+    }
+    RUN("linear_solver:LinearSolver.DiagonalMarkowitzReorder",markowitz_test());
+    RUN("linear_solver:LinearSolver.VectorDiagonalMarkowitzReordering",for (size_t i=0;i<4;++i) markowitz_test());
+
 }

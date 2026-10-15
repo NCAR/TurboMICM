@@ -39,22 +39,33 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   7 Rosenbrock utility cases and 7 finite-difference Jacobian utility cases.
   Configuration and TS1 interval-clamp regressions still pass on both.
 
+- Out-of-place factorization preserves its input and uses compact combined L/U
+  storage with triangular accessors. Both original algorithms are exercised;
+  the separate-storage linear-solver tests use MICM's default Doolittle.
+- 36 further cases pass with both compilers (171 total): 26 separate-factor
+  LU/linear cases, rejected-step alpha regression, two DAE integrations and
+  seven process/rate accumulation cases. GCC rebuild has no warnings.
+- Full 10,000-cell TS1 comparison rerun after the DAE/process changes: Clang
+  identical to MICM at 8,624.21 ms; GCC max 1.43e-13 relative at 10,293.17 ms.
+  These are diagnostic single runs, not ranking medians.
+
 ## Remaining work (required)
 
-- Port all remaining 545 cases, individually checking original test quantities.
+- Port all remaining 509 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
-- External model hooks and aerosol models; additional linear-constraint
-  integration coverage. Built-in constraints and initialization now pass their
-  unit tests and equilibrium/overshoot integration tests.
+- External model hooks and aerosol models. Built-in constraints and
+  initialization now pass their unit tests, equilibrium/overshoot integrations,
+  and the combined Terminator–Robertson conservation test.
 - Backward Euler analytical/regression coverage, reaction-rate tracking, solver status
   behavior, solver-builder validations and full species/property/phase APIs.
 - Dense/sparse matrix utilities, grouped views and operations, generic C
   equivalents of C++ ownership and dimension checks. Only genuinely
   compile-time-only cases may receive documented N/A reasons.
-- Out-of-place LU paths and their tests, solver regression/analytical tests,
+- Remaining solver regression/analytical tests,
   all eight complete tutorial programs with reference stdout comparisons.
 - Complete analytical validation of all five Rosenbrock parameter sets and
-  rejected-step behavior. Error norms cover all five; constrained stiff
+  integration coverage. Rejected-step counts agree for separate Doolittle and
+  in-place Mozart factors. Error norms cover all five; constrained stiff
   integration covers ROS3, ROS4, ROS4-DA and ROS6-DA.
 - Validate the configuration reader's malformed inputs and additional rate
   types beyond the three supplied examples; compare TS1 default fields by name.

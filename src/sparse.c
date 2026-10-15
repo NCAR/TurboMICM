@@ -124,6 +124,24 @@ ChemStatus chem_lu_factor(const ChemSparse *a, size_t cells, double *v, ChemLuAl
     } else return CHEM_INVALID;
     return CHEM_OK;
 }
+ChemStatus chem_lu_factor_copy(const ChemSparse *a,size_t cells,const double *input,double *output,ChemLuAlgorithm algorithm)
+{
+    if (!a || !input || !output || input==output) return CHEM_INVALID;
+    if (a->nnz && cells>SIZE_MAX/a->nnz/sizeof(double)) return CHEM_MEMORY;
+    memcpy(output,input,a->nnz*cells*sizeof(double));
+    return chem_lu_factor(a,cells,output,algorithm);
+}
+double chem_lu_lower(const ChemSparse *a,size_t cells,const double *factors,size_t cell,size_t row,size_t col)
+{
+    if (row>=a->n || col>=a->n || cell>=cells || row<col) return 0;
+    if (row==col) return 1;
+    size_t i=a->map[row*a->n+col];return i==SIZE_MAX?0:factors[i*cells+cell];
+}
+double chem_lu_upper(const ChemSparse *a,size_t cells,const double *factors,size_t cell,size_t row,size_t col)
+{
+    if (row>=a->n || col>=a->n || cell>=cells || row>col) return 0;
+    size_t i=a->map[row*a->n+col];return i==SIZE_MAX?0:factors[i*cells+cell];
+}
 void chem_lu_solve(const ChemSparse *a, size_t cells, const double *v, double *x)
 {
     for (size_t i=0;i<a->n;++i) {

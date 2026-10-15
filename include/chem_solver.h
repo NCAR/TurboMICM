@@ -13,6 +13,11 @@ size_t chem_sparse_order(const ChemSparse *);
 size_t chem_sparse_elements(const ChemSparse *);
 size_t chem_sparse_index(const ChemSparse *, size_t row, size_t column);
 ChemStatus chem_lu_factor(const ChemSparse *, size_t cells, double *values, ChemLuAlgorithm);
+/* Out-of-place factors use the same compact L/U storage; input is preserved.
+ * Output must contain chem_sparse_elements(pattern)*cells doubles. */
+ChemStatus chem_lu_factor_copy(const ChemSparse *,size_t cells,const double *input,double *output,ChemLuAlgorithm);
+double chem_lu_lower(const ChemSparse *,size_t cells,const double *factors,size_t cell,size_t row,size_t column);
+double chem_lu_upper(const ChemSparse *,size_t cells,const double *factors,size_t cell,size_t row,size_t column);
 void chem_lu_solve(const ChemSparse *, size_t cells, const double *values, double *rhs);
 ChemStatus chem_markowitz(size_t n, const unsigned char *pattern, size_t *permutation);
 /* Reorder once before constructing any states or solvers. */
