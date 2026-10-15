@@ -1,0 +1,14 @@
+CPU chemistry port
+
+Includes numerical algorithms, parameter tables, mechanism data, and test fixtures
+translated from MICM -- Model Independent Chemistry Module, commit e15898ce
+(v3.7.0-259).
+Copyright (C) 2023-2026 University Corporation for Atmospheric Research
+
+The implementation and test harness have been translated to C11 and Python;
+storage, configuration generation, threading, and interfaces have been changed.
+The original numerical formulas and fixture attributions are retained in the
+translated files. This project is licensed under the Apache License, Version 2.0;
+see LICENSE for the full text.
+
+The C library and benchmark include no third-party implementation sources.

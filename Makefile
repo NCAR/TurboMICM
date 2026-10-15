@@ -2,6 +2,7 @@ ROOT := $(abspath ..)
 .SILENT:
 CONDA ?= $(HOME)/miniforge3/bin/conda
 PYTHON := $(CURDIR)/.conda/bin/python
+export TMPDIR := $(CURDIR)/build/tmp
 OPTFLAGS ?= -O3 -DNDEBUG
 GROUP_SIZE ?= 32
 KERNEL_CHUNK ?= 32
@@ -42,7 +43,9 @@ GENERATED_OBJECTS := $(BUILD)/ts1.o $(BUILD)/example_no_user.o $(BUILD)/example_
 .PHONY: all env cpu test-cpu bench micm-ref clean
 all: cpu
 env: .conda/conda-meta/history
+	mkdir -p $(TMPDIR)
 .conda/conda-meta/history: environment.yml
+	mkdir -p $(TMPDIR)
 	CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes >&2
 cpu: bin/libchem.a bin/libchem.$(SHARED_EXT) bin/ts1_bench_cpu bin/tutorials
 bench: cpu
@@ -74,11 +77,11 @@ generated/flags: force
 	@echo '$(GENFLAGS)' > generated/flags.new
 	@cmp -s generated/flags.new $@ || cp generated/flags.new $@
 build/reference-flags: force
-	@mkdir -p build
+	@mkdir -p build $(TMPDIR)
 	@echo 'clang++ $(OPTFLAGS)' > build/reference-flags.new
 	@cmp -s build/reference-flags.new $@ || cp build/reference-flags.new $@
 $(BUILD)/flags: force
-	@mkdir -p $(BUILD)
+	@mkdir -p $(BUILD) $(TMPDIR)
 	@echo '$(CC) $(CFLAGS) $(CPPFLAGS) $(LDLIBS)' > $(BUILD)/flags.new
 	@cmp -s $(BUILD)/flags.new $@ || cp $(BUILD)/flags.new $@
 $(BUILD)/libchem.a: $(OBJECTS) $(GENERATED_OBJECTS)

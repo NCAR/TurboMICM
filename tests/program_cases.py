@@ -30,4 +30,4 @@ def program(identifier):
     if identifier == 'README_example':
         process = subprocess.run([str(ROOT/'bin/tutorials'),'configuration'],capture_output=True,text=True)
         assert process.returncode == 0,process.stderr
-    return 'C program output matches reference; generated configuration checks passed'
+    return 'C program output matches reference'
