@@ -238,6 +238,7 @@ ChemStatus chem_view_reduce(ChemView v,int strict,ChemReduceFunction fn,void *ct
 }
 struct ChemArrayFunction {
     size_t count;
+    int sparse;
     ChemArray *signature;
     unsigned char *mutable;
     ChemArrayCallback callback;
@@ -253,6 +254,11 @@ ChemStatus chem_array_function_create(size_t n,const ChemArray *args,
     f->signature=malloc(n*sizeof(ChemArray));f->mutable=malloc(n);
     if (!f->signature || !f->mutable) { chem_array_function_free(f);return CHEM_MEMORY; }
     f->count=n;f->callback=fn;f->context=ctx;
+    size_t group=0;
+    for(size_t i=0;i<n;++i) if(args[i].kind==CHEM_ARRAY_SPARSE) {f->sparse=1;group=args[i].group?args[i].group:1;break;}
+    if(f->sparse) for(size_t i=0;i<n;++i) if(args[i].kind!=CHEM_ARRAY_VECTOR && (args[i].group?args[i].group:1)!=group) {
+        chem_array_function_free(f);return CHEM_DIMENSION;
+    }
     for (size_t i=0;i<n;++i) {
         f->signature[i]=args[i];
         f->mutable[i]=!args[i].read_only;
@@ -268,11 +274,13 @@ ChemStatus chem_array_function_call(const ChemArrayFunction *f,size_t n,const Ch
     if (n!=f->count) return CHEM_DIMENSION;
     for (size_t i=0;i<n;++i) {
         const ChemArray *s=&f->signature[i];
-        if (args[i].rows!=args[0].rows || args[i].columns!=s->columns || args[i].vector!=s->vector)
+        if (args[i].rows!=args[0].rows || (!f->sparse && args[i].columns!=s->columns) || args[i].kind!=s->kind)
             return CHEM_DIMENSION;
+        if (f->sparse && args[i].kind!=CHEM_ARRAY_VECTOR && (args[i].group?args[i].group:1)!=(s->group?s->group:1)) return CHEM_DIMENSION;
         if (args[i].type!=s->type || (args[i].rows && args[i].columns &&
             (!args[i].data || (f->mutable[i] && !args[i].writable)))) return CHEM_INVALID;
     }
+    if(!args[0].rows)return CHEM_OK;
     ChemArray *call=malloc(n*sizeof(ChemArray));
     if (!call) return CHEM_MEMORY;
     for (size_t i=0;i<n;++i) { call[i]=args[i];if (!f->mutable[i]) {call[i].writable=NULL;call[i].read_only=1;} }

@@ -45,12 +45,14 @@ ChemStatus chem_matrix_print(const ChemMatrix *, FILE *);
 
 /* Borrowed arrays and views never own their storage. Const constructors retain
  * only a const pointer; all write operations reject such views. */
+typedef enum { CHEM_ARRAY_MATRIX, CHEM_ARRAY_VECTOR, CHEM_ARRAY_SPARSE } ChemArrayKind;
 typedef struct {
     const void *data;
     void *writable;
     size_t rows, columns, group;
     ChemMatrixType type;
-    int vector, read_only;
+    ChemArrayKind kind;
+    int read_only;
 } ChemArray;
 typedef struct {
     const void *data;
@@ -75,8 +77,10 @@ typedef void (*ChemRowFunction)(double *values, size_t count, void *context);
 ChemStatus chem_views_for_each(size_t count, const ChemView *, ChemRowFunction, void *context);
 typedef double (*ChemReduceFunction)(double value, double accumulator, void *context);
 ChemStatus chem_view_reduce(ChemView, int strict, ChemReduceFunction, void *context, double *accumulator);
-/* Function creation fixes argument kinds, scalar types, columns and mutability.
- * Row counts can change and must agree only at invocation time. Context is
+/* Function creation fixes argument kinds, scalar types and mutability. Dense
+ * functions fix columns; functions with sparse arguments allow different
+ * structures but require matching matrix group widths. Row counts can change
+ * and must agree only at invocation time. Empty calls skip the callback. Context is
  * borrowed, providing the C equivalent of captured lambda state. */
 typedef ChemStatus (*ChemArrayCallback)(const ChemArray *, size_t count, void *context);
 typedef struct ChemArrayFunction ChemArrayFunction;

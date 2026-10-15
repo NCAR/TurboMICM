@@ -61,6 +61,13 @@ change between calls. Views support copies, fills, row callbacks, and reductions
 with an explicit strict flag controlling padding. Const views reject writes.
 These utilities provide the C equivalent of MICM's matrix-policy operations.
 
+`include/chem_sparse_matrix.h` adds declared-structure CSR/CSC matrices with a
+builder, deduplicated entries, standard or grouped block layouts, checked lookup,
+diagonal operations and printing. This structure does not add the diagonal or LU
+fill. Its values reuse `ChemMatrix` storage and its block views reuse `ChemView`.
+Sparse functions allow different matrix structures, enforce matching group
+widths, and check equal block/row/vector lengths on each invocation.
+
 ## Linear algebra and integration
 
 `src/sparse.c` adds symbolic fill once and stores a plan for Mozart elimination.

@@ -37,18 +37,18 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp
 clean:
 	rm -rf build bin
 
-SOURCES = src/version.c src/system.c src/matrix.c src/rates.c src/mechanism.c src/state.c src/sparse.c src/rosenbrock.c src/rosenbrock_parameters.c src/backward_euler.c src/constraints.c src/constraint_initialization.c src/jacobian_verification.c
+SOURCES = src/sparse_matrix.c src/version.c src/system.c src/matrix.c src/rates.c src/mechanism.c src/state.c src/sparse.c src/rosenbrock.c src/rosenbrock_parameters.c src/backward_euler.c src/constraints.c src/constraint_initialization.c src/jacobian_verification.c
 OBJECTS = $(SOURCES:src/%.c=build/%.o)
 cpu: build/libchem.a
-build/%.o: src/%.c include/chem.h include/chem_solver.h include/chem_constraints.h include/chem_jacobian.h src/internal.h include/chem_matrix.h include/chem_system.h include/chem_version.h
+build/%.o: src/%.c include/chem.h include/chem_solver.h include/chem_constraints.h include/chem_jacobian.h src/internal.h include/chem_matrix.h include/chem_system.h include/chem_version.h include/chem_sparse_matrix.h
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/libchem.a: $(OBJECTS)
 	ar rcs $@ $(OBJECTS)
 
-bin/test_cpu: tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c tests/test_constraints.c tests/test_constraint_initialization.c tests/test_dae.c tests/test_rosenbrock.c tests/test_jacobian_verification.c tests/test_process.c tests/test_rate_store.c tests/test_state.c tests/test_matrix.c tests/test_matrix_functions.c tests/test_system.c tests/test_runtime.c tests/test.h build/libchem.a
+bin/test_cpu: tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c tests/test_constraints.c tests/test_constraint_initialization.c tests/test_dae.c tests/test_rosenbrock.c tests/test_jacobian_verification.c tests/test_process.c tests/test_rate_store.c tests/test_state.c tests/test_matrix.c tests/test_matrix_functions.c tests/test_system.c tests/test_runtime.c tests/test_sparse_matrix.c tests/test_sparse_functions.c tests/test.h build/libchem.a
 	@mkdir -p bin
-	$(CC) $(CFLAGS) tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c tests/test_constraints.c tests/test_constraint_initialization.c tests/test_dae.c tests/test_rosenbrock.c tests/test_jacobian_verification.c tests/test_process.c tests/test_rate_store.c tests/test_state.c tests/test_matrix.c tests/test_matrix_functions.c tests/test_system.c tests/test_runtime.c build/libchem.a $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) tests/main.c tests/test_rates.c tests/test_sparse.c tests/test_backward_euler.c tests/test_constraints.c tests/test_constraint_initialization.c tests/test_dae.c tests/test_rosenbrock.c tests/test_jacobian_verification.c tests/test_process.c tests/test_rate_store.c tests/test_state.c tests/test_matrix.c tests/test_matrix_functions.c tests/test_system.c tests/test_runtime.c tests/test_sparse_matrix.c tests/test_sparse_functions.c build/libchem.a $(LDLIBS) -o $@
 test-cpu: env bin/test_cpu bin/test_config bin/ts1_bench_cpu
 	$(PYTHON) tools/run_tests.py
 

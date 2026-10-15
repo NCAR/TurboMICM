@@ -71,16 +71,25 @@ of completion. `tests/cases.txt` is the authoritative inventory of all 680 cases
   shared-mechanism/independent-workspace test pass on Clang and GCC (344 total).
   Both builds are warning-free; configuration and TS1 regressions pass.
 
+- All 190 sparse utility cases pass on both compilers (534 total), including
+  standard/grouped CSR and CSC layouts, builder deduplication, original raw
+  offsets, diagonal operations, exact print output, reusable functions, mixed
+  dense/sparse/vector operations, all group-width errors, const views, temporaries,
+  vector-index captures, fills and copies. No fill entries are inserted into
+  these utility matrices; the solver's symbolic LU structure remains separate.
+  Group widths 1–4 and the required width-10 combinations are exercised.
+  Both compiler builds have no warnings; configuration and TS1 regressions pass.
+
 ## Remaining work (required)
 
-- Port all remaining 336 cases, individually checking original test quantities.
+- Port all remaining 146 cases, individually checking original test quantities.
   Read each source/policy; do not assign a PASS based on a related smoke test.
 - External model hooks and aerosol models. Built-in constraints and
   initialization now pass their unit tests, equilibrium/overshoot integrations,
   and the combined Terminator–Robertson conservation test.
 - Backward Euler analytical/regression coverage, reaction-rate tracking, solver status
   behavior and solver-builder validations.
-- Sparse matrix utilities, grouped views and operations, generic C
+- Grouped views and operations, generic C
   equivalents of C++ ownership and dimension checks. Only genuinely
   compile-time-only cases may receive documented N/A reasons.
 - Remaining solver regression/analytical tests,

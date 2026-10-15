@@ -124,3 +124,20 @@ matching the original state-isolation behavior with the C ownership design.
 The supplied `micm/include/micm/version.hpp` returns version `3.14.0` and numeric
 components 3, 14, 0, 0, despite the older version description in the task prompt.
 The compatibility version API follows those actual supplied source values.
+
+## Sparse utility layouts and functions
+
+`ChemSparseMatrix` preserves the declared structure, with no forced diagonal or
+factorization fill. Its builder deduplicates entries and sorts them by compressed
+row or column order. Values use the existing dense matrix buffer with one row per
+block and one column per stored element; group zero is standard block-major and
+positive groups retain the original padded offsets. Sparse lookup uses a binary
+search over the sorted structure. Print output uses logical row/column order.
+
+Sparse functions use the same callback/view engine as dense functions. They
+require matching matrix group widths while allowing vectors without padding,
+matching MICM's ordering validation. They accept differing sparse structures and
+validate block counts at invocation. A raw block-zero vector index identifies a
+block view; missing entries and missing block indices return distinct errors.
+All debug-only source bounds assertions are also checked in the C release tests.
+Empty function invocations validate their shapes and skip callback execution.
