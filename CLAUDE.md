@@ -220,6 +220,25 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
     them every step (`src/ts1_bench.c:154`).
   - Compile time of the generated kernels (16,000 to 21,000 lines of C), with
     clang and gcc-15.
+- Specialization arm for frozen mechanisms (proposed 2026-10-16; not yet approved
+  or scheduled): how fast can a solver for TS1 alone get? Reference mechanisms
+  like TS1 stay in production unchanged for years; prototyping still needs
+  run-time configurability.
+  - Start from each agent's own Tier 1 solution; the generic path and the Tier 1
+    gate stay.
+  - For TS1 anything goes: literal indices and constants, a fully unrolled LU,
+    fused kernels; same Rosenbrock method and tolerances; portability rules
+    unchanged.
+  - The specialized C must come from a generator the agent keeps, so a revised
+    mechanism costs a regeneration, not a new run.
+  - Verify by differential testing against the entry's generic path and MICM at
+    the same settings: held-out seeds and day–night runs (with a tolerance that
+    runs there).
+  - Measure speed against the entry's generic and generated Tier 1 paths and
+    MICM, plus generation and compile time and tokens. Optionally a variant with
+    rate parameters as data, for ensembles.
+  - Arms to be chosen, for example sol-max and astra-xhigh, which already
+    generate kernels, and one entry that does not.
 - MUSICA integration study, after the analysis pass: how mechanism-specific
   kernels could reach MUSICA's API.
   - Ahead of time: a CMake function that generates and links a mechanism's
