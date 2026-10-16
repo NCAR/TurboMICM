@@ -31,13 +31,41 @@ LDLIBS := $(OMP_LIBS) -lm
 
 env: .conda/conda-meta/history
 .conda/conda-meta/history: environment.yml
-	CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
+	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
 
-cpu:
-	@echo 'Implementation in progress'; exit 1
+SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c
+OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
 
-test-cpu: cpu
+cpu: bin/ts1_bench_cpu build/libchem.a
 bench: cpu
+
+test-cpu: cpu bin/test_cpu
+	bin/test_cpu $(TEST_FILTER)
+
+generated/test_registry.inc: $(wildcard tests/test_*.c) tests/cases.txt tools/test_registry.py .conda/conda-meta/history
+	$(PYTHON) tools/test_registry.py $@
+
+bin/test_cpu: $(wildcard tests/*.c) tests/test.h generated/test_registry.inc build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CFLAGS) -Itests -Igenerated $(wildcard tests/*.c) build/libchem.a $(LDLIBS) -o $@
+
+build/%.o: src/%.c include/chem.h build/compiler.conf
+	@mkdir -p build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/libchem.a: $(OBJECTS)
+	$(AR) rcs $@ $^
+
+generated/ts1.c: configs/ts1.json tools/configure.py tools/generate.py .conda/conda-meta/history
+	$(PYTHON) tools/generate.py $< $@ --symbol ts1_mechanism
+
+build/ts1.o: generated/ts1.c include/chem.h build/compiler.conf
+	@mkdir -p build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+bin/ts1_bench_cpu: build/bench.o build/ts1.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
 
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: $(REFERENCE)/micm_ts1_ref.cpp
@@ -46,3 +74,11 @@ bin/micm_ts1_ref: $(REFERENCE)/micm_ts1_ref.cpp
 
 clean:
 	rm -rf build bin generated
+
+.PHONY: FORCE
+FORCE:
+
+build/compiler.conf: FORCE
+	@mkdir -p build
+	@printf '%s\n' "$(CC)" "$(CFLAGS)" "$(LDLIBS)" > build/compiler.conf.tmp
+	@cmp -s build/compiler.conf.tmp $@ && rm build/compiler.conf.tmp || mv build/compiler.conf.tmp $@

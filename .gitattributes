@@ -1,0 +1,2 @@
+# Golden stdout preserves reference formatting, including trailing spaces.
+tests/reference/*.txt -whitespace

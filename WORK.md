@@ -27,3 +27,28 @@ CPU port and every case in the supplied case list.
 - Inspected the supplied prompt, reference README and case inventory: 680 cases,
   including 672 GoogleTest cases and eight programs. Fresh standalone repository.
 - No implementation or tests have passed yet.
+
+## Numerical core checkpoint
+
+Implemented the tagged rate API and all formula types; immutable mechanism
+model, custom slots, third-body multiplication, SoA cell states; symbolic
+Markowitz and both in-place LU plans; all five Rosenbrock parameter sets and the
+ODE integration loop; backward Euler; JSON/YAML reader, C mechanism/kernel
+emitter, and TS1 transcription script/config; standalone C TS1 benchmark.
+
+Clang passed 32 mapped rate/lambda tests and the supplied TS1 100-cell gate for
+threads/groups (1,32), (4,7), and generic evaluator (1,32). Largest relative error
+9.7e-13. The test runner explicitly FAILs all not-yet-ported cases. No N/A cases
+have been declared. Full requirements above remain binding.
+
+At this checkpoint, constraints/external models, rich species/phase properties,
+dense/vector/sparse utility APIs, separate LU storage, most case mappings,
+configuration-vs-hand equivalence, plain tutorial programs, and final validation
+are still outstanding. Source reads also found that the reference builder sorts
+reactions by rate type; the current model retains declaration order, within the
+TS1 gate, but tests must account for reference ordering when comparing rate slots.
+
+GCC 15 also passed all 32 mapped cases and the 100-cell TS1 gate (4 threads,
+groups of 7; largest relative difference 9.69e-13). Eight plain-program reference
+outputs are retained in tests/reference, produced by tools/capture_reference.py
+from build/reference-tests, a complete private copy of the supplied build.
