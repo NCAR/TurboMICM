@@ -1,7 +1,8 @@
 # Decisions
 
-- The public library is called `chem`. Its implementation is ISO C11, with doubles
-  throughout. Python is restricted to build-time configuration and test tooling.
+- The public library is called `chem`. Its implementation is ISO C11, with double
+  chemistry and native int/size_t utility arrays. Python is restricted to
+  build-time configuration and test tooling.
 - Numerical formulas, operation ordering where significant, solver parameters,
   error control, and LU algorithms follow the supplied reference source.
 - C++ ownership and template tests will exercise equivalent C allocation, copying,
@@ -41,3 +42,14 @@
 - `make env` disables conda environment registration and keeps its package cache
   local. This prevents environment creation from updating the global environment
   registry on subsequent runs.
+
+## C array interfaces
+
+- C++ view-category and const-signature tests are mapped to explicit C descriptor
+  tags, typed native storage, callback signatures, and rejection of writes through
+  const spans. They have meaningful C equivalents and are not N/A.
+- Invalid matrix indices return status codes in optimized and debug builds. This
+  is stronger than reference checks that are assertion-only under `!NDEBUG`.
+- Dense and sparse callbacks share the same grouped span operations. Sparse
+  rows/columns map to cached physical offsets while each argument retains its
+  own sparsity structure; matrices in a callback need not share a structure.

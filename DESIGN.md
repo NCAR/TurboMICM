@@ -30,7 +30,30 @@ retained output. All emitted C is compiled by Make with `CC` and `OPTFLAGS`.
 
 The table-driven C evaluator implements the same operations and is selected by
 the benchmark's `--generic` option. Generated kernels currently support kinetic
-mechanisms; external-model and constraint support is still under development.
+mechanisms; models containing constraints use the generic evaluator.
+
+## Arrays and views
+
+`chem_array.h` supplies owned dense matrices and vectors in native double, int,
+or size_t storage. A vector length of zero selects row-major storage; any
+positive length selects padded groups of contiguous column lanes. The solver's
+fixed-cell SoA arrays remain its compact numerical workspace. `chem_sparse.h`
+adds CSR/CSC symbolic structure and stores the nonzero columns in a `chem_array`.
+Sparse builders deduplicate elements and report out-of-range coordinates.
+
+Array callbacks record argument types, layouts, and column/nonzero counts at
+creation. Row/block counts are checked on invocation and may differ from those
+used at creation. All arguments must have equal logical row/block counts and
+compatible group widths. The callback receives group descriptors; column and
+sparse-element spans resolve the base pointer once. Raw descriptors can also be
+bound to a group. Const spans reject writes. Mapping, filling, copying, and
+reductions work across dense columns, sparse elements, vectors, and caller-owned
+temporary spans. Strict reduction visits only active lanes. Non-strict operations
+include initialized trailing padding, matching the reference policy semantics.
+
+The utility arrays expose native storage for exact integer/index operations.
+The numerical map/get/set conveniences convert values to double, so callers
+handling indices above the exact-double integer range should use native storage.
 
 ## Numerical extension points
 

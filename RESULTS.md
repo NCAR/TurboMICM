@@ -29,3 +29,10 @@ The subsequent constraint checkpoint passes 86 mapped cases with both compilers:
 These include rollback on failure, damped Newton cold starts, row scaling,
 multi-cell indexing, analytic residuals/Jacobians, and finite-difference checks.
 The TS1 benchmark has not yet been rerun after that checkpoint.
+
+The matrix checkpoint passes all 420 implemented cases with Clang and GCC 15
+under `-O3 -DNDEBUG`: 117 dense/vector, 190 sparse, 27 grouped-view/category,
+and the previous 86 chemistry/constraint cases. These cover the original lane
+widths, CSR/CSC indices, exact printed matrix output, native integer arrays,
+mutable/const callback views, dimension errors, temporary storage, and reductions.
+There are 260 cases still unported, and no N/A declarations.

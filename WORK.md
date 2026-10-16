@@ -62,3 +62,14 @@ All 54 constraint unit/initialization cases are mapped, for 86 total implemented
 cases. Clang and GCC pass these cases. Integration and external-model cases
 remain outstanding. `bin/test_cpu --implemented` is a development-only filter;
 the default test target continues to report every unported case as a failure.
+
+## Matrix checkpoint
+
+Added native typed dense/vector arrays, CSR/CSC sparse matrices and builders,
+raw and bound grouped views, reusable callbacks, padding-aware reductions,
+copy/fill/arithmetic, and printing. All 117 dense/vector matrix cases, 190 sparse
+matrix cases, 22 grouped-view cases, and five view-category cases are ported.
+Clang and GCC pass all 420 implemented cases; GCC reports no diagnostics for
+this checkpoint. The full default suite still reports the 260 unported cases as
+failures. Linear-algebra policy cases, system/state/process APIs, solver and
+integration regressions, configuration equivalence, and tutorial programs remain.
