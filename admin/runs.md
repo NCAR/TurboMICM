@@ -31,6 +31,14 @@ Prompt changes
   prompts/ carries it. The Sol runs received the prompt without it, which the
   experimenter judged immaterial to their solutions.
 
+Launch changes
+- 2026-10-16, from luna-high on: at the SSE's request, Claude Code launches the
+  runs with `admin/launch_codex_run.sh`. It is the same interactive Codex session,
+  command, and goal, typed into a detached tmux session started from an empty
+  environment with the SSE's login shell, and checked on screen and in the session
+  record. The method was first tested on a throwaway repository. The Sol and
+  Astra runs were launched by the SSE.
+
 Reference changes
 - 2026-10-15: `reference/micm_ts1_ref.cpp` gained `--group-size G`, so MICM can be
   timed with the same cell grouping as an entry. Its default, one group per
