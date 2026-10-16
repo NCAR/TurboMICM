@@ -16,7 +16,7 @@ const char *chem_status_string(chem_status s)
 {
     static const char *names[]={"Converged","Invalid argument","Allocation failure","Unknown name","Size mismatch",
         "Singular matrix","Convergence exceeded max steps","Step size too small","NaN detected","Inf detected",
-        "Constraint initialization failed","Accepting unconverged integration"};
+        "Constraint Initialization Failed","Accepting unconverged integration"};
     return (unsigned)s < sizeof(names)/sizeof(*names) ? names[s] : "Unknown status";
 }
 
@@ -39,10 +39,11 @@ void chem_model_destroy(chem_model *m)
     for (size_t i=0; i<m->n_custom; ++i) free(m->custom_names ? m->custom_names[i] : NULL);
     for (size_t i=0; i<m->n_jobs; ++i) {
         free(m->jobs[i].reactants); free(m->jobs[i].reactant_flat);
-        free(m->jobs[i].product_flat); free(m->jobs[i].yields);
+        free(m->jobs[i].products); free(m->jobs[i].product_flat); free(m->jobs[i].yields);
     }
     free(m->jobs); free(m->custom_names); free(m->custom_offset); free(m->rates);
-    free(m->spec_to_var); free(m->var_to_spec); free(m->algebraic);
+    free(m->constraint_rows); free(m->constraint_offsets);
+    free(m->spec_to_var); free(m->var_to_spec); free(m->algebraic); free(m->jacobian_pattern);
     chem_lu_destroy(&m->lu);
     memset(m,0,sizeof(*m));
 }
@@ -50,16 +51,18 @@ void chem_model_destroy(chem_model *m)
 chem_status chem_model_create(chem_model *m, const chem_mechanism *s, chem_lu_algorithm algorithm)
 {
     memset(m,0,sizeof(*m));
-    if (!s || !s->n_species || !s->species || (s->n_reactions && !s->reactions)) return CHEM_INVALID;
+    if (!s || !s->n_species || !s->species || (s->n_reactions && !s->reactions) || (s->n_constraints && !s->constraints)) return CHEM_INVALID;
     chem_status status=CHEM_MEMORY;
     unsigned char *pattern=NULL;
     m->mechanism=s; m->n_reactions=s->n_reactions;
     m->spec_to_var=malloc(s->n_species*sizeof(size_t));
     m->var_to_spec=malloc(s->n_species*sizeof(size_t));
     m->custom_offset=calloc(s->n_reactions+1,sizeof(size_t));
+    m->constraint_rows=calloc(s->n_constraints+1,sizeof(size_t));
+    m->constraint_offsets=calloc(s->n_constraints+1,sizeof(size_t));
     m->rates=calloc(s->n_reactions+1,sizeof(chem_rate));
-    m->custom_names=calloc(2*s->n_reactions+1,sizeof(char *));
-    if (!m->spec_to_var || !m->var_to_spec || !m->custom_offset || !m->rates || !m->custom_names) goto fail;
+    m->custom_names=calloc(2*s->n_reactions+s->n_constraints+1,sizeof(char *));
+    if (!m->spec_to_var || !m->var_to_spec || !m->custom_offset || !m->rates || !m->custom_names || !m->constraint_rows || !m->constraint_offsets) goto fail;
     for (size_t i=0; i<s->n_species; ++i) {
         if (!s->species[i].name) { status=CHEM_INVALID; goto fail; }
         for (size_t j=0; j<i; ++j) if (!strcmp(s->species[i].name,s->species[j].name)) { status=CHEM_INVALID; goto fail; }
@@ -120,6 +123,31 @@ chem_status chem_model_create(chem_model *m, const chem_mechanism *s, chem_lu_al
         }
         memcpy(pattern,reordered,n*n); free(perm); free(original); free(reordered);
     }
+    for (size_t k=0; k<s->n_constraints; ++k) {
+        const chem_constraint *constraint=&s->constraints[k];
+        status=chem_constraint_validate(constraint,s->n_species);
+        if (status!=CHEM_OK) goto fail;
+        size_t row=m->spec_to_var[constraint->algebraic_species];
+        if (row==CHEM_NONE || m->algebraic[row]) { status=CHEM_INVALID; goto fail; }
+        m->algebraic[row]=1; m->constraint_rows[k]=row;
+        memset(pattern+row*n,0,n);
+        size_t count=constraint->n_reactants+constraint->n_products;
+        if (constraint->type==CHEM_CUSTOM_CONSTRAINT) count=constraint->n_dependencies;
+        for (size_t j=0; j<count; ++j) {
+            size_t sp=constraint->type==CHEM_CUSTOM_CONSTRAINT ? constraint->dependencies[j] :
+                j<constraint->n_reactants ? constraint->reactants[j].species : constraint->products[j-constraint->n_reactants].species;
+            size_t col=m->spec_to_var[sp];
+            if (col==CHEM_NONE) { status=CHEM_INVALID; goto fail; }
+            pattern[row*n+col]=1;
+        }
+        m->constraint_offsets[k]=CHEM_NONE;
+        if (constraint->type==CHEM_EQUILIBRIUM_CONSTRAINT) {
+            m->constraint_offsets[k]=m->n_custom;
+            char *label=join(constraint->name, "");
+            if (!label) { status=CHEM_MEMORY; goto fail; }
+            m->custom_names[m->n_custom++]=label;
+        }
+    }
     for (size_t i=0; i<n; ++i) pattern[i*n+i]=1;
     status=chem_lu_create(&m->lu,n,pattern,algorithm);
     if (status!=CHEM_OK) goto fail;
@@ -135,9 +163,10 @@ chem_status chem_model_create(chem_model *m, const chem_mechanism *s, chem_lu_al
             job->reaction=r; job->independent=col; job->diagonal=m->lu.map[col*n+col];
             job->reactants=malloc((rx->n_reactants+1)*sizeof(size_t));
             job->reactant_flat=malloc((rx->n_reactants+1)*sizeof(size_t));
+            job->products=malloc((rx->n_products+1)*sizeof(size_t));
             job->product_flat=malloc((rx->n_products+1)*sizeof(size_t));
             job->yields=malloc((rx->n_products+1)*sizeof(double));
-            if (!job->reactants || !job->reactant_flat || !job->product_flat || !job->yields) goto fail;
+            if (!job->reactants || !job->reactant_flat || !job->products || !job->product_flat || !job->yields) goto fail;
             int skipped=0;
             for (size_t j=0; j<rx->n_reactants; ++j) {
                 size_t row=m->spec_to_var[rx->reactants[j]];
@@ -150,13 +179,13 @@ chem_status chem_model_create(chem_model *m, const chem_mechanism *s, chem_lu_al
                 size_t row=m->spec_to_var[rx->products[j].species];
                 if (row==CHEM_NONE) continue;
                 size_t k=job->n_products++;
-                job->product_flat[k]=m->lu.map[row*n+col]; job->yields[k]=rx->products[j].yield;
+                job->products[k]=row; job->product_flat[k]=m->lu.map[row*n+col]; job->yields[k]=rx->products[j].yield;
             }
         }
     }
-    m->forcing=s->forcing ? s->forcing : chem_forcing;
-    m->jacobian=s->jacobian ? s->jacobian : chem_jacobian;
-    free(pattern);
+    m->forcing=s->forcing && !s->n_constraints ? s->forcing : chem_forcing;
+    m->jacobian=s->jacobian && !s->n_constraints ? s->jacobian : chem_jacobian;
+    m->jacobian_pattern=pattern;
     return CHEM_OK;
 fail:
     free(pattern); chem_model_destroy(m); return status;
@@ -201,7 +230,7 @@ void chem_jacobian(const chem_model *m, size_t cells, const double *restrict rat
             for (size_t k=0; k<job->n_products; ++k) {
                 size_t flat=job->product_flat[k];
                 /* Sparse flat ids are compiled before any constraint rows are substituted. */
-                jac[flat*cells+c]-=job->yields[k]*rate;
+                if (!m->algebraic[job->products[k]]) jac[flat*cells+c]-=job->yields[k]*rate;
             }
         }
     }

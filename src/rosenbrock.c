@@ -47,22 +47,25 @@ chem_result chem_ros_solve(chem_state *s, double dt, const chem_ros_parameters *
     double h=minimum(maximum(hmin,fabs(hstart)),fabs(hmax)), time=0;
     int reject_last=0, reject_more=0;
     if (!controller) controller=chem_ros_controller;
+    const int constrained=m->mechanism->n_constraints!=0;
+    if (constrained) {
+        result.status=chem_initialize_constraints(s,p,&result.stats);
+        if (result.status!=CHEM_OK) return result;
+    }
     while ((time-dt+p->round_off)<=0 && result.status==CHEM_OK) {
         if (result.stats.internal_steps>p->max_steps) { result.status=CHEM_MAX_STEPS; break; }
         if ((time+0.1*h)==time || h<=minimum(p->round_off,hmin)) { result.status=CHEM_SMALL_STEP; break; }
         h=minimum(h,fabs(dt-time));
         memset(initial,0,n*sizeof(double));
         m->forcing(m,cells,s->rates,y,initial); ++result.stats.function_calls;
+        if (constrained) chem_constraint_forcing(s,y,initial);
         memset(s->jacobian,0,m->lu.nnz*cells*sizeof(double));
         m->jacobian(m,cells,s->rates,y,s->jacobian); ++result.stats.jacobian_updates;
+        if (constrained) chem_constraint_jacobian(s,y,s->jacobian);
         int accepted=0;
         while (!accepted) {
             double alpha=1.0/(h*p->gamma[0]);
-            for (size_t i=0; i<m->n_species; ++i) {
-                double *diag=s->jacobian+m->lu.diagonal[i]*cells;
-                #pragma omp simd
-                for (size_t c=0; c<cells; ++c) diag[c]+=alpha;
-            }
+            chem_alpha_minus_jacobian(s,alpha);
             chem_lu_factor(&m->lu,cells,s->jacobian,s->scratch); ++result.stats.decompositions;
             for (size_t stage=0; stage<p->stages; ++stage) {
                 size_t base=stage ? stage*(stage-1)/2 : 0;
@@ -72,15 +75,22 @@ chem_result chem_ros_solve(chem_state *s, double dt, const chem_ros_parameters *
                     for (size_t j=0; j<stage; ++j) axpy(n,p->a[base+j],k[j],ynew);
                     memset(k[stage],0,n*sizeof(double));
                     m->forcing(m,cells,s->rates,ynew,k[stage]); ++result.stats.function_calls;
+                    if (constrained) chem_constraint_forcing(s,ynew,k[stage]);
                 }
                 if (stage+1<p->stages && !p->new_function[stage+1]) memcpy(k[stage+1],k[stage],n*sizeof(double));
-                for (size_t j=0; j<stage; ++j) axpy(n,p->c[base+j]/h,k[j],k[stage]);
+                for (size_t j=0; j<stage; ++j) {
+                    if (!constrained) axpy(n,p->c[base+j]/h,k[j],k[stage]);
+                    else for (size_t i=0; i<m->n_species; ++i) if (!m->algebraic[i])
+                        axpy(cells,p->c[base+j]/h,k[j]+i*cells,k[stage]+i*cells);
+                }
                 chem_lu_solve(&m->lu,cells,s->jacobian,k[stage]); ++result.stats.solves;
             }
             memcpy(ynew,y,n*sizeof(double));
             for (size_t stage=0; stage<p->stages; ++stage) axpy(n,p->m[stage],k[stage],ynew);
             memset(error,0,n*sizeof(double));
             for (size_t stage=0; stage<p->stages; ++stage) axpy(n,p->e[stage],k[stage],error);
+            if (constrained) for (size_t i=0; i<m->n_species; ++i) if (m->algebraic[i])
+                for (size_t c=0; c<cells; ++c) error[i*cells+c]=ynew[i*cells+c]-y[i*cells+c];
             double norm=chem_normalized_error(s,y,ynew,error);
             double next=controller(h,norm,p,context);
             ++result.stats.internal_steps;
@@ -98,6 +108,7 @@ chem_result chem_ros_solve(chem_state *s, double dt, const chem_ros_parameters *
                 if (result.stats.accepted>=1) ++result.stats.rejected;
                 memset(s->jacobian,0,m->lu.nnz*cells*sizeof(double));
                 m->jacobian(m,cells,s->rates,y,s->jacobian); ++result.stats.jacobian_updates;
+        if (constrained) chem_constraint_jacobian(s,y,s->jacobian);
             }
         }
     }

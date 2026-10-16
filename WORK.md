@@ -26,7 +26,7 @@ CPU port and every case in the supplied case list.
 
 - Inspected the supplied prompt, reference README and case inventory: 680 cases,
   including 672 GoogleTest cases and eight programs. Fresh standalone repository.
-- No implementation or tests have passed yet.
+- The initial inventory has been replaced by the measured checkpoints below.
 
 ## Numerical core checkpoint
 
@@ -52,3 +52,13 @@ GCC 15 also passed all 32 mapped cases and the 100-cell TS1 gate (4 threads,
 groups of 7; largest relative difference 9.69e-13). Eight plain-program reference
 outputs are retained in tests/reference, produced by tools/capture_reference.py
 from build/reference-tests, a complete private copy of the supplied build.
+
+## Constraint checkpoint
+
+Added linear, equilibrium, and callback constraints; algebraic-row masks and
+sparsity; finite-difference verification; damped Newton initialization with
+weighted corrections and rollback; and the DAE mass-matrix Rosenbrock path.
+All 54 constraint unit/initialization cases are mapped, for 86 total implemented
+cases. Clang and GCC pass these cases. Integration and external-model cases
+remain outstanding. `bin/test_cpu --implemented` is a development-only filter;
+the default test target continues to report every unported case as a failure.

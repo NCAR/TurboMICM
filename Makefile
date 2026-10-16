@@ -33,7 +33,7 @@ env: .conda/conda-meta/history
 .conda/conda-meta/history: environment.yml
 	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
 
-SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c
+SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c
 OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
 
 cpu: bin/ts1_bench_cpu build/libchem.a
@@ -49,7 +49,7 @@ bin/test_cpu: $(wildcard tests/*.c) tests/test.h generated/test_registry.inc bui
 	@mkdir -p bin
 	$(CC) $(CFLAGS) -Itests -Igenerated $(wildcard tests/*.c) build/libchem.a $(LDLIBS) -o $@
 
-build/%.o: src/%.c include/chem.h build/compiler.conf
+build/%.o: src/%.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -59,7 +59,7 @@ build/libchem.a: $(OBJECTS)
 generated/ts1.c: configs/ts1.json tools/configure.py tools/generate.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py $< $@ --symbol ts1_mechanism
 
-build/ts1.o: generated/ts1.c include/chem.h build/compiler.conf
+build/ts1.o: generated/ts1.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 

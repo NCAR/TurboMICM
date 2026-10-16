@@ -90,11 +90,13 @@ void chem_calculate_rates(chem_state *s)
             s->rates[r*cells+c]=k;
         }
     }
+    chem_update_constraint_parameters(s);
 }
 
 void chem_stats_add(chem_stats *a, const chem_stats *b)
 {
     a->internal_steps+=b->internal_steps; a->accepted+=b->accepted; a->rejected+=b->rejected;
     a->function_calls+=b->function_calls; a->jacobian_updates+=b->jacobian_updates;
+    a->constraint_init_iterations+=b->constraint_init_iterations;
     a->decompositions+=b->decompositions; a->solves+=b->solves; a->final_time+=b->final_time;
 }

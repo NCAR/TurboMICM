@@ -75,6 +75,27 @@ typedef struct {
 } chem_reaction;
 typedef struct { const char *name; double value; } chem_named_value;
 
+struct chem_state;
+struct chem_model;
+typedef void (*chem_external_kernel)(const struct chem_state *, const double *, double *, void *);
+typedef enum { CHEM_LINEAR_CONSTRAINT, CHEM_EQUILIBRIUM_CONSTRAINT, CHEM_CUSTOM_CONSTRAINT } chem_constraint_type;
+typedef struct { double K, delta_H, R, reference_temperature; } chem_vant_hoff;
+typedef struct {
+    const char *name;
+    chem_constraint_type type;
+    size_t algebraic_species;
+    size_t n_reactants, n_products;
+    const chem_product *reactants, *products;
+    double constant;
+    chem_vant_hoff equilibrium;
+    size_t n_dependencies;
+    const size_t *dependencies;
+    chem_external_kernel residual, jacobian;
+    void *context;
+} chem_constraint;
+chem_status chem_constraint_validate(const chem_constraint *constraint, size_t species_count);
+
+
 struct chem_model;
 /* Kernels add to the destination. Columns are contiguous arrays of cells. */
 typedef void (*chem_kernel)(const struct chem_model *, size_t, const double *, const double *, double *);
@@ -87,6 +108,8 @@ typedef struct {
     chem_conditions conditions;
     chem_kernel forcing, jacobian;
     int preserve_order;
+    size_t n_constraints;
+    const chem_constraint *constraints;
 } chem_mechanism;
 
 typedef enum { CHEM_LU_MOZART, CHEM_LU_DOOLITTLE } chem_lu_algorithm;
@@ -105,7 +128,7 @@ void chem_lu_solve(const chem_lu_plan *plan, size_t cells, const double *matrix,
 
 typedef struct {
     size_t reaction, independent, n_reactants, n_products;
-    size_t *reactants, *reactant_flat, *product_flat;
+    size_t *reactants, *reactant_flat, *products, *product_flat;
     double *yields;
     size_t diagonal;
 } chem_jac_job;
@@ -118,7 +141,8 @@ typedef struct chem_model {
     chem_jac_job *jobs;
     chem_lu_plan lu;
     chem_kernel forcing, jacobian;
-    unsigned char *algebraic;
+    unsigned char *algebraic, *jacobian_pattern;
+    size_t *constraint_rows, *constraint_offsets;
 } chem_model;
 chem_status chem_model_create(chem_model *model, const chem_mechanism *mechanism, chem_lu_algorithm algorithm);
 void chem_model_destroy(chem_model *model);
@@ -127,7 +151,7 @@ size_t chem_custom_index(const chem_model *model, const char *name);
 void chem_forcing(const chem_model *model, size_t cells, const double *rates, const double *y, double *forcing);
 void chem_jacobian(const chem_model *model, size_t cells, const double *rates, const double *y, double *negative_jacobian);
 
-typedef struct {
+typedef struct chem_state {
     const chem_model *model;
     size_t cells;
     double *y, *rates, *custom, *atol;
@@ -143,7 +167,7 @@ chem_status chem_state_set_custom(chem_state *state, const char *name, const dou
 void chem_calculate_rates(chem_state *state);
 
 typedef struct {
-    uint64_t internal_steps, accepted, rejected, function_calls, jacobian_updates, decompositions, solves;
+    uint64_t internal_steps, accepted, rejected, function_calls, jacobian_updates, decompositions, solves, constraint_init_iterations;
     double final_time;
 } chem_stats;
 void chem_stats_add(chem_stats *total, const chem_stats *step);
@@ -162,6 +186,11 @@ chem_ros_parameters chem_ros_parameters_default(chem_ros_method method);
 /* Return an unbounded proposed next h; acceptance/rejection policy stays in the solver. */
 typedef double (*chem_step_controller)(double h, double error, const chem_ros_parameters *, void *);
 double chem_ros_controller(double h, double error, const chem_ros_parameters *parameters, void *context);
+void chem_constraint_forcing(const chem_state *state, const double *y, double *forcing);
+void chem_constraint_jacobian(const chem_state *state, const double *y, double *jacobian);
+void chem_update_constraint_parameters(chem_state *state);
+void chem_alpha_minus_jacobian(chem_state *state, double alpha);
+chem_status chem_initialize_constraints(chem_state *state, const chem_ros_parameters *parameters, chem_stats *stats);
 double chem_normalized_error(const chem_state *state, const double *y, const double *ynew, const double *error);
 chem_result chem_ros_solve(chem_state *state, double dt, const chem_ros_parameters *parameters,
                            chem_step_controller controller, void *context);

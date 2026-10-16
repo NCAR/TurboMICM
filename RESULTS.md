@@ -23,3 +23,9 @@ case coverage, and the portability audit remain outstanding.
 With GCC 15 and the same flags, all 32 currently mapped cases passed. TS1 also
 passed the supplied 100-cell gate with four threads and groups of seven; the
 largest relative difference was 9.69e-13.
+
+The subsequent constraint checkpoint passes 86 mapped cases with both compilers:
+32 rate/lambda cases and 54 linear, equilibrium, set, and initialization cases.
+These include rollback on failure, damped Newton cold starts, row scaling,
+multi-cell indexing, analytic residuals/Jacobians, and finite-difference checks.
+The TS1 benchmark has not yet been rerun after that checkpoint.
