@@ -199,6 +199,10 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   - Add each entry's grouping to `ENTRY_GROUPING` in `admin/leaderboard.py`.
   - When building in parallel, make the `micm/` and `reference/` links first, or
     with `ln -sn`: a racing `ln -s` writes a link inside the run root.
+- luna-xhigh and luna-max are deferred to the next session (this one ends 10:30 on
+  2026-10-16). For each: `admin/launch_codex_run.sh <run> gpt-6-luna <effort>`,
+  monitor with `admin/run_state.py`, then collect, archive the transcript,
+  verify, and time it with all entries, as for luna-high.
 - Next, now that astra-max is done: an analysis pass on every entry, as measurement only, with no
   quality verdicts (see "Conflict of interest").
   - Instruction counts and cycles from `/usr/bin/time -l`, at 1 thread, differenced
