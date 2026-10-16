@@ -156,8 +156,10 @@ chem_status chem_initialize_constraints(chem_state *s, const chem_ros_parameters
         memset(s->jacobian,0,m->lu.nnz*s->cells*sizeof(double));
         chem_constraint_jacobian(s,s->y,s->jacobian); ++stats->jacobian_updates;
         chem_alpha_minus_jacobian(s,1);
-        chem_lu_factor(&m->lu,s->cells,s->jacobian,s->scratch); ++stats->decompositions;
-        chem_lu_solve(&m->lu,s->cells,s->jacobian,delta); ++stats->solves;
+        status=chem_state_factor(s); ++stats->decompositions;
+        if (status!=CHEM_OK) goto restore;
+        status=chem_state_solve_linear(s,delta); ++stats->solves;
+        if (status!=CHEM_OK) goto restore;
         status=algebraic_max(s,delta,&maximum);
         if (status!=CHEM_OK) goto restore;
         double norm=correction_norm(s,s->y,delta);
@@ -175,7 +177,8 @@ chem_status chem_initialize_constraints(chem_state *s, const chem_ros_parameters
                 memset(trial,0,n*sizeof(double)); chem_constraint_forcing(s,candidate,trial);
                 if (algebraic_max(s,trial,&maximum)!=CHEM_OK) continue;
                 if (maximum==0) break;
-                chem_lu_solve(&m->lu,s->cells,s->jacobian,trial); ++stats->solves;
+                status=chem_state_solve_linear(s,trial); ++stats->solves;
+                if (status!=CHEM_OK) goto restore;
                 if (algebraic_max(s,trial,&maximum)!=CHEM_OK) continue;
                 double next_norm=correction_norm(s,candidate,trial);
                 if (next_norm<=p->init_tolerance || next_norm<(1-p->init_sufficient_decrease*step)*norm) break;

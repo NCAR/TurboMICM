@@ -73,3 +73,22 @@ Clang and GCC pass all 420 implemented cases; GCC reports no diagnostics for
 this checkpoint. The full default suite still reports the 260 unported cases as
 failures. Linear-algebra policy cases, system/state/process APIs, solver and
 integration regressions, configuration equivalence, and tutorial programs remain.
+
+## Linear solver checkpoint
+
+Added all 52 LU/linear-solver policy cases, eight Rosenbrock core cases, two
+backward-Euler core cases, and five version cases: 487 implemented cases total.
+The array adapters support separate and combined factors with both LU algorithms.
+A per-state backend hook is used by both integrators and constraint initialization;
+the rejected-step regression verifies separate L/U against the default backend.
+The post-change TS1 gate passes all 21,100 values, worst relative difference
+9.7e-13. System/state/process, integration, configuration equivalence, and tutorial
+coverage remain outstanding; no N/A cases have been declared.
+
+## Species and system checkpoint
+
+Added owned typed species properties, affine parameterizations, phase species
+with optional diffusion/density, named phases, and gas systems with permutation
+support. Fourteen reference cases exercise deep copy/destruction, property type
+errors, third bodies, state sizes, and names. Clang and GCC pass all 501 mapped
+cases; 179 cases remain unported.

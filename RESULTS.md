@@ -36,3 +36,16 @@ and the previous 86 chemistry/constraint cases. These cover the original lane
 widths, CSR/CSC indices, exact printed matrix output, native integer arrays,
 mutable/const callback views, dimension errors, temporary storage, and reductions.
 There are 260 cases still unported, and no N/A declarations.
+
+The linear solver checkpoint passes 487 implemented cases with Clang and GCC 15.
+This adds all 52 LU/linear-solver cases, ten solver-core cases and five version
+cases. Tests preserve the reference random inputs and tolerances, including
+1e-12 factor reconstruction checks. A separate L/U backend produces the same
+accepted/rejected step counts and concentrations as the combined backend.
+The post-change Clang TS1 run (four threads, groups of seven) passes all 21,100
+reference values with largest relative difference 9.7e-13. There are 193 cases
+still unported; full-suite and performance validation remain outstanding.
+
+The species/system checkpoint passes all 501 mapped cases with Clang and GCC 15.
+Fourteen added cases cover the original species, phase-species, phase, and system
+assertions. There are 179 cases still unported and no N/A declarations.

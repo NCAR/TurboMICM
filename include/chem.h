@@ -58,6 +58,7 @@ chem_status chem_rate_prepare(chem_rate *rate);
 double chem_rate_calculate(const chem_rate *rate, const chem_conditions *conditions, const double *custom);
 
 typedef enum { CHEM_SPECIES_VARIABLE, CHEM_SPECIES_THIRD_BODY, CHEM_SPECIES_PARAMETER } chem_species_type;
+typedef struct { double constant, temperature, pressure, air_density; } chem_parameterization;
 typedef struct {
     const char *name;
     chem_species_type type;
@@ -65,7 +66,9 @@ typedef struct {
     double molecular_weight, diffusion;
     chem_rate_function parameter;
     void *context;
+    chem_parameterization affine;
 } chem_species;
+double chem_species_evaluate(const chem_species *, const chem_conditions *);
 typedef struct { size_t species; double yield; } chem_product;
 typedef struct {
     size_t n_reactants, n_products;
@@ -158,6 +161,9 @@ typedef struct chem_state {
     chem_conditions *conditions;
     double rtol;
     double *work, *jacobian, *scratch;
+    chem_status (*factor)(struct chem_state *, void *);
+    chem_status (*solve_linear)(const struct chem_state *, double *, void *);
+    void *linear_context;
 } chem_state;
 chem_status chem_state_create(chem_state *state, const chem_model *model, size_t cells);
 void chem_state_destroy(chem_state *state);
@@ -165,6 +171,13 @@ chem_status chem_state_copy(chem_state *destination, const chem_state *source);
 chem_status chem_state_set_species(chem_state *state, const char *name, const double *values, size_t count);
 chem_status chem_state_set_custom(chem_state *state, const char *name, const double *values, size_t count);
 void chem_calculate_rates(chem_state *state);
+/* Callbacks borrow context and may keep backend-owned factors there. NULL/NULL
+ * restores the default. Factor reads state->jacobian; solve overwrites rhs. */
+chem_status chem_state_set_linear_backend(chem_state *state,
+    chem_status (*factor)(chem_state *, void *),
+    chem_status (*solve)(const chem_state *, double *, void *), void *context);
+chem_status chem_state_factor(chem_state *state);
+chem_status chem_state_solve_linear(const chem_state *state, double *rhs);
 
 typedef struct {
     uint64_t internal_steps, accepted, rejected, function_calls, jacobian_updates, decompositions, solves, constraint_init_iterations;

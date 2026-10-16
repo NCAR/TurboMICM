@@ -40,10 +40,12 @@ chem_result chem_be_solve(chem_state *s, double dt, const chem_be_parameters *p)
                 #pragma omp simd
                 for (size_t c=0; c<cells; ++c) diagonal[c]+=1/h;
             }
-            chem_lu_factor(&m->lu,cells,s->jacobian,s->scratch); ++result.stats.decompositions;
+            result.status=chem_state_factor(s); ++result.stats.decompositions;
+            if (result.status!=CHEM_OK) goto done;
             #pragma omp simd
             for (size_t i=0; i<n; ++i) f[i]-=(y[i]-yn[i])/h;
-            chem_lu_solve(&m->lu,cells,s->jacobian,f); ++result.stats.solves;
+            result.status=chem_state_solve_linear(s,f); ++result.stats.solves;
+            if (result.status!=CHEM_OK) goto done;
             #pragma omp simd
             for (size_t i=0; i<n; ++i) y[i]=0>y[i]+f[i] ? 0 : y[i]+f[i];
             if (iterations++==0) continue;
@@ -67,6 +69,7 @@ chem_result chem_be_solve(chem_state *s, double dt, const chem_be_parameters *p)
         }
         if (h>dt-time) h=dt-time;
     }
+done:
     result.stats.final_time=time;
     return result;
 }

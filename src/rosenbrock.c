@@ -66,7 +66,8 @@ chem_result chem_ros_solve(chem_state *s, double dt, const chem_ros_parameters *
         while (!accepted) {
             double alpha=1.0/(h*p->gamma[0]);
             chem_alpha_minus_jacobian(s,alpha);
-            chem_lu_factor(&m->lu,cells,s->jacobian,s->scratch); ++result.stats.decompositions;
+            result.status=chem_state_factor(s); ++result.stats.decompositions;
+            if (result.status!=CHEM_OK) goto done;
             for (size_t stage=0; stage<p->stages; ++stage) {
                 size_t base=stage ? stage*(stage-1)/2 : 0;
                 if (stage==0) memcpy(k[stage],initial,n*sizeof(double));
@@ -83,7 +84,8 @@ chem_result chem_ros_solve(chem_state *s, double dt, const chem_ros_parameters *
                     else for (size_t i=0; i<m->n_species; ++i) if (!m->algebraic[i])
                         axpy(cells,p->c[base+j]/h,k[j]+i*cells,k[stage]+i*cells);
                 }
-                chem_lu_solve(&m->lu,cells,s->jacobian,k[stage]); ++result.stats.solves;
+                result.status=chem_state_solve_linear(s,k[stage]); ++result.stats.solves;
+                if (result.status!=CHEM_OK) goto done;
             }
             memcpy(ynew,y,n*sizeof(double));
             for (size_t stage=0; stage<p->stages; ++stage) axpy(n,p->m[stage],k[stage],ynew);
@@ -108,10 +110,11 @@ chem_result chem_ros_solve(chem_state *s, double dt, const chem_ros_parameters *
                 if (result.stats.accepted>=1) ++result.stats.rejected;
                 memset(s->jacobian,0,m->lu.nnz*cells*sizeof(double));
                 m->jacobian(m,cells,s->rates,y,s->jacobian); ++result.stats.jacobian_updates;
-        if (constrained) chem_constraint_jacobian(s,y,s->jacobian);
+                if (constrained) chem_constraint_jacobian(s,y,s->jacobian);
             }
         }
     }
+done:
     result.stats.final_time=time;
     return result;
 }

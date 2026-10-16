@@ -53,3 +53,12 @@
 - Dense and sparse callbacks share the same grouped span operations. Sparse
   rows/columns map to cached physical offsets while each argument retains its
   own sparsity structure; matrices in a callback need not share a structure.
+
+## Reproducible numerical tests
+
+- The random matrix tests implement the supplied reference build's random engines
+  and distributions in test-only C: minstd_rand, MT19937, canonical uniforms, and
+  polar normal sampling. This reproduces the reference inputs without a C++
+  dependency and preserves the original tight reconstruction tolerances.
+- The compatibility version API reports 3.14.0, as declared in the supplied
+  source's version.hpp, with a zero tweak component.

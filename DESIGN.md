@@ -73,9 +73,13 @@ remain explicit in `src/rosenbrock.c`.
 factors. Its Newton iterations, positivity clamp, convergence checks, and
 unconverged/nonfinite result handling are in `src/backward_euler.c`.
 
-`chem_lu_algorithm` selects Mozart or Doolittle operation generation. The current
-factor and solve entry points are isolated in `src/linear.c`; a pluggable backend
-interface is still to be added for replacing the linear solver.
+`chem_lu_algorithm` selects Mozart or Doolittle operation generation.
+`chem_factor.h` adapts the same operation plans to grouped CSR/CSC arrays, with
+combined or separate L/U storage. Separate factors have a unit lower diagonal.
+`chem_state_set_linear_backend` replaces factorization and solution per state;
+Rosenbrock, backward Euler, and constraint initialization all use these hooks.
+Callbacks and their context remain caller-owned; copying a state copies this
+binding, so independent backend workspace requires rebinding the copied state.
 
 A rate type consists of a tag, a parameter structure in `chem_rate`, defaults,
 optional derived-field preparation, and a calculation branch in `src/rates.c`.
@@ -97,3 +101,15 @@ There are no target-specific flags, intrinsics, vector extensions, or alternativ
 floating-point modes. Group size affects work distribution and the common error
 norm, not the method or requested tolerances. Every positive group size and
 thread count must remain correct; verification is still being expanded.
+
+## Owned species metadata
+
+`chem_system.h` supplies typed properties, owned species metadata, phases, and
+systems. Create/clone destinations are zero initialized; replacement constructs
+a full copy before releasing the previous value. Property strings and phase
+species are deep copied. The compact `chem_species` descriptor borrows its name
+from metadata and copies affine parameter coefficients by value. Thus descriptors
+can be assembled into mechanisms without retaining a pointer to a metadata
+object for parameter evaluation; the name and any callback context must still
+outlive the model. Phase names optionally prefix nonparameterized species names;
+system names omit the gas prefix and accept a validated permutation.

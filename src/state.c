@@ -46,7 +46,29 @@ chem_status chem_state_copy(chem_state *dst, const chem_state *src)
     memcpy(copy.y,src->y,n*c*sizeof(double)); memcpy(copy.rates,src->rates,src->model->n_reactions*c*sizeof(double));
     memcpy(copy.custom,src->custom,src->model->n_custom*c*sizeof(double)); memcpy(copy.atol,src->atol,n*sizeof(double));
     memcpy(copy.conditions,src->conditions,c*sizeof(chem_conditions)); copy.rtol=src->rtol;
+    copy.factor=src->factor; copy.solve_linear=src->solve_linear; copy.linear_context=src->linear_context;
     chem_state_destroy(dst); *dst=copy;
+    return CHEM_OK;
+}
+
+chem_status chem_state_set_linear_backend(chem_state *s,
+    chem_status (*factor)(chem_state *,void *),
+    chem_status (*solve)(const chem_state *,double *,void *),void *context)
+{
+    if (!s || (!factor != !solve)) return CHEM_INVALID;
+    s->factor=factor; s->solve_linear=solve; s->linear_context=context;
+    return CHEM_OK;
+}
+chem_status chem_state_factor(chem_state *s)
+{
+    if (s->factor) return s->factor(s,s->linear_context);
+    chem_lu_factor(&s->model->lu,s->cells,s->jacobian,s->scratch);
+    return CHEM_OK;
+}
+chem_status chem_state_solve_linear(const chem_state *s,double *rhs)
+{
+    if (s->solve_linear) return s->solve_linear(s,rhs,s->linear_context);
+    chem_lu_solve(&s->model->lu,s->cells,s->jacobian,rhs);
     return CHEM_OK;
 }
 
@@ -84,8 +106,7 @@ void chem_calculate_rates(chem_state *s)
             double k=chem_rate_calculate(rate,&s->conditions[c],custom);
             for (size_t j=0; j<rx->n_reactants; ++j) {
                 const chem_species *sp=&m->mechanism->species[rx->reactants[j]];
-                if (sp->type==CHEM_SPECIES_THIRD_BODY) k*=s->conditions[c].air_density;
-                else if (sp->type==CHEM_SPECIES_PARAMETER) k*=sp->parameter(&s->conditions[c],NULL,sp->context);
+                if (sp->type!=CHEM_SPECIES_VARIABLE) k*=chem_species_evaluate(sp,&s->conditions[c]);
             }
             s->rates[r*cells+c]=k;
         }
