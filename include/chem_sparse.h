@@ -28,6 +28,9 @@ chem_status chem_sparse_set(chem_sparse *matrix, size_t block, size_t row, size_
 chem_status chem_sparse_diagonal_indices(const chem_sparse *matrix, size_t block,
                                          size_t *indices, size_t capacity, size_t *count);
 void chem_sparse_add_diagonal(chem_sparse *matrix, double value);
+/* y = A*x for each block. Double arrays, with one row per block; y and x
+ * must have independent storage. Their grouping need not match the matrix. */
+chem_status chem_sparse_matvec(const chem_sparse *,const chem_array *x,chem_array *y);
 chem_status chem_sparse_print(FILE *file, const chem_sparse *matrix, int nonzero_only);
 /* index is a physical storage index in block zero; cache it before hot loops. */
 chem_span chem_sparse_block_span(chem_array_group group, size_t index);

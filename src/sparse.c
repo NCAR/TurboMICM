@@ -90,6 +90,21 @@ void chem_sparse_add_diagonal(chem_sparse *s,double value)
             size_t k=s->map[i*s->n+i]; chem_array_set(&s->values,b,k,chem_array_get(&s->values,b,k)+value);
         }
 }
+chem_status chem_sparse_matvec(const chem_sparse *s,const chem_array *x,chem_array *y)
+{
+    if (!s || !x || !y || x->data==y->data || s->values.type!=CHEM_DOUBLE || x->type!=CHEM_DOUBLE || y->type!=CHEM_DOUBLE)
+        return CHEM_INVALID;
+    if (x->rows!=s->values.rows || y->rows!=x->rows || x->columns!=s->n || y->columns!=s->n) return CHEM_SIZE;
+    for (size_t b=0;b<x->rows;++b) for (size_t r=0;r<s->n;++r) {
+        double sum=0;
+        for (size_t c=0;c<s->n;++c) {
+            size_t k=s->map[r*s->n+c];
+            if (k!=CHEM_NONE) sum+=chem_array_get(&s->values,b,k)*chem_array_get(x,b,c);
+        }
+        chem_array_set(y,b,r,sum);
+    }
+    return CHEM_OK;
+}
 chem_status chem_sparse_print(FILE *f,const chem_sparse *s,int only)
 {
     for(size_t b=0;b<s->values.rows;++b) {

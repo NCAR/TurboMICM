@@ -1,0 +1,174 @@
+{
+  "camp-data": [
+    {
+      "type": "CHEM_SPEC",
+      "name": "M"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "Ar"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CO2"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "H2O"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "N2"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "O1D"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "O"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "O2"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "O3"
+    },
+    {
+      "type": "MECHANISM",
+      "name": "Chapman",
+      "reactions": [
+        {
+          "type": "ARRHENIUS",
+          "concentration units": "mol m-3",
+          "reactants": [
+            "O1D",
+            "N2"
+          ],
+          "products": [
+            {
+              "species": "O",
+              "yield": 1
+            },
+            {
+              "species": "N2",
+              "yield": 1
+            }
+          ],
+          "A": 2.15e-11,
+          "B": 0,
+          "C": 110
+        },
+        {
+          "type": "ARRHENIUS",
+          "concentration units": "mol m-3",
+          "reactants": [
+            "O1D",
+            "O2"
+          ],
+          "products": [
+            {
+              "species": "O",
+              "yield": 1
+            },
+            {
+              "species": "O2",
+              "yield": 1
+            }
+          ],
+          "A": 3.3e-11,
+          "B": 0,
+          "C": 55
+        },
+        {
+          "type": "ARRHENIUS",
+          "concentration units": "mol m-3",
+          "reactants": [
+            "O",
+            "O3"
+          ],
+          "products": [
+            {
+              "species": "O2",
+              "yield": 2
+            }
+          ],
+          "A": 8e-12,
+          "B": 0,
+          "C": -2060
+        },
+        {
+          "type": "ARRHENIUS",
+          "concentration units": "mol m-3",
+          "reactants": [
+            "O",
+            "O2",
+            "M"
+          ],
+          "products": [
+            {
+              "species": "O3",
+              "yield": 1
+            },
+            {
+              "species": "M",
+              "yield": 1
+            }
+          ],
+          "A": 6e-34,
+          "B": 2.4,
+          "C": 0
+        },
+        {
+          "type": "USER_DEFINED",
+          "reactants": [
+            "O2"
+          ],
+          "products": [
+            {
+              "species": "O",
+              "yield": 2
+            }
+          ],
+          "MUSICA name": "jO2"
+        },
+        {
+          "type": "USER_DEFINED",
+          "reactants": [
+            "O3"
+          ],
+          "products": [
+            {
+              "species": "O1D",
+              "yield": 1
+            },
+            {
+              "species": "O2",
+              "yield": 1
+            }
+          ],
+          "MUSICA name": "jO3a"
+        },
+        {
+          "type": "USER_DEFINED",
+          "reactants": [
+            "O3"
+          ],
+          "products": [
+            {
+              "species": "O",
+              "yield": 1
+            },
+            {
+              "species": "O2",
+              "yield": 1
+            }
+          ],
+          "MUSICA name": "jO3b"
+        }
+      ]
+    }
+  ]
+}

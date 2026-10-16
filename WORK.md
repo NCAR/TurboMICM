@@ -110,3 +110,10 @@ method/layout combinations, twelve built-in DAE integration cases, two Terminato
 cases, integrated reaction rates, and the eight-thread shared-solver case. The
 normal owned-solver entry point reads immutable solver options; explicit parameter
 overrides retain their documented mutation semantics. No N/A cases; 74 remain.
+
+Both compilers pass the Chapman/regression checkpoint: 634 implemented cases,
+46 still unported, no N/A. The 28 new cases include the legacy Chapman unit
+quantities, full forcing/Jacobian and five-method integration regressions,
+Chapman oxygen/spectator conservation, and both flow-tube trajectories. A small
+independent scalar C translation of the legacy Chapman solver lives only in the
+tests. Every Chapman regression runs the generated and hand-built mechanism.

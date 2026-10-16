@@ -62,3 +62,10 @@
   dependency and preserves the original tight reconstruction tolerances.
 - The compatibility version API reports 3.14.0, as declared in the supplied
   source's version.hpp, with a zero tweak component.
+
+The legacy hard-coded Chapman solver is retained as a test-only scalar C oracle,
+independent of the generic library's forcing, Jacobian, linear solve and adaptive
+loop. It is never linked into the library or benchmark. Its unit cases exercise
+the corresponding generic C operations and their original expected quantities;
+reciprocal U diagonals are converted only for the legacy factor-storage checks.
+Chapman regression cases additionally exercise configuration-generated kernels.

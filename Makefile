@@ -45,9 +45,9 @@ test-cpu: cpu bin/test_cpu
 generated/test_registry.inc: $(wildcard tests/test_*.c) tests/cases.txt tools/test_registry.py .conda/conda-meta/history
 	$(PYTHON) tools/test_registry.py $@
 
-bin/test_cpu: $(wildcard tests/*.c) $(wildcard tests/*.h) generated/test_registry.inc build/libchem.a
+bin/test_cpu: $(wildcard tests/*.c) $(wildcard tests/*.h) generated/test_registry.inc build/chapman.o build/libchem.a
 	@mkdir -p bin
-	$(CC) $(CFLAGS) -Itests -Igenerated $(wildcard tests/*.c) build/libchem.a $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) -Itests -Igenerated $(wildcard tests/*.c) build/chapman.o build/libchem.a $(LDLIBS) -o $@
 
 build/%.o: src/%.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
@@ -60,6 +60,13 @@ generated/ts1.c: configs/ts1.json tools/configure.py tools/generate.py .conda/co
 	$(PYTHON) tools/generate.py $< $@ --symbol ts1_mechanism
 
 build/ts1.o: generated/ts1.c $(wildcard include/*.h) build/compiler.conf
+	@mkdir -p build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+generated/chapman.c: configs/chapman.json tools/configure.py tools/generate.py .conda/conda-meta/history
+	$(PYTHON) tools/generate.py $< $@ --symbol chapman_mechanism
+
+build/chapman.o: generated/chapman.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 

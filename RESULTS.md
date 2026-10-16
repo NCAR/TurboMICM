@@ -64,3 +64,9 @@ HIRES and Oregonator reference trajectories. Twelve additional DAE integration
 cases check equilibrium residuals, conservation and overshoot bounds. The eight
 builder cases, eight-thread shared-solver test, integrated reaction rates, and
 both Terminator variants also pass. There are 74 unported cases and no N/A cases.
+
+The Chapman/regression checkpoint passes all 634 implemented cases on both
+compilers. Generated and hand-built Chapman mechanisms both pass every regression
+against the independent legacy scalar oracle, with original inputs, layouts and
+tolerances. Both flow-tube solvers match all 3,601 supplied rows at atol=1e-10;
+the original test checks only the first ten. Forty-six cases remain unported.
