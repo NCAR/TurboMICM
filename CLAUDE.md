@@ -1,8 +1,11 @@
 # TurboMICM
 
-Controlled experiment, for the NSF NCAR Agentic AI Task Force: LLM coding agents each
-port MICM's CPU solver to portable C (C11, libm, OpenMP) from the same prompt. Each
-entry is judged by:
+Controlled experiment, for the NSF NCAR Agentic AI Task Force: OpenAI's coding agents
+(Codex CLI) each port MICM's CPU solver to portable C (C11, libm, OpenMP) from the
+same prompt. Anthropic's Claude Opus and Claude Fable, at max reasoning effort,
+design the experiment, orchestrate the runs, and validate, evaluate, and judge the
+entries; afterwards they build on the results a framework usable from MUSICA,
+CheMPAS-A, CAM-chem, and other host models. Each entry is judged by:
 - MICM's 680 test cases;
 - TS1 agreement with MICM to 1e-10 relative;
 - TS1 wall time;
@@ -34,7 +37,9 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   - Codex CLI: gpt-6.1-sol, gpt-6-astra, and gpt-6-luna. Luna replaced
     gpt-5.6-terra on 2026-10-15. Codex was 0.162.1 through astra-high and is
     0.163.0 from astra-xhigh on; the SSE upgraded it and chose not to revert.
-  - Claude Code: Sonnet, Opus, Fable.
+  - No Claude model competes (the SSE's decision, 2026-10-16, given usage plans):
+    Opus and Fable design, orchestrate, and judge. The run root's sonnet-*, opus-*,
+    and fable-* directories and prompts are unused.
   - Effort levels: high, xhigh, max.
 - **Run names:** `<model>-<effort>`; a repeat is `<model>-<effort>-<n>`.
 - **Codex files:**
@@ -104,8 +109,10 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   Agents' self-reports appear only as a one-line finding.
 - **Naming:** call the user "the SSE" (scientific software engineer). Name them once,
   in the preamble of Role-of-Claude-in-the-Design, and use no pronouns for them.
-- **Conflict of interest:** Claude models are contestants, so Claude must not grade or
-  review entries alone. Keep the disclosure on the Role page.
+- **Judging:** since 2026-10-16 no Claude model competes, and Opus and Fable judge
+  the entries. Keep the blind review blind: fresh sessions, anonymized copies.
+  The Role page describes the roles; its old conflict-of-interest disclosure is
+  gone.
 - **Git:**
   - Commits end with the Co-Authored-By trailer.
   - Push this repo and the wiki; the SSE wants them pushed for backup.
@@ -115,9 +122,7 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 
 - **Placement of agent instructions:** never put CLAUDE.md or AGENTS.md in the run
   root or any folder above it (`~/NSF-NCAR/ODE`, `~/NSF-NCAR`, `~`), because the
-  harnesses load them into contestants' sessions. The `.claude/settings.local.json`
-  files in `~/NSF-NCAR/ODE` and `~/NSF-NCAR`, and the user plugins in `~/.claude`,
-  already apply to Claude runs.
+  harnesses load them into contestants' sessions.
 - **Isolation is honor-system:** agents run with full access and the SSE's GitHub and
   SSH credentials. Keep solutions and transcripts off `main`'s working tree, and
   never edit a running session's directory.
@@ -193,13 +198,12 @@ Tier-2-Results.
     the template says Tier 3, and the unstarted sol-max and sol-xhigh runs in
     `ODE/benchmarks/tier3/` have regenerated prompts. Tier 3 runs will go on
     branches `tier3/<model>/<effort>`.
-- **Order:** finish OpenAI Tier 1 (Luna), then OpenAI's Tier 2 and Tier 3 runs, in
-  an order the SSE chooses, then the Claude models.
+- **Order:** finish Tier 1 (Luna), then the Tier 2 and Tier 3 runs, in an order
+  the SSE chooses.
 - **Arms:**
   - Sol and Astra at xhigh and max, a 2 x 2 matrix, each started from a clone of
     the run's own Tier 1 repository (`<tier1_commit>` placeholder);
   - Luna: one run at max, if its Tier 1 passes comfortably;
-  - Claude: the top two models at the same effort levels, after their Tier 1 runs.
 - **Rules:**
   - any mechanism-generic method; no mechanism reduction or learned surrogates;
   - the Tier 1 gate still passes;
@@ -227,10 +231,7 @@ Tier-2-Results.
 
 ## Open items
 
-- Keep the SSE's Claude Code setup (plugins, hooks, memory, `.claude` settings) out
-  of the Claude runs.
 - Rank with an undisclosed seed, and run the blind review.
-- Consider Claude Haiku as the fast-tier match for Luna.
 - Time the entries on an x86-64 Linux machine.
 - Tier 3: undisclosed scenarios, scenario timing, and a MICM baseline per scenario.
 - Verification worktrees of `runs/*` are built in a session scratchpad. If it is
@@ -252,9 +253,9 @@ Tier-2-Results.
   `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/` was recreated.
   For each run: `admin/launch_codex_run.sh <run> gpt-6-luna <effort>`, then arm
   `admin/run_state.py` (a monitor does not outlive its Claude Code session).
-- Next: an analysis pass on every entry, as measurement only, with no quality
-  verdicts (see "Conflict of interest"). The wiki's Tier-1-Implementations page
-  describes each entry; this pass measures.
+- Next: an analysis pass on every entry. The wiki's Tier-1-Implementations page
+  describes each entry; this pass measures, and, now that Claude judges, it may
+  evaluate as well.
   - Instruction counts and cycles from `/usr/bin/time -l`, at 1 thread, differenced
     between two step counts to cancel setup.
   - Time by solver phase (`xcrun xctrace`, Time Profiler or CPU Counters), and code
@@ -266,8 +267,10 @@ Tier-2-Results.
     them every step (`src/ts1_bench.c:154`).
   - Compile time of the generated kernels (16,000 to 21,000 lines of C), with
     clang and gcc-15.
-- MUSICA integration study, after the analysis pass: how mechanism-specific
-  kernels could reach MUSICA's API.
+- Framework, after the contest: Opus and Fable build on its results a framework
+  usable from MUSICA, CheMPAS-A, CAM-chem, and other host models (wiki:
+  From-Contest-to-Framework). First, a MUSICA integration study, after the
+  analysis pass: how mechanism-specific kernels could reach MUSICA's API.
   - Ahead of time: a CMake function that generates and links a mechanism's
     kernels when the host model is built, as KPP-based models do.
   - At run time: generate C, compile it once with the system compiler, cache the

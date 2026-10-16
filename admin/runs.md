@@ -15,6 +15,12 @@ on the TurboMICM branch `runs/<model>/<effort>`, or `runs/<model>/<effort>-<n>`
 for a repeat.
 
 Contestant changes
+- 2026-10-16: the contestants are OpenAI's models only (Luna, Sol, Astra), for
+  practical reasons given usage plans. Anthropic's Claude Opus and Claude Fable,
+  at max reasoning effort, design the experiment, orchestrate the runs, and
+  validate, evaluate, and judge the entries, and will later build on the results
+  a framework for MUSICA, CheMPAS-A, and CAM-chem. The sonnet-*, opus-*, and
+  fable-* run directories in the run root were never started and are unused.
 - 2026-10-15, before any Terra run: Terra was replaced by Luna. Terra was available
   only as gpt-5.6-terra, which Codex lists as an "Older balanced model for
   straightforward work", while every other contestant is its family's current
