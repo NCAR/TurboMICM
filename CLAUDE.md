@@ -54,6 +54,10 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
     `cd <run> && codex -m <model> -c model_reasoning_effort=<effort> -c features.memories=false`.
   - Then give the session `/goal read PROMPT.md and work until done, commit`.
   - Always pass the effort: Codex's model picker saves the last choice in config.toml.
+- **Monitor:** follow the session record read-only, in the background:
+  `until admin/run_state.py <rollout.jsonl> <codex pid>; do sleep 60; done`.
+  - A run is done when its last event is `task_complete` and the record has been
+    idle for 10 minutes; the goal starts each next turn within a second.
 - **Record:** take each run's start, end, model, effort, and tokens from its session
   JSONL, then add them to `admin/runs.md`.
   - Tokens are the last `token_count` event's `info.total_token_usage`.
@@ -186,5 +190,11 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   (`admin/time_entries.py`, 5 rounds at 10 and 1 threads). All 24 configurations
   are timed at 10 threads (`results/2026-10-15-micm-configurations`), and
   `admin/leaderboard.py` regenerates the wiki's Leaderboard and matrices.
+- After astra-max: an analysis pass on every entry, as measurement only, with no
+  quality verdicts (see "Conflict of interest").
+  - Instruction counts and cycles from `/usr/bin/time -l`, at 1 thread, differenced
+    between two step counts to cancel setup.
+  - Time by solver phase (`xcrun xctrace`, Time Profiler or CPU Counters), and code
+    size.
 - Current status is in `admin/runs.md` and on the wiki's Tier-1-Results and
   Tier-2-Results pages.
