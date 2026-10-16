@@ -59,6 +59,33 @@ int ch_model_species_index(const ch_model *, const char *name);
 int ch_model_parameter_index(const ch_model *, const char *name);
 ch_rate *ch_model_rate(ch_model *, size_t reaction);
 
+int ch_model_add_linear(ch_model *, const char *name, int algebraic_species,
+                        size_t n, const int *species, const double *coefficients, double constant);
+int ch_model_add_equilibrium(ch_model *, const char *name, int algebraic_species,
+                             size_t nr, const int *reactants, const double *reactant_stoichiometry,
+                             size_t np, const int *products, const double *product_stoichiometry,
+                             double equilibrium_constant, double enthalpy);
+size_t ch_model_constraint_count(const ch_model *);
+int ch_model_is_algebraic(const ch_model *, size_t variable);
+void ch_constraint_force(const ch_state *, const double *y, double *forcing);
+void ch_constraint_jacobian(const ch_state *, const double *y, double *negative_jacobian);
+
+/* External callbacks add to the supplied arrays; no global mutable data needed.
+ * Pattern and algebraic IDs refer to builder species IDs and are copied.
+ * bind runs once after symbolic setup. Context remains owned by the caller. */
+typedef void (*ch_external_eval)(const ch_state *, const double *, double *, void *);
+typedef void (*ch_external_update)(ch_state *, void *);
+typedef struct {
+  size_t elements, algebraic_count;
+  const int *rows, *columns, *algebraic_species;
+  void (*bind)(const ch_model *, void *);
+  ch_external_update update, initialize_constraints;
+  ch_external_eval force, jacobian, constraint_force, constraint_jacobian;
+  void *context;
+} ch_external;
+int ch_model_add_external(ch_model *, const ch_external *);
+const ch_model *ch_state_model(const ch_state *);
+
 /* A state owns one independent adaptive solver group, in species-major order. */
 ch_state *ch_state_create(const ch_model *, size_t cells);
 ch_state *ch_state_clone(const ch_state *);
@@ -100,7 +127,18 @@ ch_rosenbrock_parameters ch_rosenbrock_default(int method);
 double ch_default_controller(double, const ch_rosenbrock_parameters *, void *);
 double ch_normalized_error(const ch_state *, const double *, const double *, const double *);
 int ch_solve(ch_state *, double time_step, const ch_rosenbrock_parameters *, ch_stats *);
+int ch_initialize_constraints(ch_state *, const ch_rosenbrock_parameters *, ch_stats *);
 void ch_stats_add(ch_stats *, const ch_stats *);
+
+typedef struct {
+  double small, h_start;
+  int max_iterations, reduction_count;
+  double reductions[16];
+} ch_backward_euler_parameters;
+ch_backward_euler_parameters ch_backward_euler_default(void);
+int ch_backward_euler_converged(const ch_state *, const double *residual, const double *y,
+                                const ch_backward_euler_parameters *);
+int ch_solve_backward_euler(ch_state *, double time_step, const ch_backward_euler_parameters *, ch_stats *);
 
 /* Symbolic sparse LU can also be used independently of a chemistry model. */
 typedef struct ch_sparse ch_sparse;

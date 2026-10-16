@@ -14,6 +14,13 @@ typedef struct {
 } ch_species;
 typedef struct { char *name; double initial; } ch_parameter;
 typedef struct {
+  char *name;
+  int kind, row, custom_index;
+  size_t nr, np;
+  int *ids, *flat;
+  double *coefficients, constant, enthalpy;
+} ch_constraint;
+typedef struct {
   size_t nr, np, nparameterized;
   int *reactants, *products;
   double *yields;
@@ -32,11 +39,13 @@ typedef struct {
   double *yields;
 } ch_derivative;
 struct ch_model {
-  size_t ns, nv, nr, nparam, nderiv;
+  size_t ns, nv, nr, nparam, nderiv, nconstraint, nexternal, nalgebraic;
   ch_species *species;
   ch_reaction *reactions;
   ch_parameter *parameters;
   ch_derivative *derivatives;
+  ch_constraint *constraints;
+  ch_external *externals;
   int *order;
   unsigned char *algebraic;
   ch_sparse *sparse;
@@ -51,4 +60,6 @@ struct ch_state {
 };
 void *ch_allocate(size_t n, size_t size);
 char *ch_string_copy(const char *);
+void ch_update_constraints(ch_state *);
+void ch_post_solve(ch_state *);
 #endif
