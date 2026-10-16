@@ -29,6 +29,7 @@ CFLAGS = -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMP_CFLAGS) -fPIC
 LDLIBS = $(OMP_LIBS) -lm
 SOURCES = $(wildcard src/*.c)
 OBJECTS = $(patsubst src/%.c,build/%.o,$(SOURCES))
+EXAMPLE_OBJECTS = build/example_no_user.o build/example_user.o build/example_robertson.o
 
 .PHONY: all cpu env bench test-cpu micm-ref clean FORCE
 all: cpu
@@ -66,7 +67,19 @@ bin/test_native_cpu: tests/native_cases.c $(OBJECTS) include/chem.h build/flags
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) tests/native_cases.c $(OBJECTS) $(LDLIBS) -o $@
 
-test-cpu: cpu bin/test_native_cpu
+build/generated/example_no_user.c: $(wildcard configs/examples/rate_constants_no_user_defined/*) tools/configure.py .conda/bin/python
+	$(PYTHON) tools/configure.py configs/examples/rate_constants_no_user_defined/config.yaml $@ --name example_no_user
+build/generated/example_user.c: $(wildcard configs/examples/rate_constants_user_defined/*) tools/configure.py .conda/bin/python
+	$(PYTHON) tools/configure.py configs/examples/rate_constants_user_defined/config.json $@ --name example_user
+build/generated/example_robertson.c: $(wildcard configs/examples/robertson/*) tools/configure.py .conda/bin/python
+	$(PYTHON) tools/configure.py configs/examples/robertson/config.json $@ --name example_robertson
+build/example_%.o: build/generated/example_%.c include/chem.h build/flags
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+bin/tutorial_cpu: tools/tutorials.c $(EXAMPLE_OBJECTS) $(OBJECTS) include/chem.h include/chem_array.h build/flags
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) tools/tutorials.c $(EXAMPLE_OBJECTS) $(OBJECTS) $(LDLIBS) -o $@
+
+test-cpu: cpu bin/test_native_cpu bin/tutorial_cpu
 	$(PYTHON) tests/run_cases.py
 
 micm-ref: bin/micm_ts1_ref

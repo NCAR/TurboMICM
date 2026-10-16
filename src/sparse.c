@@ -90,6 +90,20 @@ int ch_sparse_index(const ch_sparse *s, size_t row, size_t col) {
   return s && row < s->n && col < s->n ? s->index[row*s->n+col] : CH_INVALID;
 }
 
+void ch_sparse_multiply(const ch_sparse *s, size_t cells, const double *a, const double *x, double *output) {
+  if (!s || !a || !x || !output) return;
+  memset(output,0,s->n*cells*sizeof(double));
+  for (size_t i = 0; i < s->n; ++i) {
+    double *restrict dst = output+i*cells;
+    for (int j = s->row_start[i]; j < s->row_start[i+1]; ++j) {
+      const double *restrict coefficient = a+(size_t)j*cells;
+      const double *restrict value = x+(size_t)s->columns[j]*cells;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) dst[c] += coefficient[c]*value[c];
+    }
+  }
+}
+
 int ch_lu_factor(const ch_sparse *s, size_t cells, double *a, int algorithm) {
   if (!s || !a || !cells || (algorithm != 0 && algorithm != 1)) return CH_INVALID;
   double *inverse = ch_allocate(cells, sizeof(double));

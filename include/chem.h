@@ -213,6 +213,8 @@ int ch_markowitz(size_t n, const unsigned char *pattern, int *permutation);
 int ch_lu_factor(const ch_sparse *, size_t cells, double *a, int algorithm);
 int ch_lu_factor_copy(const ch_sparse *, size_t cells, const double *a, double *lu, int algorithm);
 void ch_lu_solve(const ch_sparse *, size_t cells, const double *a, double *x);
+/* Matrix and vectors use index-major, then cell layout; output must not alias input. */
+void ch_sparse_multiply(const ch_sparse *, size_t cells, const double *a, const double *x, double *output);
 
 typedef void (*ch_forcing_function)(size_t species, size_t cells, const double *y, double *forcing, void *context);
 typedef struct {
