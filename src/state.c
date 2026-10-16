@@ -29,6 +29,8 @@ ch_state *ch_state_clone(const ch_state *s) {
   memcpy(d->rates,s->rates,s->model->nr*s->cells*sizeof(double));
   memcpy(d->atol,s->atol,s->model->nv*sizeof(double));
   memcpy(d->conditions,s->conditions,s->cells*sizeof(ch_conditions)); d->rtol = s->rtol;
+  d->lu_algorithm = s->lu_algorithm; d->factor = s->factor; d->linear_solve = s->linear_solve;
+  d->linear_context = s->linear_context;
   return d;
 }
 void ch_state_free(ch_state *s) {
@@ -41,6 +43,31 @@ double *ch_state_values(ch_state *s) { return s ? s->y : NULL; }
 double *ch_state_parameters(ch_state *s) { return s ? s->custom : NULL; }
 double *ch_state_rates(ch_state *s) { return s ? s->rates : NULL; }
 ch_conditions *ch_state_conditions(ch_state *s) { return s ? s->conditions : NULL; }
+
+int ch_state_set_lu(ch_state *s, int algorithm) {
+  if (!s || (algorithm != 0 && algorithm != 1)) return CH_INVALID;
+  s->lu_algorithm = algorithm; s->factor = NULL; s->linear_solve = NULL;
+  return CH_OK;
+}
+int ch_state_set_linear_solver(ch_state *s, ch_factor_function factor, ch_linear_function solve, void *context) {
+  if (!s || !factor || !solve) return CH_INVALID;
+  s->factor = factor; s->linear_solve = solve; s->linear_context = context; return CH_OK;
+}
+int ch_factor_state(ch_state *s) {
+  if (s->factor) return s->factor(s->model->sparse,s->cells,s->jacobian,s->scratch,s->linear_context);
+  return ch_lu_factor_work(s->model->sparse,s->cells,s->jacobian,s->lu_algorithm,s->scratch);
+}
+void ch_linear_state(ch_state *s, double *x) {
+  if (s->linear_solve) s->linear_solve(s->model->sparse,s->cells,s->jacobian,x,s->linear_context);
+  else ch_lu_solve(s->model->sparse,s->cells,s->jacobian,x);
+}
+void ch_alpha_minus_jacobian(const ch_state *s, double alpha, double *a) {
+  for (size_t i = 0; i < s->model->nv; ++i) if (!s->model->algebraic[i]) {
+    double *restrict diag = a+(size_t)s->model->sparse->diagonal[i]*s->cells;
+    #pragma omp simd
+    for (size_t c = 0; c < s->cells; ++c) diag[c] += alpha;
+  }
+}
 
 static int set_column(ch_state *s, int id, double *dest, const double *v, size_t n) {
   if (id < 0) return id;

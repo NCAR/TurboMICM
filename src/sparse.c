@@ -94,6 +94,18 @@ int ch_lu_factor(const ch_sparse *s, size_t cells, double *a, int algorithm) {
   if (!s || !a || !cells || (algorithm != 0 && algorithm != 1)) return CH_INVALID;
   double *inverse = ch_allocate(cells, sizeof(double));
   if (!inverse) return CH_MEMORY;
+  int result = ch_lu_factor_work(s,cells,a,algorithm,inverse);
+  free(inverse);
+  return result;
+}
+
+int ch_lu_factor_copy(const ch_sparse *s, size_t cells, const double *a, double *lu, int algorithm) {
+  if (!s || !a || !lu) return CH_INVALID;
+  if (a != lu) memcpy(lu,a,s->nnz*cells*sizeof(double));
+  return ch_lu_factor(s,cells,lu,algorithm);
+}
+
+int ch_lu_factor_work(const ch_sparse *s, size_t cells, double *a, int algorithm, double *inverse) {
   if (algorithm == 0) {
     for (size_t i = 0; i < s->nops; ++i) {
       const ch_lu_op *op = &s->ops[i];
@@ -142,7 +154,6 @@ int ch_lu_factor(const ch_sparse *s, size_t cells, double *a, int algorithm) {
       }
     }
   }
-  free(inverse);
   return CH_OK;
 }
 

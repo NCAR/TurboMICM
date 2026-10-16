@@ -61,13 +61,8 @@ int ch_solve(ch_state *s, double dt, const ch_rosenbrock_parameters *p, ch_stats
     int accepted = 0;
     while (!accepted) {
       double alpha = 1.0/(h*p->gamma[0]);
-      for (size_t i = 0; i < m->nv; ++i) {
-        if (m->algebraic[i]) continue;
-        double *restrict diagonal = s->jacobian+(size_t)m->sparse->diagonal[i]*s->cells;
-        #pragma omp simd
-        for (size_t c = 0; c < s->cells; ++c) diagonal[c] += alpha;
-      }
-      status = ch_lu_factor(m->sparse,s->cells,s->jacobian,0);
+      ch_alpha_minus_jacobian(s,alpha,s->jacobian);
+      status = ch_factor_state(s);
       if (status) goto done;
       ++stats->decompositions;
       for (int stage = 0; stage < p->stages; ++stage) {
@@ -88,7 +83,7 @@ int ch_solve(ch_state *s, double dt, const ch_rosenbrock_parameters *p, ch_stats
           else for (size_t i = 0; i < m->nv; ++i) if (!m->algebraic[i])
             axpy(s->cells,scale,previous+i*s->cells,k+i*s->cells);
         }
-        ch_lu_solve(m->sparse,s->cells,s->jacobian,k); ++stats->solves;
+        ch_linear_state(s,k); ++stats->solves;
       }
       memcpy(s->new_y,s->y,n*sizeof(double)); memset(s->error,0,n*sizeof(double));
       for (int stage = 0; stage < p->stages; ++stage) axpy(n,p->m[stage],s->stages+(size_t)stage*n,s->new_y);

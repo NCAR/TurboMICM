@@ -57,9 +57,16 @@ struct ch_state {
   double *y, *custom, *rates, *atol, rtol;
   ch_conditions *conditions;
   double *new_y, *forcing, *error, *stages, *jacobian, *scratch;
+  int lu_algorithm;
+  ch_factor_function factor;
+  ch_linear_function linear_solve;
+  void *linear_context;
 };
 void *ch_allocate(size_t n, size_t size);
 char *ch_string_copy(const char *);
 void ch_update_constraints(ch_state *);
 void ch_post_solve(ch_state *);
+int ch_factor_state(ch_state *);
+void ch_linear_state(ch_state *, double *);
+int ch_lu_factor_work(const ch_sparse *, size_t, double *, int, double *);
 #endif

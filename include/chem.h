@@ -102,6 +102,7 @@ int ch_update_rates(ch_state *);
 void ch_force(const ch_state *, const double *y, double *forcing);
 /* Jacobian values are stored by symbolic index, then cell. */
 void ch_jacobian(const ch_state *, const double *y, double *negative_jacobian);
+void ch_alpha_minus_jacobian(const ch_state *, double alpha, double *negative_jacobian);
 size_t ch_model_jacobian_size(const ch_model *);
 int ch_model_jacobian_index(const ch_model *, size_t row, size_t column);
 
@@ -142,12 +143,17 @@ int ch_solve_backward_euler(ch_state *, double time_step, const ch_backward_eule
 
 /* Symbolic sparse LU can also be used independently of a chemistry model. */
 typedef struct ch_sparse ch_sparse;
+typedef int (*ch_factor_function)(const ch_sparse *, size_t, double *, double *scratch, void *);
+typedef void (*ch_linear_function)(const ch_sparse *, size_t, const double *, double *, void *);
+int ch_state_set_lu(ch_state *, int algorithm);
+int ch_state_set_linear_solver(ch_state *, ch_factor_function, ch_linear_function, void *);
 ch_sparse *ch_sparse_create(size_t n, const unsigned char *pattern);
 void ch_sparse_free(ch_sparse *);
 size_t ch_sparse_size(const ch_sparse *);
 int ch_sparse_index(const ch_sparse *, size_t row, size_t col);
 int ch_markowitz(size_t n, const unsigned char *pattern, int *permutation);
 int ch_lu_factor(const ch_sparse *, size_t cells, double *a, int algorithm);
+int ch_lu_factor_copy(const ch_sparse *, size_t cells, const double *a, double *lu, int algorithm);
 void ch_lu_solve(const ch_sparse *, size_t cells, const double *a, double *x);
 
 #endif

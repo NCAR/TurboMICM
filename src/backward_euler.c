@@ -34,12 +34,12 @@ int ch_solve_backward_euler(ch_state *s, double dt, const ch_backward_euler_para
       ch_jacobian(s,s->y,s->jacobian); ++stats->jacobian_updates;
       for (size_t i = 0; i < m->nv; ++i)
         for (size_t c = 0; c < s->cells; ++c) s->jacobian[(size_t)m->sparse->diagonal[i]*s->cells+c] += 1.0/h;
-      status = ch_lu_factor(m->sparse,s->cells,s->jacobian,0);
+      status = ch_factor_state(s);
       if (status) goto done;
       ++stats->decompositions;
       #pragma omp simd
       for (size_t i = 0; i < n; ++i) f[i] -= (s->y[i]-old[i])/h;
-      ch_lu_solve(m->sparse,s->cells,s->jacobian,f); ++stats->solves;
+      ch_linear_state(s,f); ++stats->solves;
       #pragma omp simd
       for (size_t i = 0; i < n; ++i) { double next = s->y[i]+f[i]; s->y[i] = 0.0 > next ? 0.0 : next; }
       if (!iteration) continue;

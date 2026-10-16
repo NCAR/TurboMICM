@@ -26,7 +26,7 @@ const char *ch_status_string(int status) {
     case CH_SMALL_STEP: return "Step size too small";
     case CH_NAN: return "NaN detected";
     case CH_INF: return "Inf detected";
-    case CH_CONSTRAINT_INIT: return "Constraint initialization failed";
+    case CH_CONSTRAINT_INIT: return "Constraint Initialization Failed";
     default: return "Unknown status";
   }
 }

@@ -173,9 +173,9 @@ int ch_initialize_constraints(ch_state *s, const ch_rosenbrock_parameters *p, ch
     ch_constraint_jacobian(s,s->y,s->jacobian); ++stats->jacobian_updates;
     for (size_t i = 0; i < m->nv; ++i) if (!m->algebraic[i])
       for (size_t c = 0; c < s->cells; ++c) s->jacobian[(size_t)m->sparse->diagonal[i]*s->cells+c] += 1.0;
-    status = ch_lu_factor(m->sparse,s->cells,s->jacobian,0); if (status) goto fail;
+    status = ch_factor_state(s); if (status) goto fail;
     ++stats->decompositions;
-    ch_lu_solve(m->sparse,s->cells,s->jacobian,delta); ++stats->solves;
+    ch_linear_state(s,delta); ++stats->solves;
     status = check_algebraic(s,delta,&maximum); if (status) goto fail;
     double current = correction_norm(s,s->y,delta);
     if (current <= p->init_tolerance) return CH_OK;
@@ -192,7 +192,7 @@ int ch_initialize_constraints(ch_state *s, const ch_rosenbrock_parameters *p, ch
         memset(s->error,0,n*sizeof(double)); ch_constraint_force(s,s->new_y,s->error);
         if (check_algebraic(s,s->error,&maximum)) continue;
         if (maximum == 0) { accepted = 1; break; }
-        ch_lu_solve(m->sparse,s->cells,s->jacobian,s->error); ++stats->solves;
+        ch_linear_state(s,s->error); ++stats->solves;
         if (check_algebraic(s,s->error,&maximum)) continue;
         double next = correction_norm(s,s->new_y,s->error);
         if (next <= p->init_tolerance || next < (1.0-p->init_sufficient_decrease*step)*current) { accepted = 1; break; }
