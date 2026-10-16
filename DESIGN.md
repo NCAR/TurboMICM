@@ -113,3 +113,21 @@ can be assembled into mechanisms without retaining a pointer to a metadata
 object for parameter evaluation; the name and any callback context must still
 outlive the model. Phase names optionally prefix nonparameterized species names;
 system names omit the gas prefix and accept a validated permutation.
+
+## State assignment and process ownership
+
+`chem_state_copy` duplicates values and workspace; `chem_state_move` transfers
+ownership and clears the source. Both accept zero-initialized destinations or
+replace existing states. `chem_state_assign_*` requires exactly one value per
+cell, matching reference state assignment. Batch assignments validate all inputs
+before writing. The lower-level `chem_state_set_*` functions explicitly support
+broadcasting one value to all cells. Column access returns borrowed mutable or
+const pointers; bulk custom input is row-major and is copied into SoA storage.
+
+`chem_process.h` owns phase information, reactant/product lists, and rate labels.
+`chem_process_model_create` resolves process species by name against a copied
+system, stably sorts reaction types, and compiles an owned mechanism. Its system
+and all input processes can be destroyed after creation. Low-level
+`chem_model_create` preserves the supplied reaction order, so callers that require
+reference builder ordering use the owned builder or `chem_reactions_sort`.
+Kinetic sparsity and used-species queries exclude solver fill and extra diagonals.

@@ -4,6 +4,7 @@
 
 void chem_state_destroy(chem_state *s)
 {
+    if (!s) return;
     free(s->y); free(s->rates); free(s->custom); free(s->atol); free(s->conditions);
     free(s->work); free(s->jacobian); free(s->scratch);
     memset(s,0,sizeof(*s));
@@ -38,7 +39,9 @@ chem_status chem_state_create(chem_state *s, const chem_model *m, size_t cells)
 
 chem_status chem_state_copy(chem_state *dst, const chem_state *src)
 {
+    if (!dst || !src) return CHEM_INVALID;
     if (dst==src) return CHEM_OK;
+    if (!src->model) { chem_state_destroy(dst); return CHEM_OK; }
     chem_state copy;
     chem_status rc=chem_state_create(&copy,src->model,src->cells);
     if (rc!=CHEM_OK) return rc;
@@ -46,9 +49,19 @@ chem_status chem_state_copy(chem_state *dst, const chem_state *src)
     memcpy(copy.y,src->y,n*c*sizeof(double)); memcpy(copy.rates,src->rates,src->model->n_reactions*c*sizeof(double));
     memcpy(copy.custom,src->custom,src->model->n_custom*c*sizeof(double)); memcpy(copy.atol,src->atol,n*sizeof(double));
     memcpy(copy.conditions,src->conditions,c*sizeof(chem_conditions)); copy.rtol=src->rtol;
+    memcpy(copy.work,src->work,9*n*c*sizeof(double));
+    memcpy(copy.jacobian,src->jacobian,src->model->lu.nnz*c*sizeof(double));
+    memcpy(copy.scratch,src->scratch,c*sizeof(double));
     copy.factor=src->factor; copy.solve_linear=src->solve_linear; copy.linear_context=src->linear_context;
     chem_state_destroy(dst); *dst=copy;
     return CHEM_OK;
+}
+
+chem_status chem_state_move(chem_state *dst,chem_state *src)
+{
+    if (!dst || !src) return CHEM_INVALID;
+    if (dst==src) return CHEM_OK;
+    chem_state_destroy(dst); *dst=*src; *src=(chem_state){0}; return CHEM_OK;
 }
 
 chem_status chem_state_set_linear_backend(chem_state *s,
@@ -90,6 +103,48 @@ chem_status chem_state_set_custom(chem_state *s, const char *name, const double 
     for (size_t i=first+1; i<s->model->n_custom; ++i)
         if (!strcmp(s->model->custom_names[i],name)) set_column(s->custom,s->cells,i,values,count);
     return CHEM_OK;
+}
+
+static chem_status assign_many(chem_state *s,size_t count,const chem_named_column *columns,int custom)
+{
+    if (!s || !s->model || (count && !columns)) return CHEM_INVALID;
+    for (size_t i=0;i<count;++i) {
+        size_t index=custom ? chem_custom_index(s->model,columns[i].name) : chem_species_index(s->model,columns[i].name);
+        if (index==CHEM_NONE) return CHEM_NOT_FOUND;
+        if (!columns[i].values || columns[i].count!=s->cells) return CHEM_SIZE;
+    }
+    for (size_t i=0;i<count;++i) {
+        if (custom) chem_state_set_custom(s,columns[i].name,columns[i].values,columns[i].count);
+        else chem_state_set_species(s,columns[i].name,columns[i].values,columns[i].count);
+    }
+    return CHEM_OK;
+}
+chem_status chem_state_assign_species_many(chem_state *s,size_t count,const chem_named_column *columns)
+{ return assign_many(s,count,columns,0); }
+chem_status chem_state_assign_custom_many(chem_state *s,size_t count,const chem_named_column *columns)
+{ return assign_many(s,count,columns,1); }
+chem_status chem_state_assign_species(chem_state *s,const char *name,const double *values,size_t count)
+{ chem_named_column column={name,values,count}; return assign_many(s,1,&column,0); }
+chem_status chem_state_assign_custom(chem_state *s,const char *name,const double *values,size_t count)
+{ chem_named_column column={name,values,count}; return assign_many(s,1,&column,1); }
+chem_status chem_state_import_custom(chem_state *s,const double *values,size_t rows,size_t columns)
+{
+    if (!s || !s->model || !values) return CHEM_INVALID;
+    if (rows!=s->cells || columns!=s->model->n_custom) return CHEM_SIZE;
+    for (size_t c=0;c<rows;++c) for (size_t j=0;j<columns;++j) s->custom[j*rows+c]=values[c*columns+j];
+    return CHEM_OK;
+}
+double *chem_state_species_column(chem_state *s,const char *name)
+{
+    if (!s || !s->model) return NULL;
+    size_t index=chem_species_index(s->model,name);
+    return index==CHEM_NONE ? NULL : s->y+index*s->cells;
+}
+const double *chem_state_species_column_const(const chem_state *s,const char *name)
+{
+    if (!s || !s->model) return NULL;
+    size_t index=chem_species_index(s->model,name);
+    return index==CHEM_NONE ? NULL : s->y+index*s->cells;
 }
 
 void chem_calculate_rates(chem_state *s)

@@ -92,3 +92,14 @@ with optional diffusion/density, named phases, and gas systems with permutation
 support. Fourteen reference cases exercise deep copy/destruction, property type
 errors, third bodies, state sizes, and names. Clang and GCC pass all 501 mapped
 cases; 179 cases remain unported.
+
+## State and process checkpoint
+
+All 22 state cases now cover copying, moving, scalar/vector and batch assignment,
+const and mutable column access, raw custom-parameter import, and dimension/name
+errors. Added owned reaction construction and a system-to-model builder with
+stable rate-type sorting and species-name resolution. All four process cases,
+11 reaction-rate-store cases, five process-set cases, and seven Jacobian utility
+cases pass. The process-set tests include the three original random-system sizes,
+kinetic sparsity, exact forcing/Jacobian entries, and algebraic-row masking.
+Clang and GCC pass all 550 mapped cases, leaving 130 unported; no N/A cases.

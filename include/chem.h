@@ -168,8 +168,20 @@ typedef struct chem_state {
 chem_status chem_state_create(chem_state *state, const chem_model *model, size_t cells);
 void chem_state_destroy(chem_state *state);
 chem_status chem_state_copy(chem_state *destination, const chem_state *source);
+chem_status chem_state_move(chem_state *destination, chem_state *source);
+/* These two setters broadcast count==1 to every cell. */
 chem_status chem_state_set_species(chem_state *state, const char *name, const double *values, size_t count);
 chem_status chem_state_set_custom(chem_state *state, const char *name, const double *values, size_t count);
+/* Exact-size assignment, matching the reference State setters. Batch writes
+ * validate every entry before changing any values. Column pointers are borrowed. */
+typedef struct { const char *name; const double *values; size_t count; } chem_named_column;
+chem_status chem_state_assign_species(chem_state *, const char *, const double *, size_t);
+chem_status chem_state_assign_custom(chem_state *, const char *, const double *, size_t);
+chem_status chem_state_assign_species_many(chem_state *, size_t, const chem_named_column *);
+chem_status chem_state_assign_custom_many(chem_state *, size_t, const chem_named_column *);
+chem_status chem_state_import_custom(chem_state *, const double *, size_t rows, size_t columns);
+double *chem_state_species_column(chem_state *, const char *);
+const double *chem_state_species_column_const(const chem_state *, const char *);
 void chem_calculate_rates(chem_state *state);
 /* Callbacks borrow context and may keep backend-owned factors there. NULL/NULL
  * restores the default. Factor reads state->jacobian; solve overwrites rhs. */

@@ -49,3 +49,10 @@ still unported; full-suite and performance validation remain outstanding.
 The species/system checkpoint passes all 501 mapped cases with Clang and GCC 15.
 Fourteen added cases cover the original species, phase-species, phase, and system
 assertions. There are 179 cases still unported and no N/A declarations.
+
+The state/process checkpoint passes 550 cases with both compilers. The 49 new
+cases comprise state (22), process (4), reaction rate store (11), process set (5),
+and finite-difference verification (7). Comparisons use the original tolerances,
+including four-ULP matrix entries and the 1e-7 absolute/relative Jacobian gate.
+All three random process-set sizes execute and additionally match a scalar
+cell-major forcing evaluator. The full suite still has 130 unported cases.
