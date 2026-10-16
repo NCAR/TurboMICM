@@ -24,6 +24,13 @@ ch_state *ch_state_clone(const ch_state *s) {
   if (!s) return NULL;
   ch_state *d = ch_state_create(s->model,s->cells);
   if (!d) return NULL;
+  ch_state_copy(d,s);
+  return d;
+}
+int ch_state_copy(ch_state *d, const ch_state *s) {
+  if (!d || !s) return CH_INVALID;
+  if (d->model != s->model || d->cells != s->cells) return CH_SIZE;
+  if (d == s) return CH_OK;
   memcpy(d->y,s->y,s->model->nv*s->cells*sizeof(double));
   memcpy(d->custom,s->custom,s->model->nparam*s->cells*sizeof(double));
   memcpy(d->rates,s->rates,s->model->nr*s->cells*sizeof(double));
@@ -31,7 +38,12 @@ ch_state *ch_state_clone(const ch_state *s) {
   memcpy(d->conditions,s->conditions,s->cells*sizeof(ch_conditions)); d->rtol = s->rtol;
   d->lu_algorithm = s->lu_algorithm; d->factor = s->factor; d->linear_solve = s->linear_solve;
   d->linear_context = s->linear_context;
-  return d;
+  return CH_OK;
+}
+void ch_state_move(ch_state **d, ch_state **s) {
+  if (!d || !s || d == s) return;
+  if (*d != *s) ch_state_free(*d);
+  *d = *s; *s = NULL;
 }
 void ch_state_free(ch_state *s) {
   if (!s) return;
@@ -43,6 +55,8 @@ double *ch_state_values(ch_state *s) { return s ? s->y : NULL; }
 double *ch_state_parameters(ch_state *s) { return s ? s->custom : NULL; }
 double *ch_state_rates(ch_state *s) { return s ? s->rates : NULL; }
 ch_conditions *ch_state_conditions(ch_state *s) { return s ? s->conditions : NULL; }
+double ch_state_relative_tolerance(const ch_state *s) { return s ? s->rtol : NAN; }
+const double *ch_state_absolute_tolerances(const ch_state *s) { return s ? s->atol : NULL; }
 
 int ch_state_set_lu(ch_state *s, int algorithm) {
   if (!s || (algorithm != 0 && algorithm != 1)) return CH_INVALID;
@@ -82,6 +96,22 @@ int ch_state_set(ch_state *s, const char *name, const double *v, size_t n) {
 int ch_state_set_parameter(ch_state *s, const char *name, const double *v, size_t n) {
   return s ? set_column(s,ch_model_parameter_index(s->model,name),s->custom,v,n) : CH_INVALID;
 }
+int ch_state_set_exact(ch_state *s, const char *name, const double *v, size_t n) {
+  if (!s) return CH_INVALID;
+  if (n != s->cells) return CH_SIZE;
+  return ch_state_set(s,name,v,n);
+}
+int ch_state_set_parameter_exact(ch_state *s, const char *name, const double *v, size_t n) {
+  if (!s) return CH_INVALID;
+  if (n != s->cells) return CH_SIZE;
+  return ch_state_set_parameter(s,name,v,n);
+}
+int ch_state_set_parameter_matrix(ch_state *s, const double *v, size_t rows, size_t cols) {
+  if (!s || !v) return CH_INVALID;
+  if (rows != s->cells || cols != s->model->nparam) return CH_SIZE;
+  for (size_t c = 0; c < rows; ++c) for (size_t p = 0; p < cols; ++p) s->custom[p*rows+c] = v[c*cols+p];
+  return CH_OK;
+}
 int ch_state_tolerances(ch_state *s, double rtol, const double *atol, size_t n) {
   if (!s || !atol || !isfinite(rtol) || rtol < 0) return CH_INVALID;
   if (n != 1 && n != s->model->nv) return CH_SIZE;
@@ -103,7 +133,8 @@ int ch_update_rates(ch_state *s) {
     for (size_t ri = 0; ri < m->nr; ++ri) {
       const ch_reaction *r = &m->reactions[ri];
       double value = ch_rate_calculate(&r->rate,&s->conditions[c],custom);
-      for (size_t i = 0; i < r->nparameterized; ++i) value *= s->conditions[c].air_density;
+      for (size_t i = 0; i < r->nparameterized; ++i)
+        value *= ch_species_parameter_value(m->species[r->parameterized[i]].spec,&s->conditions[c]);
       s->rates[ri*s->cells+c] = value;
     }
   }

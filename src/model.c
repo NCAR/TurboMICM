@@ -34,10 +34,11 @@ const char *ch_status_string(int status) {
 ch_model *ch_model_create(void) { return calloc(1,sizeof(ch_model)); }
 void ch_model_free(ch_model *m) {
   if (!m) return;
-  for (size_t i = 0; i < m->ns; ++i) free(m->species[i].name);
+  for (size_t i = 0; i < m->ns; ++i) { free(m->species[i].name); ch_species_free(m->species[i].spec); }
   for (size_t i = 0; i < m->nparam; ++i) free(m->parameters[i].name);
   for (size_t i = 0; i < m->nr; ++i) {
     free(m->reactions[i].reactants); free(m->reactions[i].products); free(m->reactions[i].yields);
+    free(m->reactions[i].parameterized);
   }
   for (size_t i = 0; i < m->nderiv; ++i) {
     free(m->derivatives[i].reactants); free(m->derivatives[i].destinations); free(m->derivatives[i].yields);
@@ -66,6 +67,12 @@ int ch_model_add_species(ch_model *m, const char *name, double atol, int third_b
   *s = (ch_species){0};
   s->name = ch_string_copy(name);
   if (!s->name) return CH_MEMORY;
+  s->spec = ch_species_create(name);
+  if (!s->spec) { free(s->name); return CH_MEMORY; }
+  if (ch_species_set_property(s->spec,"absolute tolerance",CH_PROPERTY_REAL,&atol)) {
+    ch_species_free(s->spec); free(s->name); return CH_MEMORY;
+  }
+  if (third_body) ch_species_parameterize(s->spec,1,0,0,0,1);
   s->atol = atol; s->third_body = third_body; s->index = -1;
   return (int)m->ns++;
 }
@@ -76,8 +83,7 @@ int ch_model_set_species_property(ch_model *m, int species, const char *key, dou
   if (!strcmp(key,"molecular weight [kg mol-1]")) { s->molecular_weight = value; s->has_weight = 1; }
   else if (!strcmp(key,"diffusion coefficient [m2 s-1]")) { s->diffusion = value; s->has_diffusion = 1; }
   else if (!strcmp(key,"absolute tolerance")) s->atol = value;
-  else return CH_NOT_FOUND;
-  return CH_OK;
+  return ch_species_set_property(s->spec,key,CH_PROPERTY_REAL,&value);
 }
 int ch_model_add_parameter(ch_model *m, const char *name, double initial) {
   if (!m || !name || !name[0] || m->nparam >= INT_MAX) return CH_INVALID;
@@ -112,8 +118,9 @@ int ch_model_add_reaction(ch_model *m, size_t nr, const int *reactants, size_t n
   ch_rate_prepare(&r.rate);
   r.nr = nr; r.np = np;
   r.reactants = ch_allocate(nr,sizeof(int)); r.products = ch_allocate(np,sizeof(int));
+  r.parameterized = ch_allocate(nr,sizeof(int));
   r.yields = ch_allocate(np,sizeof(double));
-  if (!r.reactants || !r.products || !r.yields) goto memory_error;
+  if (!r.reactants || !r.products || !r.yields || !r.parameterized) goto memory_error;
   if (nr) memcpy(r.reactants,reactants,nr*sizeof(int));
   if (np) { memcpy(r.products,products,np*sizeof(int)); memcpy(r.yields,yields,np*sizeof(double)); }
   ch_reaction *list = realloc(m->reactions,(m->nr+1)*sizeof(*list));
@@ -122,7 +129,7 @@ int ch_model_add_reaction(ch_model *m, size_t nr, const int *reactants, size_t n
   m->reactions[m->nr] = r;
   return (int)m->nr++;
 memory_error:
-  free(r.reactants); free(r.products); free(r.yields); return CH_MEMORY;
+  free(r.reactants); free(r.products); free(r.yields); free(r.parameterized); return CH_MEMORY;
 }
 
 int ch_model_finalize(ch_model *m, int reorder, int ignore_unused) {
@@ -168,6 +175,7 @@ int ch_model_finalize(ch_model *m, int reorder, int ignore_unused) {
     for (size_t j = 0; j < e->algebraic_count; ++j) used[e->algebraic_species[j]] = 1;
   }
   if (!ignore_unused) for (size_t i = 0; i < m->ns; ++i) if (!used[i]) { status = CH_NOT_FOUND; goto done; }
+  for (size_t i = 0; i < m->ns; ++i) m->species[i].used = used[i];
   if (reorder) { status = ch_markowitz(n,p,perm); if (status) goto done; }
   else for (size_t i = 0; i < n; ++i) perm[i] = (int)i;
   m->order = ch_allocate(n,sizeof(int)); m->algebraic = ch_allocate(n,1);
@@ -184,7 +192,7 @@ int ch_model_finalize(ch_model *m, int reorder, int ignore_unused) {
     for (size_t j = 0; j < r->nr; ++j) {
       int id = m->species[r->reactants[j]].index;
       if (id >= 0) r->reactants[nr++] = id;
-      else ++r->nparameterized;
+      else r->parameterized[r->nparameterized++] = r->reactants[j];
     }
     for (size_t j = 0; j < r->np; ++j) {
       int id = m->species[r->products[j]].index;

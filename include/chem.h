@@ -7,6 +7,12 @@
 
 #define CH_GAS_CONSTANT (1.380649e-23 * 6.02214076e23)
 #define CH_AVOGADRO 6.02214076e23
+#define CH_VERSION_MAJOR 1
+#define CH_VERSION_MINOR 0
+#define CH_VERSION_PATCH 0
+#define CH_VERSION_TWEAK 0
+const char *ch_version(void);
+int ch_version_component(int index);
 
 typedef enum {
   CH_OK = 0, CH_INVALID = -1, CH_MEMORY = -2, CH_NOT_FOUND = -3,
@@ -39,11 +45,39 @@ double ch_rate_calculate(const ch_rate *, const ch_conditions *, const double *c
 
 typedef struct ch_model ch_model;
 typedef struct ch_state ch_state;
+typedef struct ch_species_spec ch_species_spec;
+typedef struct ch_phase ch_phase;
+enum { CH_PROPERTY_REAL, CH_PROPERTY_STRING, CH_PROPERTY_INT, CH_PROPERTY_BOOL };
+/* Metadata is owned and copied. Strings returned by getters are borrowed. */
+ch_species_spec *ch_species_create(const char *name);
+ch_species_spec *ch_species_clone(const ch_species_spec *);
+void ch_species_free(ch_species_spec *);
+const char *ch_species_name(const ch_species_spec *);
+size_t ch_species_property_count(const ch_species_spec *, int type);
+int ch_species_set_property(ch_species_spec *, const char *key, int type, const void *value);
+int ch_species_get_property(const ch_species_spec *, const char *key, int type, void *value);
+int ch_species_parameterize(ch_species_spec *, int enabled, double constant, double temperature,
+                            double pressure, double air_density);
+int ch_species_is_parameterized(const ch_species_spec *);
+double ch_species_parameter_value(const ch_species_spec *, const ch_conditions *);
+ch_phase *ch_phase_create(const char *name);
+void ch_phase_free(ch_phase *);
+const char *ch_phase_name(const ch_phase *);
+int ch_phase_add(ch_phase *, const ch_species_spec *);
+size_t ch_phase_species_count(const ch_phase *);
+size_t ch_phase_state_size(const ch_phase *);
+const ch_species_spec *ch_phase_species(const ch_phase *, size_t);
+const char *ch_phase_state_name(const ch_phase *, size_t index, int qualified);
 
 ch_model *ch_model_create(void);
+ch_model *ch_model_clone_builder(const ch_model *);
 void ch_model_free(ch_model *);
 /* Species IDs are stable builder IDs; state indices are assigned at finalize. */
 int ch_model_add_species(ch_model *, const char *name, double atol, int third_body);
+int ch_model_add_species_spec(ch_model *, const ch_species_spec *);
+int ch_model_add_phase(ch_model *, const ch_phase *, int gas_phase);
+const ch_species_spec *ch_model_species_info(const ch_model *, size_t builder_id);
+size_t ch_model_builder_species_count(const ch_model *);
 int ch_model_set_species_property(ch_model *, int species, const char *key, double value);
 int ch_model_add_parameter(ch_model *, const char *name, double initial_value);
 int ch_model_add_reaction(ch_model *, size_t nr, const int *reactants,
@@ -58,6 +92,17 @@ const char *ch_model_parameter_name(const ch_model *, size_t index);
 int ch_model_species_index(const ch_model *, const char *name);
 int ch_model_parameter_index(const ch_model *, const char *name);
 ch_rate *ch_model_rate(ch_model *, size_t reaction);
+typedef struct {
+  size_t reactants, products, parameterized_reactants;
+  const int *reactant_ids, *product_ids, *parameterized_ids;
+  const double *yields;
+  const ch_rate *rate;
+} ch_reaction_info;
+int ch_model_reaction_info(const ch_model *, size_t reaction, ch_reaction_info *);
+int ch_model_rate_group(const ch_model *, int type, size_t *offset, size_t *count);
+const ch_rate *ch_model_rate_in_group(const ch_model *, int type, size_t index);
+int ch_model_species_used(const ch_model *, size_t builder_id);
+int ch_model_kinetic_pattern(const ch_model *, unsigned char *pattern, size_t size);
 
 int ch_model_add_linear(ch_model *, const char *name, int algebraic_species,
                         size_t n, const int *species, const double *coefficients, double constant);
@@ -89,6 +134,8 @@ const ch_model *ch_state_model(const ch_state *);
 /* A state owns one independent adaptive solver group, in species-major order. */
 ch_state *ch_state_create(const ch_model *, size_t cells);
 ch_state *ch_state_clone(const ch_state *);
+int ch_state_copy(ch_state *destination, const ch_state *source);
+void ch_state_move(ch_state **destination, ch_state **source);
 void ch_state_free(ch_state *);
 size_t ch_state_cells(const ch_state *);
 double *ch_state_values(ch_state *);
@@ -97,11 +144,18 @@ double *ch_state_rates(ch_state *);
 ch_conditions *ch_state_conditions(ch_state *);
 int ch_state_set(ch_state *, const char *name, const double *values, size_t count);
 int ch_state_set_parameter(ch_state *, const char *name, const double *, size_t count);
+int ch_state_set_exact(ch_state *, const char *name, const double *, size_t count);
+int ch_state_set_parameter_exact(ch_state *, const char *name, const double *, size_t count);
+int ch_state_set_parameter_matrix(ch_state *, const double *row_major_values, size_t rows, size_t columns);
+double ch_state_relative_tolerance(const ch_state *);
+const double *ch_state_absolute_tolerances(const ch_state *);
 int ch_state_tolerances(ch_state *, double rtol, const double *atol, size_t count);
 int ch_update_rates(ch_state *);
 void ch_force(const ch_state *, const double *y, double *forcing);
+int ch_add_force(const ch_state *, const double *y, double *forcing);
 /* Jacobian values are stored by symbolic index, then cell. */
 void ch_jacobian(const ch_state *, const double *y, double *negative_jacobian);
+int ch_add_negative_jacobian(const ch_state *, const double *y, double *negative_jacobian);
 void ch_alpha_minus_jacobian(const ch_state *, double alpha, double *negative_jacobian);
 size_t ch_model_jacobian_size(const ch_model *);
 int ch_model_jacobian_index(const ch_model *, size_t row, size_t column);
@@ -128,6 +182,10 @@ ch_rosenbrock_parameters ch_rosenbrock_default(int method);
 double ch_default_controller(double, const ch_rosenbrock_parameters *, void *);
 double ch_normalized_error(const ch_state *, const double *, const double *, const double *);
 int ch_solve(ch_state *, double time_step, const ch_rosenbrock_parameters *, ch_stats *);
+/* Independent states may share an immutable model. Each state must occur once.
+ * threads <= 0 selects OpenMP's default. Status and statistics have count entries. */
+int ch_solve_many(ch_state *const *states, size_t count, double time_step,
+                  const ch_rosenbrock_parameters *, int threads, int *status, ch_stats *statistics);
 int ch_initialize_constraints(ch_state *, const ch_rosenbrock_parameters *, ch_stats *);
 void ch_stats_add(ch_stats *, const ch_stats *);
 
@@ -155,5 +213,21 @@ int ch_markowitz(size_t n, const unsigned char *pattern, int *permutation);
 int ch_lu_factor(const ch_sparse *, size_t cells, double *a, int algorithm);
 int ch_lu_factor_copy(const ch_sparse *, size_t cells, const double *a, double *lu, int algorithm);
 void ch_lu_solve(const ch_sparse *, size_t cells, const double *a, double *x);
+
+typedef void (*ch_forcing_function)(size_t species, size_t cells, const double *y, double *forcing, void *context);
+typedef struct {
+  int passed;
+  double max_absolute_error, max_relative_error;
+  size_t worst_cell, worst_row, worst_column;
+  double worst_analytical, worst_finite_difference;
+} ch_jacobian_comparison;
+/* Dense derivative layout: (row * species + column) * cells + cell. */
+int ch_finite_difference(size_t species, size_t cells, const double *y, double perturbation,
+                         ch_forcing_function, void *context, double *jacobian);
+ch_jacobian_comparison ch_compare_jacobian(size_t species, size_t cells, const unsigned char *pattern,
+                                          const double *negative_analytical, const double *finite_difference,
+                                          double atol, double rtol);
+ch_jacobian_comparison ch_check_sparsity(size_t species, size_t cells, const unsigned char *pattern,
+                                        const double *finite_difference, double threshold);
 
 #endif

@@ -10,8 +10,18 @@
 typedef struct {
   char *name;
   double atol, molecular_weight, diffusion;
-  int third_body, index, has_weight, has_diffusion;
+  int third_body, index, has_weight, has_diffusion, used;
+  ch_species_spec *spec;
 } ch_species;
+typedef struct { char *key; int type; union { double real; int integer; char *string; } value; } ch_property;
+struct ch_species_spec {
+  char *name;
+  size_t nproperties;
+  ch_property *properties;
+  int parameterized;
+  double coefficients[4];
+};
+struct ch_phase { char *name; size_t count; ch_species_spec **species; char **qualified; };
 typedef struct { char *name; double initial; } ch_parameter;
 typedef struct {
   char *name;
@@ -22,7 +32,7 @@ typedef struct {
 } ch_constraint;
 typedef struct {
   size_t nr, np, nparameterized;
-  int *reactants, *products;
+  int *reactants, *products, *parameterized;
   double *yields;
   ch_rate rate;
 } ch_reaction;

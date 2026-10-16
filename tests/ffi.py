@@ -41,6 +41,19 @@ class External(C.Structure):
                               'constraint_force','constraint_jacobian','context')]
 
 
+class ReactionInfo(C.Structure):
+    _fields_ = [('reactants',Z),('products',Z),('parameterized_reactants',Z),
+                ('reactant_ids',IP),('product_ids',IP),('parameterized_ids',IP),('yields',DP),('rate',C.POINTER(Rate))]
+
+
+class JacobianComparison(C.Structure):
+    _fields_ = [('passed',I),('max_absolute_error',D),('max_relative_error',D),
+                ('worst_cell',Z),('worst_row',Z),('worst_column',Z),('worst_analytical',D),('worst_finite_difference',D)]
+
+
+ForcingFunction=C.CFUNCTYPE(None,Z,Z,DP,DP,P)
+
+
 def bind(name, result, *args):
     function = getattr(lib,'ch_'+name)
     function.restype, function.argtypes = result,list(args)
@@ -88,6 +101,7 @@ for name in ('force','jacobian','constraint_force','constraint_jacobian'):
 bind('rosenbrock_default',Rosenbrock,I)
 bind('backward_euler_default',BackwardEuler)
 bind('solve',I,P,D,C.POINTER(Rosenbrock),C.POINTER(Stats))
+bind('solve_many',I,C.POINTER(P),Z,D,C.POINTER(Rosenbrock),I,IP,C.POINTER(Stats))
 bind('initialize_constraints',I,P,C.POINTER(Rosenbrock),C.POINTER(Stats))
 bind('solve_backward_euler',I,P,D,C.POINTER(BackwardEuler),C.POINTER(Stats))
 bind('backward_euler_converged',I,P,DP,DP,C.POINTER(BackwardEuler))
@@ -102,6 +116,48 @@ bind('lu_factor_copy',I,P,Z,DP,DP,I)
 bind('lu_solve',None,P,Z,DP,DP)
 bind('alpha_minus_jacobian',None,P,D,DP)
 bind('state_set_lu',I,P,I)
+bind('model_clone_builder',P,P)
+bind('species_create',P,C.c_char_p)
+bind('species_clone',P,P)
+bind('species_free',None,P)
+bind('species_name',C.c_char_p,P)
+bind('species_property_count',Z,P,I)
+bind('species_set_property',I,P,C.c_char_p,I,P)
+bind('species_get_property',I,P,C.c_char_p,I,P)
+bind('species_parameterize',I,P,I,D,D,D,D)
+bind('species_is_parameterized',I,P)
+bind('species_parameter_value',D,P,C.POINTER(Conditions))
+bind('phase_create',P,C.c_char_p)
+bind('phase_free',None,P)
+bind('phase_name',C.c_char_p,P)
+bind('phase_add',I,P,P)
+bind('phase_species_count',Z,P)
+bind('phase_state_size',Z,P)
+bind('phase_species',P,P,Z)
+bind('phase_state_name',C.c_char_p,P,Z,I)
+bind('model_add_species_spec',I,P,P)
+bind('model_add_phase',I,P,P,I)
+bind('model_species_info',P,P,Z)
+bind('model_builder_species_count',Z,P)
+bind('state_copy',I,P,P)
+bind('state_move',None,C.POINTER(P),C.POINTER(P))
+bind('state_relative_tolerance',D,P)
+bind('state_absolute_tolerances',DP,P)
+bind('state_set_exact',I,P,C.c_char_p,DP,Z)
+bind('state_set_parameter_exact',I,P,C.c_char_p,DP,Z)
+bind('state_set_parameter_matrix',I,P,DP,Z,Z)
+bind('version',C.c_char_p)
+bind('version_component',I,I)
+bind('model_reaction_info',I,P,Z,C.POINTER(ReactionInfo))
+bind('model_rate_group',I,P,I,C.POINTER(Z),C.POINTER(Z))
+bind('model_rate_in_group',C.POINTER(Rate),P,I,Z)
+bind('model_species_used',I,P,Z)
+bind('model_kinetic_pattern',I,P,BP,Z)
+bind('add_force',I,P,DP,DP)
+bind('add_negative_jacobian',I,P,DP,DP)
+bind('finite_difference',I,Z,Z,DP,D,ForcingFunction,P,DP)
+bind('compare_jacobian',JacobianComparison,Z,Z,BP,DP,DP,D,D)
+bind('check_sparsity',JacobianComparison,Z,Z,BP,DP,D)
 
 
 def doubles(values):

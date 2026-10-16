@@ -41,7 +41,7 @@ build/flags: FORCE
 	@echo '$(CC) $(CPPFLAGS) $(CFLAGS) $(LDLIBS)' > build/flags.tmp
 	@cmp -s build/flags.tmp $@ || cp build/flags.tmp $@
 
-build/%.o: src/%.c include/chem.h src/internal.h build/flags
+build/%.o: src/%.c include/chem.h include/chem_array.h src/internal.h build/flags
 	@mkdir -p build
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
@@ -62,7 +62,11 @@ bin/ts1_bench_cpu: tools/ts1_bench.c build/ts1.o $(OBJECTS) include/chem.h build
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) tools/ts1_bench.c build/ts1.o $(OBJECTS) $(LDLIBS) -o $@
 
-test-cpu: cpu
+bin/test_native_cpu: tests/native_cases.c $(OBJECTS) include/chem.h build/flags
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) tests/native_cases.c $(OBJECTS) $(LDLIBS) -o $@
+
+test-cpu: cpu bin/test_native_cpu
 	$(PYTHON) tests/run_cases.py
 
 micm-ref: bin/micm_ts1_ref
