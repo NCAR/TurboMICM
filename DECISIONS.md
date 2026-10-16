@@ -76,3 +76,29 @@ can be copied as plain values, cloned/destroyed by user callbacks, or explicitly
 borrowed. Finalization binds each instance after ordering. Kinetic callbacks keep
 incoming algebraic rows unchanged, while constraint callbacks supply those rows.
 Per-state temporary storage and const model contexts support shared solvers.
+
+## Tutorial output
+
+All eight tutorial entry points are available through `bin/tutorial NAME`. The
+case runner executes those same functions against captured MICM output. Every
+scientific value, solver statistic, heading and formatting byte must match.
+`solver_configuration` also prints measured nanoseconds: this is validated as a
+finite nonnegative duration rather than compared to a previous measurement.
+`openmp_tutorial` prints three scheduling-dependent thread announcements: their
+identities and multiplicity are checked independent of order. The remaining
+output is exact. These incidental nondeterministic fields are not chemistry
+results; no case is N/A.
+
+The reference vectorized tutorial initializes `solver_state` to Converged but
+requires it to be non-Converged before entering its inner solve loop. Its printed
+concentrations therefore remain initial values. The port preserves that observed
+behavior; the analytical and regression cases exercise actual vector solves.
+Sparse string examples store native size_t handles into owned C string storage,
+using the same sparse layout indices rather than requiring C++ string objects.
+
+Each of the three tutorial configuration directories is compared against the
+independent hand-built mechanism: all rate constants, nonzero forcing/Jacobian
+entries, and ten multi-cell integration intervals. Both generated and generic
+kernels and both LU algorithms run. Surface labels are mapped as documented
+above. The generic configuration reader preserves reaction declaration order;
+comparisons match reaction terms rather than assuming equal storage positions.

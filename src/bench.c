@@ -180,6 +180,7 @@ int main(int argc, char **argv)
     for (size_t g=0; g<groups; ++g) {
         chem_calculate_rates(&states[g]);
         results[g]=chem_ros_solve(&states[g],dt,&parameters,NULL,NULL);
+        chem_state_clamp(&states[g]);
     }
     for (size_t g=0; g<groups; ++g) if (results[g].status!=CHEM_OK) {
         fprintf(stderr,"Warm-up group %zu: %s\n",g,chem_status_string(results[g].status)); goto done;
@@ -190,6 +191,7 @@ int main(int argc, char **argv)
     for (size_t g=0; g<groups; ++g) {
         for (size_t step=0; step<steps; ++step) {
             chem_result r=chem_ros_solve(&states[g],dt,&parameters,NULL,NULL);
+            chem_state_clamp(&states[g]);
             chem_stats_add(&results[g].stats,&r.stats);
             if (r.status!=CHEM_OK) { results[g].status=r.status; break; }
         }

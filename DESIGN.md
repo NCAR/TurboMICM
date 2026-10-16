@@ -142,3 +142,15 @@ options and require exclusive access. Setup descriptors are borrowed only during
 creation. Preferred vector length describes one group; states can span multiple
 groups. Post-solve clamping applies to differential variables only, matching the
 reference wrapper; algebraic variables remain governed by their constraints.
+
+## External models
+
+`chem_external.h` describes extra species, named parameters, kinetic sparse
+entries, algebraic rows and constraint dependencies. Composition merges these
+before Markowitz ordering and LU planning. Each context is either an explicit
+borrow, a byte-copied value, or owned through clone/destroy callbacks. Finalize
+callbacks bind names to reordered indices independently for each model; update
+callbacks run when state parameters are refreshed. Kinetic and constraint
+callbacks add to SoA destinations. Kinetic evaluation preserves algebraic rows,
+including their incoming values. Workspace belongs to each state, so a model can
+be shared between threads without callback workspace races.

@@ -76,3 +76,9 @@ Eighteen aerosol cases run every original solver/layout variant; twenty external
 constraint cases check shared algebraic rows, finite differences, temperature
 updates, conservation and independent ownership when rebuilding a description.
 Only the eight tutorial programs remain unmapped; there are no N/A declarations.
+
+Both compilers now pass all 680 cases, including all tutorial programs and the
+three configuration-equivalence checks. No N/A cases. Final Clang and GCC builds
+are warning-free. GCC passes the supplied 100-cell TS1 gate with default settings,
+threads/groups (1,1), (4,7), (1,32), (3,64), (4,101), and the generic evaluator
+(2,13); largest relative difference is 5.3e-14. Large-run validation is next.

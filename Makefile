@@ -36,7 +36,7 @@ env: .conda/conda-meta/history
 SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c src/array.c src/sparse.c src/factor.c src/version.c src/system.c src/process.c src/solver.c src/external.c
 OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
 
-cpu: bin/ts1_bench_cpu build/libchem.a
+cpu: bin/ts1_bench_cpu bin/tutorial build/libchem.a
 bench: cpu
 
 test-cpu: cpu bin/test_cpu
@@ -45,9 +45,11 @@ test-cpu: cpu bin/test_cpu
 generated/test_registry.inc: $(wildcard tests/test_*.c) tests/cases.txt tools/test_registry.py .conda/conda-meta/history
 	$(PYTHON) tools/test_registry.py $@
 
-bin/test_cpu: $(wildcard tests/*.c) $(wildcard tests/*.h) generated/test_registry.inc build/chapman.o build/libchem.a
+CONFIG_OBJECTS := build/robertson.o build/rates.o_config build/user_rates.o_config
+
+bin/test_cpu: $(wildcard tests/*.c) $(wildcard tests/*.h) generated/test_registry.inc build/chapman.o $(CONFIG_OBJECTS) build/tutorials.o build/libchem.a
 	@mkdir -p bin
-	$(CC) $(CFLAGS) -Itests -Igenerated $(wildcard tests/*.c) build/chapman.o build/libchem.a $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) -Itests -Igenerated -Iexamples $(wildcard tests/*.c) build/tutorials.o build/chapman.o $(CONFIG_OBJECTS) build/libchem.a $(LDLIBS) -o $@
 
 build/%.o: src/%.c $(wildcard include/*.h) $(wildcard src/*.h) build/compiler.conf
 	@mkdir -p build
@@ -89,3 +91,32 @@ build/compiler.conf: FORCE
 	@mkdir -p build
 	@printf '%s\n' "$(CC)" "$(CFLAGS)" "$(LDLIBS)" > build/compiler.conf.tmp
 	@cmp -s build/compiler.conf.tmp $@ && rm build/compiler.conf.tmp || mv build/compiler.conf.tmp $@
+
+build/tutorials.o: examples/tutorials.c examples/tutorials.h $(wildcard include/*.h) build/compiler.conf
+	@mkdir -p build
+	$(CC) $(CFLAGS) -Iexamples -c $< -o $@
+
+bin/tutorial: examples/main.c examples/tutorials.h build/tutorials.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CFLAGS) -Iexamples examples/main.c build/tutorials.o build/libchem.a $(LDLIBS) -o $@
+
+generated/robertson.c: $(wildcard configs/robertson/*) tools/configure.py tools/generate.py .conda/conda-meta/history
+	$(PYTHON) tools/generate.py configs/robertson/config.json $@ --symbol robertson_mechanism
+
+build/robertson.o: generated/robertson.c $(wildcard include/*.h) build/compiler.conf
+	@mkdir -p build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+generated/rates.c: $(wildcard configs/rate_constants_no_user_defined/*) tools/configure.py tools/generate.py .conda/conda-meta/history
+	$(PYTHON) tools/generate.py configs/rate_constants_no_user_defined/config.yaml $@ --symbol rates_mechanism
+
+build/rates.o_config: generated/rates.c $(wildcard include/*.h) build/compiler.conf
+	@mkdir -p build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+generated/user_rates.c: $(wildcard configs/rate_constants_user_defined/*) tools/configure.py tools/generate.py .conda/conda-meta/history
+	$(PYTHON) tools/generate.py configs/rate_constants_user_defined/config.json $@ --symbol user_rates_mechanism
+
+build/user_rates.o_config: generated/user_rates.c $(wildcard include/*.h) build/compiler.conf
+	@mkdir -p build
+	$(CC) $(CFLAGS) -c $< -o $@

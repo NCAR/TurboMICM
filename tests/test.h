@@ -7,6 +7,7 @@
 #include <string.h>
 
 extern int test_failures;
+#define PROGRAM(name) void test_program_##name(void)
 #define TEST(prefix,suite,name) void test_##prefix##_##suite##_##name(void)
 #define CHECK(condition) do { if (!(condition)) { \
     fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#condition); ++test_failures; } } while (0)

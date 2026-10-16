@@ -213,7 +213,6 @@ void chem_forcing(const chem_model *m, size_t cells, const double *restrict rate
 {
     for (size_t r=0; r<m->n_reactions; ++r) {
         const chem_reaction *rx=&m->mechanism->reactions[r];
-        #pragma omp simd
         for (size_t c=0; c<cells; ++c) {
             double rate=rates[r*cells+c];
             for (size_t j=0; j<rx->n_reactants; ++j) {
@@ -237,7 +236,6 @@ void chem_jacobian(const chem_model *m, size_t cells, const double *restrict rat
 {
     for (size_t j=0; j<m->n_jobs; ++j) {
         const chem_jac_job *job=&m->jobs[j];
-        #pragma omp simd
         for (size_t c=0; c<cells; ++c) {
             double rate=rates[job->reaction*cells+c];
             for (size_t k=0; k<job->n_reactants; ++k) rate*=y[job->reactants[k]*cells+c];

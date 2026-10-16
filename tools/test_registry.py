@@ -11,6 +11,10 @@ for path in sorted(Path('tests').glob('test_*.c')):
         if identifier not in known or identifier in cases:
             raise ValueError('Unknown or duplicate test: '+identifier)
         cases[identifier]=f'test_{prefix}_{suite}_{name}'
+    for identifier in re.findall(r'\bPROGRAM\((\w+)\)',path.read_text()):
+        if identifier not in known or identifier in cases:
+            raise ValueError('Unknown or duplicate program: '+identifier)
+        cases[identifier]=f'test_program_{identifier}'
 lines=['/* Generated registry of implemented cases. */']
 for function in cases.values(): lines.append(f'extern void {function}(void);')
 lines.append('static const struct test_case cases[]={')
