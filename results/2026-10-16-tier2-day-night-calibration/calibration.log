@@ -1,0 +1,18 @@
+diurnal-30min clang exit 0 elapsed_ms=4113.955 internal_steps=48619 rejected=0 
+diurnal-30min gcc exit 0 elapsed_ms=4283.820 internal_steps=48619 rejected=0 
+diurnal-10min clang exit 0 elapsed_ms=7714.524 internal_steps=90980 rejected=0 
+diurnal-10min gcc exit 0 elapsed_ms=8491.730 internal_steps=90980 rejected=0 
+diurnal-5min clang exit 0 elapsed_ms=12818.718 internal_steps=145891 rejected=0 
+diurnal-5min gcc exit 0 elapsed_ms=13981.170 internal_steps=145891 rejected=0 
+polluted-10min clang exit 0 elapsed_ms=9650.847 internal_steps=106393 rejected=0 
+polluted-10min gcc exit 0 elapsed_ms=10193.142 internal_steps=106393 rejected=0 
+clean-10min clang exit 0 elapsed_ms=7524.672 internal_steps=84273 rejected=0 
+clean-10min gcc exit 0 elapsed_ms=8026.802 internal_steps=84273 rejected=0 
+======== agreement (gcc scored against clang) and accuracy (each against the converged reference)
+diurnal-30min | agreement: overall 14.37 digits over 589857 values (180 species, 4000 rows); worst species: ISOP 13.81, HYDRALD 13.89, MACR 13.90, ISOPOOH 13.91, MTERP 13.94  | clang vs reference: overall 4.75 digits over 589857 values (180 species, 4000 rows); worst species: ISOP 3.61, HYDRALD 4.00, ISOPNITA 4.03, MACR 4.03, ISOPNITB 4.05
+diurnal-10min | agreement: overall 14.28 digits over 586475 values (180 species, 4000 rows); worst species: ISOP 13.70, HYDRALD 13.79, MACR 13.79, BIGENE 13.81, ISOPOOH 13.81  | clang vs reference: overall 5.05 digits over 586475 values (180 species, 4000 rows); worst species: ISOP 3.82, ISOPNITA 4.24, ISOPNITB 4.28, HYDRALD 4.33, MTERP 4.34
+diurnal-5min | agreement: overall 14.24 digits over 584951 values (180 species, 4000 rows); worst species: ISOP 13.69, HYDRALD 13.78, MACR 13.80, BIGENE 13.81, ISOPOOH 13.81  | clang vs reference: overall 5.21 digits over 584951 values (180 species, 4000 rows); worst species: ISOP 4.33, BRO 4.37, CLO 4.38, MALO2 4.53, HO2NO2 4.57
+polluted-10min | agreement: overall 14.07 digits over 554061 values (178 species, 4000 rows); worst species: ISOP 13.47, HYDRALD 13.49, MACR 13.49, ISOPOOH 13.53, BIGENE 13.54  | clang vs reference: overall 5.40 digits over 554061 values (178 species, 4000 rows); worst species: ISOP 4.26, HYDRALD 4.56, MACR 4.60, ISOPNITA 4.65, ISOPNITB 4.70
+clean-10min | agreement: overall 14.35 digits over 611626 values (181 species, 4000 rows); worst species: ISOP 13.84, HYDRALD 13.92, MACR 13.94, ISOPOOH 13.95, MTERP 13.96  | clang vs reference: overall 4.91 digits over 611626 values (181 species, 4000 rows); worst species: ISOP 3.77, ISOPO2VBS 4.12, ISOPAO2 4.14, ISOPBO2 4.19, ISOPNITA 4.23
+
+[exited with code 0]

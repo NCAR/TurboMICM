@@ -168,7 +168,16 @@ Tier-2-Results.
   rate parameters as data, for ensembles.
 - Arms to be chosen, for example sol-max and astra-xhigh, which already
   generate kernels, and one entry that does not.
-- Still to do: write the prompt, from `prompt.v3`, and choose the arms.
+- Draft prompt: `tier2/prompt.v1` (2026-10-16), under the SSE's review. Its
+  day-night gate, agreement with MICM to 10 digits overall and 9 per species at
+  rtol 1e-6, atol 1e-15, 32-cell groups, is calibrated in
+  `results/2026-10-16-tier2-day-night-calibration` (MICM agrees with itself
+  across compilers to 14 digits).
+- Still to do: settle the draft's choices, choose the arms, give Tier 2 its own
+  `scenarios/` (copies of the disclosed day-night scenarios, plus MICM's results
+  at the gate's settings; not Tier 3's folder, which leaves tolerances to its
+  agents), port `make_prompts.py` and `setup_runs.py` from `tier3/`, and let
+  `admin/launch_codex_run.sh` launch runs that start from a Tier 1 clone.
 
 ## Tier 3: algorithm design (approved 2026-10-15 as Tier 2; renumbered 2026-10-16; not yet launched)
 
