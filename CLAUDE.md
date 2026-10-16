@@ -203,11 +203,32 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   2026-10-16). For each: `admin/launch_codex_run.sh <run> gpt-6-luna <effort>`,
   monitor with `admin/run_state.py`, then collect, archive the transcript,
   verify, and time it with all entries, as for luna-high.
-- Next, now that astra-max is done: an analysis pass on every entry, as measurement only, with no
-  quality verdicts (see "Conflict of interest").
+- Next: an analysis pass on every entry, as measurement only, with no quality
+  verdicts (see "Conflict of interest"). The wiki's Tier-1-Implementations page
+  describes each entry; this pass measures.
   - Instruction counts and cycles from `/usr/bin/time -l`, at 1 thread, differenced
     between two step counts to cancel setup.
   - Time by solver phase (`xcrun xctrace`, Time Profiler or CPU Counters), and code
     size.
+  - Generated against generic kernels within one entry: astra-xhigh's benchmark
+    takes `--generic`; sol-max's loader takes `chem_load_ts1(0)` or `(1)`
+    (`src/bench.c:103`), so time a scratch copy built with 0.
+  - astra-high's rate constants: their share of its timed loop, which recomputes
+    them every step (`src/ts1_bench.c:154`).
+  - Compile time of the generated kernels (16,000 to 21,000 lines of C), with
+    clang and gcc-15.
+- MUSICA integration study, after the analysis pass: how mechanism-specific
+  kernels could reach MUSICA's API.
+  - Ahead of time: a CMake function that generates and links a mechanism's
+    kernels when the host model is built, as KPP-based models do.
+  - At run time: generate C, compile it once with the system compiler, cache the
+    shared library by a hash of mechanism, compiler, and flags, and `dlopen` it.
+  - Embedded JIT (LLVM ORC or MLIR): MICM removed its LLVM JIT in PR #886,
+    2025-12-10, as unused, not shipped with musica, costly to keep in step with
+    interface changes, and pinned to an old LLVM.
+  - In any design: keep the generic kernels as the fallback, check a fingerprint
+    of the index plan when loading generated kernels, register kernels through
+    function pointers, and keep one implementation of the species ordering.
+  - Write it up on the wiki once measured.
 - Current status is in `admin/runs.md` and on the wiki's Tier-1-Results and
   Tier-2-Results pages.
