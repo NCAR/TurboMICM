@@ -70,3 +70,9 @@ compilers. Generated and hand-built Chapman mechanisms both pass every regressio
 against the independent legacy scalar oracle, with original inputs, layouts and
 tolerances. Both flow-tube solvers match all 3,601 supplied rows at atol=1e-10;
 the original test checks only the first ten. Forty-six cases remain unported.
+
+The external-model checkpoint passes all 672 implemented cases with both compilers.
+Eighteen aerosol cases run every original solver/layout variant; twenty external
+constraint cases check shared algebraic rows, finite differences, temperature
+updates, conservation and independent ownership when rebuilding a description.
+Only the eight tutorial programs remain unmapped; there are no N/A declarations.

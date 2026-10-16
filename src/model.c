@@ -1,4 +1,5 @@
 #include "chem.h"
+#include "external_internal.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,15 +46,20 @@ void chem_model_destroy(chem_model *m)
     free(m->constraint_rows); free(m->constraint_offsets);
     free(m->spec_to_var); free(m->var_to_spec); free(m->algebraic); free(m->jacobian_pattern);
     chem_lu_destroy(&m->lu);
+    chem_external_destroy(m);
     memset(m,0,sizeof(*m));
 }
 
 chem_status chem_model_create(chem_model *m, const chem_mechanism *s, chem_lu_algorithm algorithm)
 {
     memset(m,0,sizeof(*m));
-    if (!s || !s->n_species || !s->species || (s->n_reactions && !s->reactions) || (s->n_constraints && !s->constraints)) return CHEM_INVALID;
+    if (!s || !s->n_species || !s->species || (s->n_reactions && !s->reactions) ||
+        (s->n_constraints && !s->constraints) || (s->n_parameters && !s->parameters)) return CHEM_INVALID;
     chem_status status=CHEM_MEMORY;
     unsigned char *pattern=NULL;
+    status=chem_external_prepare(m,&s);
+    if (status!=CHEM_OK) goto fail;
+    status=CHEM_MEMORY;
     m->mechanism=s; m->n_reactions=s->n_reactions;
     m->spec_to_var=malloc(s->n_species*sizeof(size_t));
     m->var_to_spec=malloc(s->n_species*sizeof(size_t));
@@ -61,7 +67,7 @@ chem_status chem_model_create(chem_model *m, const chem_mechanism *s, chem_lu_al
     m->constraint_rows=calloc(s->n_constraints+1,sizeof(size_t));
     m->constraint_offsets=calloc(s->n_constraints+1,sizeof(size_t));
     m->rates=calloc(s->n_reactions+1,sizeof(chem_rate));
-    m->custom_names=calloc(2*s->n_reactions+s->n_constraints+1,sizeof(char *));
+    m->custom_names=calloc(2*s->n_reactions+s->n_constraints+s->n_parameters+1,sizeof(char *));
     if (!m->spec_to_var || !m->var_to_spec || !m->custom_offset || !m->rates || !m->custom_names || !m->constraint_rows || !m->constraint_offsets) goto fail;
     for (size_t i=0; i<s->n_species; ++i) {
         if (!s->species[i].name) { status=CHEM_INVALID; goto fail; }
@@ -107,6 +113,12 @@ chem_status chem_model_create(chem_model *m, const chem_mechanism *s, chem_lu_al
         }
     }
     m->custom_offset[s->n_reactions]=m->n_custom;
+    for (size_t i=0;i<s->n_parameters;++i) {
+        if (!s->parameters[i].name || chem_custom_index(m,s->parameters[i].name)!=CHEM_NONE) { status=CHEM_INVALID; goto fail; }
+        char *name=join(s->parameters[i].name,""); if (!name) { status=CHEM_MEMORY; goto fail; }
+        m->custom_names[m->n_custom++]=name;
+    }
+    chem_external_pattern(m,pattern);
     if (!s->preserve_order) {
         size_t *perm=malloc(n*sizeof(size_t)), *original=malloc(n*sizeof(size_t));
         unsigned char *reordered=malloc(n*n);
@@ -148,6 +160,9 @@ chem_status chem_model_create(chem_model *m, const chem_mechanism *s, chem_lu_al
             m->custom_names[m->n_custom++]=label;
         }
     }
+    /* External callbacks finalize every declared process element, even when a
+     * constraint masks that row during evaluation. Keep those storage slots. */
+    chem_external_pattern(m,pattern);
     for (size_t i=0; i<n; ++i) pattern[i*n+i]=1;
     status=chem_lu_create(&m->lu,n,pattern,algorithm);
     if (status!=CHEM_OK) goto fail;
@@ -185,7 +200,9 @@ chem_status chem_model_create(chem_model *m, const chem_mechanism *s, chem_lu_al
     }
     m->forcing=s->forcing && !s->n_constraints ? s->forcing : chem_forcing;
     m->jacobian=s->jacobian && !s->n_constraints ? s->jacobian : chem_jacobian;
-    m->jacobian_pattern=pattern;
+    m->jacobian_pattern=pattern; pattern=NULL;
+    status=chem_external_finalize(m);
+    if (status!=CHEM_OK) goto fail;
     return CHEM_OK;
 fail:
     free(pattern); chem_model_destroy(m); return status;

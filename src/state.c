@@ -1,4 +1,5 @@
 #include "chem.h"
+#include "external_internal.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -6,7 +7,7 @@ void chem_state_destroy(chem_state *s)
 {
     if (!s) return;
     free(s->y); free(s->rates); free(s->custom); free(s->atol); free(s->conditions);
-    free(s->work); free(s->jacobian); free(s->scratch);
+    free(s->work); free(s->jacobian); free(s->scratch); free(s->external_work);
     memset(s,0,sizeof(*s));
 }
 
@@ -20,7 +21,9 @@ chem_status chem_state_create(chem_state *s, const chem_model *m, size_t cells)
     s->custom=calloc((m->n_custom+1)*cells,sizeof(double)); s->atol=malloc(n*sizeof(double));
     s->conditions=calloc(cells,sizeof(chem_conditions)); s->work=calloc(9*n*cells,sizeof(double));
     s->jacobian=calloc(m->lu.nnz*cells,sizeof(double)); s->scratch=calloc(cells,sizeof(double));
-    if (!s->y || !s->rates || !s->custom || !s->atol || !s->conditions || !s->work || !s->jacobian || !s->scratch) {
+    if (m->composition && m->mechanism->n_constraints) s->external_work=calloc(m->lu.nnz*cells,sizeof(double));
+    if (!s->y || !s->rates || !s->custom || !s->atol || !s->conditions || !s->work || !s->jacobian || !s->scratch ||
+        (m->composition && m->mechanism->n_constraints && !s->external_work)) {
         chem_state_destroy(s); return CHEM_MEMORY;
     }
     for (size_t i=0; i<n; ++i) {
@@ -29,6 +32,10 @@ chem_status chem_state_create(chem_state *s, const chem_model *m, size_t cells)
         for (size_t c=0; c<cells; ++c) s->y[i*cells+c]=sp->initial;
     }
     for (size_t c=0; c<cells; ++c) s->conditions[c]=m->mechanism->conditions;
+    for (size_t i=0;i<m->mechanism->n_parameters;++i) {
+        const chem_named_value *v=m->mechanism->parameters+i;
+        chem_state_set_custom(s,v->name,&v->value,1);
+    }
     for (size_t i=0; i<m->mechanism->n_defaults; ++i) {
         const chem_named_value *v=&m->mechanism->defaults[i];
         chem_status status=chem_state_set_custom(s,v->name,&v->value,1);
@@ -52,6 +59,7 @@ chem_status chem_state_copy(chem_state *dst, const chem_state *src)
     memcpy(copy.work,src->work,9*n*c*sizeof(double));
     memcpy(copy.jacobian,src->jacobian,src->model->lu.nnz*c*sizeof(double));
     memcpy(copy.scratch,src->scratch,c*sizeof(double));
+    if (src->external_work) memcpy(copy.external_work,src->external_work,src->model->lu.nnz*c*sizeof(double));
     copy.factor=src->factor; copy.solve_linear=src->solve_linear; copy.linear_context=src->linear_context;
     chem_state_destroy(dst); *dst=copy;
     return CHEM_OK;
@@ -176,6 +184,7 @@ void chem_calculate_rates(chem_state *s)
         }
     }
     chem_update_constraint_parameters(s);
+    chem_external_update(s);
 }
 
 void chem_stats_add(chem_stats *a, const chem_stats *b)

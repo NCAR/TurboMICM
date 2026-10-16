@@ -12,11 +12,28 @@ chem_status chem_solver_create(chem_solver *s,const chem_system *system,size_t c
     const chem_solver_options *options,chem_error *error)
 {
     if (!s || !options || (options->n_setups && !options->setups) ||
-        options->method>CHEM_SOLVER_BACKWARD_EULER || options->layout.sparse_order!=CHEM_CSR) return CHEM_INVALID;
+        options->method>CHEM_SOLVER_BACKWARD_EULER || options->layout.sparse_order>CHEM_CSC) return CHEM_INVALID;
     *s=(chem_solver){0}; s->options=*options;
     chem_status status=chem_process_model_create(&s->chemistry,system,count,processes,options->preserve_species_order,
-        options->reject_unused,options->lu,error);
+        options->n_external ? 0 : options->reject_unused,options->lu,error);
     if (status!=CHEM_OK) return status;
+    if (options->n_external) {
+        chem_model_destroy(&s->chemistry.model);
+        s->chemistry.mechanism.n_external=options->n_external; s->chemistry.mechanism.external=options->external;
+        status=chem_model_create_checked(&s->chemistry.model,&s->chemistry.mechanism,options->lu,error);
+        if (status==CHEM_OK && options->reject_unused) {
+            const chem_model *model=&s->chemistry.model;
+            for (size_t i=0;i<model->mechanism->n_species;++i) if (!chem_model_species_used(model,i)) {
+                status=CHEM_INVALID;
+                if (error) { error->code=status; snprintf(error->message,sizeof(error->message),"Unused species: %s",model->mechanism->species[i].name); }
+                break;
+            }
+        }
+        if (status!=CHEM_OK) { chem_solver_destroy(s); return status; }
+        /* Extension descriptors have been consumed; model bindings own copies. */
+        s->chemistry.mechanism.n_external=0; s->chemistry.mechanism.external=NULL;
+        s->options.n_external=0; s->options.external=NULL;
+    }
     for (size_t i=0;i<options->n_setups;++i) {
         const chem_setup_callback *setup=options->setups+i;
         if (setup->finalize) status=setup->finalize(&s->chemistry.model,&options->layout,setup->context);

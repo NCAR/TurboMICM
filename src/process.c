@@ -1,4 +1,5 @@
 #include "chem_process.h"
+#include "external_internal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -102,6 +103,14 @@ double chem_model_parameterized_multiplier(const chem_model *m,size_t r,const ch
 int chem_model_species_used(const chem_model *m,size_t species)
 {
     if (!m || species>=m->mechanism->n_species) return 0;
+    if (chem_external_species_used(m,species)) return 1;
+    for (size_t i=0;i<m->mechanism->n_constraints;++i) {
+        const chem_constraint *c=m->mechanism->constraints+i;
+        if (c->algebraic_species==species) return 1;
+        for (size_t j=0;j<c->n_reactants;++j) if (c->reactants[j].species==species) return 1;
+        for (size_t j=0;j<c->n_products;++j) if (c->products[j].species==species) return 1;
+        for (size_t j=0;j<c->n_dependencies;++j) if (c->dependencies[j]==species) return 1;
+    }
     for (size_t r=0;r<m->n_reactions;++r) {
         const chem_reaction *rx=m->mechanism->reactions+r;
         for (size_t j=0;j<rx->n_reactants;++j) if (rx->reactants[j]==species) return 1;
@@ -126,6 +135,7 @@ chem_status chem_model_kinetic_pattern(const chem_model *m,unsigned char *patter
             }
         }
     }
+    chem_external_pattern(m,pattern);
     return CHEM_OK;
 }
 void chem_process_model_destroy(chem_process_model *p)

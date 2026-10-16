@@ -80,6 +80,8 @@ typedef struct { const char *name; double value; } chem_named_value;
 
 struct chem_state;
 struct chem_model;
+struct chem_external_model;
+struct chem_composition;
 typedef void (*chem_external_kernel)(const struct chem_state *, const double *, double *, void *);
 typedef enum { CHEM_LINEAR_CONSTRAINT, CHEM_EQUILIBRIUM_CONSTRAINT, CHEM_CUSTOM_CONSTRAINT } chem_constraint_type;
 typedef struct { double K, delta_H, R, reference_temperature; } chem_vant_hoff;
@@ -113,6 +115,10 @@ typedef struct {
     int preserve_order;
     size_t n_constraints;
     const chem_constraint *constraints;
+    size_t n_parameters;
+    const chem_named_value *parameters;
+    size_t n_external;
+    const struct chem_external_model *external;
 } chem_mechanism;
 
 typedef enum { CHEM_LU_MOZART, CHEM_LU_DOOLITTLE } chem_lu_algorithm;
@@ -146,6 +152,7 @@ typedef struct chem_model {
     chem_kernel forcing, jacobian;
     unsigned char *algebraic, *jacobian_pattern;
     size_t *constraint_rows, *constraint_offsets;
+    struct chem_composition *composition;
 } chem_model;
 chem_status chem_model_create(chem_model *model, const chem_mechanism *mechanism, chem_lu_algorithm algorithm);
 void chem_model_destroy(chem_model *model);
@@ -164,6 +171,7 @@ typedef struct chem_state {
     chem_status (*factor)(struct chem_state *, void *);
     chem_status (*solve_linear)(const struct chem_state *, double *, void *);
     void *linear_context;
+    double *external_work;
 } chem_state;
 chem_status chem_state_create(chem_state *state, const chem_model *model, size_t cells);
 void chem_state_destroy(chem_state *state);
@@ -184,6 +192,10 @@ double *chem_state_species_column(chem_state *, const char *);
 const double *chem_state_species_column_const(const chem_state *, const char *);
 void chem_state_clamp(chem_state *);
 void chem_calculate_rates(chem_state *state);
+/* Add all kinetic process contributions, including external models. Algebraic
+ * rows keep their incoming values. Constraint contributions are separate. */
+void chem_state_forcing(const chem_state *,const double *y,double *forcing);
+void chem_state_jacobian(const chem_state *,const double *y,double *negative_jacobian);
 /* Callbacks borrow context and may keep backend-owned factors there. NULL/NULL
  * restores the default. Factor reads state->jacobian; solve overwrites rhs. */
 chem_status chem_state_set_linear_backend(chem_state *state,

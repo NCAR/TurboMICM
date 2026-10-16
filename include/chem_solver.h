@@ -20,6 +20,8 @@ typedef struct {
     int preserve_species_order, reject_unused;
     size_t n_setups;
     const chem_setup_callback *setups;
+    size_t n_external;
+    const struct chem_external_model *external;
 } chem_solver_options;
 chem_solver_options chem_solver_options_default(chem_solver_method);
 typedef struct { chem_process_model chemistry; chem_solver_options options; } chem_solver;

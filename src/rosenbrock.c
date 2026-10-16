@@ -57,10 +57,10 @@ chem_result chem_ros_solve(chem_state *s, double dt, const chem_ros_parameters *
         if ((time+0.1*h)==time || h<=minimum(p->round_off,hmin)) { result.status=CHEM_SMALL_STEP; break; }
         h=minimum(h,fabs(dt-time));
         memset(initial,0,n*sizeof(double));
-        m->forcing(m,cells,s->rates,y,initial); ++result.stats.function_calls;
+        chem_state_forcing(s,y,initial); ++result.stats.function_calls;
         if (constrained) chem_constraint_forcing(s,y,initial);
         memset(s->jacobian,0,m->lu.nnz*cells*sizeof(double));
-        m->jacobian(m,cells,s->rates,y,s->jacobian); ++result.stats.jacobian_updates;
+        chem_state_jacobian(s,y,s->jacobian); ++result.stats.jacobian_updates;
         if (constrained) chem_constraint_jacobian(s,y,s->jacobian);
         int accepted=0;
         while (!accepted) {
@@ -75,7 +75,7 @@ chem_result chem_ros_solve(chem_state *s, double dt, const chem_ros_parameters *
                     memcpy(ynew,y,n*sizeof(double));
                     for (size_t j=0; j<stage; ++j) axpy(n,p->a[base+j],k[j],ynew);
                     memset(k[stage],0,n*sizeof(double));
-                    m->forcing(m,cells,s->rates,ynew,k[stage]); ++result.stats.function_calls;
+                    chem_state_forcing(s,ynew,k[stage]); ++result.stats.function_calls;
                     if (constrained) chem_constraint_forcing(s,ynew,k[stage]);
                 }
                 if (stage+1<p->stages && !p->new_function[stage+1]) memcpy(k[stage+1],k[stage],n*sizeof(double));
@@ -109,7 +109,7 @@ chem_result chem_ros_solve(chem_state *s, double dt, const chem_ros_parameters *
                 reject_more=reject_last; reject_last=1; h=next;
                 if (result.stats.accepted>=1) ++result.stats.rejected;
                 memset(s->jacobian,0,m->lu.nnz*cells*sizeof(double));
-                m->jacobian(m,cells,s->rates,y,s->jacobian); ++result.stats.jacobian_updates;
+                chem_state_jacobian(s,y,s->jacobian); ++result.stats.jacobian_updates;
                 if (constrained) chem_constraint_jacobian(s,y,s->jacobian);
             }
         }

@@ -69,3 +69,10 @@ loop. It is never linked into the library or benchmark. Its unit cases exercise
 the corresponding generic C operations and their original expected quantities;
 reciprocal U diagonals are converted only for the legacy factor-storage checks.
 Chapman regression cases additionally exercise configuration-generated kernels.
+
+External model descriptions compose extra species, custom parameters, kinetic
+patterns and algebraic rows before ordering and symbolic factorization. Contexts
+can be copied as plain values, cloned/destroyed by user callbacks, or explicitly
+borrowed. Finalization binds each instance after ordering. Kinetic callbacks keep
+incoming algebraic rows unchanged, while constraint callbacks supply those rows.
+Per-state temporary storage and const model contexts support shared solvers.

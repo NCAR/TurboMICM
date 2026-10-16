@@ -33,7 +33,7 @@ env: .conda/conda-meta/history
 .conda/conda-meta/history: environment.yml
 	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
 
-SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c src/array.c src/sparse.c src/factor.c src/version.c src/system.c src/process.c src/solver.c
+SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c src/array.c src/sparse.c src/factor.c src/version.c src/system.c src/process.c src/solver.c src/external.c
 OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
 
 cpu: bin/ts1_bench_cpu build/libchem.a
@@ -49,7 +49,7 @@ bin/test_cpu: $(wildcard tests/*.c) $(wildcard tests/*.h) generated/test_registr
 	@mkdir -p bin
 	$(CC) $(CFLAGS) -Itests -Igenerated $(wildcard tests/*.c) build/chapman.o build/libchem.a $(LDLIBS) -o $@
 
-build/%.o: src/%.c $(wildcard include/*.h) build/compiler.conf
+build/%.o: src/%.c $(wildcard include/*.h) $(wildcard src/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 

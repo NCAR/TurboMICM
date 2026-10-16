@@ -32,9 +32,9 @@ chem_result chem_be_solve(chem_state *s, double dt, const chem_be_parameters *p)
         do {
             ++result.stats.internal_steps;
             memset(f,0,n*sizeof(double));
-            m->forcing(m,cells,s->rates,y,f); ++result.stats.function_calls;
+            chem_state_forcing(s,y,f); ++result.stats.function_calls;
             memset(s->jacobian,0,m->lu.nnz*cells*sizeof(double));
-            m->jacobian(m,cells,s->rates,y,s->jacobian); ++result.stats.jacobian_updates;
+            chem_state_jacobian(s,y,s->jacobian); ++result.stats.jacobian_updates;
             for (size_t i=0; i<m->n_species; ++i) {
                 double *diagonal=s->jacobian+m->lu.diagonal[i]*cells;
                 #pragma omp simd
