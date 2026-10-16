@@ -190,6 +190,10 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   (`admin/time_entries.py`, 5 rounds at 10 and 1 threads). All 24 configurations
   are timed at 10 threads (`results/2026-10-15-micm-configurations`), and
   `admin/leaderboard.py` regenerates the wiki's Leaderboard and matrices.
+- After the weekly usage reset (2026-10-16): test launching the Luna runs from a
+  detached tmux server started with `env -i` and the SSE's login shell (no Claude
+  Code variables reach Codex), sending the standard command and `/goal` with
+  `send-keys`. The SSE launches astra-max by hand.
 - After astra-max: an analysis pass on every entry, as measurement only, with no
   quality verdicts (see "Conflict of interest").
   - Instruction counts and cycles from `/usr/bin/time -l`, at 1 thread, differenced
