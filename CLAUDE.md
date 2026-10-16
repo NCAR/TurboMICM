@@ -168,7 +168,12 @@ Tier-2-Results.
   rate parameters as data, for ensembles.
 - Arms to be chosen, for example sol-max and astra-xhigh, which already
   generate kernels, and one entry that does not.
-- Draft prompt: `tier2/prompt.v1` (2026-10-16), under the SSE's review. Its
+- Prompt: `tier2/prompt.v1`, its choices settled by the SSE on 2026-10-16: two
+  benchmarks (the specialized one ranked, the Tier 1 one timed alongside); run-time
+  data versus code as drafted; the linear algebra free (any exact factorization or
+  direct solve); a generator for any mechanism; no build-time cap, unless builds
+  start to grow without bound (build times are reported); the day-night gate; no
+  web search; a blind review of the generator. Its
   day-night gate, agreement with MICM to 10 digits overall and 9 per species at
   rtol 1e-6, atol 1e-15, 32-cell groups, is calibrated in
   `results/2026-10-16-tier2-day-night-calibration` (MICM agrees with itself

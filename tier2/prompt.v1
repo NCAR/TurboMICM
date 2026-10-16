@@ -69,21 +69,19 @@ mechanism. Use it to make TS1 as fast as you can.
   set (the photolysis rates and the other user-defined parameters), the step
   length, and the solver's tolerances.
 - Keep MICM's numerical method: the three-stage Rosenbrock with MICM's
-  parameters, its error estimate and step-size control, and an exact LU
-  factorization without pivoting. Within that, the linear algebra is yours to
-  specialize: any elimination order, fill-reducing ordering, blocking, or
-  unrolling, chosen at generation time if you like. No approximate Jacobians, no
-  reuse of factorizations beyond what MICM does, no reduced precision, and no
-  change to the chemistry.
+  parameters, its error estimate, and its step-size control. The linear algebra
+  is yours: any exact factorization or direct solve of the same linear systems,
+  with any ordering, pivoting, elimination order, blocking, or unrolling, chosen
+  at generation time if you like. No approximate Jacobians, no reuse of
+  factorizations beyond what MICM does, no reduced precision, and no change to
+  the chemistry.
 - The generator handles any mechanism in MICM's format, not only TS1. Your tests
   run it on TS1 and on the configuration-file mechanisms your Tier 1 tests use,
   and check that each generated solver agrees with your generic library to 1e-10
   relative.
 - The generator is the code that matters. Generated C is a build product: make
   regenerates it from the configuration, and nobody edits it by hand. It may be
-  large and need not be readable; the generator must be. A clean build,
-  generation included, takes at most 10 minutes on this machine with either
-  compiler.
+  large and need not be readable; the generator must be.
 - Keep what you built in Tier 1. The generic library, bin/ts1_bench_cpu, and
   `make test-cpu` keep working, and the Tier 1 gate still passes.
 
