@@ -199,10 +199,13 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   - Add each entry's grouping to `ENTRY_GROUPING` in `admin/leaderboard.py`.
   - When building in parallel, make the `micm/` and `reference/` links first, or
     with `ln -sn`: a racing `ln -s` writes a link inside the run root.
-- luna-xhigh and luna-max are deferred to the next session (this one ends 10:30 on
-  2026-10-16). For each: `admin/launch_codex_run.sh <run> gpt-6-luna <effort>`,
-  monitor with `admin/run_state.py`, then collect, archive the transcript,
-  verify, and time it with all entries, as for luna-high.
+- Luna: run all three overnight, fresh, one after another, each verified and timed
+  with all entries before the next starts. The first luna-high attempt was stopped
+  at 08:11 on 2026-10-16, after 1 h 23 min, far from done (615 failing cases at
+  its 07:51 checkpoint); it is kept, outside the run root, at
+  `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/` was recreated.
+  For each run: `admin/launch_codex_run.sh <run> gpt-6-luna <effort>`, then arm
+  `admin/run_state.py` (a monitor does not outlive its Claude Code session).
 - Next: an analysis pass on every entry, as measurement only, with no quality
   verdicts (see "Conflict of interest"). The wiki's Tier-1-Implementations page
   describes each entry; this pass measures.

@@ -95,7 +95,7 @@ Transcripts
 | astra-high | gpt-6-astra | high | Codex CLI 0.162.1, interactive | 2026-10-15 12:10-14:26 | `4055d7c`, 14:26 (15 commits) | finished |
 | astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17-23:35 | `fbd365c`, 23:35 (11 commits) | finished |
 | astra-max | gpt-6-astra | max | Codex CLI 0.163.0, interactive | 2026-10-16 01:04-02:46 | `0dc7f67`, 02:46 (7 commits) | finished |
-| luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-16 06:47- | — | running |
+| luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-16 06:47-08:11 | `217bf6e`, 08:10 (23 commits) | stopped; to rerun |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -230,3 +230,15 @@ Token counts are as Codex reports them: total = uncached input + output.
   gpt-6-luna, Codex 0.163.0, and no model switch; the process's environment holds
   no Claude Code variables besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
 - Codex session `01a144c1-3ac3-7f31-b3de-4cf81d130c81`.
+- Stopped at 08:11, after 1 h 23 min, by the SSE's decision: the Claude Code
+  session had to end early, and luna-high was far from done. Its first turn
+  ended at 07:51 with "The task remains incomplete: both compiler test suites
+  report 615 failures, and the 10,000-cell seed 2026 benchmark still has 2,185
+  out-of-tolerance values"; the goal had started a second turn. Claude Code
+  interrupted the goal (Escape, then `/quit`) and closed the tmux session.
+- Tokens at the stop: 1,677,749 total; input 1,247,782 (plus 136,146,944 cached);
+  output 429,967 (212,664 reasoning).
+- The stopped attempt, 23 commits ending `217bf6e` (08:10) plus 5 uncommitted
+  paths, was moved intact to `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`,
+  outside the run root, and `luna-high/` was recreated from its prompt with
+  `admin/setup_runs.py` for a fresh run, overnight.
