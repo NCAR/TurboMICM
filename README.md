@@ -13,6 +13,7 @@ from agents that are still running.
 | `transcripts/sol-max.jsonl.gz` | sol-max | Codex CLI 0.162.1 | `01a13fbc-d221-7b81-88a8-3d73454dd2b7` | 7.4 MB |
 | `transcripts/astra-high.jsonl.gz` | astra-high | Codex CLI 0.162.1 | `01a140c1-b679-7082-aef7-62cd2c85941c` | 10.5 MB |
 | `transcripts/astra-xhigh.jsonl.gz` | astra-xhigh | Codex CLI 0.163.0 | `01a142b6-b159-7d52-801a-7ac70fa3fed4` | 9.9 MB |
+| `transcripts/astra-max.jsonl.gz` | astra-max | Codex CLI 0.163.0 | `01a14386-84c0-70a3-867a-6cf69b22b824` | 7.1 MB |
 
 Each line is one JSON event:
 - the session settings: model, effort, and the harness's own instructions;
