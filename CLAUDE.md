@@ -230,7 +230,10 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
     fused kernels; same Rosenbrock method and tolerances; portability rules
     unchanged.
   - The specialized C must come from a generator the agent keeps, so a revised
-    mechanism costs a regeneration, not a new run.
+    mechanism costs a regeneration, not a new run. The generator must handle any
+    mechanism (the SSE's decision, 2026-10-16), and the tests run it on others,
+    such as MICM's tutorial mechanisms, so the result carries over to TS1's
+    successors, such as TS2 and T4S.
   - Verify by differential testing against the entry's generic path and MICM at
     the same settings: held-out seeds and day–night runs (with a tolerance that
     runs there).
