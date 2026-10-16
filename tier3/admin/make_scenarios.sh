@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Write the disclosed Tier 2 scenarios: cells.csv, photolysis.csv, scenario.txt.
+# Write the disclosed Tier 3 scenarios: cells.csv, photolysis.csv, scenario.txt.
 #
 #   admin/make_scenarios.sh DIR [CELLS]
 #

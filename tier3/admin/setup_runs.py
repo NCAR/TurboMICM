@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Create the Tier 2 run directories, ROOT/<run>/, from prompts/*.txt.
+"""Create the Tier 3 run directories, ROOT/<run>/, from prompts/*.txt.
 
     admin/setup_runs.py               every run with a prompt
     admin/setup_runs.py sol-max       only the named runs
 
-ROOT is this Tier 2 root. First, ROOT/micm and ROOT/reference are made links to
+ROOT is this Tier 3 root. First, ROOT/micm and ROOT/reference are made links to
 the Tier 1 root's, so the entries' Makefiles, which use ../micm and ../reference,
 still work. Then, for each prompt:
 - the Tier 1 run, ROOT/../<run>, is cloned into ROOT/<run> with its history;
 - the clone must be at the Tier 1 commit the prompt names;
 - the clone's remote is removed, so nothing can be pushed back into Tier 1;
-- the Tier 2 prompt is written to PROMPT.md.
-A Tier 2 run with commits beyond its Tier 1 commit has started and is left alone.
+- the Tier 3 prompt is written to PROMPT.md.
+A Tier 3 run with commits beyond its Tier 1 commit has started and is left alone.
 Otherwise PROMPT.md is written only if it differs, so a running session's
 directory is not touched. A prompt with an unfilled placeholder is refused.
 """
@@ -86,7 +86,7 @@ for prompt in prompts:
     if head != tier1_full:
         later = git("-C", str(run), "rev-list", "--count", f"{tier1_full}..HEAD").stdout.strip()
         if later != "0" and git("-C", str(run), "merge-base", "--is-ancestor", tier1_full, "HEAD", check=False).returncode == 0:
-            print(f"{run.name}: has {later} Tier 2 commit(s), left alone")
+            print(f"{run.name}: has {later} Tier 3 commit(s), left alone")
             continue
         print(f"{run.name}: HEAD is not the Tier 1 commit {tier1_commit}; check the clone", file=sys.stderr)
         failed = True

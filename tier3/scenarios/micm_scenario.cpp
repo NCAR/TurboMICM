@@ -1,4 +1,4 @@
-// MICM run of a Tier 2 TS1 scenario, for reference solutions and baselines.
+// MICM run of a Tier 3 TS1 scenario, for reference solutions and baselines.
 //
 //   micm_scenario [--threads N] [--group-size G] [--method NAME] [--rtol R]
 //                 [--atol A] [--max-steps M] [--no-output] SCENARIO

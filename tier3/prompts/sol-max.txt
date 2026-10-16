@@ -1,16 +1,16 @@
 You are part of a controlled experiment comparing LLM coding agents.
 Every agent receives this same prompt. You are Sol.
-This prompt is also in PROMPT.md in your directory. Below, ROOT means /Users/fillmore/NSF-NCAR/ODE/benchmarks/tier2.
+This prompt is also in PROMPT.md in your directory. Below, ROOT means /Users/fillmore/NSF-NCAR/ODE/benchmarks/tier3.
 
-This is Tier 2. In Tier 1 you ported MICM's CPU solver to portable C and made it
-fast while keeping MICM's numerical methods. Your directory, ROOT/sol-xhigh/, is a copy
-of your own Tier 1 repository at commit 171f54a, with its history; PROMPT.md
-now holds this prompt. In Tier 2 the numerical methods are yours to research,
+This is Tier 3. In Tier 1 you ported MICM's CPU solver to portable C and made it
+fast while keeping MICM's numerical methods. Your directory, ROOT/sol-max/, is a copy
+of your own Tier 1 repository at commit 001fb64, with its history; PROMPT.md
+now holds this prompt. In Tier 3 the numerical methods are yours to research,
 choose, design, and test. The aim is the fastest solution of atmospheric chemistry
 that is accurate enough for an atmospheric model.
 
 RULES
-- Work only in ROOT/sol-xhigh/, your own git repository; never commit to a repository
+- Work only in ROOT/sol-max/, your own git repository; never commit to a repository
   that encloses it. Commit as you go; the last commit is graded.
 - There is no time limit. Expect to work through a night, and keep going for as
   long as you are making real progress. You decide, on your own judgment, when the
@@ -23,7 +23,7 @@ RULES
         Tier 1's test-case list, TS1 tools and inputs, and MICM results; see
         README.md
     ROOT/scenarios
-        Tier 2's scenarios, their high-accuracy reference solutions, and the
+        Tier 3's scenarios, their high-accuracy reference solutions, and the
         scoring tool; see README.md
 - Apart from these, do not read other directories under ROOT, and do not look at
   other solutions to this task, on this machine or online. Do not modify anything

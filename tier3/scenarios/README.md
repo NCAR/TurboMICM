@@ -1,4 +1,4 @@
-# Tier 2 scenarios
+# Tier 3 scenarios
 
 Each directory here is a disclosed scenario: TS1 run through time, with its
 photolysis rates following a factor f(t).

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write a Tier 2 TS1 scenario: cells, a photolysis factor f(t), and the scenario file.
+"""Write a Tier 3 TS1 scenario: cells, a photolysis factor f(t), and the scenario file.
 
     make_scenario.py DIR --cells N --seed S --dt DT --steps K
                      [--diurnal --lat DEG --doy DAY --start HOUR | --constant]

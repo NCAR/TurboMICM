@@ -27,8 +27,9 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   - `transcripts`: an orphan branch of gzipped, redacted session transcripts.
 - **Keep the two copies identical:** `prompt.v3`, `prompts/`, `reference/`, and the
   prompt and setup scripts exist in both the run root and this repo. Check with
-  `diff -r`. `tier2/` likewise mirrors the committed files of
-  `ODE/benchmarks/tier2` (`git ls-files benchmarks/tier2` in ODE).
+  `diff -r`. `tier3/` likewise mirrors the committed files of
+  `ODE/benchmarks/tier3` (`git ls-files benchmarks/tier3` in ODE); its README.md
+  is this repo's only.
 - **Contestants:**
   - Codex CLI: gpt-6.1-sol, gpt-6-astra, and gpt-6-luna. Luna replaced
     gpt-5.6-terra on 2026-10-15. Codex was 0.162.1 through astra-high and is
@@ -171,13 +172,13 @@ Tier-2-Results.
 
 ## Tier 3: algorithm design (approved 2026-10-15 as Tier 2; renumbered 2026-10-16; not yet launched)
 
-- **Files:** `tier2/prompt.v1` is the template and `tier2/README.md` is the plan
+- **Files:** `tier3/prompt.v1` is the template and `tier3/README.md` is the plan
   and build list; the wiki pages are Tier-3-Design, Tier-3-Prompt, and
   Tier-3-Results.
-  - The directory is still `tier2/`, here and in the run root, and the template
-    still says "Tier 2". Before launch, rename both: the template's text and ROOT,
-    `admin/time_entries.py`'s default `--score` path, `tier2/README.md`, and the
-    wiki's launch commands.
+  - Renamed from `tier2/` on 2026-10-16, here and in the run root (ODE `a219270`):
+    the template says Tier 3, and the unstarted sol-max and sol-xhigh runs in
+    `ODE/benchmarks/tier3/` have regenerated prompts. Tier 3 runs will go on
+    branches `tier3/<model>/<effort>`.
 - **Order:** finish OpenAI Tier 1 (Luna), then OpenAI's Tier 2 and Tier 3 runs, in
   an order the SSE chooses, then the Claude models.
 - **Arms:**
@@ -202,7 +203,7 @@ Tier-2-Results.
   - Scenarios: f(t) photolysis applied per step, 24-hour day and night, 5–30
     minute steps, clean and polluted cells, some held out.
 - **Before launch:** the tooling, the six disclosed scenarios, and their
-  references (converged to 10.2–10.8 digits) are done; see `tier2/README.md`.
+  references (converged to 10.2–10.8 digits) are done; see `tier3/README.md`.
   - MICM's default fails on 3 of the 5 day–night scenarios (absolute tolerance
     1e-3 mol m-3); 1e-15 fixes it.
   - Remaining: the undisclosed scenarios, whose parameters the SSE chooses and

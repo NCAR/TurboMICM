@@ -16,9 +16,9 @@ when there are as many rounds as programs).
 Each run gets a fresh working directory. Its ts1_final.csv is checked against
 MICM_FINAL with reference/compare_final.py and then deleted.
 
-With --scenario (Tier 2), every COMMAND takes `[--threads N] SCENARIO`, like
-tier2/scenarios/micm_scenario and an entry's bin/ts1_scenario, with its method
-and options in the COMMAND. Each run is scored with tier2/scenarios/score.py
+With --scenario (Tier 3), every COMMAND takes `[--threads N] SCENARIO`, like
+tier3/scenarios/micm_scenario and an entry's bin/ts1_scenario, with its method
+and options in the COMMAND. Each run is scored with tier3/scenarios/score.py
 against REFERENCE, a scenario's reference_snapshots.csv (scoring the run's
 ts1_snapshots.csv) or reference_final.csv (scoring its ts1_final.csv), and the
 gate is score.py's. A 10,000-cell scenario can be scored against the 1,000-cell
@@ -54,7 +54,7 @@ STATS = ("internal_steps", "accepted", "rejected", "function_calls", "jacobian_u
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument("programs", nargs="+", metavar="NAME=COMMAND")
 parser.add_argument("--input", type=Path, help="the CELLS_CSV every program reads (Tier 1)")
-parser.add_argument("--scenario", type=Path, help="the scenario file every program runs (Tier 2)")
+parser.add_argument("--scenario", type=Path, help="the scenario file every program runs (Tier 3)")
 parser.add_argument("--reference", type=Path, required=True,
                     help="MICM's ts1_final.csv for the same input, or the scenario's reference_final.csv or reference_snapshots.csv")
 parser.add_argument("--out", type=Path, required=True)
@@ -65,7 +65,7 @@ parser.add_argument("--threads", default="10,1", help="comma-separated thread co
 parser.add_argument("--rounds", type=int, default=5)
 parser.add_argument("--pause", type=float, default=5.0, help="seconds between runs (default: 5)")
 parser.add_argument("--compare", type=Path, default=ROOT / "reference" / "compare_final.py")
-parser.add_argument("--score", type=Path, default=ROOT / "tier2" / "scenarios" / "score.py")
+parser.add_argument("--score", type=Path, default=ROOT / "tier3" / "scenarios" / "score.py")
 args = parser.parse_args()
 if (args.input is None) == (args.scenario is None):
     parser.error("give exactly one of --input and --scenario")

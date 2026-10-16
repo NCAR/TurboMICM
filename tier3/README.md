@@ -1,14 +1,17 @@
-# Tier 2: numerical algorithm design
+# Tier 3: numerical algorithm design
+
+Numbered Tier 2, in `tier2/`, until 2026-10-16, when specialization for a frozen
+mechanism became Tier 2 and this tier became Tier 3.
 
 Tier 1 asked agents to port MICM's CPU solver to portable C and make it fast while
-keeping MICM's numerical methods. Tier 2 frees the methods. Each agent starts
+keeping MICM's numerical methods. Tier 3 frees the methods. Each agent starts
 from its own Tier 1 solution, researches the literature, prototypes and scans
 method structures, and implements the fastest methods it can justify as accurate
 enough for an atmospheric model.
 
 Status: designed and approved on 2026-10-15; tooling built; not yet launched.
 The prompt template is `prompt.v1`. This directory mirrors the committed files of
-the Tier 2 run root, `ODE/benchmarks/tier2`; keep the two identical.
+the Tier 3 run root, `ODE/benchmarks/tier3`; keep the two identical.
 
 ## Plan
 
@@ -44,7 +47,7 @@ the Tier 2 run root, `ODE/benchmarks/tier2`; keep the two identical.
 ## Prompt placeholders
 
 `<model>`, `<run>`, `<micm_commit>`, as in Tier 1, plus:
-- `<root>`: the Tier 2 run root, planned as `/Users/fillmore/NSF-NCAR/ODE/benchmarks/tier2`;
+- `<root>`: the Tier 3 run root, planned as `/Users/fillmore/NSF-NCAR/ODE/benchmarks/tier3`;
 - `<tier1_commit>`: the run's final Tier 1 commit, for example `001fb64` for
   sol-max.
 
@@ -53,7 +56,7 @@ the Tier 2 run root, `ODE/benchmarks/tier2`; keep the two identical.
 | Path | Purpose | Status |
 |---|---|---|
 | `prompts/make_prompts.py` | fills the template; `<tier1_commit>` is the Tier 1 run's last commit | built; sol-xhigh and sol-max prompts made |
-| `admin/setup_runs.py` | clones each Tier 1 run repository into the Tier 2 root (no shared files, no remote), writes PROMPT.md, links `micm/` and `reference/` | built and tested; sol-xhigh and sol-max set up |
+| `admin/setup_runs.py` | clones each Tier 1 run repository into the Tier 3 root (no shared files, no remote), writes PROMPT.md, links `micm/` and `reference/` | built and tested; sol-xhigh and sol-max set up |
 | `scenarios/micm_scenario.cpp` | MICM on a scenario: f(t) photolysis at the start of each step, any MICM Rosenbrock method and tolerances, snapshots | built; bit-identical to `micm_ts1_ref` on Tier 1's scenario |
 | `admin/make_scenarios.sh`, `scenarios/make_scenario.py` | the six disclosed scenarios, and 10,000-cell versions for timing | built; regenerates the disclosed set byte for byte |
 | `admin/make_references.sh` | references: MICM's six-stage Rosenbrock at 1e-10 relative and 1e-23 absolute, checked against 1e-9 and 1e-22 | all six done on 2026-10-15 (10 threads, 16:31–17:00): converged to 10.18–10.79 digits overall, no species below 8.86 |
@@ -101,7 +104,7 @@ tolerances is part of their research.
 
 ## Launch
 
-    cd ~/NSF-NCAR/ODE/benchmarks/tier2/<run>
+    cd ~/NSF-NCAR/ODE/benchmarks/tier3/<run>
     codex --search -m <model> -c model_reasoning_effort=<effort> -c features.memories=false
 
 then

@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Make the high-accuracy reference solution for each Tier 2 scenario.
+# Make the high-accuracy reference solution for each Tier 3 scenario.
 #
 #   admin/make_references.sh MICM_SCENARIO THREADS SCENARIO_DIR...
 #

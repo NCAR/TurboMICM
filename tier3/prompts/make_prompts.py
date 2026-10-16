@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Generate the Tier 2 run prompts from the template ../prompt.v1.
+"""Generate the Tier 3 run prompts from the template ../prompt.v1.
 
-    prompts/make_prompts.py                every planned Tier 2 run
+    prompts/make_prompts.py                every planned Tier 3 run
     prompts/make_prompts.py luna-max       only the named runs
 
-Each Tier 2 run works in <root>/<run>/, a clone of its Tier 1 run <root>/../<run>/
+Each Tier 3 run works in <root>/<run>/, a clone of its Tier 1 run <root>/../<run>/
 at that run's last commit, which fills <tier1_commit>. Generate a run's prompt only
 after its Tier 1 run has finished. A run whose Tier 1 repository has no commits is
 skipped. Re-run after editing the template, then run admin/setup_runs.py.
@@ -45,7 +45,7 @@ for run in args.runs or PLANNED:
     dirty = subprocess.run(["git", "--no-optional-locks", "-C", str(tier1), "status", "--porcelain"],
                            capture_output=True, text=True).stdout
     if dirty.strip():
-        print(f"{run}: note, its Tier 1 working tree has uncommitted changes; Tier 2 starts from the last commit")
+        print(f"{run}: note, its Tier 1 working tree has uncommitted changes; Tier 3 starts from the last commit")
     text = template
     for placeholder, value in {
         "<run>": run,
