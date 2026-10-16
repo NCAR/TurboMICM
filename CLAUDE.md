@@ -196,10 +196,14 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   - Add each entry's grouping to `ENTRY_GROUPING` in `admin/leaderboard.py`.
   - When building in parallel, make the `micm/` and `reference/` links first, or
     with `ln -sn`: a racing `ln -s` writes a link inside the run root.
-- After the weekly usage reset (2026-10-16): test launching the Luna runs from a
-  detached tmux server started with `env -i` and the SSE's login shell (no Claude
-  Code variables reach Codex), sending the standard command and `/goal` with
-  `send-keys`.
+- Automated launch, tested 2026-10-16 on a throwaway repository with gpt-6-luna at
+  high: a detached tmux server (`env -i … tmux -L <socket> new-session -d -c <dir>`,
+  the SSE's login shell), the standard command and `/goal` sent with
+  `send-keys -l` then `Enter`, the trust prompt answered with `Enter`. The record
+  showed the right model, effort, version, and goal, with no model switch. Codex's
+  environment had only the `.zshrc` variable `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`,
+  plus `TERM_PROGRAM=tmux`. Using it for a run changes "the SSE launches every run",
+  so it needs the SSE's go-ahead.
 - Next, now that astra-max is done: an analysis pass on every entry, as measurement only, with no
   quality verdicts (see "Conflict of interest").
   - Instruction counts and cycles from `/usr/bin/time -l`, at 1 thread, differenced
