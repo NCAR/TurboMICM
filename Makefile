@@ -2,6 +2,7 @@ ifeq ($(origin CC),default)
 CC = clang
 endif
 OPTFLAGS ?= -O3 -DNDEBUG
+GROUP_SIZE ?= 32
 CONDA ?= $(HOME)/miniforge3/bin/conda
 PYTHON = $(CURDIR)/.conda/bin/python
 UNAME_S := $(shell uname -s)
@@ -24,7 +25,7 @@ else
 OMP_CFLAGS = -fopenmp
 OMP_LIBS = -fopenmp
 endif
-CPPFLAGS += -Iinclude -Ibuild/generated
+CPPFLAGS += -Iinclude -Ibuild/generated -DCH_DEFAULT_GROUP_SIZE=$(GROUP_SIZE)
 CFLAGS = -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMP_CFLAGS) -fPIC
 LDLIBS = $(OMP_LIBS) -lm
 SOURCES = $(wildcard src/*.c)
@@ -33,8 +34,13 @@ EXAMPLE_OBJECTS = build/example_no_user.o build/example_user.o build/example_rob
 
 .PHONY: all cpu env bench test-cpu micm-ref clean FORCE
 all: cpu
-env: .conda/bin/python
-.conda/bin/python: environment.yml
+env:
+	@if test -x .conda/bin/python; then \
+	  CONDA_PKGS_DIRS='$(CURDIR)/.conda-pkgs' $(CONDA) env update --prefix '$(CURDIR)/.conda' --file environment.yml; \
+	else \
+	  CONDA_PKGS_DIRS='$(CURDIR)/.conda-pkgs' $(CONDA) env create --yes --prefix '$(CURDIR)/.conda' --file environment.yml; \
+	fi
+.conda/bin/python:
 	CONDA_PKGS_DIRS='$(CURDIR)/.conda-pkgs' $(CONDA) env create --yes --prefix '$(CURDIR)/.conda' --file environment.yml
 
 build/flags: FORCE
@@ -80,6 +86,7 @@ bin/tutorial_cpu: tools/tutorials.c $(EXAMPLE_OBJECTS) $(OBJECTS) include/chem.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) tools/tutorials.c $(EXAMPLE_OBJECTS) $(OBJECTS) $(LDLIBS) -o $@
 
 test-cpu: cpu bin/test_native_cpu bin/tutorial_cpu
+	@bin/test_native_cpu extensions
 	$(PYTHON) tests/run_cases.py
 
 micm-ref: bin/micm_ts1_ref

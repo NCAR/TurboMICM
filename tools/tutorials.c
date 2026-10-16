@@ -164,7 +164,8 @@ static int configuration(void) {
                          "Four stages differential algebraic: ","Six stages differential algebraic: "};
   const char *names[] = {"A","B","C"}; ch_model *m = robertson();
   for (int j = 0; j < 5; ++j) {
-    if (j) putchar('\n'); puts(labels[j]);
+    if (j) putchar('\n');
+    puts(labels[j]);
     ch_state *s = initial(m,1,2); ch_stats total = {0}; double seconds = 0;
     header(1,3,names); print_state(s,0,3,names);
     for (int i = 0; i < 10; ++i) {

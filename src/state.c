@@ -2,7 +2,9 @@
 #include "internal.h"
 
 ch_state *ch_state_create(const ch_model *m, size_t cells) {
-  if (!m || !m->finalized || !cells || cells > SIZE_MAX/m->nv/6) return NULL;
+  if (!m || !m->finalized || !m->nv || !cells || cells > SIZE_MAX/m->nv/6) return NULL;
+  if ((m->nparam && cells > SIZE_MAX/m->nparam) ||
+      (m->nr && cells > SIZE_MAX/m->nr) || cells > SIZE_MAX/m->sparse->nnz) return NULL;
   ch_state *s = calloc(1,sizeof(*s));
   if (!s) return NULL;
   s->model = m; s->cells = cells; s->rtol = 1e-6;
@@ -12,9 +14,12 @@ ch_state *ch_state_create(const ch_model *m, size_t cells) {
   s->conditions = ch_allocate(cells,sizeof(ch_conditions));
   s->new_y = ch_allocate(n,sizeof(double)); s->forcing = ch_allocate(n,sizeof(double));
   s->error = ch_allocate(n,sizeof(double)); s->stages = ch_allocate(6*n,sizeof(double));
+  s->inverse_diagonal = ch_allocate(n,sizeof(double));
   s->jacobian = ch_allocate(m->sparse->nnz*cells,sizeof(double)); s->scratch = ch_allocate(cells,sizeof(double));
   if (!s->y || !s->custom || !s->rates || !s->atol || !s->conditions || !s->new_y ||
-      !s->forcing || !s->error || !s->stages || !s->jacobian || !s->scratch) { ch_state_free(s); return NULL; }
+      !s->forcing || !s->error || !s->stages || !s->jacobian || !s->scratch || !s->inverse_diagonal) {
+    ch_state_free(s); return NULL;
+  }
   for (size_t i = 0; i < m->nv; ++i) s->atol[i] = m->species[m->order[i]].atol;
   for (size_t i = 0; i < m->nparam; ++i)
     for (size_t c = 0; c < cells; ++c) s->custom[i*cells+c] = m->parameters[i].initial;
@@ -48,6 +53,7 @@ void ch_state_move(ch_state **d, ch_state **s) {
 void ch_state_free(ch_state *s) {
   if (!s) return;
   free(s->y); free(s->custom); free(s->rates); free(s->atol); free(s->conditions);
+  free(s->inverse_diagonal);
   free(s->new_y); free(s->forcing); free(s->error); free(s->stages); free(s->jacobian); free(s->scratch); free(s);
 }
 size_t ch_state_cells(const ch_state *s) { return s ? s->cells : 0; }
@@ -69,11 +75,11 @@ int ch_state_set_linear_solver(ch_state *s, ch_factor_function factor, ch_linear
 }
 int ch_factor_state(ch_state *s) {
   if (s->factor) return s->factor(s->model->sparse,s->cells,s->jacobian,s->scratch,s->linear_context);
-  return ch_lu_factor_work(s->model->sparse,s->cells,s->jacobian,s->lu_algorithm,s->scratch);
+  return ch_lu_factor_work(s->model->sparse,s->cells,s->jacobian,s->lu_algorithm,s->scratch,s->inverse_diagonal);
 }
 void ch_linear_state(ch_state *s, double *x) {
   if (s->linear_solve) s->linear_solve(s->model->sparse,s->cells,s->jacobian,x,s->linear_context);
-  else ch_lu_solve(s->model->sparse,s->cells,s->jacobian,x);
+  else ch_lu_solve_work(s->model->sparse,s->cells,s->jacobian,x,s->inverse_diagonal);
 }
 void ch_alpha_minus_jacobian(const ch_state *s, double alpha, double *a) {
   for (size_t i = 0; i < s->model->nv; ++i) if (!s->model->algebraic[i]) {

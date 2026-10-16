@@ -167,7 +167,15 @@ def backward_euler(id_):
         with State(m,4) as s:
             s.conditions(272.5,101253.3,1e6); s.set('A',1.); s.tolerance(atol=1e-6); s.update()
             if id_.endswith('CanCallSolve'):
-                s.solve(1,'be'); return
+                s.solve(1,'be')
+                # Exhausting the Newton reductions keeps the last trial and
+                # reports MICM's distinct AcceptingUnconvergedIntegration state.
+                p = backward_euler_default(); p.max_iterations = 1
+                status,stats = s.solve(1,'be',p,allow_failure=True)
+                assert status == -12 and stats.rejected == p.reduction_count+1
+                assert stats.accepted == 0 and 0 < stats.final_time < 1
+                assert status_string(status) == b'AcceptingUnconvergedIntegration'
+                return
             p = backward_euler_default(); p.small = 1e-6; s.tolerance(.001,1e-6)
             residual,y = np.zeros_like(s.y),np.zeros_like(s.y)
             check = lambda: backward_euler_converged(s.handle,ptr(residual),ptr(y),C.byref(p))

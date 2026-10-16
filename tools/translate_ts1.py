@@ -53,7 +53,13 @@ def main():
         reactions.append(item)
     assert len(species) == 210, len(species)
     assert len(reactions) == 547, len(reactions)
-    initial = {'temperature': 287.45, 'pressure': 101319.9,
+    def initial_condition(name):
+        values = re.findall(r'state\.conditions_\[c\]\.' + name + r'_\s*=\s*([^;]+);', text)
+        if len(values) != 1:
+            raise ValueError(f'expected one initial {name}, found {len(values)}')
+        return float(values[0])
+
+    initial = {'temperature': initial_condition('temperature'), 'pressure': initial_condition('pressure'),
                'concentrations': {n: float(v) for n,v in re.findall(r'concentration\("([^"]+)",\s*([^)]+)\)', text)},
                'parameters': {n: float(v) for n,v in re.findall(r'parameter\("([^"]+)",\s*([^)]+)\)', text)}}
     result = {'camp-data': species + [{'name': 'TS1', 'type': 'MECHANISM',

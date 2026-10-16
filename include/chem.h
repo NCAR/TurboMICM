@@ -18,7 +18,7 @@ typedef enum {
   CH_OK = 0, CH_INVALID = -1, CH_MEMORY = -2, CH_NOT_FOUND = -3,
   CH_SIZE = -4, CH_FROZEN = -5, CH_SINGULAR = -6,
   CH_MAX_STEPS = -7, CH_SMALL_STEP = -8, CH_NAN = -9, CH_INF = -10,
-  CH_CONSTRAINT_INIT = -11
+  CH_CONSTRAINT_INIT = -11, CH_UNCONVERGED = -12
 } ch_status;
 const char *ch_status_string(int status);
 
@@ -208,6 +208,11 @@ int ch_state_set_linear_solver(ch_state *, ch_factor_function, ch_linear_functio
 ch_sparse *ch_sparse_create(size_t n, const unsigned char *pattern);
 void ch_sparse_free(ch_sparse *);
 size_t ch_sparse_size(const ch_sparse *);
+size_t ch_sparse_dimension(const ch_sparse *);
+/* Borrowed CSR metadata, including symbolic fill; valid until sparse_free. */
+const int *ch_sparse_row_offsets(const ch_sparse *);
+const int *ch_sparse_column_indices(const ch_sparse *);
+const int *ch_sparse_diagonal_indices(const ch_sparse *);
 int ch_sparse_index(const ch_sparse *, size_t row, size_t col);
 int ch_markowitz(size_t n, const unsigned char *pattern, int *permutation);
 int ch_lu_factor(const ch_sparse *, size_t cells, double *a, int algorithm);

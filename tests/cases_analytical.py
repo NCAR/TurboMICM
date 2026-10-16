@@ -20,7 +20,8 @@ def advance(state,dt,method=3,substeps=1):
         elapsed = 0.
         while elapsed < dt/substeps:
             status,stats = state.solve(dt/substeps-elapsed,method,allow_failure=True)
-            assert status in (0,-7), status_string(status)
+            continuation = -12 if method == 'be' else -7
+            assert status in (0,continuation), status_string(status)
             assert stats.final_time > 0
             elapsed += stats.final_time
 

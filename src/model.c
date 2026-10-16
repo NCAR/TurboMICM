@@ -27,6 +27,7 @@ const char *ch_status_string(int status) {
     case CH_NAN: return "NaN detected";
     case CH_INF: return "Inf detected";
     case CH_CONSTRAINT_INIT: return "Constraint Initialization Failed";
+    case CH_UNCONVERGED: return "AcceptingUnconvergedIntegration";
     default: return "Unknown status";
   }
 }

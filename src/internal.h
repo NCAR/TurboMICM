@@ -66,7 +66,7 @@ struct ch_state {
   size_t cells;
   double *y, *custom, *rates, *atol, rtol;
   ch_conditions *conditions;
-  double *new_y, *forcing, *error, *stages, *jacobian, *scratch;
+  double *new_y, *forcing, *error, *stages, *jacobian, *scratch, *inverse_diagonal;
   int lu_algorithm;
   ch_factor_function factor;
   ch_linear_function linear_solve;
@@ -78,5 +78,6 @@ void ch_update_constraints(ch_state *);
 void ch_post_solve(ch_state *);
 int ch_factor_state(ch_state *);
 void ch_linear_state(ch_state *, double *);
-int ch_lu_factor_work(const ch_sparse *, size_t, double *, int, double *);
+int ch_lu_factor_work(const ch_sparse *, size_t, double *, int, double *, double *inverse_diagonal);
+void ch_lu_solve_work(const ch_sparse *, size_t, const double *, double *, const double *inverse_diagonal);
 #endif

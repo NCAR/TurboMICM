@@ -21,4 +21,4 @@ def flowtube(id_):
             history = [s.y[:,0].copy()]
             for _ in range(3600): advance(s,1.,'be' if be else 2); history.append(s.y[:,0].copy())
             assert expected.shape == (3601,5)
-            near(np.array(history)[:10],expected[:10,1:],rtol=0,atol=1e-10)
+            near(np.array(history),expected[:,1:],rtol=0,atol=1e-10)

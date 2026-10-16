@@ -49,7 +49,7 @@ int ch_solve_backward_euler(ch_state *s, double dt, const ch_backward_euler_para
     if (!converged) {
       ++stats->rejected; successes = 0;
       if (failures >= p->reduction_count) {
-        time += h; status = CH_MAX_STEPS;
+        time += h; status = CH_UNCONVERGED;
         for (size_t i = 0; i < n; ++i) {
           if (isnan(s->y[i])) { status = CH_NAN; break; }
           if (isinf(s->y[i])) status = CH_INF;

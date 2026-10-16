@@ -5,6 +5,7 @@
 #include <math.h>
 #include <omp.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +26,7 @@ static char *line_read(FILE *file) {
   int ch;
   while ((ch = fgetc(file)) != EOF && ch != '\n') {
     if (n+1 == cap) {
+      if (cap > SIZE_MAX/2) { free(line); return NULL; }
       char *next = realloc(line,cap*2);
       if (!next) { free(line); return NULL; }
       line = next; cap *= 2;
@@ -130,6 +132,9 @@ int main(int argc, char **argv) {
   size_t ngroups = cells/group_size + (cells%group_size != 0);
   if (threads > ngroups) threads = ngroups;
   omp_set_num_threads((int)threads);
+  /* Groups have independent adaptive histories. Dynamic assignment balances
+   * heterogeneous cores without changing any group's arithmetic. */
+  if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_dynamic,1);
   ch_model *m = ch_build_ts1();
   group *groups = calloc(ngroups,sizeof(*groups));
   int status = CH_MEMORY;
@@ -139,14 +144,14 @@ int main(int argc, char **argv) {
     if (count > group_size) count = group_size;
     groups[g].first = g*group_size;
     groups[g].state = ch_state_create(m,count);
-    if (!groups[g].state) goto cleanup;
+    if (!groups[g].state) { status = CH_MEMORY; goto cleanup; }
     status = ch_init_ts1(groups[g].state);
     if (status) goto cleanup;
   }
   status = initialize_csv(pos[3],m,groups,cells,group_size);
   if (status) goto cleanup;
   ch_rosenbrock_parameters p = ch_rosenbrock_default(3);
-  #pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(runtime)
   for (size_t g = 0; g < ngroups; ++g) {
     ch_stats warmup;
     groups[g].status = ch_update_rates(groups[g].state);
@@ -154,7 +159,7 @@ int main(int argc, char **argv) {
   }
   for (size_t g = 0; g < ngroups; ++g) if ((status = groups[g].status)) goto cleanup;
   double begin = omp_get_wtime();
-  #pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(runtime)
   for (size_t g = 0; g < ngroups; ++g) {
     for (size_t step = 0; step < steps; ++step) {
       ch_stats stats;

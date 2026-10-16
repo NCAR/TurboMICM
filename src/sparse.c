@@ -6,6 +6,7 @@
 
 int ch_markowitz(size_t n, const unsigned char *pattern, int *permutation) {
   if ((!pattern || !permutation) && n) return CH_INVALID;
+  if (n > INT_MAX || (n && n > SIZE_MAX/n)) return CH_SIZE;
   unsigned char *a = ch_allocate(n*n, 1), *alive = ch_allocate(n, 1);
   if (!a || !alive) { free(a); free(alive); return CH_MEMORY; }
   memcpy(a, pattern, n*n);
@@ -49,7 +50,10 @@ ch_sparse *ch_sparse_create(size_t n, const unsigned char *pattern) {
   for (size_t i = 0; i < n; ++i) {
     s->row_start[i] = (int)s->nnz;
     for (size_t j = 0; j < n; ++j)
-      s->index[i*n+j] = p[i*n+j] ? (int)s->nnz++ : -1;
+      if (p[i*n+j]) {
+        if (s->nnz == INT_MAX) goto fail;
+        s->index[i*n+j] = (int)s->nnz++;
+      } else s->index[i*n+j] = -1;
     s->diagonal[i] = s->index[i*n+i];
   }
   s->row_start[n] = (int)s->nnz;
@@ -68,7 +72,7 @@ ch_sparse *ch_sparse_create(size_t n, const unsigned char *pattern) {
   s->ops = ch_allocate(count, sizeof(ch_lu_op));
   if (!s->ops) goto fail;
   for (size_t i = 0; i < n; ++i) {
-    s->ops[s->nops++] = (ch_lu_op){s->diagonal[i], 0, 0, 0};
+    s->ops[s->nops++] = (ch_lu_op){s->diagonal[i], (int)i, 0, 0};
     for (size_t j = i+1; j < n; ++j) if (p[j*n+i])
       s->ops[s->nops++] = (ch_lu_op){s->index[j*n+i], 0, 0, 1};
     for (size_t k = i+1; k < n; ++k) if (p[i*n+k])
@@ -86,6 +90,10 @@ void ch_sparse_free(ch_sparse *s) {
   free(s->index); free(s->row_start); free(s->columns); free(s->diagonal); free(s->ops); free(s);
 }
 size_t ch_sparse_size(const ch_sparse *s) { return s ? s->nnz : 0; }
+size_t ch_sparse_dimension(const ch_sparse *s) { return s ? s->n : 0; }
+const int *ch_sparse_row_offsets(const ch_sparse *s) { return s ? s->row_start : NULL; }
+const int *ch_sparse_column_indices(const ch_sparse *s) { return s ? s->columns : NULL; }
+const int *ch_sparse_diagonal_indices(const ch_sparse *s) { return s ? s->diagonal : NULL; }
 int ch_sparse_index(const ch_sparse *s, size_t row, size_t col) {
   return s && row < s->n && col < s->n ? s->index[row*s->n+col] : CH_INVALID;
 }
@@ -108,7 +116,7 @@ int ch_lu_factor(const ch_sparse *s, size_t cells, double *a, int algorithm) {
   if (!s || !a || !cells || (algorithm != 0 && algorithm != 1)) return CH_INVALID;
   double *inverse = ch_allocate(cells, sizeof(double));
   if (!inverse) return CH_MEMORY;
-  int result = ch_lu_factor_work(s,cells,a,algorithm,inverse);
+  int result = ch_lu_factor_work(s,cells,a,algorithm,inverse,NULL);
   free(inverse);
   return result;
 }
@@ -119,12 +127,14 @@ int ch_lu_factor_copy(const ch_sparse *s, size_t cells, const double *a, double 
   return ch_lu_factor(s,cells,lu,algorithm);
 }
 
-int ch_lu_factor_work(const ch_sparse *s, size_t cells, double *a, int algorithm, double *inverse) {
+int ch_lu_factor_work(const ch_sparse *s, size_t cells, double *a, int algorithm,
+                      double *inverse, double *inverse_diagonal) {
   if (algorithm == 0) {
     for (size_t i = 0; i < s->nops; ++i) {
       const ch_lu_op *op = &s->ops[i];
       double *restrict dst = a + (size_t)op->destination*cells;
       if (op->kind == 0) {
+        if (inverse_diagonal) inverse = inverse_diagonal+(size_t)op->left*cells;
         #pragma omp simd
         for (size_t c = 0; c < cells; ++c) inverse[c] = 1.0/dst[c];
       } else if (op->kind == 1) {
@@ -140,6 +150,7 @@ int ch_lu_factor_work(const ch_sparse *s, size_t cells, double *a, int algorithm
   } else {
     size_t n = s->n;
     for (size_t i = 0; i < n; ++i) {
+      if (inverse_diagonal) inverse = inverse_diagonal+i*cells;
       for (size_t k = i; k < n; ++k) {
         int dst = s->index[i*n+k];
         if (dst < 0) continue;
@@ -172,6 +183,11 @@ int ch_lu_factor_work(const ch_sparse *s, size_t cells, double *a, int algorithm
 }
 
 void ch_lu_solve(const ch_sparse *s, size_t cells, const double *a, double *x) {
+  ch_lu_solve_work(s,cells,a,x,NULL);
+}
+
+void ch_lu_solve_work(const ch_sparse *s, size_t cells, const double *a, double *x,
+                       const double *inverse_diagonal) {
   for (size_t i = 0; i < s->n; ++i) {
     double *restrict dst = x + i*cells;
     for (int j = s->row_start[i]; j < s->diagonal[i]; ++j) {
@@ -189,8 +205,14 @@ void ch_lu_solve(const ch_sparse *s, size_t cells, const double *a, double *x) {
       #pragma omp simd
       for (size_t c = 0; c < cells; ++c) dst[c] -= u[c]*v[c];
     }
-    const double *restrict d = a + (size_t)s->diagonal[i]*cells;
-    #pragma omp simd
-    for (size_t c = 0; c < cells; ++c) dst[c] /= d[c];
+    if (inverse_diagonal) {
+      const double *restrict inverse = inverse_diagonal+i*cells;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) dst[c] *= inverse[c];
+    } else {
+      const double *restrict d = a + (size_t)s->diagonal[i]*cells;
+      #pragma omp simd
+      for (size_t c = 0; c < cells; ++c) dst[c] /= d[c];
+    }
   }
 }
