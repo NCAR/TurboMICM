@@ -1,0 +1,17 @@
+date: 2026-10-15T23:49:18
+host: Gemini.local
+platform: macOS-27.0.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,2 | Apple M5 | 4 | 6
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=22872163)	96%; AC attached; not charging present: true
+uptime: 23:49  up  2:46, 3 users, load averages: 2.76 2.65 2.39
+input: <scratch>/timing/cells_10000_seed2026.csv
+reference: <scratch>/timing/ts1_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 10,1; rounds: 5
+program micm-standard-in-place-mozart: <scratch>/timing/bin/micm-standard-in-place-mozart
+program micm-standard-in-place-mozart-g32: <scratch>/timing/bin/micm-standard-in-place-mozart --group-size 32
+program micm-vector8-in-place-mozart-g32: <scratch>/timing/bin/micm-vector8-in-place-mozart --group-size 32
+program sol-high: <scratch>/verify-clang/sol-high/bin/ts1_bench_cpu
+program sol-xhigh: <scratch>/verify-clang/sol-xhigh/bin/ts1_bench_cpu
+program sol-max: <scratch>/verify-clang/sol-max/bin/ts1_bench_cpu
+program astra-high: <scratch>/verify-clang/astra-high/bin/ts1_bench_cpu
+program astra-xhigh: <scratch>/verify-clang/astra-xhigh/bin/ts1_bench_cpu

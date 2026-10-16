@@ -48,6 +48,11 @@ Verification
   audited against the portability rules, and their TS1 timings replicated with
   `admin/time_entries.py` alongside MICM. The results are in
   `results/2026-10-15-sol-verification/` and on the wiki's Tier-1-Results page.
+- 2026-10-15 and 16: astra-xhigh was verified the same way (astra-high's tests
+  had been verified on 2026-10-15), and all five entries were timed in one
+  session, from 23:49 to 00:55, with MICM's default, the default with 32-cell
+  groups, and MICM's fastest configuration, at 10 and 1 threads. All 80 runs
+  passed the gate. The results are in `results/2026-10-15-astra-verification/`.
 
 Transcripts
 - Each finished run's session transcript is archived on the branch `transcripts`,
@@ -60,6 +65,8 @@ Transcripts
   output, and token counts are complete.
 - 2026-10-15: astra-high archived. A scan for credentials found only chance
   matches inside the encrypted reasoning.
+- 2026-10-15: astra-xhigh archived. The credential scan's only matches (8, of the
+  `sk-` pattern) were inside encrypted reasoning.
 
 | Run | Model | Effort | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|
@@ -67,7 +74,7 @@ Transcripts
 | sol-xhigh | gpt-6.1-sol | xhigh | Codex CLI 0.162.1, interactive | 2026-10-15 03:54-05:29 | `171f54a`, 05:29 (6 commits) | finished |
 | sol-max | gpt-6.1-sol | max | Codex CLI 0.162.1, interactive | 2026-10-15 07:26-09:13 | `001fb64`, 09:13 (7 commits) | finished |
 | astra-high | gpt-6-astra | high | Codex CLI 0.162.1, interactive | 2026-10-15 12:10-14:26 | `4055d7c`, 14:26 (15 commits) | finished |
-| astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17- | — | running |
+| astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17-23:35 | `fbd365c`, 23:35 (11 commits) | finished |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -152,3 +159,21 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Codex session `01a142b6-b159-7d52-801a-7ac70fa3fed4`.
 - Before it, `codex --yolo` was opened in the directory at 21:14, with memories on,
   and closed before any message; it left no session record.
+- The whole run was one turn, from the goal at 21:17:29 to its end at 23:35:50;
+  the session's context was compacted twice along the way. Every turn context
+  shows gpt-6-astra at xhigh, and no model switch.
+- Tokens: 1,879,105 total; input 1,607,225 (plus 31,004,544 cached); output
+  271,880 (48,132 reasoning).
+- Final commit `fbd365c`, 23:35, "Validate complete CPU port and TS1 gate; record
+  portable benchmark results". No remote; the working tree is clean; all
+  deliverables are present, plus WORK.md and LICENSE.
+- Self-reported, not yet verified: all 680 cases pass with both compilers; the
+  10,000-cell TS1 gate passes with both; clang median 7.31 s against MICM's
+  28.08 s at ten threads (3.84 times faster); about 2 h 18 min of work.
+- Other load during the session: Claude Code edited the wiki and run log, read
+  files, and once ran a shell for a few seconds to test a launch environment. No
+  builds, tests, or timing ran.
+- After the run, from 23:46 to 23:50, a race between parallel builds in Claude's
+  verification script left two self-referencing links inside the run root,
+  `micm/micm` and `reference/reference`. They were removed at 23:50, before any
+  other run started, and the script now makes its links without following them.

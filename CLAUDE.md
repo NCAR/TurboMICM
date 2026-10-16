@@ -186,10 +186,16 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - Tier 2: undisclosed scenarios, scenario timing, and a MICM baseline per scenario.
 - Verification worktrees of `runs/*` are built in a session scratchpad. If it is
   gone, `git worktree prune` and rebuild per "Verify an entry".
-- Time MICM's fastest configurations against the entries at 1 thread as well
-  (`admin/time_entries.py`, 5 rounds at 10 and 1 threads). All 24 configurations
-  are timed at 10 threads (`results/2026-10-15-micm-configurations`), and
-  `admin/leaderboard.py` regenerates the wiki's Leaderboard and matrices.
+- Time each new entry with all the others in one session (`admin/time_entries.py`,
+  5 rounds at 10 and 1 threads), alongside `micm-standard-in-place-mozart`, its
+  `-g32` variant, and `micm-vector8-in-place-mozart-g32`, as in
+  `results/2026-10-15-astra-verification`.
+  - `admin/leaderboard.py` regenerates the wiki's Leaderboard: at 10 threads from
+    every session's `timings.csv` except the Sol verification's, whose MICM names
+    it does not parse; at 1 thread from the sessions that ran it.
+  - Add each entry's grouping to `ENTRY_GROUPING` in `admin/leaderboard.py`.
+  - When building in parallel, make the `micm/` and `reference/` links first, or
+    with `ln -sn`: a racing `ln -s` writes a link inside the run root.
 - After the weekly usage reset (2026-10-16): test launching the Luna runs from a
   detached tmux server started with `env -i` and the SSE's login shell (no Claude
   Code variables reach Codex), sending the standard command and `/goal` with
