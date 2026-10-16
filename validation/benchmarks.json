@@ -1,0 +1,102 @@
+[
+  {
+    "label": "clang",
+    "repeat": 1,
+    "threads": "default",
+    "output": "elapsed_ms=7772.185\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n",
+    "elapsed_ms": 7772.185,
+    "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+  },
+  {
+    "label": "micm",
+    "repeat": 1,
+    "threads": "default",
+    "output": "elapsed_ms=26749.312\ninternal_steps=9000 accepted=9000 rejected=0 function_calls=18000 jacobian_updates=9000 decompositions=9000 solves=27000\n",
+    "elapsed_ms": 26749.312
+  },
+  {
+    "label": "gcc",
+    "repeat": 1,
+    "threads": "default",
+    "output": "elapsed_ms=9556.184\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n",
+    "elapsed_ms": 9556.184,
+    "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.75e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+  },
+  {
+    "label": "clang",
+    "repeat": 2,
+    "threads": "default",
+    "output": "elapsed_ms=8436.673\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n",
+    "elapsed_ms": 8436.673,
+    "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+  },
+  {
+    "label": "micm",
+    "repeat": 2,
+    "threads": "default",
+    "output": "elapsed_ms=27120.543\ninternal_steps=9000 accepted=9000 rejected=0 function_calls=18000 jacobian_updates=9000 decompositions=9000 solves=27000\n",
+    "elapsed_ms": 27120.543
+  },
+  {
+    "label": "gcc",
+    "repeat": 2,
+    "threads": "default",
+    "output": "elapsed_ms=9585.853\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n",
+    "elapsed_ms": 9585.853,
+    "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.75e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+  },
+  {
+    "label": "clang",
+    "repeat": 3,
+    "threads": "default",
+    "output": "elapsed_ms=8308.654\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n",
+    "elapsed_ms": 8308.654,
+    "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+  },
+  {
+    "label": "micm",
+    "repeat": 3,
+    "threads": "default",
+    "output": "elapsed_ms=26803.373\ninternal_steps=9000 accepted=9000 rejected=0 function_calls=18000 jacobian_updates=9000 decompositions=9000 solves=27000\n",
+    "elapsed_ms": 26803.373
+  },
+  {
+    "label": "gcc",
+    "repeat": 3,
+    "threads": "default",
+    "output": "elapsed_ms=9465.783\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n",
+    "elapsed_ms": 9465.783,
+    "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.75e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+  },
+  {
+    "label": "clang",
+    "repeat": 4,
+    "threads": "default",
+    "output": "elapsed_ms=8236.661\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n",
+    "elapsed_ms": 8236.661,
+    "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+  },
+  {
+    "label": "clang",
+    "repeat": 5,
+    "threads": "default",
+    "output": "elapsed_ms=8227.012\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n",
+    "elapsed_ms": 8227.012,
+    "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+  },
+  {
+    "label": "clang-one",
+    "repeat": 1,
+    "threads": 1,
+    "output": "elapsed_ms=45282.753\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n",
+    "elapsed_ms": 45282.753,
+    "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+  },
+  {
+    "label": "micm-one",
+    "repeat": 1,
+    "threads": 1,
+    "output": "elapsed_ms=146247.295\ninternal_steps=900 accepted=900 rejected=0 function_calls=1800 jacobian_updates=900 decompositions=900 solves=2700\n",
+    "elapsed_ms": 146247.295
+  }
+]
