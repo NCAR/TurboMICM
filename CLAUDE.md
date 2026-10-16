@@ -30,8 +30,9 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   `diff -r`. `tier2/` likewise mirrors the committed files of
   `ODE/benchmarks/tier2` (`git ls-files benchmarks/tier2` in ODE).
 - **Contestants:**
-  - Codex CLI 0.162.1: gpt-6.1-sol, gpt-6-astra, and gpt-6-luna. Luna replaced
-    gpt-5.6-terra on 2026-10-15.
+  - Codex CLI: gpt-6.1-sol, gpt-6-astra, and gpt-6-luna. Luna replaced
+    gpt-5.6-terra on 2026-10-15. Codex was 0.162.1 through astra-high and is
+    0.163.0 from astra-xhigh on; the SSE upgraded it and chose not to revert.
   - Claude Code: Sonnet, Opus, Fable.
   - Effort levels: high, xhigh, max.
 - **Run names:** `<model>-<effort>`; a repeat is `<model>-<effort>-<n>`.

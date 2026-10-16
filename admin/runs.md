@@ -36,6 +36,12 @@ Reference changes
   timed with the same cell grouping as an entry. Its default, one group per
   thread, is unchanged and gives bit-identical results.
 
+Harness changes
+- 2026-10-15, between astra-high and astra-xhigh: Codex CLI was upgraded from
+  0.162.1 to 0.163.0 (Homebrew cask, 21:14), and the experimenter chose to keep
+  it. The Sol runs and astra-high ran on 0.162.1; astra-xhigh and later runs use
+  0.163.0. Codex's instructions to gpt-6-astra are the same text in both versions.
+
 Verification
 - 2026-10-15: the three Sol entries were rebuilt from their branches with clang
   and gcc-15, their tests rerun and counted against the case list, their builds
@@ -61,6 +67,7 @@ Transcripts
 | sol-xhigh | gpt-6.1-sol | xhigh | Codex CLI 0.162.1, interactive | 2026-10-15 03:54-05:29 | `171f54a`, 05:29 (6 commits) | finished |
 | sol-max | gpt-6.1-sol | max | Codex CLI 0.162.1, interactive | 2026-10-15 07:26-09:13 | `001fb64`, 09:13 (7 commits) | finished |
 | astra-high | gpt-6-astra | high | Codex CLI 0.162.1, interactive | 2026-10-15 12:10-14:26 | `4055d7c`, 14:26 (15 commits) | finished |
+| astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17- | — | running |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -110,8 +117,11 @@ Token counts are as Codex reports them: total = uncached input + output.
 ## astra-high
 
 - Session start: 2026-10-15 12:10, `codex -c features.memories=false` in
-  `benchmarks/astra-high`, with `~/.codex/config.toml` set to gpt-6-astra at high
-  effort; the session record confirms both.
+  `benchmarks/astra-high`. The session opened on gpt-6.1-sol, still the model in
+  `~/.codex/config.toml`, and was switched to gpt-6-astra at high effort before
+  the goal was given. Its record therefore carries Sol's base instructions, with
+  Astra's in a model-switch message; every turn ran on gpt-6-astra at high
+  effort.
 - Goal: "read PROMPT.md and work until done, commit", with no push.
 - Codex session `01a140c1-b679-7082-aef7-62cd2c85941c`.
 - Tokens: 1,429,356 total; input 1,148,542 (plus 42,448,384 cached); output
@@ -131,3 +141,14 @@ Token counts are as Codex reports them: total = uncached input + output.
   that window; it was porting the sparse-matrix tests. At 13:34 the reference
   computation was suspended (SIGSTOP) until the run finished, to keep the machine
   idle. No other work from the experiment ran during the Sol sessions.
+
+## astra-xhigh
+
+- Session start: 2026-10-15 21:17,
+  `codex -m gpt-6-astra -c model_reasoning_effort=xhigh -c features.memories=false`
+  in `benchmarks/astra-xhigh`, on Codex CLI 0.163.0; the session record shows
+  gpt-6-astra at xhigh.
+- Goal, 21:17: "read PROMPT.md and work until done, commit".
+- Codex session `01a142b6-b159-7d52-801a-7ac70fa3fed4`.
+- Before it, `codex --yolo` was opened in the directory at 21:14, with memories on,
+  and closed before any message; it left no session record.
