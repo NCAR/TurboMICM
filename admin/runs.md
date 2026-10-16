@@ -75,6 +75,7 @@ Transcripts
 | sol-max | gpt-6.1-sol | max | Codex CLI 0.162.1, interactive | 2026-10-15 07:26-09:13 | `001fb64`, 09:13 (7 commits) | finished |
 | astra-high | gpt-6-astra | high | Codex CLI 0.162.1, interactive | 2026-10-15 12:10-14:26 | `4055d7c`, 14:26 (15 commits) | finished |
 | astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17-23:35 | `fbd365c`, 23:35 (11 commits) | finished |
+| astra-max | gpt-6-astra | max | Codex CLI 0.163.0, interactive | 2026-10-16 01:04- | — | running |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -177,3 +178,12 @@ Token counts are as Codex reports them: total = uncached input + output.
   verification script left two self-referencing links inside the run root,
   `micm/micm` and `reference/reference`. They were removed at 23:50, before any
   other run started, and the script now makes its links without following them.
+
+## astra-max
+
+- Session start: 2026-10-16 01:04,
+  `codex -m gpt-6-astra -c model_reasoning_effort=max -c features.memories=false`
+  in `benchmarks/astra-max`, on Codex CLI 0.163.0; the session record shows
+  gpt-6-astra at max, base instructions from gpt-6-astra, and no model switch.
+- Goal, 01:05: "read PROMPT.md and work until done, commit".
+- Codex session `01a14386-84c0-70a3-867a-6cf69b22b824`.
