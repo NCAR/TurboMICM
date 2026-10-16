@@ -1,0 +1,11 @@
+/.conda/
+/.conda-pkgs/
+/build/
+/bin/
+/lib/
+/reference-build/
+/runs/
+__pycache__/
+*.pyc
+/ts1_final.csv
+/PROMPT.md
