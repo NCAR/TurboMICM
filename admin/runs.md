@@ -90,6 +90,7 @@ Transcripts
 | astra-high | gpt-6-astra | high | Codex CLI 0.162.1, interactive | 2026-10-15 12:10-14:26 | `4055d7c`, 14:26 (15 commits) | finished |
 | astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17-23:35 | `fbd365c`, 23:35 (11 commits) | finished |
 | astra-max | gpt-6-astra | max | Codex CLI 0.163.0, interactive | 2026-10-16 01:04-02:46 | `0dc7f67`, 02:46 (7 commits) | finished |
+| luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-16 06:47- | — | running |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -214,3 +215,13 @@ Token counts are as Codex reports them: total = uncached input + output.
   cores; about 1 h 41 min of work.
 - Other load during the session: Claude Code made two brief progress checks and
   edited the run log and wiki. No builds, tests, or timing ran.
+
+## luna-high
+
+- Session start: 2026-10-16 06:47:54, launched by Claude Code with
+  `admin/launch_codex_run.sh luna-high gpt-6-luna high`, in a detached tmux
+  session (socket `turbomicm`, session `luna-high`); the goal was sent at
+  06:47:58. The session record shows gpt-6-luna at high, base instructions from
+  gpt-6-luna, Codex 0.163.0, and no model switch; the process's environment holds
+  no Claude Code variables besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
+- Codex session `01a144c1-3ac3-7f31-b3de-4cf81d130c81`.
