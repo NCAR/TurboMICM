@@ -146,6 +146,15 @@ const double *chem_state_species_column_const(const chem_state *s,const char *na
     size_t index=chem_species_index(s->model,name);
     return index==CHEM_NONE ? NULL : s->y+index*s->cells;
 }
+void chem_state_clamp(chem_state *s)
+{
+    int constrained=s->model->mechanism->n_constraints!=0;
+    for (size_t i=0;i<s->model->n_species;++i) if (!s->model->algebraic[i])
+        for (size_t c=0;c<s->cells;++c) {
+            double *value=s->y+i*s->cells+c;
+            *value=constrained ? (*value>0 ? *value : 0) : (*value<0 ? 0 : *value);
+        }
+}
 
 void chem_calculate_rates(chem_state *s)
 {

@@ -182,6 +182,7 @@ chem_status chem_state_assign_custom_many(chem_state *, size_t, const chem_named
 chem_status chem_state_import_custom(chem_state *, const double *, size_t rows, size_t columns);
 double *chem_state_species_column(chem_state *, const char *);
 const double *chem_state_species_column_const(const chem_state *, const char *);
+void chem_state_clamp(chem_state *);
 void chem_calculate_rates(chem_state *state);
 /* Callbacks borrow context and may keep backend-owned factors there. NULL/NULL
  * restores the default. Factor reads state->jacobian; solve overwrites rhs. */

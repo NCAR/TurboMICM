@@ -103,3 +103,10 @@ stable rate-type sorting and species-name resolution. All four process cases,
 cases pass. The process-set tests include the three original random-system sizes,
 kinetic sparsity, exact forcing/Jacobian entries, and algebraic-row masking.
 Clang and GCC pass all 550 mapped cases, leaving 130 unported; no N/A cases.
+
+The integration checkpoint passes 606 mapped cases with both Clang and GCC.
+Added eight owned-solver builder cases, all 32 analytical cases and their original
+method/layout combinations, twelve built-in DAE integration cases, two Terminator
+cases, integrated reaction rates, and the eight-thread shared-solver case. The
+normal owned-solver entry point reads immutable solver options; explicit parameter
+overrides retain their documented mutation semantics. No N/A cases; 74 remain.

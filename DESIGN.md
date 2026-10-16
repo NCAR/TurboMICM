@@ -131,3 +131,14 @@ and all input processes can be destroyed after creation. Low-level
 `chem_model_create` preserves the supplied reaction order, so callers that require
 reference builder ordering use the owned builder or `chem_reactions_sort`.
 Kinetic sparsity and used-species queries exclude solver fill and extra diagonals.
+
+## Owned solver and concurrent states
+
+`chem_solver_create` combines an owned process model with Rosenbrock or backward
+Euler options and one-time setup callbacks. The normal `chem_solver_solve` entry
+point is const: threads may share a solver while owning separate states and
+backend workspaces. Explicit parameter-override entry points update solver
+options and require exclusive access. Setup descriptors are borrowed only during
+creation. Preferred vector length describes one group; states can span multiple
+groups. Post-solve clamping applies to differential variables only, matching the
+reference wrapper; algebraic variables remain governed by their constraints.

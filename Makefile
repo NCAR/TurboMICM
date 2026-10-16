@@ -33,7 +33,7 @@ env: .conda/conda-meta/history
 .conda/conda-meta/history: environment.yml
 	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
 
-SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c src/array.c src/sparse.c src/factor.c src/version.c src/system.c src/process.c
+SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c src/array.c src/sparse.c src/factor.c src/version.c src/system.c src/process.c src/solver.c
 OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
 
 cpu: bin/ts1_bench_cpu build/libchem.a

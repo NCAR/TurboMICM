@@ -56,3 +56,11 @@ and finite-difference verification (7). Comparisons use the original tolerances,
 including four-ULP matrix entries and the 1e-7 absolute/relative Jacobian gate.
 All three random process-set sizes execute and additionally match a scalar
 cell-major forcing evaluator. The full suite still has 130 unported cases.
+
+The integration checkpoint passes all 606 mapped cases on Clang and GCC 15 with
+`-O3 -DNDEBUG`. All 32 analytical cases execute their full original solver and
+matrix-layout combinations, including the super-stiff chains, Robertson, E5,
+HIRES and Oregonator reference trajectories. Twelve additional DAE integration
+cases check equilibrium residuals, conservation and overshoot bounds. The eight
+builder cases, eight-thread shared-solver test, integrated reaction rates, and
+both Terminator variants also pass. There are 74 unported cases and no N/A cases.
