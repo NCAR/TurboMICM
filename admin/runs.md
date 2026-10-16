@@ -65,6 +65,11 @@ Verification
   timed in one session, from 02:58 to 04:09, with the same three MICM programs.
   All 90 runs passed the gate. The results are in
   `results/2026-10-16-astra-max-verification/`.
+- 2026-10-16: documenting the implementations showed that astra-high's benchmark
+  recomputes every rate constant before each timed step (`src/ts1_bench.c:154`),
+  where MICM's driver and the other entries compute them once, before the
+  warm-up. Its times include that extra work; the earlier verification had not
+  noted it.
 
 Transcripts
 - Each finished run's session transcript is archived on the branch `transcripts`,

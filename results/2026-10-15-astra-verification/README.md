@@ -39,7 +39,9 @@ left to the Makefile.
   group, then times the STEPS solves of every group with `omp_get_wtime()`
   around one `omp parallel for`, with static scheduling by default; input, setup,
   and output are outside the timer. That matches MICM's driver and the other
-  entries. Its default group is 32 cells, and it takes exactly the same solver
+  entries except astra-high, whose timed loop also recomputes every rate
+  constant before each step (`src/ts1_bench.c:154`); this was found on
+  2026-10-16, while documenting the implementations. Its default group is 32 cells, and it takes exactly the same solver
   work as MICM with 32-cell groups: 281,700 internal steps, none rejected, 563,400
   function calls, 281,700 Jacobian updates, and 845,100 linear solves.
 
