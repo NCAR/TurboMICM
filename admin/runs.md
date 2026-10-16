@@ -53,6 +53,10 @@ Verification
   session, from 23:49 to 00:55, with MICM's default, the default with 32-cell
   groups, and MICM's fastest configuration, at 10 and 1 threads. All 80 runs
   passed the gate. The results are in `results/2026-10-15-astra-verification/`.
+- 2026-10-16: astra-max was verified the same way, and all six entries were
+  timed in one session, from 02:58 to 04:09, with the same three MICM programs.
+  All 90 runs passed the gate. The results are in
+  `results/2026-10-16-astra-max-verification/`.
 
 Transcripts
 - Each finished run's session transcript is archived on the branch `transcripts`,
@@ -67,6 +71,8 @@ Transcripts
   matches inside the encrypted reasoning.
 - 2026-10-15: astra-xhigh archived. The credential scan's only matches (8, of the
   `sk-` pattern) were inside encrypted reasoning.
+- 2026-10-16: astra-max archived. The scan's only matches (6, of the same
+  pattern) were inside encrypted reasoning.
 
 | Run | Model | Effort | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|
@@ -75,7 +81,7 @@ Transcripts
 | sol-max | gpt-6.1-sol | max | Codex CLI 0.162.1, interactive | 2026-10-15 07:26-09:13 | `001fb64`, 09:13 (7 commits) | finished |
 | astra-high | gpt-6-astra | high | Codex CLI 0.162.1, interactive | 2026-10-15 12:10-14:26 | `4055d7c`, 14:26 (15 commits) | finished |
 | astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17-23:35 | `fbd365c`, 23:35 (11 commits) | finished |
-| astra-max | gpt-6-astra | max | Codex CLI 0.163.0, interactive | 2026-10-16 01:04- | — | running |
+| astra-max | gpt-6-astra | max | Codex CLI 0.163.0, interactive | 2026-10-16 01:04-02:46 | `0dc7f67`, 02:46 (7 commits) | finished |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -187,3 +193,16 @@ Token counts are as Codex reports them: total = uncached input + output.
   gpt-6-astra at max, base instructions from gpt-6-astra, and no model switch.
 - Goal, 01:05: "read PROMPT.md and work until done, commit".
 - Codex session `01a14386-84c0-70a3-867a-6cf69b22b824`.
+- The whole run was one turn, from the goal at 01:05:31 to its end at 02:46:29;
+  the session's context was compacted three times. Every turn context shows
+  gpt-6-astra at max.
+- Tokens: 1,022,510 total; input 831,287 (plus 16,987,776 cached); output 191,223
+  (31,930 reasoning).
+- Final commit `0dc7f67`, 02:46, "Record complete compiler validation and TS1
+  performance results". No remote; the working tree is clean; all deliverables
+  are present.
+- Self-reported, not yet verified: 680 of 680 cases pass with both compilers;
+  the TS1 gates pass; clang median 8.24 s, 3.25 times faster than MICM on all
+  cores; about 1 h 41 min of work.
+- Other load during the session: Claude Code made two brief progress checks and
+  edited the run log and wiki. No builds, tests, or timing ran.

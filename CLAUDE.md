@@ -189,7 +189,7 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - Time each new entry with all the others in one session (`admin/time_entries.py`,
   5 rounds at 10 and 1 threads), alongside `micm-standard-in-place-mozart`, its
   `-g32` variant, and `micm-vector8-in-place-mozart-g32`, as in
-  `results/2026-10-15-astra-verification`.
+  `results/2026-10-16-astra-max-verification`.
   - `admin/leaderboard.py` regenerates the wiki's Leaderboard: at 10 threads from
     every session's `timings.csv` except the Sol verification's, whose MICM names
     it does not parse; at 1 thread from the sessions that ran it.
@@ -199,8 +199,8 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - After the weekly usage reset (2026-10-16): test launching the Luna runs from a
   detached tmux server started with `env -i` and the SSE's login shell (no Claude
   Code variables reach Codex), sending the standard command and `/goal` with
-  `send-keys`. The SSE launches astra-max by hand.
-- After astra-max: an analysis pass on every entry, as measurement only, with no
+  `send-keys`.
+- Next, now that astra-max is done: an analysis pass on every entry, as measurement only, with no
   quality verdicts (see "Conflict of interest").
   - Instruction counts and cycles from `/usr/bin/time -l`, at 1 thread, differenced
     between two step counts to cancel setup.
