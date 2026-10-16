@@ -96,7 +96,7 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 
 - **Results:** the wiki shows verified numbers only, with tables updated in place.
 - **Wiki layout:** each tier has Design, Prompt, and Results pages (`Tier-1-*`,
-  `Tier-2-*`), plus Home, Running-the-Experiment, and
+  `Tier-2-*`, `Tier-3-*`), plus Home, Running-the-Experiment, and
   Role-of-Claude-in-the-Design.
   - Inside a table, use `[text](Page)` links: the `|` in `[[text|Page]]` splits
     the cell.
@@ -142,13 +142,44 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - **Transcripts:** Codex stores reasoning only as encrypted content. The transcripts
   have every message, tool call, and output, but no readable reasoning.
 
-## Tier 2: algorithm design (approved 2026-10-15, not yet launched)
+## Tier 2: specialization for a frozen mechanism (adopted 2026-10-16; prompt not yet written)
+
+How fast can a solver for TS1 alone get? Reference mechanisms like TS1 stay in
+production unchanged for years; prototyping still needs run-time configurability.
+The wiki pages are Tier-2-Design, Tier-2-Prompt (not yet written), and
+Tier-2-Results.
+
+- Start from each agent's own Tier 1 solution; the generic path and the Tier 1
+  gate stay.
+- For TS1 anything goes: literal indices and constants, a fully unrolled LU,
+  fused kernels; same Rosenbrock method and tolerances; portability rules
+  unchanged.
+- The specialized C must come from a generator the agent keeps, so a revised
+  mechanism costs a regeneration, not a new run. The generator must handle any
+  mechanism (the SSE's decision, 2026-10-16), and the tests run it on others,
+  such as MICM's tutorial mechanisms, so the result carries over to TS1's
+  successors, such as TS2 and T4S.
+- Verify by differential testing against the entry's generic path and MICM at
+  the same settings: held-out seeds and day–night runs (with a tolerance that
+  runs there).
+- Measure speed against the entry's generic and generated Tier 1 paths and
+  MICM, plus generation and compile time and tokens. Optionally a variant with
+  rate parameters as data, for ensembles.
+- Arms to be chosen, for example sol-max and astra-xhigh, which already
+  generate kernels, and one entry that does not.
+- Still to do: write the prompt, from `prompt.v3`, and choose the arms.
+
+## Tier 3: algorithm design (approved 2026-10-15 as Tier 2; renumbered 2026-10-16; not yet launched)
 
 - **Files:** `tier2/prompt.v1` is the template and `tier2/README.md` is the plan
-  and build list; the wiki pages are Tier-2-Design, Tier-2-Prompt, and
-  Tier-2-Results.
-- **Order:** finish OpenAI Tier 1 (Astra, Luna), run OpenAI Tier 2, then move to
-  the Claude models.
+  and build list; the wiki pages are Tier-3-Design, Tier-3-Prompt, and
+  Tier-3-Results.
+  - The directory is still `tier2/`, here and in the run root, and the template
+    still says "Tier 2". Before launch, rename both: the template's text and ROOT,
+    `admin/time_entries.py`'s default `--score` path, `tier2/README.md`, and the
+    wiki's launch commands.
+- **Order:** finish OpenAI Tier 1 (Luna), then OpenAI's Tier 2 and Tier 3 runs, in
+  an order the SSE chooses, then the Claude models.
 - **Arms:**
   - Sol and Astra at xhigh and max, a 2 x 2 matrix, each started from a clone of
     the run's own Tier 1 repository (`<tier1_commit>` placeholder);
@@ -186,7 +217,7 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - Rank with an undisclosed seed, and run the blind review.
 - Consider Claude Haiku as the fast-tier match for Luna.
 - Time the entries on an x86-64 Linux machine.
-- Tier 2: undisclosed scenarios, scenario timing, and a MICM baseline per scenario.
+- Tier 3: undisclosed scenarios, scenario timing, and a MICM baseline per scenario.
 - Verification worktrees of `runs/*` are built in a session scratchpad. If it is
   gone, `git worktree prune` and rebuild per "Verify an entry".
 - Time each new entry with all the others in one session (`admin/time_entries.py`,
@@ -220,28 +251,6 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
     them every step (`src/ts1_bench.c:154`).
   - Compile time of the generated kernels (16,000 to 21,000 lines of C), with
     clang and gcc-15.
-- Specialization arm for frozen mechanisms (proposed 2026-10-16; not yet approved
-  or scheduled): how fast can a solver for TS1 alone get? Reference mechanisms
-  like TS1 stay in production unchanged for years; prototyping still needs
-  run-time configurability.
-  - Start from each agent's own Tier 1 solution; the generic path and the Tier 1
-    gate stay.
-  - For TS1 anything goes: literal indices and constants, a fully unrolled LU,
-    fused kernels; same Rosenbrock method and tolerances; portability rules
-    unchanged.
-  - The specialized C must come from a generator the agent keeps, so a revised
-    mechanism costs a regeneration, not a new run. The generator must handle any
-    mechanism (the SSE's decision, 2026-10-16), and the tests run it on others,
-    such as MICM's tutorial mechanisms, so the result carries over to TS1's
-    successors, such as TS2 and T4S.
-  - Verify by differential testing against the entry's generic path and MICM at
-    the same settings: held-out seeds and day–night runs (with a tolerance that
-    runs there).
-  - Measure speed against the entry's generic and generated Tier 1 paths and
-    MICM, plus generation and compile time and tokens. Optionally a variant with
-    rate parameters as data, for ensembles.
-  - Arms to be chosen, for example sol-max and astra-xhigh, which already
-    generate kernels, and one entry that does not.
 - MUSICA integration study, after the analysis pass: how mechanism-specific
   kernels could reach MUSICA's API.
   - Ahead of time: a CMake function that generates and links a mechanism's

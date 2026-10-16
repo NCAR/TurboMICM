@@ -163,7 +163,8 @@ Token counts are as Codex reports them: total = uncached input + output.
   - the TS1 gate passes;
   - clang benchmark 9.63 s against MICM's 27.42 s (2.85 times faster);
   - about 2 h 16 min of work.
-- Other load during the session: Tier 2 preparation ran from 13:24 to 13:34, using
+- Other load during the session: preparation for Tier 2 (since renumbered Tier 3)
+  ran from 13:24 to 13:34, using
   at most two threads at nice 10–15. It included two compiles, a few seconds of
   test runs, and the start of the reference computation. Astra ran no timing in
   that window; it was porting the sparse-matrix tests. At 13:34 the reference
