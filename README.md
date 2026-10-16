@@ -38,9 +38,10 @@ make bench CC=clang
 bin/ts1_bench_cpu --threads 4 100 100 30 ../reference/ts1_cells_100_seed1.csv
 ```
 
-Syntax: `bin/ts1_bench_cpu [--threads N] [--group-size G] [--generic]
-CELLS STEPS DT CELLS_CSV`. By default it uses all processors reported by OpenMP
-and groups of 32 cells. CSV columns override TS1's initial defaults by name.
+Syntax: `bin/ts1_bench_cpu [OPTIONS] CELLS STEPS DT CELLS_CSV`.
+Options are `--threads N`, `--group-size G`, `--schedule static|dynamic|guided`,
+`--chunk K`, and `--generic`. By default it uses all processors reported by OpenMP
+and groups of 32 cells with static scheduling. CSV columns override TS1's initial defaults by name.
 The program performs one untimed warm-up step, times the requested subsequent
 steps, prints elapsed milliseconds and accumulated solver statistics, and writes
 `ts1_final.csv` in the working directory. `--generic` selects the table evaluator
@@ -53,7 +54,7 @@ make micm-ref
 
 `make micm-ref` is the only target that includes the supplied reference headers;
 it builds the C++ reference with the same `OPTFLAGS`. The check script tests the
-C executable against the supplied 100-cell reference using seven thread/group
+C executable against the supplied 100-cell reference using nine thread/group, scheduling
 and evaluator combinations. To generate another reference, run
 `bin/micm_ts1_ref --threads 1 CELLS STEPS DT CELLS_CSV` in a separate directory
 inside this checkout; it also writes `ts1_final.csv`. Compare saved files with

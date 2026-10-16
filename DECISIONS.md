@@ -102,3 +102,17 @@ entries, and ten multi-cell integration intervals. Both generated and generic
 kernels and both LU algorithms run. Surface labels are mapped as documented
 above. The generic configuration reader preserves reaction declaration order;
 comparisons match reaction terms rather than assuming equal storage positions.
+
+The benchmark applies the same differential-variable post-solve clamp as the
+public solver wrapper after warm-up and each timed solve. Omitting that wrapper
+step changed tiny residual concentrations, although the earlier outputs already
+passed the specified gate. The final benchmark and tutorial paths now agree on
+this behavior.
+
+A short 10,000-cell scheduling/group-size pilot found only small differences
+between groups of 16 and 32 and between static and dynamic scheduling. The
+32-cell/static default is retained; larger groups degraded performance on this
+host. Static, dynamic and guided schedules and explicit chunk sizes are exposed
+for other machines. Numerical checks cover all three policies, irregular tails,
+and groups larger than the domain. Full measurements and sample counts are in
+RESULTS.md; reference single samples are not presented as medians of repeated runs.

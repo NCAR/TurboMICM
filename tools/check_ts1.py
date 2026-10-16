@@ -28,6 +28,8 @@ variants=[('default',[])]
 if not a.quick:
     variants += [(f't{threads}-g{group}',['--threads',str(threads),'--group-size',str(group)])
                  for threads,group in [(1,1),(4,7),(1,32),(3,64),(4,a.cells+1)]]
+    variants += [('dynamic',['--threads','4','--group-size','7','--schedule','dynamic','--chunk','2']),
+                 ('guided',['--threads','3','--group-size','31','--schedule','guided','--chunk','1'])]
     variants += [('generic',['--threads','2','--group-size','13','--generic'])]
 for name,options in variants:
     work=output/name; work.mkdir(parents=True,exist_ok=True)

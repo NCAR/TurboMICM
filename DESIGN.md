@@ -92,7 +92,8 @@ Custom functions can use the lambda-rate callback without adding a tag.
 | --- | --- | --- |
 | Cell-group size | 32 | `--group-size G`; build macro `CHEM_GROUP_SIZE` |
 | Thread count | OpenMP processor count | `--threads N` |
-| Group scheduling | static contiguous blocks | currently fixed; no speed-specific chunk constant |
+| Group scheduling | static contiguous blocks | `--schedule static`, `dynamic`, or `guided` |
+| Schedule chunk | OpenMP policy default | `--chunk K`, positive number of groups |
 | SIMD width | compiler-selected | portable `omp simd`, no hardware-specific width |
 | Chemistry evaluator | automatically generated | `--generic` for the generic table evaluator |
 | LU method | Mozart in benchmark | library `chem_lu_algorithm` |
@@ -100,7 +101,9 @@ Custom functions can use the lambda-rate callback without adding a tag.
 There are no target-specific flags, intrinsics, vector extensions, or alternative
 floating-point modes. Group size affects work distribution and the common error
 norm, not the method or requested tolerances. Every positive group size and
-thread count must remain correct; verification is still being expanded.
+thread count remains independent of the numerical formulas. Correctness checks
+include one-cell groups, irregular tails, groups larger than the domain, and all
+three scheduling policies.
 
 ## Owned species metadata
 
@@ -154,3 +157,18 @@ callbacks run when state parameters are refreshed. Kinetic and constraint
 callbacks add to SoA destinations. Kinetic evaluation preserves algebraic rows,
 including their incoming values. Workspace belongs to each state, so a model can
 be shared between threads without callback workspace races.
+
+The benchmark also exposes `--schedule static|dynamic|guided` and `--chunk K`,
+implemented with OpenMP runtime scheduling. These affect which thread handles a
+complete cell group; they do not share a group's solver workspace between
+threads or reorder arithmetic inside it. A zero internal chunk selects OpenMP's
+default for that scheduling policy; an explicit chunk must be positive.
+
+To replace the integrator, add a function taking a `chem_state`, interval and
+parameter object and returning `chem_result`, then select it in
+`chem_solver_solve` (or call it directly). Keep its temporary data in the state
+or an explicitly owned backend context. The state-level forcing/Jacobian,
+constraint initialization, factor and solve entry points allow a new integrator
+to reuse chemistry and algebra without changing mechanism descriptions. The
+benchmark's integrator call is explicit in `src/bench.c`; experiments can replace
+that call while retaining CSV initialization, cell grouping and timing.

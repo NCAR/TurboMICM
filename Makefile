@@ -45,7 +45,7 @@ test-cpu: cpu bin/test_cpu
 generated/test_registry.inc: $(wildcard tests/test_*.c) tests/cases.txt tools/test_registry.py .conda/conda-meta/history
 	$(PYTHON) tools/test_registry.py $@
 
-CONFIG_OBJECTS := build/robertson.o build/rates.o_config build/user_rates.o_config
+CONFIG_OBJECTS := build/config_robertson.o build/config_rates.o build/config_user_rates.o
 
 bin/test_cpu: $(wildcard tests/*.c) $(wildcard tests/*.h) generated/test_registry.inc build/chapman.o $(CONFIG_OBJECTS) build/tutorials.o build/libchem.a
 	@mkdir -p bin
@@ -77,7 +77,7 @@ bin/ts1_bench_cpu: build/bench.o build/ts1.o build/libchem.a
 	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
 
 micm-ref: bin/micm_ts1_ref
-bin/micm_ts1_ref: $(REFERENCE)/micm_ts1_ref.cpp
+bin/micm_ts1_ref: $(REFERENCE)/micm_ts1_ref.cpp build/reference-compiler.conf
 	@mkdir -p bin
 	clang++ -std=c++20 $(OPTFLAGS) -I$(MICM)/include -I$(MICM)/test/benchmark $< -o $@
 
@@ -103,20 +103,25 @@ bin/tutorial: examples/main.c examples/tutorials.h build/tutorials.o build/libch
 generated/robertson.c: $(wildcard configs/robertson/*) tools/configure.py tools/generate.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py configs/robertson/config.json $@ --symbol robertson_mechanism
 
-build/robertson.o: generated/robertson.c $(wildcard include/*.h) build/compiler.conf
+build/config_robertson.o: generated/robertson.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 
 generated/rates.c: $(wildcard configs/rate_constants_no_user_defined/*) tools/configure.py tools/generate.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py configs/rate_constants_no_user_defined/config.yaml $@ --symbol rates_mechanism
 
-build/rates.o_config: generated/rates.c $(wildcard include/*.h) build/compiler.conf
+build/config_rates.o: generated/rates.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 
 generated/user_rates.c: $(wildcard configs/rate_constants_user_defined/*) tools/configure.py tools/generate.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py configs/rate_constants_user_defined/config.json $@ --symbol user_rates_mechanism
 
-build/user_rates.o_config: generated/user_rates.c $(wildcard include/*.h) build/compiler.conf
+build/config_user_rates.o: generated/user_rates.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
+
+build/reference-compiler.conf: FORCE
+	@mkdir -p build
+	@printf '%s\n' "clang++" "$(OPTFLAGS)" > build/reference-compiler.conf.tmp
+	@cmp -s build/reference-compiler.conf.tmp $@ && rm build/reference-compiler.conf.tmp || mv build/reference-compiler.conf.tmp $@

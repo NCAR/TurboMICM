@@ -1,0 +1,62 @@
+{
+  "gate": {
+    "rtol": 1e-10,
+    "atol": 1e-30
+  },
+  "cases": {
+    "clang": {
+      "pass": 680,
+      "fail": 0,
+      "na": 0
+    },
+    "gcc": {
+      "pass": 680,
+      "fail": 0,
+      "na": 0
+    }
+  },
+  "ts1": {
+    "clang-seed1": [
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)"
+    ],
+    "clang-seed314159": [
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 7.58e-14 (BCARYO2VBS, cell 23) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 7.58e-14 (BCARYO2VBS, cell 23) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 7.58e-14 (BCARYO2VBS, cell 23) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 7.58e-14 (BCARYO2VBS, cell 23) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 7.58e-14 (BCARYO2VBS, cell 23) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 7.58e-14 (BCARYO2VBS, cell 23) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 7.58e-14 (BCARYO2VBS, cell 23) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 7.58e-14 (BCARYO2VBS, cell 23) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 7.58e-14 (BCARYO2VBS, cell 23) (rtol 1e-10, atol 1e-30)"
+    ],
+    "gcc-seed1": [
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)",
+      "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)"
+    ],
+    "gcc-seed314159": [
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 4.46e-14 (BCARYO2VBS, cell 4) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 4.46e-14 (BCARYO2VBS, cell 4) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 4.46e-14 (BCARYO2VBS, cell 4) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 4.46e-14 (BCARYO2VBS, cell 4) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 4.46e-14 (BCARYO2VBS, cell 4) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 4.46e-14 (BCARYO2VBS, cell 4) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 4.46e-14 (BCARYO2VBS, cell 4) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 4.46e-14 (BCARYO2VBS, cell 4) (rtol 1e-10, atol 1e-30)",
+      "PASS: 28907 values in 137 cells x 211 columns; largest relative difference 4.46e-14 (BCARYO2VBS, cell 4) (rtol 1e-10, atol 1e-30)"
+    ]
+  }
+}

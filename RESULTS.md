@@ -1,84 +1,132 @@
-# Verification in progress
+# Validation and performance
 
-These are intermediate results, not completion of the requested correctness gate.
-The full 680-case suite is not yet ported.
+Measurements were made on the supplied Apple M5 host (10 CPU cores, 16 GB),
+macOS 27.0.1, using Apple Clang 21.0.0 and GCC 15.2.0. Every C object used
+`-O3 -DNDEBUG -std=c11` and the documented warning/include/OpenMP flags.
+MICM was built with `make micm-ref`, using clang++ and the same `-O3 -DNDEBUG`.
+No additional optimization, architecture, floating-point, LTO or profiling flags
+were used.
 
-With Clang and `OPTFLAGS=-O3 -DNDEBUG`:
+## CPU cases
 
-- 32 rate-constant and lambda-override cases passed their ported assertions.
-- The C TS1 run on the supplied 100-cell seed-1 input, 100 timed 30-second steps
-  after one warm-up, passed all 21,100 values against the supplied reference.
-  The largest relative difference was 9.7e-13; the gate is rtol=1e-10, atol=1e-30.
-- The same check passed with one thread/groups of 32, four threads/groups of 7,
-  and the generic table-driven chemistry evaluator.
-- One preliminary generated-kernel run with one thread/groups of 32 took
-  405.04 ms. This is a development observation, not a controlled benchmark or a
-  ranking measurement. Timed statistics were 3,600 internal/accepted steps,
-  zero rejected, 7,200 function calls, 3,600 Jacobians/decompositions, 10,800 solves.
+| Compiler | Cases passing | Failing | N/A |
+| --- | ---: | ---: | ---: |
+| Apple Clang 21 | 680 | 0 | 0 |
+| GCC 15.2 | 680 | 0 | 0 |
 
-The supplied C++ reference executable was built using `make micm-ref` with the
-same optimization flags. Fresh comparative timing, the 10,000-cell run, complete
-case coverage, and the portability audit remain outstanding.
+The registry contains exactly the 680 supplied IDs, in the original output
+order. Tests include all original solver parameter sets and matrix-layout
+variants, analytical trajectories, dense/sparse operations, rate families,
+constraint initialization, external models, finite differences, and concurrent
+states. Both flow-tube cases compare all 3,601 supplied rows at atol=1e-10
+(the original tests checked ten rows). Chapman regressions exercise both
+hand-built and automatically generated kernels against an independent legacy
+scalar oracle.
 
-With GCC 15 and the same flags, all 32 currently mapped cases passed. TS1 also
-passed the supplied 100-cell gate with four threads and groups of seven; the
-largest relative difference was 9.69e-13.
+All eight tutorial programs run through `bin/tutorial` and the test harness.
+Every deterministic output byte matches the captured MICM output, including
+printed concentrations and solver statistics. Only measured elapsed time and
+thread announcement order are handled as nondeterministic fields; DECISIONS.md
+describes their validation. Each of the three YAML/JSON configuration examples
+also matches an independently hand-built mechanism: rate constants, forcing,
+Jacobians and ten multi-cell integration intervals, using both LU algorithms
+and both generic and generated evaluators.
 
-The subsequent constraint checkpoint passes 86 mapped cases with both compilers:
-32 rate/lambda cases and 54 linear, equilibrium, set, and initialization cases.
-These include rollback on failure, damped Newton cold starts, row scaling,
-multi-cell indexing, analytic residuals/Jacobians, and finite-difference checks.
-The TS1 benchmark has not yet been rerun after that checkpoint.
+Both full builds are warning-free. Runtime dependency inspection of the Clang
+benchmark shows only libomp and the system C runtime. Source/build inspection
+found no nonstandard C APIs, long double, intrinsics, target-specific constructs,
+C++/Python runtime dependencies or forbidden compiler flags. Linux execution
+was not available; portability is supported by the ISO C11/OpenMP implementation
+and compiler checks on this host, rather than a claimed Linux test.
 
-The matrix checkpoint passes all 420 implemented cases with Clang and GCC 15
-under `-O3 -DNDEBUG`: 117 dense/vector, 190 sparse, 27 grouped-view/category,
-and the previous 86 chemistry/constraint cases. These cover the original lane
-widths, CSR/CSC indices, exact printed matrix output, native integer arrays,
-mutable/const callback views, dimension errors, temporary storage, and reductions.
-There are 260 cases still unported, and no N/A declarations.
+## TS1 numerical gate
 
-The linear solver checkpoint passes 487 implemented cases with Clang and GCC 15.
-This adds all 52 LU/linear-solver cases, ten solver-core cases and five version
-cases. Tests preserve the reference random inputs and tolerances, including
-1e-12 factor reconstruction checks. A separate L/U backend produces the same
-accepted/rejected step counts and concentrations as the combined backend.
-The post-change Clang TS1 run (four threads, groups of seven) passes all 21,100
-reference values with largest relative difference 9.7e-13. There are 193 cases
-still unported; full-suite and performance validation remain outstanding.
+All comparisons use the supplied `compare_final.py`, with the unchanged gate
+`abs(y - reference) <= 1e-30 + 1e-10 * abs(reference)`. Each run includes one
+warm-up and 100 timed steps of 30 seconds. The comparison includes every cell,
+209 state species, temperature and pressure.
 
-The species/system checkpoint passes all 501 mapped cases with Clang and GCC 15.
-Fourteen added cases cover the original species, phase-species, phase, and system
-assertions. There are 179 cases still unported and no N/A declarations.
+- Supplied 100-cell seed 1: Clang and GCC pass default execution, threads/groups
+  (1,1), (4,7), (1,32), (3,64), (4,101), and generic evaluation (2,13).
+  Largest relative differences: 4.25e-14 (Clang), 5.30e-14 (GCC). The final
+  Clang rebuild also passes the dynamic and guided variants on this input.
+- Fresh 10,000-cell seed 2026 reference: all five Clang all-core runs pass all
+  2,110,000 values. Largest relative difference: 2.03e-13.
+- Fresh MICM ten-thread and one-thread results agree exactly for seed 2026.
 
-The state/process checkpoint passes 550 cases with both compilers. The 49 new
-cases comprise state (22), process (4), reaction rate store (11), process set (5),
-and finite-difference verification (7). Comparisons use the original tolerances,
-including four-ULP matrix entries and the 1e-7 absolute/relative Jacobian gate.
-All three random process-set sizes execute and additionally match a scalar
-cell-major forcing evaluator. The full suite still has 130 unported cases.
+- The Clang one-thread 10,000-cell run passes with the same 2.03e-13 maximum.
+- Fresh 137-cell seed 314159: Clang passes all nine settings, including groups
+  of 1/7/13/31/32/64/138, irregular tails, a group larger than the domain, generic
+  evaluation, and static/dynamic/guided scheduling. Maximum relative difference
+  is 7.58e-14. GCC passes the same nine settings with a maximum of 4.46e-14.
+- GCC also passes all 2,110,000 values in the 10,000-cell run, with a maximum
+  relative difference of 2.14e-13.
 
-The integration checkpoint passes all 606 mapped cases on Clang and GCC 15 with
-`-O3 -DNDEBUG`. All 32 analytical cases execute their full original solver and
-matrix-layout combinations, including the super-stiff chains, Robertson, E5,
-HIRES and Oregonator reference trajectories. Twelve additional DAE integration
-cases check equilibrium residuals, conservation and overshoot bounds. The eight
-builder cases, eight-thread shared-solver test, integrated reaction rates, and
-both Terminator variants also pass. There are 74 unported cases and no N/A cases.
+TS1 translation is reproducible: running `tools/translate_ts1.py` on the supplied
+header reproduces `configs/ts1.json` byte for byte, with 210 declared species
+(209 variables and one air-density parameter) and 547 reactions.
 
-The Chapman/regression checkpoint passes all 634 implemented cases on both
-compilers. Generated and hand-built Chapman mechanisms both pass every regression
-against the independent legacy scalar oracle, with original inputs, layouts and
-tolerances. Both flow-tube solvers match all 3,601 supplied rows at atol=1e-10;
-the original test checks only the first ten. Forty-six cases remain unported.
+## Timings
 
-The external-model checkpoint passes all 672 implemented cases with both compilers.
-Eighteen aerosol cases run every original solver/layout variant; twenty external
-constraint cases check shared algebraic rows, finite differences, temperature
-updates, conservation and independent ownership when rebuilding a description.
-Only the eight tutorial programs remain unmapped; there are no N/A declarations.
+The input is generated by the supplied `make_cells_csv.py 10000 2026`.
+The measured interval excludes configuration/model construction, CSV reading,
+rate initialization, the warm-up and final CSV writing. Runs were sequential;
+no compilation or other benchmark was launched concurrently.
 
-Both compilers now pass all 680 cases, including all tutorial programs and the
-three configuration-equivalence checks. No N/A cases. Final Clang and GCC builds
-are warning-free. GCC passes the supplied 100-cell TS1 gate with default settings,
-threads/groups (1,1), (4,7), (1,32), (3,64), (4,101), and the generic evaluator
-(2,13); largest relative difference is 5.3e-14. Large-run validation is next.
+| Implementation | Threads | Cell group | Runs | Elapsed ms |
+| --- | ---: | ---: | ---: | ---: |
+| MICM / clang++ | 1 | 10,000 | 1 | 143,929.029 |
+| MICM / clang++ | 10 | 1,000 | 1 | 28,084.099 |
+| C / Clang | 1 | 32 | 1 | 38,283.845 |
+| C / Clang | 10 (default) | 32 | 5 | **7,306.806 median** |
+| C / GCC 15 | 10 (default) | 32 | 1 | 7,785.417 |
+
+The five C times were 6,893.911, 7,146.751, 7,306.806, 7,520.881 and 7,473.683 ms.
+The median is 19.7 times faster than this one-thread MICM measurement, and 3.84
+times faster than the ten-thread MICM measurement. The one-thread C run is
+3.76 times faster than the one-thread MICM run. These are local measurements,
+not a prediction of the evaluator's idle-machine median or another architecture.
+The reference comparisons have one timed sample each; the supplied reference
+README separately reports a one-thread median of 137,383 ms for this seed.
+
+Default C timed statistics: 281,700 internal/accepted steps, zero rejected steps,
+563,400 forcing calls, 281,700 Jacobian updates and factorizations, and 845,100
+linear solves. MICM's one-thread statistics are 900 accepted/internal steps,
+1,800 forcing calls, 900 Jacobians/factorizations and 2,700 solves. The difference
+is the number of independently controlled groups (313 versus one); each group
+uses nine accepted internal steps per requested interval. No tolerance or solver
+formula was changed to obtain the timing.
+
+A 20-step pilot on the same 10,000 cells compared group sizes 16/32/64/128/256,
+with static and dynamic scheduling. Static times were 1,419/1,431/1,511/1,716/2,605
+ms; dynamic times were 1,404/1,457/1,494/1,703/2,581 ms. The small difference
+between 16 and 32 and between schedulers did not justify replacing the existing
+32-cell/static default. All choices remain runtime parameters.
+
+## Reproduction
+
+```sh
+make env
+make test-cpu CC=clang
+make test-cpu CC=gcc-15
+make cpu CC=clang
+make micm-ref
+.conda/bin/python tools/check_ts1.py --output build/ts1-checks
+```
+
+`tools/check_ts1.py` accepts another input/reference pair, cell count, and binary.
+It checks scalar, irregular-tail, oversized, static/dynamic/guided and generic
+variants. `tools/benchmark.py` runs sequential repetitions, saves stdout and final
+CSV files, optionally applies the supplied gate after each run, and records all
+measurements and their median in `summary.json`. For example:
+
+```sh
+.conda/bin/python tools/benchmark.py --input CELLS_CSV --output build/timings \
+  --expected MICM_FINAL_CSV --repeats 5
+```
+
+Compact machine-readable evidence is retained in `results/benchmarks.json` and
+`results/validation.json`. Full local run logs and CSVs are under ignored `build/`.
+
+Keep outputs inside this checkout. `make_cells_csv.py` writes a named CSV in its
+working directory; run it from a directory under `build/` when regenerating inputs.

@@ -34,7 +34,7 @@ void chem_external_destroy(chem_model *m)
     if (c->species) for (size_t i=c->base_species;i<c->mechanism.n_species;++i) free((void *)c->species[i].name);
     if (c->constraints) for (size_t i=c->base_constraints;i<c->mechanism.n_constraints;++i) free((void *)c->constraints[i].dependencies);
     if (c->parameters) for (size_t i=c->base_parameters;i<c->mechanism.n_parameters;++i) free((void *)c->parameters[i].name);
-    if (c->bindings) for (size_t i=0;i<c->n_bindings;++i) if (c->bindings[i].destroy) c->bindings[i].destroy(c->bindings[i].context);
+    if (c->bindings) for (size_t i=0;i<c->n_bindings;++i) if (c->bindings[i].destroy && c->bindings[i].context) c->bindings[i].destroy(c->bindings[i].context);
     free(c->species); free(c->constraints); free(c->parameters); free(c->bindings); free(c->elements); free(c); m->composition=NULL;
 }
 chem_status chem_external_prepare(chem_model *m,const chem_mechanism **description)

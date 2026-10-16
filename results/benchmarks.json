@@ -1,0 +1,232 @@
+{
+  "host": "Apple M5, 10 cores, macOS 27.0.1",
+  "optimization_flags": "-O3 -DNDEBUG",
+  "seed": 2026,
+  "cells": 10000,
+  "steps": 100,
+  "dt_seconds": 30,
+  "warmup_steps": 1,
+  "measurements": [
+    {
+      "implementation": "C Clang all cores",
+      "command": [
+        "bin/ts1_bench_cpu",
+        "10000",
+        "100",
+        "30",
+        "cells-10000-seed2026.csv"
+      ],
+      "runs": [
+        {
+          "elapsed_ms": 6893.911123,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100,
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+        },
+        {
+          "elapsed_ms": 7146.750927,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100,
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+        },
+        {
+          "elapsed_ms": 7306.805849,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100,
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+        },
+        {
+          "elapsed_ms": 7520.880938,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100,
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+        },
+        {
+          "elapsed_ms": 7473.683119,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100,
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+        }
+      ],
+      "median_ms": 7306.805849
+    },
+    {
+      "implementation": "C Clang one thread",
+      "command": [
+        "bin/ts1_bench_cpu",
+        "--threads",
+        "1",
+        "10000",
+        "100",
+        "30",
+        "cells-10000-seed2026.csv"
+      ],
+      "runs": [
+        {
+          "elapsed_ms": 38283.844948,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100,
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+        }
+      ],
+      "median_ms": 38283.844948
+    },
+    {
+      "implementation": "C GCC all cores",
+      "command": [
+        "bin/ts1_bench_cpu",
+        "10000",
+        "100",
+        "30",
+        "cells-10000-seed2026.csv"
+      ],
+      "runs": [
+        {
+          "elapsed_ms": 7785.417,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100,
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.14e-13 (BCARY, cell 6848) (rtol 1e-10, atol 1e-30)"
+        }
+      ],
+      "median_ms": 7785.417
+    },
+    {
+      "implementation": "MICM clang++ ten threads",
+      "command": [
+        "bin/micm_ts1_ref",
+        "--threads",
+        "10",
+        "10000",
+        "100",
+        "30",
+        "cells-10000-seed2026.csv"
+      ],
+      "runs": [
+        {
+          "elapsed_ms": 28084.099,
+          "internal_steps": 9000,
+          "accepted": 9000,
+          "rejected": 0,
+          "function_calls": 18000,
+          "jacobian_updates": 9000,
+          "decompositions": 9000,
+          "solves": 27000,
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 0 (rtol 1e-10, atol 1e-30)"
+        }
+      ],
+      "median_ms": 28084.099
+    },
+    {
+      "implementation": "MICM clang++ one thread",
+      "command": [
+        "bin/micm_ts1_ref",
+        "--threads",
+        "1",
+        "10000",
+        "100",
+        "30",
+        "cells-10000-seed2026.csv"
+      ],
+      "runs": [
+        {
+          "elapsed_ms": 143929.029,
+          "internal_steps": 900,
+          "accepted": 900,
+          "rejected": 0,
+          "function_calls": 1800,
+          "jacobian_updates": 900,
+          "decompositions": 900,
+          "solves": 2700
+        }
+      ],
+      "median_ms": 143929.029
+    }
+  ],
+  "group_schedule_pilot_20_steps": [
+    {
+      "group": 16,
+      "schedule": "static",
+      "ms": 1419.180155
+    },
+    {
+      "group": 16,
+      "schedule": "dynamic",
+      "ms": 1403.707981
+    },
+    {
+      "group": 32,
+      "schedule": "static",
+      "ms": 1430.515051
+    },
+    {
+      "group": 32,
+      "schedule": "dynamic",
+      "ms": 1457.372904
+    },
+    {
+      "group": 64,
+      "schedule": "static",
+      "ms": 1510.683775
+    },
+    {
+      "group": 64,
+      "schedule": "dynamic",
+      "ms": 1494.005203
+    },
+    {
+      "group": 128,
+      "schedule": "static",
+      "ms": 1715.688944
+    },
+    {
+      "group": 128,
+      "schedule": "dynamic",
+      "ms": 1702.924013
+    },
+    {
+      "group": 256,
+      "schedule": "static",
+      "ms": 2604.840994
+    },
+    {
+      "group": 256,
+      "schedule": "dynamic",
+      "ms": 2581.09498
+    }
+  ]
+}

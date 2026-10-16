@@ -144,8 +144,23 @@ static void aerosol_case(integration_variant variant,int kind)
     chem_state_destroy(&state); chem_solver_destroy(&solver);
 }
 
+static unsigned failed_clone_destroys;
+static void *fail_clone(const void *context) { (void)context; return NULL; }
+static void count_failed_clone_destroy(void *context) { (void)context; ++failed_clone_destroys; }
+static void check_failed_clone(void)
+{
+    chem_species species={.name="A"};
+    chem_external_model external={.clone=fail_clone,.destroy=count_failed_clone_destroy};
+    chem_mechanism description={.n_species=1,.species=&species,.n_external=1,.external=&external};
+    chem_model model={0}; failed_clone_destroys=0;
+    CHECK(chem_model_create(&model,&description,CHEM_LU_MOZART)==CHEM_MEMORY);
+    CHECK(failed_clone_destroys==0); CHECK(model.composition==NULL);
+    chem_model_destroy(&model); CHECK(failed_clone_destroys==0);
+}
+
 TEST(aerosol_model_backward_euler,AerosolModelIntegration,StateIncludesStubAerosolModel)
 {
+    check_failed_clone();
     const integration_variant variants[]={
         {-1,0,CHEM_LU_DOOLITTLE,CHEM_CSR,0,5e-5},
         {-1,1,CHEM_LU_DOOLITTLE,CHEM_CSR,0,5e-5},
