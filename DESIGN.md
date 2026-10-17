@@ -83,15 +83,17 @@ for while the solver's states use one.
      are the same object to the library;
    - `<name>_initial_state()` sets the configuration's initial
      concentrations, parameters, and conditions;
-   - `<name>_kernels()` returns a `tmc_kernels` table of four functions with
-     the width and the fingerprint. The builder attaches them only when both
+   - `<name>_kernels()` returns a `tmc_kernels` table of four kernels and two
+     fused variants (the forcing with the Jacobian at the start of a step; the
+     forcing at a stage's combination y + a k), with the width and the
+     fingerprint. The builder attaches them only when both
      match the solver it just built, and never to a solver with constraints
      or external models, which run the generic kernels.
 4. The Makefile runs the generator at build time with `$(PYTHON)` from the
    conda environment and compiles the output with `$(CC)` and `$(OPTFLAGS)`.
    Python never runs when the library or the benchmark runs.
 
-The four kernels act on one state's blocks in lock step (`nb` blocks):
+The kernels act on one state's blocks in lock step (`nb` blocks):
 
 - **forcing**: pass 1 computes every reaction rate k prod(reactants) into a
   per-thread buffer; pass 2 assigns every species its sum of -rate over the
@@ -115,6 +117,9 @@ The four kernels act on one state's blocks in lock step (`nb` blocks):
   accumulates four partial sums and the back substitution multiplies by the
   stored reciprocal; exact mode (`make KERNEL_MODE=exact`) keeps MICM's
   single sum and division.
+- **forcing at y + a k**: the second stage's forcing with its combination
+  formed block by block into a thread-local buffer (one fused multiply-add
+  per element, as the library's pass), so no group-wide pass precedes it.
 
 The generic kernels in `src/process.c` and `src/lu.c` do the same work from
 index lists, for any width, and are what the tests mostly run; the tests also

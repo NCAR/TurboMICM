@@ -535,8 +535,13 @@ tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state
         }
         else if (p->new_function_evaluation[stage])
         {
-          combine(Ynew, Y, stage, &p->a[stage_combinations], K);
-          forcing(s, st, Ynew, raw);
+          if (stage == 1 && s->kernels && s->kernels->forcing_at)
+            s->kernels->forcing_at(Y->data, K[0]->data, p->a[stage_combinations], st->rate_constants->data, raw->data, st->n_blocks);
+          else
+          {
+            combine(Ynew, Y, stage, &p->a[stage_combinations], K);
+            forcing(s, st, Ynew, raw);
+          }
           stats->function_calls += 1;
         }
         else if (raw != K[stage])
