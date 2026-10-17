@@ -17,6 +17,7 @@ import sys
 INTERLEAVE = 4  # independent accumulations emitted side by side
 SPLIT_MIN = 12  # fast mode splits sums with at least this many terms
 PANEL = 4  # pivots per LU panel
+ROW_BUDGET = 64  # solve terms per block loop body
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -435,9 +436,24 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
                 out(f"    {lane} t[c] -= {A((i, j))} * {X(j)};")
             out("    " + lane + " " + final.format(t="t[c]"))
 
-    # one row per block loop, so the blocks' chains overlap row by row
-    fw_groups = [[i] for i in range(n)]
-    bw_groups = [[i] for i in range(n - 1, -1, -1)]
+    # Rows share a block loop until the body holds about ROW_BUDGET terms: short rows
+    # would otherwise spend half their instructions on loop control, while a long
+    # row alone keeps its body short enough for the blocks' chains to overlap.
+    def row_groups(order, terms_of):
+        groups, cur, cost = [], [], 0
+        for i in order:
+            w = max(1, len(terms_of(i)))
+            if cur and cost + w > ROW_BUDGET:
+                groups.append(cur)
+                cur, cost = [], 0
+            cur.append(i)
+            cost += w
+        if cur:
+            groups.append(cur)
+        return groups
+
+    fw_groups = row_groups(range(n), lambda i: [j for j in rows[i] if j < i])
+    bw_groups = row_groups(range(n - 1, -1, -1), lambda i: [j for j in rows[i] if j > i])
     per_fn = 8
     for start in range(0, len(fw_groups), per_fn):
         if not any(j < i for grp in fw_groups[start:start + per_fn] for i in grp for j in rows[i]):
@@ -510,12 +526,14 @@ def main():
     ap.add_argument("--chunk", type=int, default=16, help="pivots per generated LU function")
     ap.add_argument("--no-kernels", action="store_true", help="emit only the mechanism tables")
     ap.add_argument("--panel", type=int, default=4, help="pivots per LU panel")
+    ap.add_argument("--row-budget", type=int, default=64, help="solve terms per block loop body")
     ap.add_argument("--mode", choices=("fast", "exact"), default="fast",
                     help="exact: MICM's operation order bit for bit; fast: split long sums, pivot reciprocals")
     args = ap.parse_args()
 
-    global PANEL
+    global PANEL, ROW_BUDGET
     PANEL = max(1, args.panel)
+    ROW_BUDGET = max(1, args.row_budget)
     m = mech.read(args.config)
     c = mech.compile_mechanism(m)
     name = args.name

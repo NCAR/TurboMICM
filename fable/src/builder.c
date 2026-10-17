@@ -311,8 +311,23 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
     return NULL;
   }
   for (int i = 0; i < b->n_reactions; ++i)
-    if (tmc_reaction_validate(&b->reactions[i], err) != TMC_OK)
+  {
+    const tmc_reaction *rx = &b->reactions[i];
+    if (tmc_reaction_validate(rx, err) != TMC_OK)
       return NULL;
+    if (rx->rate_constant.type == TMC_RATE_SURFACE)
+    {
+      const tmc_surface_parameters *sp = &rx->rate_constant.p.surface;
+      if (!sp->species.has_diffusion_coefficient)
+      {
+        tmc_error_set(err, TMC_ERROR_SPECIES, TMC_SPECIES_PROPERTY_NOT_FOUND, "Diffusion coefficient for species '%s' is not defined", sp->species.species.name);
+        return NULL;
+      }
+      double mw;
+      if (tmc_species_get_double(&sp->species.species, TMC_PROPERTY_MOLECULAR_WEIGHT, &mw, err) != TMC_OK)
+        return NULL;
+    }
+  }
 
   build_scratch sc;
   memset(&sc, 0, sizeof sc);
