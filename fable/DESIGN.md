@@ -146,7 +146,7 @@ the generated kernels hold the reaction rates and Jacobian partials.
 | Parameter | Default | Set by | Effect |
 |---|---|---|---|
 | vector width W | 2 | `make WIDTH=` (`TMC_WIDTH`); `tmc_builder_set_width` per solver | lanes per block; the generated kernels are compiled for the build's W |
-| group size | 8, or 32 on one thread | `make GROUP_SIZE=`; `--group-size` | cells per state, sharing one step size and error norm; blocks run in lock step, so a group fetches the kernels' code once |
+| group size | 32 | `make GROUP_SIZE=`; `--group-size` | cells per state, sharing one step size and error norm; blocks run in lock step, so a group fetches the kernels' code once |
 | threads | all cores | `--threads`, `OMP_NUM_THREADS` | OpenMP threads over groups |
 | schedule | dynamic, 1 | `--schedule static|dynamic|guided`, `--chunk` | how groups are handed to threads |
 | LU panel | 64 | `make GEN_FLAGS="--panel N"` | pivots per generated LU panel; the results do not depend on it |
