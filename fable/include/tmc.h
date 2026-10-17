@@ -756,7 +756,7 @@ void tmc_solver_free(tmc_solver *s);
 tmc_state *tmc_solver_create_state(const tmc_solver *s, int n_cells);
 /* Recompute the rate constants from the state's conditions and parameters. */
 void tmc_solver_update_state_parameters(const tmc_solver *s, tmc_state *state);
-tmc_result tmc_solver_solve(tmc_solver *s, double time_step, tmc_state *state);
+tmc_result tmc_solver_solve(const tmc_solver *s, double time_step, tmc_state *state);
 void tmc_solver_set_rosenbrock_parameters(tmc_solver *s, const tmc_rosenbrock_parameters *p);
 const tmc_rosenbrock_parameters *tmc_solver_rosenbrock_parameters(const tmc_solver *s);
 void tmc_solver_set_backward_euler_parameters(tmc_solver *s, const tmc_backward_euler_parameters *p);

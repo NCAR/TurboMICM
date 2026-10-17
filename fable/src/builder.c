@@ -1159,7 +1159,7 @@ unsigned long long tmc_solver_fingerprint(const tmc_solver *s)
   return s->fingerprint;
 }
 
-tmc_result tmc_solver_solve(tmc_solver *s, double time_step, tmc_state *state)
+tmc_result tmc_solver_solve(const tmc_solver *s, double time_step, tmc_state *state)
 {
   if (s->n_external)
     tmc_external_initialize_constraint_parameters(s, state->variables, state->custom_rate_parameters);
