@@ -64,7 +64,8 @@ The program prints `elapsed_ms=` and the solver statistics summed over the
 timed steps, and writes `ts1_final.csv` in the working directory.
 `--generic` runs the library's generic kernels instead of the generated TS1
 kernels; `--threads 1` and `--group-size` change the threading and the
-grouping, and all of them must agree with MICM within the gate.
+grouping (by default 8 cells per group, or 32 when running on one thread),
+and all of them must agree with MICM within the gate.
 
 ## Use the library
 

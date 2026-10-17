@@ -16,7 +16,7 @@ import sys
 
 INTERLEAVE = 4  # independent accumulations emitted side by side
 SPLIT_MIN = 12  # fast mode splits sums with at least this many terms
-PANEL = 4  # pivots per LU panel
+PANEL = 64  # pivots per LU panel
 ROW_BUDGET = 64  # solve terms per block loop body
 from pathlib import Path
 
@@ -388,16 +388,20 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
     out("}")
     out()
 
-    # ---- LU: MICM's Mozart in-place elimination in panels of PANEL pivots. Within a
-    # panel the pivots run one by one on the panel's own rows and columns; the rest of
-    # the matrix then takes the panel's updates target by target, each target loaded and
-    # stored once with its terms in pivot order, so every element sees exactly the
-    # update sequence of the pivot-by-pivot algorithm. Blocks run in lock step.
+    # ---- LU: MICM's Mozart in-place elimination in panels of PANEL pivots. Every element
+    # is finished target by target, loaded and stored once per panel with its terms in
+    # pivot order, so it sees exactly the update sequence of the pivot-by-pivot algorithm:
+    # inside the panel at its own pivot (the diagonal, the column below it with the
+    # scaling, the row to its right), outside it in the panel's rank-PANEL trailing
+    # update. Blocks run in lock step.
     rows = {i: sorted(j for (r, j) in c.lu_elements if r == i) for i in range(n)}
     cols = {j: sorted(i for (i, cc) in c.lu_elements if cc == j) for j in range(n)}
-    out("/* in-place LU (MICM's Mozart order), pivots in panels: scale the column below each")
-    out("   pivot by its reciprocal, update the panel's rows and columns, then apply the panel's")
-    out("   rank-" + str(PANEL) + " update to the trailing matrix; blocks run in lock step */")
+    row_set = {i: set(rows[i]) for i in range(n)}
+    col_set = {j: set(cols[j]) for j in range(n)}
+    out("/* in-place LU (MICM's Mozart order), pivots in panels of " + str(PANEL) + ": at each pivot its")
+    out("   diagonal, its column (updates from the panel's earlier pivots, then the scaling by the")
+    out("   reciprocal), and its row are finished target by target; the trailing matrix then takes")
+    out("   the panel's update; blocks run in lock step */")
     funcs = []
     panels = [(i0, min(n, i0 + PANEL)) for i0 in range(0, n, PANEL)]
     per_fn = max(1, chunk // PANEL)
@@ -409,18 +413,54 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
         for i0, i1 in panels[start:start + per_fn]:
             out(f"  for (int b = 0; b < nb; ++b) {{ /* pivots {i0}-{i1 - 1} */")
             out(f"    double *restrict a = a0 + (size_t)b * ({nnz}*{W}); double *restrict recip = r0 + (size_t)b * ({n}*{W});")
+            # Within the panel every element is finished target by target: at pivot p the
+            # diagonal, then the column below it (updates from the panel's earlier pivots in
+            # pivot order, then the scaling by the reciprocal) and the row to its right. The
+            # sources, column p above the diagonal and row p left of it, were finished at
+            # their own pivots, so each element sees exactly the pivot-by-pivot sequence.
             for p in range(i0, i1):
+                lp = [q for q in rows[p] if i0 <= q < p]  # L entries (p, q) of row p inside the panel
+                up = [q for q in cols[p] if i0 <= q < p]  # U entries (q, p) of column p inside the panel
                 below = [j for j in cols[p] if j > p]
                 right = [k for k in rows[p] if k > p]
-                out(f"    {{ double inv[{W}];")
-                out(f"      {lane} inv[c] = 1.0 / {A((p, p))};")
+                diag_terms = [q for q in lp if q in col_set[p]]
+                out(f"    {{ /* pivot {p} */")
+                out(f"      double inv[{W}];")
+                if diag_terms:
+                    out(f"      {{ double d[{W}];")
+                    out(f"        {lane} d[c] = {A((p, p))};")
+                    for q in diag_terms:
+                        out(f"        {lane} d[c] -= {A((p, q))} * {A((q, p))};")
+                    out(f"        {lane} {A((p, p))} = d[c];")
+                    out(f"        {lane} inv[c] = 1.0 / d[c]; }}")
+                else:
+                    out(f"      {lane} inv[c] = 1.0 / {A((p, p))};")
                 out(f"      {lane} recip[{p}*{W}+c] = inv[c];")
-                for j in below:
-                    out(f"      {lane} {A((j, p))} *= inv[c];")
-                for j in below:
-                    for k in right:
-                        if j < i1 or k < i1:
-                            out(f"      {lane} {A((j, k))} -= {A((j, p))} * {A((p, k))};")
+                if below:
+                    out("      { " + " ".join(f"double u{q - i0}[{W}];" for q in up))
+                    for q in up:
+                        out(f"        {lane} u{q - i0}[c] = {A((q, p))};")
+                    for j in below:
+                        terms = [q for q in up if q in row_set[j]]
+                        out(f"        {{ double t[{W}];")
+                        out(f"          {lane} t[c] = {A((j, p))};")
+                        for q in terms:
+                            out(f"          {lane} t[c] -= {A((j, q))} * u{q - i0}[c];")
+                        out(f"          {lane} {A((j, p))} = t[c] * inv[c]; }}")
+                    out("      }")
+                row_targets = [(k, [q for q in lp if k in row_set[q]]) for k in right]
+                row_targets = [(k, terms) for k, terms in row_targets if terms]
+                if row_targets:
+                    out("      { " + " ".join(f"double l{q - i0}[{W}];" for q in lp))
+                    for q in lp:
+                        out(f"        {lane} l{q - i0}[c] = {A((p, q))};")
+                    for k, terms in row_targets:
+                        out(f"        {{ double t[{W}];")
+                        out(f"          {lane} t[c] = {A((p, k))};")
+                        for q in terms:
+                            out(f"          {lane} t[c] -= l{q - i0}[c] * {A((q, k))};")
+                        out(f"          {lane} {A((p, k))} = t[c]; }}")
+                    out("      }")
                 out("    }")
             # trailing update, row by row
             trailing_rows = sorted({j for p in range(i0, i1) for j in cols[p] if j >= i1})
@@ -568,6 +608,7 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
 
 
 def main():
+    global PANEL, ROW_BUDGET, INTERLEAVE
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("config")
     ap.add_argument("output_stem")
@@ -575,14 +616,13 @@ def main():
     ap.add_argument("--width", type=int, default=2, help="vector width the kernels are compiled for")
     ap.add_argument("--chunk", type=int, default=16, help="pivots per generated LU function")
     ap.add_argument("--no-kernels", action="store_true", help="emit only the mechanism tables")
-    ap.add_argument("--panel", type=int, default=4, help="pivots per LU panel")
-    ap.add_argument("--row-budget", type=int, default=64, help="solve terms per block loop body")
-    ap.add_argument("--interleave", type=int, default=4, help="independent accumulations emitted side by side")
+    ap.add_argument("--panel", type=int, default=PANEL, help="pivots per LU panel")
+    ap.add_argument("--row-budget", type=int, default=ROW_BUDGET, help="solve terms per block loop body")
+    ap.add_argument("--interleave", type=int, default=INTERLEAVE, help="independent accumulations emitted side by side")
     ap.add_argument("--mode", choices=("fast", "exact"), default="fast",
                     help="exact: MICM's operation order bit for bit; fast: split long sums, pivot reciprocals")
     args = ap.parse_args()
 
-    global PANEL, ROW_BUDGET, INTERLEAVE
     PANEL = max(1, args.panel)
     ROW_BUDGET = max(1, args.row_budget)
     INTERLEAVE = max(1, args.interleave)

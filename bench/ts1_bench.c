@@ -19,7 +19,12 @@
 #include <string.h>
 
 #ifndef TMC_DEFAULT_GROUP_SIZE
-#define TMC_DEFAULT_GROUP_SIZE 4
+#define TMC_DEFAULT_GROUP_SIZE 8
+#endif
+/* One thread has a core's caches to itself, so it runs larger groups: the
+ * kernels' code is fetched once per group instead of once per block. */
+#ifndef TMC_SINGLE_THREAD_GROUP_SIZE
+#define TMC_SINGLE_THREAD_GROUP_SIZE 32
 #endif
 
 typedef struct
@@ -97,7 +102,7 @@ typedef struct
 
 int main(int argc, char **argv)
 {
-  int threads = 0, group_size = TMC_DEFAULT_GROUP_SIZE, chunk = 1;
+  int threads = 0, group_size = 0, chunk = 1; /* group_size 0: the default for the thread count */
   bool generic = false;
   omp_sched_t schedule = omp_sched_dynamic;
   int i = 1;
@@ -135,10 +140,12 @@ int main(int argc, char **argv)
   const int n_steps = atoi(argv[i + 1]);
   const double dt = atof(argv[i + 2]);
   const char *csv_path = argv[i + 3];
-  if (n_cells <= 0 || n_steps < 0 || dt <= 0 || group_size <= 0 || chunk <= 0)
+  if (n_cells <= 0 || n_steps < 0 || dt <= 0 || group_size < 0 || chunk <= 0)
     fail("CELLS, STEPS, DT, group size, and chunk must be positive");
   if (threads > 0)
     omp_set_num_threads(threads);
+  if (group_size == 0)
+    group_size = omp_get_max_threads() == 1 ? TMC_SINGLE_THREAD_GROUP_SIZE : TMC_DEFAULT_GROUP_SIZE;
   omp_set_schedule(schedule, chunk);
 
   /* The solver: TS1 from the generated configuration tables */

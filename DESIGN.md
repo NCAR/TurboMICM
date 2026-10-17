@@ -100,12 +100,14 @@ The four kernels act on one state's blocks in lock step (`nb` blocks):
   (+partial for reactant rows, -yield partial for product rows), in MICM's
   job order, and adds alpha to the diagonal last, so the matrix is
   alpha I - J with zeros in the fill positions.
-- **LU**: MICM's Mozart elimination in panels of four pivots: within a panel
-  the pivots run one by one (reciprocal, column scaling, updates of the
-  panel's rows and columns); the trailing elements then take the panel's
-  rank-4 update, each loaded and stored once. Every element sees its updates
-  in pivot order, so the factors equal the pivot-by-pivot algorithm's bit for
-  bit. The pivot reciprocals are stored for the solve.
+- **LU**: MICM's Mozart elimination in panels of 64 pivots, every element
+  finished target by target. At its pivot: the diagonal, then the column
+  below it (its updates from the panel's earlier pivots in pivot order, then
+  the scaling by the reciprocal), then the row to its right; after the
+  panel, the trailing elements take the panel's rank-64 update. Each element
+  is loaded and stored once per panel and sees its updates in pivot order,
+  so the factors equal the pivot-by-pivot algorithm's bit for bit. The pivot
+  reciprocals are stored for the solve.
 - **solve**: forward substitution with the unit lower factor, then backward
   substitution. In fast mode (the default) a row with twelve or more terms
   accumulates four partial sums and the back substitution multiplies by the
@@ -144,10 +146,10 @@ the generated kernels hold the reaction rates and Jacobian partials.
 | Parameter | Default | Set by | Effect |
 |---|---|---|---|
 | vector width W | 2 | `make WIDTH=` (`TMC_WIDTH`); `tmc_builder_set_width` per solver | lanes per block; the generated kernels are compiled for the build's W |
-| group size | 8 | `make GROUP_SIZE=`; `--group-size` | cells per state, sharing one step size and error norm; blocks run in lock step |
+| group size | 8, or 32 on one thread | `make GROUP_SIZE=`; `--group-size` | cells per state, sharing one step size and error norm; blocks run in lock step, so a group fetches the kernels' code once |
 | threads | all cores | `--threads`, `OMP_NUM_THREADS` | OpenMP threads over groups |
 | schedule | dynamic, 1 | `--schedule static|dynamic|guided`, `--chunk` | how groups are handed to threads |
-| LU panel | 4 | `make GEN_FLAGS="--panel N"` | pivots per generated LU panel |
+| LU panel | 64 | `make GEN_FLAGS="--panel N"` | pivots per generated LU panel; the results do not depend on it |
 | solve row budget | 64 | `make GEN_FLAGS="--row-budget N"` | terms per block loop in the generated solves; short rows share a loop |
 | kernel mode | fast | `make KERNEL_MODE=exact` | fast: split sums and pivot reciprocals in the solve; exact: MICM's order bit for bit |
 | kernel chunk | 16 | `make KERNEL_CHUNK=` | pivots or rows per generated function (compile time only) |
