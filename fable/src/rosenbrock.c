@@ -204,12 +204,31 @@ static double normalized_error(const tmc_state *st, const tmc_dense *y, const tm
     {
       const size_t base = ((size_t)block * n_vars + v) * L;
       const int lanes = block == n_blocks - 1 ? n_cells - block * L : L;
-      for (int lane = 0; lane < lanes; ++lane)
+      const double *restrict yv = y->data + base, *restrict ynv = ynew->data + base, *restrict ev = errors->data + base;
+      if (lanes == TMC_WIDTH)
       {
-        double a = fabs(y->data[base + lane]), b = fabs(ynew->data[base + lane]);
-        double ymax = a > b ? a : b;
-        double e = errors->data[base + lane] / (atol + rtol * ymax);
-        acc += e * e;
+        /* a full block of the build's width: the lanes' terms side by side,
+         * their sum still lane by lane */
+        double term[TMC_WIDTH];
+        for (int lane = 0; lane < TMC_WIDTH; ++lane)
+        {
+          double a = fabs(yv[lane]), b = fabs(ynv[lane]);
+          double ymax = a > b ? a : b;
+          double e = ev[lane] / (atol + rtol * ymax);
+          term[lane] = e * e;
+        }
+        for (int lane = 0; lane < TMC_WIDTH; ++lane)
+          acc += term[lane];
+      }
+      else
+      {
+        for (int lane = 0; lane < lanes; ++lane)
+        {
+          double a = fabs(yv[lane]), b = fabs(ynv[lane]);
+          double ymax = a > b ? a : b;
+          double e = ev[lane] / (atol + rtol * ymax);
+          acc += e * e;
+        }
       }
     }
   }
