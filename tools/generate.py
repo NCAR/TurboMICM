@@ -131,6 +131,7 @@ def emit_mechanism(out, name, m: mech.Mechanism, c: mech.Compiled):
     out(f"int {name}_initial_state(tmc_state *state)")
     out("{")
     out("  int count = 0;")
+    out("  (void)state;")
     for s in m.species:
         if s.initial_concentration is not None:
             out(f"  count += tmc_state_set_concentration(state, {c_string(s.name)}, {c_double(s.initial_concentration)}, NULL) == TMC_OK;")
@@ -489,8 +490,7 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
         funcs.append(fn)
         out(f"static void {fn}(double *restrict x0, const double *restrict a0, const double *restrict r0, int nb)")
         out("{")
-        if not fast:
-            out("  (void)r0;")
+        out("  (void)a0; (void)r0;")
         for grp in bw_groups[start:start + per_fn]:
             recip_decl = f" const double *restrict recip = {block_ptr('r0', f'{n}*{W}', 'rb')};" if fast else ""
             uses_a = (not fast) or any(j > i for i in grp for j in rows[i])

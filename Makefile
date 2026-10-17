@@ -92,12 +92,29 @@ bin/ts1_bench_cpu: bench/ts1_bench.c build/ts1.o build/libtmc.a generated/ts1.h
 	$(CC) $(CFLAGS) -Igenerated bench/ts1_bench.c build/ts1.o build/libtmc.a $(LDLIBS) -o $@
 
 # ---- tests --------------------------------------------------------------
-test-cpu: cpu bin/test_cpu
-	bin/test_cpu $(TEST_FILTER)
+TEST_SOURCES := $(wildcard tests/*.c)
+EXAMPLES := robertson rate_constants_no_user_defined rate_constants_user_defined
+TEST_MECHANISMS := $(patsubst %,generated/%.o,$(EXAMPLES))
 
-bin/test_cpu: $(wildcard tests/*.c) $(wildcard tests/*.h) build/libtmc.a
+test-cpu: cpu bin/test_cpu
+	TMC_TEST_MICM=$(MICM) TMC_TEST_REFERENCE=$(REFERENCE) bin/test_cpu $(TEST_FILTER)
+
+generated/tests/registry.h generated/tests/case_list.inc: $(TEST_SOURCES) $(REFERENCE)/micm_cases.txt tools/test_registry.py .conda/conda-meta/history
+	@mkdir -p generated/tests
+	$(PYTHON) tools/test_registry.py $(REFERENCE)/micm_cases.txt tests generated/tests
+
+# the example configurations; their tests compare them with the same mechanisms built in code
+.SECONDEXPANSION:
+generated/%.c generated/%.h: $$(wildcard configs/examples/%/*) tools/generate.py tools/mechanism.py .conda/conda-meta/history
+	@mkdir -p generated
+	$(PYTHON) tools/generate.py $(firstword $(wildcard configs/examples/$*/config.yaml configs/examples/$*/config.json)) generated/$* --name $* --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE)
+
+generated/%.o: generated/%.c generated/%.h include/tmc.h build/flags.txt
+	$(CC) $(CFLAGS) -Igenerated -c $< -o $@
+
+bin/test_cpu: $(TEST_SOURCES) tests/harness.h generated/tests/registry.h generated/tests/case_list.inc build/ts1.o $(TEST_MECHANISMS) build/libtmc.a
 	@mkdir -p bin
-	$(CC) $(CFLAGS) -Itests $(wildcard tests/*.c) build/libtmc.a $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) -Itests -Igenerated -Igenerated/tests -Isrc $(TEST_SOURCES) build/ts1.o $(TEST_MECHANISMS) build/libtmc.a $(LDLIBS) -o $@
 
 # ---- MICM reference -----------------------------------------------------
 micm-ref: bin/micm_ts1_ref
