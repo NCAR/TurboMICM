@@ -116,7 +116,13 @@ rejects"):
   row values: bit-identical, 0.6 % more instructions, the same time;
 - the second stage's forcing with its combination y + a k formed block by
   block in a thread-local buffer: bit-identical, 0.5 % faster at one thread,
-  the one small fusion kept.
+  the one small fusion kept;
+- larger kernel chunks (`KERNEL_CHUNK` 64 and 128, fewer calls per block):
+  1.3 % fewer instructions, the same time at one thread, 2 to 3 % slower at
+  ten.
+
+Not yet swept, for a follow-up session: the fast mode's split-sum threshold
+(`SPLIT_MIN`, 12 terms) and group sizes between 32 and 64.
 
 What remains is the formulation's floor: 45,900 instructions per cell and
 internal step at 3.75 per cycle, with the LU, solves, Jacobian, and forcing
