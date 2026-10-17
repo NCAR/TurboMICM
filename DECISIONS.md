@@ -86,6 +86,10 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
 
 ## Configuration format
 
+- YAML is read with PyYAML, whose default schema is YAML 1.1 and reads
+  `2.3e2` as a string; the reader adds the YAML 1.2 float forms, so the
+  examples' numbers are numbers whether written as `2.3e2` or `2.3e+02`.
+
 - Reactants and products may be CAMP maps (`{"A": {"qty": 2}}`) or ordered
   lists (`["A", "A"]`, `[{"species": "B", "yield": 0.5}]`), an extension that
   keeps the reactant order the C++ declarations use, which fixes the order of
@@ -105,6 +109,16 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   constants labelled by their `MUSICA name`, as MICM's by-hand tutorials build
   them; a SURFACE reaction's label is its `MUSICA name` ("C surface" in the
   example, where the by-hand program uses "C").
+
+## Tests
+
+- MICM's cases are ported one function per case id and printed in the
+  reference list's order (tests/README.md). Two checks of this port's own run
+  after them (`test_cpu --extra`, to stderr, so the 680 lines stay exactly
+  the list): the generated TS1 kernels against the generic kernels on the
+  reference input, and the experiment's gate on the 100-cell reference input.
+- Randomized MICM tests use fixed seeds in C; the checks compare against an
+  independent computation, so the values drawn do not change what is tested.
 
 ## C API
 

@@ -17,8 +17,6 @@ import sys
 INTERLEAVE = 4  # independent accumulations emitted side by side
 SPLIT_MIN = 12  # fast mode splits sums with at least this many terms
 PANEL = 4  # pivots per LU panel
-ROW_BUDGET = 0  # solve terms per block loop body (0: one row per loop)
-CONSTANT_TABLE = False
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -179,18 +177,9 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
     def block_ptr(base, stride, table):
         return f"{base} + (size_t)b * ({stride})"
 
-    # Product yields and their negatives live in one constant table: a load is one
-    # instruction, where a literal costs several to materialize.
-    constants = {}
-
     def K(value):
-        """C expression for a constant, through the table or as a literal."""
-        value = float(value)
-        if not CONSTANT_TABLE:
-            return c_double(value)
-        if value not in constants:
-            constants[value] = len(constants)
-        return f"{name}_constants[{constants[value]}]"
+        """C literal for a yield or its negative."""
+        return c_double(value)
 
     out(f"#if TMC_WIDTH != {width}")
     out(f'#error "{name} kernels were generated for TMC_WIDTH == {width}"')
@@ -446,23 +435,9 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
                 out(f"    {lane} t[c] -= {A((i, j))} * {X(j)};")
             out("    " + lane + " " + final.format(t="t[c]"))
 
-    def row_groups(order, js_of):
-        """Consecutive rows per block loop: about ROW_BUDGET terms per loop body, so the
-        out-of-order window still overlaps the blocks' iterations."""
-        groups, cur, cost = [], [], 0
-        for i in order:
-            w = max(1, len(js_of(i)))
-            if cur and (ROW_BUDGET == 0 or cost + w > ROW_BUDGET):
-                groups.append(cur)
-                cur, cost = [], 0
-            cur.append(i)
-            cost += w
-        if cur:
-            groups.append(cur)
-        return groups
-
-    fw_groups = row_groups(range(n), lambda i: [j for j in rows[i] if j < i])
-    bw_groups = row_groups(range(n - 1, -1, -1), lambda i: [j for j in rows[i] if j > i])
+    # one row per block loop, so the blocks' chains overlap row by row
+    fw_groups = [[i] for i in range(n)]
+    bw_groups = [[i] for i in range(n - 1, -1, -1)]
     per_fn = 8
     for start in range(0, len(fw_groups), per_fn):
         if not any(j < i for grp in fw_groups[start:start + per_fn] for i in grp for j in rows[i]):
@@ -523,11 +498,6 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
     out(f"  return &{name}_kernel_table;")
     out("}")
     out()
-    if constants:
-        final_out(f"static const double {name}_constants[{len(constants)}] = {{")
-        final_out("  " + ", ".join(c_double(v) for v in sorted(constants, key=constants.get)))
-        final_out("};")
-        final_out()
     final_out.lines += out.lines
 
 
@@ -540,16 +510,12 @@ def main():
     ap.add_argument("--chunk", type=int, default=16, help="pivots per generated LU function")
     ap.add_argument("--no-kernels", action="store_true", help="emit only the mechanism tables")
     ap.add_argument("--panel", type=int, default=4, help="pivots per LU panel")
-    ap.add_argument("--row-budget", type=int, default=0, help="solve terms per block loop body (0: one row)")
-    ap.add_argument("--constants", choices=("table", "literal"), default="literal")
     ap.add_argument("--mode", choices=("fast", "exact"), default="fast",
                     help="exact: MICM's operation order bit for bit; fast: split long sums, pivot reciprocals")
     args = ap.parse_args()
 
-    global PANEL, ROW_BUDGET, CONSTANT_TABLE
+    global PANEL
     PANEL = max(1, args.panel)
-    ROW_BUDGET = args.row_budget
-    CONSTANT_TABLE = args.constants == "table"
     m = mech.read(args.config)
     c = mech.compile_mechanism(m)
     name = args.name
