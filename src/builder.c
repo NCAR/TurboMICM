@@ -23,6 +23,7 @@ struct tmc_builder
   bool ignore_unused_species;
   int width;
   tmc_lu_algorithm lu_algorithm;
+  tmc_ordering ordering;
   const tmc_kernels *kernels;
   tmc_step_controller controller;
   void *controller_context;
@@ -35,6 +36,7 @@ static tmc_builder *create(void)
   b->ignore_unused_species = true; /* MICM's default */
   b->width = TMC_WIDTH;
   b->lu_algorithm = TMC_LU_MOZART;
+  b->ordering = TMC_ORDERING_MARKOWITZ;
   b->controller = tmc_default_step_controller;
   return b;
 }
@@ -113,6 +115,11 @@ void tmc_builder_set_ignore_unused_species(tmc_builder *b, bool ignore)
 void tmc_builder_set_width(tmc_builder *b, int L)
 {
   b->width = L < 1 ? 1 : L;
+}
+
+void tmc_builder_set_ordering(tmc_builder *b, tmc_ordering ordering)
+{
+  b->ordering = ordering;
 }
 
 void tmc_builder_set_lu_algorithm(tmc_builder *b, tmc_lu_algorithm algorithm)
@@ -517,7 +524,11 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
           }
         }
       }
-      tmc_markowitz_reorder(n_vars, pat, perm);
+      const tmc_ordering ordering = b->kernels ? (tmc_ordering)b->kernels->ordering : b->ordering;
+      if (ordering == TMC_ORDERING_MINIMUM_FILL)
+        tmc_minimum_fill_reorder(n_vars, pat, perm);
+      else
+        tmc_markowitz_reorder(n_vars, pat, perm);
       free(pat);
     }
     sc.new_of = tmc_malloc((size_t)n_vars * sizeof(int));

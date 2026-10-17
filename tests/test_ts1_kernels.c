@@ -66,6 +66,8 @@ static tmc_solver *build_ts1(bool kernels, int width, tmc_error *err)
   tmc_builder_set_width(b, width);
   if (kernels)
     tmc_builder_set_kernels(b, ts1_kernels());
+  else
+    tmc_builder_set_ordering(b, (tmc_ordering)ts1_kernels()->ordering); /* the same species order as the kernels */
   tmc_solver *s = tmc_builder_build(b, err);
   tmc_builder_free(b);
   tmc_reactions_free(reactions, n);

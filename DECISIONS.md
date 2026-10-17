@@ -14,12 +14,21 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   restores MICM's order bit for bit, and the tests run that mode against
   MICM's reference result (the difference is zero) and the fast mode against
   the gate (largest difference 1e-13 on 10,000 cells).
-- **Species ordering.** MICM's diagonal Markowitz ordering, reproduced exactly,
-  including that MICM computes the Markowitz cost in unsigned arithmetic, so a
-  species with no incoming edge wraps around and is ordered last, and that the
-  pattern it orders has no forced diagonal. A greedy minimum-fill ordering
-  would save only 5 % of the elimination work on TS1 (2,293 against 2,381
-  non-zeros after fill), not worth losing bit-for-bit comparability.
+- **Species ordering.** The library's default is MICM's diagonal Markowitz
+  ordering, reproduced exactly, including that MICM computes the Markowitz
+  cost in unsigned arithmetic, so a species with no incoming edge wraps
+  around and is ordered last, and that the pattern it orders has no forced
+  diagonal. The fast TS1 kernels are generated for a greedy minimum-fill
+  ordering instead (`TMC_ORDERING_MINIMUM_FILL`, `tools/mechanism.py` and
+  `tmc_minimum_fill_reorder` are the same algorithm: the pivot adding the
+  fewest elements, ties by the Markowitz cost and then the index), which
+  attached kernels impose on the solver they are built into: 2,293 LU
+  elements against 2,381, 10 % fewer elimination multiply-adds and 4 % fewer
+  in the solves, 3.8 % fewer instructions, and 2.7 % less time at one
+  thread, 3.3 % at ten. The results move from 3.8e-14 to 4.5e-14 of MICM
+  on the 100-cell input. Exact mode keeps MICM's ordering (`make
+  KERNEL_MODE=exact`, or `TS1_ORDERING=markowitz`), so its results still
+  match MICM bit for bit; so does the benchmark's generic path.
 - **Everything else numerical is MICM's:** the Rosenbrock formulas and all five
   parameter sets, the error norm's accumulation order (variable by variable,
   cell by cell, padded lanes excluded), the step-size controller, the default
@@ -100,9 +109,14 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   side on the way (f + c0 K0 + c1 K1) instead of the stage combination pass
   and the copy of the initial forcing: bit-identical, but three forward
   substitutions in the code (76 KB more), one more instruction per 150, and
-  1.5 % slower at one thread, 3 % at ten; and the solution, error estimate,
+  1.5 % slower at one thread, 3 % at ten; the solution, error estimate,
   and error norm in one variable-major pass (bit-identical, 3 % more
-  instructions, the same time at one thread and 2 % slower at ten).
+  instructions, the same time at one thread and 2 % slower at ten); not
+  writing the LU's fill positions in the Jacobian assembly, which the LU
+  then starts from zero (bit-identical, 570 fewer instructions per block,
+  but 25 % slower at one thread); and the pivot reciprocals kept in the
+  diagonal instead of their own array (bit-identical, 140 fewer
+  instructions per block, 5 % slower).
 
 ## Configuration format
 

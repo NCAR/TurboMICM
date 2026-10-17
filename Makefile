@@ -25,6 +25,12 @@ WIDTH ?= 2
 GROUP_SIZE ?= 32
 KERNEL_CHUNK ?= 16
 KERNEL_MODE ?= fast
+# the TS1 kernels' species ordering: minimum fill, or MICM's Markowitz in exact mode
+ifeq ($(KERNEL_MODE),exact)
+TS1_ORDERING ?= markowitz
+else
+TS1_ORDERING ?= minimum-fill
+endif
 GEN_FLAGS ?=
 
 UNAME_S := $(shell uname -s)
@@ -87,7 +93,7 @@ configs/ts1.json: tools/translate_ts1.py $(MICM)/test/benchmark/ts1_mechanism.hp
 
 generated/ts1.c generated/ts1.h: configs/ts1.json tools/generate.py tools/mechanism.py | $(PYTHON)
 	@mkdir -p generated
-	$(PYTHON) tools/generate.py configs/ts1.json generated/ts1 --name ts1 --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE) $(GEN_FLAGS)
+	$(PYTHON) tools/generate.py configs/ts1.json generated/ts1 --name ts1 --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE) --ordering $(TS1_ORDERING) $(GEN_FLAGS)
 
 build/ts1.o: generated/ts1.c generated/ts1.h include/tmc.h build/flags.txt
 	$(CC) $(CFLAGS) -Igenerated -c $< -o $@

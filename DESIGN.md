@@ -71,7 +71,9 @@ for while the solver's states use one.
    `tools/translate_ts1.py`, which text-matches the C++ declarations.
 2. It compiles the mechanism the way `src/builder.c` does: reactions
    stably sorted by rate-constant type; species in declaration order and
-   then MICM's diagonal Markowitz ordering of the Jacobian pattern; the
+   then an ordering of the Jacobian pattern, MICM's diagonal Markowitz or
+   greedy minimum fill (the TS1 kernels' default; attached kernels impose
+   their ordering on the solver they are built into); the
    Jacobian jobs; the pattern with the diagonal; the symbolic LU fill; and a
    fingerprint (FNV-1a over the species names, reactions, yields, and LU
    pattern) that the C builder recomputes.
@@ -152,6 +154,7 @@ the generated kernels hold the reaction rates and Jacobian partials.
 | LU panel | 64 | `make GEN_FLAGS="--panel N"` | pivots per generated LU panel; the results do not depend on it |
 | solve row budget | 64 | `make GEN_FLAGS="--row-budget N"` | terms per block loop in the generated solves; short rows share a loop |
 | kernel mode | fast | `make KERNEL_MODE=exact` | fast: split sums and pivot reciprocals in the solve; exact: MICM's order bit for bit |
+| species ordering | minimum fill (Markowitz in exact mode) | `make TS1_ORDERING=markowitz` | the TS1 kernels' pivot order; the library's own default is MICM's Markowitz |
 | kernel chunk | 16 | `make KERNEL_CHUNK=` | pivots or rows per generated function (compile time only) |
 | kernels | generated | `--generic` | the benchmark runs the generic index-list kernels instead |
 

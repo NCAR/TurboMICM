@@ -93,6 +93,10 @@ back, on the final code (DECISIONS.md, "Measured rejects"):
   slower;
 - the error norm's division costs nothing measurable (a build without it
   runs in the same time);
+- skipping the Jacobian assembly's zero stores into the LU's fill positions
+  (the LU starting them from zero): bit-identical, fewer instructions, 25 %
+  slower; the pivot reciprocals kept in the diagonal: bit-identical, 5 %
+  slower;
 - a greedy minimum-fill ordering would save 5 % of the elimination
   multiply-adds and 3 % of the solve's, about 2 % of the run, and give up
   bit-for-bit comparison with MICM.
