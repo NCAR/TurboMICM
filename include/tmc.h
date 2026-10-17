@@ -152,15 +152,17 @@ typedef struct tmc_species
   char name[TMC_NAME_MAX];
   int n_properties;
   tmc_property properties[TMC_MAX_PROPERTIES];
-  /* A parameterized species (the third body M) holds no state variable; its
-   * value is c_rho * air density. */
+  /* A parameterized species holds no state variable; its value is the linear
+   * function c0 + c_T T + c_P P + c_rho air_density of the conditions (the
+   * third body M has c_rho = 1). */
   bool parameterized;
-  double c_rho;
+  double c0, c_T, c_P, c_rho;
 } tmc_species;
 
 tmc_species tmc_species_create(const char *name);
 tmc_species tmc_species_create_with_property(const char *name, const char *key, double value);
 void tmc_species_set_third_body(tmc_species *s);
+void tmc_species_set_parameterization(tmc_species *s, double c0, double c_T, double c_P, double c_rho);
 bool tmc_species_is_parameterized(const tmc_species *s);
 double tmc_species_parameterized_value(const tmc_species *s, const tmc_conditions *c);
 bool tmc_species_has_property(const tmc_species *s, const char *key);

@@ -27,8 +27,16 @@ tmc_species tmc_species_create_with_property(const char *name, const char *key, 
 
 void tmc_species_set_third_body(tmc_species *s)
 {
+  tmc_species_set_parameterization(s, 0.0, 0.0, 0.0, 1.0);
+}
+
+void tmc_species_set_parameterization(tmc_species *s, double c0, double c_T, double c_P, double c_rho)
+{
   s->parameterized = true;
-  s->c_rho = 1.0;
+  s->c0 = c0;
+  s->c_T = c_T;
+  s->c_P = c_P;
+  s->c_rho = c_rho;
 }
 
 bool tmc_species_is_parameterized(const tmc_species *s)
@@ -38,7 +46,7 @@ bool tmc_species_is_parameterized(const tmc_species *s)
 
 double tmc_species_parameterized_value(const tmc_species *s, const tmc_conditions *c)
 {
-  return s->c_rho * c->air_density;
+  return s->c0 + s->c_T * c->temperature + s->c_P * c->pressure + s->c_rho * c->air_density;
 }
 
 static tmc_property *find_property(const tmc_species *s, const char *key)
