@@ -37,16 +37,21 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   AVX2 or AVX-512 machines; W = 1 is MICM's standard ordering. Every width
   gives correct results; the generated kernels are compiled for one width and
   refuse another.
-- **Groups of 8 cells (`GROUP_SIZE`, `--group-size`).** A group is one state
-  with one step size and one error norm, as MICM's OpenMP tutorial does per
-  thread. The kernels run a group's blocks in lock step, so the blocks'
-  dependency chains (each pivot's reciprocal, scaling, and update of the next
-  pivot) overlap. Eight cells (four blocks) was fastest at 10 threads;
-  16 and 32 are within 10 %. Groups of 2 cells take 3 times longer per cell
-  for the same number of internal steps, which is why the lock step exists.
-  The error norm is a root mean square over the group, so small groups are
-  stricter per cell; from 4 cells up TS1 takes MICM's 9 internal steps per
-  30 s step in every group.
+- **Groups of 8 cells, 32 on one thread (`GROUP_SIZE`, `--group-size`).** A
+  group is one state with one step size and one error norm, as MICM's OpenMP
+  tutorial does per thread. The kernels run a group's blocks in lock step:
+  each loop body of straight-line code is fetched once per group and reused
+  for every block, and the blocks' dependency chains overlap. The generated
+  code (500 KB) is far larger than the 192 KB instruction cache, so the
+  fetch is what small groups pay for: at one thread, groups of 4 cells run at
+  2.4 instructions per cycle, 8 at 2.8, and 32 at 3.7, and 32-cell groups
+  take 24 % less time than 8-cell groups; 64 are slower again. At 10 threads
+  8, 16, and 32 are equal within noise, and 8 keeps a state's footprint
+  (0.5 MB) smallest for the efficiency cores' shared cache; so the benchmark
+  runs 32-cell groups on one thread and 8-cell groups otherwise. The error
+  norm is a root mean square over the group, so small groups are stricter
+  per cell; from 4 cells up TS1 takes MICM's 9 internal steps per 30 s step
+  in every group.
 - **Scheduling.** The benchmark hands groups to threads with
   `schedule(dynamic, 1)` by default (`--schedule`, `--chunk`): the four
   performance cores and six efficiency cores differ in speed, and 1,250
@@ -70,19 +75,29 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   diagonal adds alpha last. Each element is written once, with its terms in
   MICM's accumulation order. The four longest sums are emitted side by side
   (interleaved statements) so their dependency chains overlap.
-- **LU in panels.** The Mozart elimination runs in panels of four pivots:
-  within a panel the pivots run one by one on the panel's own rows and
-  columns, then every trailing element takes the panel's updates with one
-  load and one store. Each element still sees its updates in pivot order, so
-  the result is bit for bit the pivot-by-pivot algorithm's. Panels of 1, 4,
-  and 8 are within 3 % of each other; 4 is the default (`--panel`).
+- **LU in panels, every element finished target by target.** The Mozart
+  elimination runs in panels of 64 pivots. Inside a panel, each pivot's
+  diagonal, column (then the scaling by the reciprocal), and row take their
+  updates from the panel's earlier pivots in one load, a chain of fused
+  multiply-adds in pivot order, and one store; the trailing elements then
+  take the panel's rank-64 update the same way. Each element still sees its
+  updates in pivot order, so the result is bit for bit the pivot-by-pivot
+  algorithm's (the 100-cell result is byte for byte the same for every panel
+  size). Against panels of four pivots whose own rows and columns were updated
+  statement by statement, 64-pivot panels cut the LU from 31,900 to 24,500
+  instructions per block (12,600 loads and 5,800 stores to 11,300 and 2,900)
+  and the whole run by 9 % at one thread; the full matrix as one panel is
+  slower again (`--panel`).
 - **Measured rejects.** Variants that measured slower on this machine and were
   dropped: a left-looking (row-wise) LU (long serial sums, 2 times slower), a
   block loop around each pivot instead of each panel (loop overhead), block
   loops through a table of base pointers (defeated the compiler's addressing),
   a constant table for the yields (no change), scattering forcing and
   Jacobian terms into memory as MICM does (store chains on the dense species),
-  and skewed array addresses against 4 KB aliasing (3 % slower).
+  skewed array addresses against 4 KB aliasing (3 % slower), and block
+  offsets the compiler cannot analyze, which remove its loop prefetches
+  (2.8 % fewer instructions, 3 % slower: the prefetches hide the L2 latency
+  of a block's data).
 
 ## Configuration format
 
