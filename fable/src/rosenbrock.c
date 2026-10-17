@@ -58,6 +58,92 @@ static void solve(const tmc_solver *s, tmc_state *st, tmc_dense *x, tmc_stats *s
   stats->solves += 1;
 }
 
+/* out = base + sum_j coef[j] k[j], element by element with one fused
+ * multiply-add per term in order, as MICM's sequence of Axpy calls computes
+ * it. base may be NULL (zero) or out itself. */
+static void combine(tmc_dense *out, const tmc_dense *base, int n, const double *coef, tmc_dense *const *k)
+{
+  const size_t len = out->size;
+  double *restrict o = out->data;
+  const double *restrict b = base ? base->data : NULL;
+  const double *restrict k0 = n > 0 ? k[0]->data : NULL;
+  const double *restrict k1 = n > 1 ? k[1]->data : NULL;
+  const double *restrict k2 = n > 2 ? k[2]->data : NULL;
+  switch (n)
+  {
+    case 1:
+      if (b)
+      {
+#pragma omp simd
+        for (size_t i = 0; i < len; ++i)
+          o[i] = b[i] + coef[0] * k0[i];
+      }
+      else
+      {
+#pragma omp simd
+        for (size_t i = 0; i < len; ++i)
+          o[i] = coef[0] * k0[i];
+      }
+      return;
+    case 2:
+      if (b)
+      {
+#pragma omp simd
+        for (size_t i = 0; i < len; ++i)
+        {
+          double t = b[i] + coef[0] * k0[i];
+          o[i] = t + coef[1] * k1[i];
+        }
+      }
+      else
+      {
+#pragma omp simd
+        for (size_t i = 0; i < len; ++i)
+        {
+          double t = coef[0] * k0[i];
+          o[i] = t + coef[1] * k1[i];
+        }
+      }
+      return;
+    case 3:
+      if (b)
+      {
+#pragma omp simd
+        for (size_t i = 0; i < len; ++i)
+        {
+          double t = b[i] + coef[0] * k0[i];
+          t = t + coef[1] * k1[i];
+          o[i] = t + coef[2] * k2[i];
+        }
+      }
+      else
+      {
+#pragma omp simd
+        for (size_t i = 0; i < len; ++i)
+        {
+          double t = coef[0] * k0[i];
+          t = t + coef[1] * k1[i];
+          o[i] = t + coef[2] * k2[i];
+        }
+      }
+      return;
+    default:
+      if (b && b != o)
+        memcpy(o, b, len * sizeof(double));
+      else if (!b)
+        memset(o, 0, len * sizeof(double));
+      for (int j = 0; j < n; ++j)
+      {
+        const double *restrict kj = k[j]->data;
+        const double a = coef[j];
+#pragma omp simd
+        for (size_t i = 0; i < len; ++i)
+          o[i] += a * kj[i];
+      }
+      return;
+  }
+}
+
 /* MICM's normalized error: the root mean square over all cells and variables
  * of error / (atol + rtol max(|y|, |ynew|)), accumulated variable by variable
  * and cell by cell, padded lanes excluded, floored at 1e-10. */
@@ -136,34 +222,45 @@ tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
       const double alpha = 1.0 / (H * p->gamma[0]);
       factor(s, st, Y, alpha, stats);
 
+      /* The stages. Stage s solves (alpha I - J) K_s = F(Y + sum_j a_sj K_j) + sum_j (c_sj / H) K_j.
+       * A stage that reuses the previous stage's forcing gets it before the
+       * c terms are added, as MICM's K[stage + 1].Copy(K[stage]) does. */
       for (int stage = 0; stage < p->stages; ++stage)
       {
         const int stage_combinations = stage * (stage - 1) / 2;
+        const bool reused_by_next = stage + 1 < p->stages && !p->new_function_evaluation[stage + 1];
+        tmc_dense *raw = reused_by_next ? K[stage + 1] : K[stage]; /* where the raw forcing goes */
         if (stage == 0)
         {
-          tmc_dense_copy_into(K[0], initial_forcing);
+          if (raw != initial_forcing)
+            tmc_dense_copy_into(raw, initial_forcing);
         }
         else if (p->new_function_evaluation[stage])
         {
-          tmc_dense_copy_into(Ynew, Y);
-          for (int j = 0; j < stage; ++j)
-            tmc_dense_axpy(Ynew, p->a[stage_combinations + j], K[j]);
-          forcing(s, st, Ynew, K[stage]);
+          combine(Ynew, Y, stage, &p->a[stage_combinations], K);
+          forcing(s, st, Ynew, raw);
           stats->function_calls += 1;
         }
-        if (stage + 1 < p->stages && !p->new_function_evaluation[stage + 1])
-          tmc_dense_copy_into(K[stage + 1], K[stage]);
-        for (int j = 0; j < stage; ++j)
-          tmc_dense_axpy(K[stage], p->c[stage_combinations + j] / H, K[j]);
+        else if (raw != K[stage])
+        {
+          tmc_dense_copy_into(raw, K[stage]);
+        }
+        if (stage > 0)
+        {
+          double c_over_h[TMC_MAX_STAGES];
+          for (int j = 0; j < stage; ++j)
+            c_over_h[j] = p->c[stage_combinations + j] / H;
+          combine(K[stage], raw, stage, c_over_h, K);
+        }
+        else if (raw != K[0])
+        {
+          tmc_dense_copy_into(K[0], raw);
+        }
         solve(s, st, K[stage], stats);
       }
 
-      tmc_dense_copy_into(Ynew, Y);
-      for (int stage = 0; stage < p->stages; ++stage)
-        tmc_dense_axpy(Ynew, p->m[stage], K[stage]);
-      tmc_dense_fill(Yerror, 0.0);
-      for (int stage = 0; stage < p->stages; ++stage)
-        tmc_dense_axpy(Yerror, p->e[stage], K[stage]);
+      combine(Ynew, Y, p->stages, p->m, K);
+      combine(Yerror, NULL, p->stages, p->e, K);
 
       const double error = normalized_error(st, Y, Ynew, Yerror);
       const double fac = s->controller(error, p, s->controller_context);
