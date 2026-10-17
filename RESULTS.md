@@ -47,8 +47,9 @@ against MICM's final state; the gate is |y - y_MICM| <= 1e-30 + 1e-10 |y_MICM|.
 Every grouping takes 9 internal steps per group per 30 s step on this input,
 as MICM does (MICM's 32-cell groups: 281,700 internal steps). The generic
 kernels reproduce MICM exactly; the generated kernels in fast mode differ by
-the reassociated sums and the reciprocal multiply, 1.1e-13 at most. Exact
-mode (`make KERNEL_MODE=exact`) differs by 0 on the 100-cell input.
+the reassociated sums, the reciprocal multiply, and the minimum-fill pivot
+order, 1.0e-13 at most. Exact mode (`make KERNEL_MODE=exact`) differs by 0
+on the 100-cell input.
 
 ## TS1 timing
 
