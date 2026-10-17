@@ -118,7 +118,10 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   diagonal instead of their own array (bit-identical, 140 fewer
   instructions per block, 5 % slower); and the LU's trailing update in row
   pairs sharing their loads of the panel's row values (bit-identical, 0.6 %
-  more instructions, the same time at one thread). The one small pass fusion
+  more instructions, the same time at one thread); and larger kernel chunks,
+  `KERNEL_CHUNK` 64 and 128 against 16 (1.3 % fewer instructions from fewer
+  calls per block, the same time at one thread, 2 to 3 % slower at ten). The
+  one small pass fusion
   that measured no worse, the second stage's forcing at y + a k formed block
   by block in a thread-local buffer instead of a group-wide pass, stays:
   0.5 % at one thread, bit-identical.
