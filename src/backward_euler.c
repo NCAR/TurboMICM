@@ -2,19 +2,19 @@
  * iterations on each step, halving the step on non-convergence and doubling
  * it after two successes. */
 #include "internal.h"
+#include "tmc_solver_ext.h"
 
 #include <math.h>
 
 /* MICM's convergence test: every residual is finite and either below `small`,
  * below the variable's absolute tolerance, or below rtol |y|. Padded lanes
  * are excluded. */
-static bool is_converged(const tmc_state *st, const tmc_backward_euler_parameters *p, const tmc_dense *residual, const tmc_dense *yn1)
+bool tmc_backward_euler_is_converged(const tmc_backward_euler_parameters *p, const tmc_dense *residual, const tmc_dense *yn1, const double *absolute_tolerance, double rtol)
 {
-  const int L = st->L, n_vars = st->n_vars, n_cells = st->n_cells, n_blocks = st->n_blocks;
-  const double rtol = st->relative_tolerance;
+  const int L = residual->L, n_vars = residual->n_cols, n_cells = residual->n_rows, n_blocks = residual->n_groups;
   for (int v = 0; v < n_vars; ++v)
   {
-    const double atol = st->absolute_tolerance[v];
+    const double atol = absolute_tolerance[v];
     for (int block = 0; block < n_blocks; ++block)
     {
       const size_t base = ((size_t)block * n_vars + v) * L;
@@ -98,7 +98,7 @@ tmc_result tmc_backward_euler_solve(tmc_solver *s, double time_step, tmc_state *
       }
       if (iterations++ == 0)
         continue;
-      converged = is_converged(st, p, forcing, Yn1);
+      converged = tmc_backward_euler_is_converged(p, forcing, Yn1, st->absolute_tolerance, st->relative_tolerance);
     } while (!converged && iterations < max_iter);
 
     if (!converged)

@@ -133,9 +133,9 @@ def emit_mechanism(out, name, m: mech.Mechanism, c: mech.Compiled):
     out("  (void)state;")
     for s in m.species:
         if s.initial_concentration is not None:
-            out(f"  count += tmc_state_set_concentration(state, {c_string(s.name)}, {c_double(s.initial_concentration)}, NULL) == TMC_OK;")
+            out(f"  count += tmc_state_fill_concentration(state, {c_string(s.name)}, {c_double(s.initial_concentration)}, NULL) == TMC_OK;")
     for label, value in m.rate_parameters.items():
-        out(f"  count += tmc_state_set_custom_rate_parameter(state, {c_string(label)}, {c_double(value)}, NULL) == TMC_OK;")
+        out(f"  count += tmc_state_fill_custom_rate_parameter(state, {c_string(label)}, {c_double(value)}, NULL) == TMC_OK;")
     if m.temperature is not None and m.pressure is not None:
         out("  { tmc_conditions *cond = tmc_state_conditions(state);")
         out("    for (int i = 0; i < tmc_state_num_cells(state); ++i) {")

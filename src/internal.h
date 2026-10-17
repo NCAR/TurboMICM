@@ -36,6 +36,8 @@ void tmc_dvec_free(tmc_dvec *a);
 
 /* FNV-1a over bytes, for fingerprints shared with tools/mechanism.py. */
 unsigned long long tmc_fnv1a(unsigned long long h, const void *bytes, size_t n);
+/* MICM's ParameterizedMultiplier::kMaxFuncs */
+#define TMC_MAX_PARAMETERIZED_REACTANTS 4
 #define TMC_FNV_OFFSET 14695981039346656037ULL
 
 /* ---- Symbolic LU ------------------------------------------------------- */
@@ -95,7 +97,7 @@ typedef struct tmc_process_plan
   int *products;
   double *yields;
   int n_parameterized; /* parameterized reactants, multiplied into the rate constant */
-  tmc_species parameterized[4];
+  tmc_species parameterized[TMC_MAX_PARAMETERIZED_REACTANTS];
   int custom_index; /* first custom rate parameter, or -1 */
 } tmc_process_plan;
 
@@ -186,6 +188,14 @@ void tmc_calculate_rate_constants(const tmc_solver *s, tmc_state *state);
 void tmc_generic_forcing(const tmc_solver *s, const tmc_dense *rate_constants, const tmc_dense *variables, tmc_dense *forcing);
 /* Generic negative Jacobian: jacobian -= dF/dy (added to existing values). */
 void tmc_generic_jacobian(const tmc_solver *s, const tmc_dense *rate_constants, const tmc_dense *variables, tmc_sparse *jacobian);
+
+/* ---- Rosenbrock internals (rosenbrock.c), also reached by tmc_solver_ext.h ---- */
+
+/* alpha M - J: adds alpha times the mass-matrix diagonal to the diagonal of
+ * the state's Jacobian (which holds -J), in every lane. */
+void tmc_rosenbrock_alpha_minus_jacobian(const tmc_solver *s, tmc_state *st, double alpha);
+/* MICM's normalized error over the state's active lanes (see rosenbrock.c). */
+double tmc_rosenbrock_normalized_error(const tmc_state *st, const tmc_dense *y, const tmc_dense *ynew, const tmc_dense *errors);
 
 /* ---- Constraints (constraints.c) ---------------------------------------- */
 void tmc_constraints_update_parameters(const tmc_solver *s, const tmc_conditions *conditions, int n_cells, tmc_dense *params);

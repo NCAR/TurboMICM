@@ -42,12 +42,13 @@ A case with no port prints `FAIL not ported`.
   instantiated for several policies (for example `Matrix` and
   `VectorMatrix<1..4>`) becomes one C case that runs the same check for each
   layout, since the case id is the same.
-- Library gaps: a test may need a function the library lacks. Add it to
-  `include/tmc.h` and the matching `src/*.c` file when it is a self-contained
-  accessor or utility (a getter, a copy, an element-wise operation) that does
-  not change existing behavior, keep the style of the surrounding code, and
-  list the addition in your report. Anything touching the solver's numerics
-  or the builder is reported, not changed.
+- Library gaps: a test may need a function the library lacks. Self-contained
+  accessors and utilities that MICM exposes to its tests (an internal step run
+  on its own, an element-wise operation, a name map) live beside the public
+  API in `include/tmc_<topic>_ext.h` and `src/<topic>_ext.c` (`tmc_support.h`
+  and `src/support.c` for the builder and system helpers); they call the
+  library's own code rather than copy it. Anything touching the solver's
+  numerics or the builder is a library change, not a test extension.
 - Build and run one group while porting:
   `make test-cpu TEST_FILTER=<ctest name>` (the filter is a substring of the id).
   The library's own build is `make cpu`.

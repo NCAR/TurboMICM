@@ -19,9 +19,15 @@ void tmc_calculate_rate_constants(const tmc_solver *s, tmc_state *st)
           custom[i] = tmc_dense_get(st->custom_rate_parameters, cell, p->custom_index + i);
       }
       double k = tmc_rate_constant_calculate(&s->reactions[r].rate_constant, c, custom);
-      /* MICM multiplies parameterized (third-body) reactants into the rate constant */
-      for (int i = 0; i < p->n_parameterized; ++i)
-        k *= tmc_species_parameterized_value(&p->parameterized[i], c);
+      /* MICM multiplies the parameterized (third-body) reactants' product,
+       * accumulated from 1, into the rate constant */
+      if (p->n_parameterized)
+      {
+        double v = 1.0;
+        for (int i = 0; i < p->n_parameterized; ++i)
+          v *= tmc_species_parameterized_value(&p->parameterized[i], c);
+        k *= v;
+      }
       tmc_dense_set(st->rate_constants, cell, r, k);
     }
   }

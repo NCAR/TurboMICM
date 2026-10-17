@@ -148,6 +148,17 @@ int tmc_state_set_concentration(tmc_state *st, const char *name, double value, t
   int v = tmc_state_variable_index(st, name);
   if (v < 0)
     return tmc_error_set(err, TMC_ERROR_STATE, TMC_STATE_UNKNOWN_SPECIES, "Unknown species '%s'", name);
+  if (st->n_cells != 1)
+    return tmc_error_set(err, TMC_ERROR_STATE, TMC_STATE_INVALID_CONCENTRATION_COUNT_MULTIGRID, "Cannot assign single value to multi-gridcell State variable '%s'", name);
+  tmc_dense_set(st->variables, 0, v, value);
+  return TMC_OK;
+}
+
+int tmc_state_fill_concentration(tmc_state *st, const char *name, double value, tmc_error *err)
+{
+  int v = tmc_state_variable_index(st, name);
+  if (v < 0)
+    return tmc_error_set(err, TMC_ERROR_STATE, TMC_STATE_UNKNOWN_SPECIES, "Unknown species '%s'", name);
   for (int c = 0; c < st->n_cells; ++c)
     tmc_dense_set(st->variables, c, v, value);
   return TMC_OK;
@@ -166,6 +177,17 @@ int tmc_state_set_concentrations(tmc_state *st, const char *name, const double *
 }
 
 int tmc_state_set_custom_rate_parameter(tmc_state *st, const char *label, double value, tmc_error *err)
+{
+  int p = tmc_state_custom_parameter_index(st, label);
+  if (p < 0)
+    return tmc_error_set(err, TMC_ERROR_STATE, TMC_STATE_UNKNOWN_RATE_CONSTANT_PARAMETER, "Unknown rate constant parameter '%s'", label);
+  if (st->n_cells != 1)
+    return tmc_error_set(err, TMC_ERROR_STATE, TMC_STATE_INVALID_CUSTOM_RATE_PARAM_COUNT_MULTIGRID, "Cannot assign single value to multi-gridcell State parameter '%s'", label);
+  tmc_dense_set(st->custom_rate_parameters, 0, p, value);
+  return TMC_OK;
+}
+
+int tmc_state_fill_custom_rate_parameter(tmc_state *st, const char *label, double value, tmc_error *err)
 {
   int p = tmc_state_custom_parameter_index(st, label);
   if (p < 0)
