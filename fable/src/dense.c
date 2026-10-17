@@ -12,7 +12,7 @@ tmc_dense *tmc_dense_create(int n_rows, int n_cols, int L, double initial_value)
   m->L = L;
   m->n_groups = (n_rows + L - 1) / L;
   m->size = (size_t)m->n_groups * (size_t)L * (size_t)n_cols;
-  m->data = tmc_malloc(m->size * sizeof(double));
+  m->data = tmc_alloc_doubles(m->size);
   for (size_t i = 0; i < m->size; ++i)
     m->data[i] = initial_value;
   return m;
@@ -29,7 +29,7 @@ void tmc_dense_free(tmc_dense *m)
 {
   if (!m)
     return;
-  free(m->data);
+  tmc_free_doubles(m->data);
   free(m);
 }
 

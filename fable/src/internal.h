@@ -13,6 +13,9 @@ void *tmc_malloc(size_t bytes);
 void *tmc_calloc(size_t count, size_t bytes);
 void *tmc_realloc(void *p, size_t bytes);
 char *tmc_strdup(const char *s);
+/* The arrays the kernels stream through; one place to change their allocation. */
+double *tmc_alloc_doubles(size_t count);
+void tmc_free_doubles(double *p);
 void tmc_strlcpy(char *dst, const char *src, size_t size);
 
 /* Growable int / double arrays used while building plans. */

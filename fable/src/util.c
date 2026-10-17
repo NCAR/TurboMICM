@@ -2,6 +2,7 @@
 #include "internal.h"
 
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 
 void *tmc_malloc(size_t bytes)
@@ -35,6 +36,16 @@ void *tmc_realloc(void *old, size_t bytes)
     abort();
   }
   return p;
+}
+
+double *tmc_alloc_doubles(size_t count)
+{
+  return tmc_malloc(count * sizeof(double));
+}
+
+void tmc_free_doubles(double *p)
+{
+  free(p);
 }
 
 char *tmc_strdup(const char *s)
