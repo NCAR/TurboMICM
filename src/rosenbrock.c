@@ -160,6 +160,34 @@ static void combine(tmc_dense *out, const tmc_dense *base, int n, const double *
   }
 }
 
+/* Ynew = Y + sum m_j K_j and Yerror = sum e_j K_j in one pass over the stage
+ * vectors, each as MICM's sequence of fused multiply-adds. */
+static void combine_solution_and_error(tmc_dense *ynew, tmc_dense *yerror, const tmc_dense *y, int stages, const double *m, const double *e, tmc_dense *const *k)
+{
+  if (stages != 3)
+  {
+    combine(ynew, y, stages, m, k);
+    combine(yerror, NULL, stages, e, k);
+    return;
+  }
+  const size_t len = ynew->size;
+  double *restrict out = ynew->data, *restrict err = yerror->data;
+  const double *restrict base = y->data;
+  const double *restrict k0 = k[0]->data, *restrict k1 = k[1]->data, *restrict k2 = k[2]->data;
+  const double m0 = m[0], m1 = m[1], m2 = m[2], e0 = e[0], e1 = e[1], e2 = e[2];
+#pragma omp simd
+  for (size_t i = 0; i < len; ++i)
+  {
+    double a = k0[i], b = k1[i], c = k2[i];
+    double t = base[i] + m0 * a;
+    t = t + m1 * b;
+    out[i] = t + m2 * c;
+    double u = e0 * a;
+    u = u + e1 * b;
+    err[i] = u + e2 * c;
+  }
+}
+
 /* MICM's normalized error: the root mean square over all cells and variables
  * of error / (atol + rtol max(|y|, |ynew|)), accumulated variable by variable
  * and cell by cell, padded lanes excluded, floored at 1e-10. */
@@ -517,8 +545,7 @@ tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
         solve(s, st, K[stage], stats);
       }
 
-      combine(Ynew, Y, p->stages, p->m, K);
-      combine(Yerror, NULL, p->stages, p->e, K);
+      combine_solution_and_error(Ynew, Yerror, Y, p->stages, p->m, p->e, K);
       /* For DAE systems the embedded error is near zero on algebraic rows;
        * MICM uses the step change there instead. */
       if (s->n_algebraic)
