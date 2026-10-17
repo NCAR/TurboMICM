@@ -77,6 +77,36 @@ ranking configuration, and 1.9× at 1 thread. The 10-thread speedups of the
 two codes over their own 1-thread times are the same (5.2×), so both are
 bound by the same thing there: the mixed cores' throughput.
 
+### The one-thread target
+
+The one-thread ratio is 1.93× in the session above and 1.97× on a cooler
+machine; 2× would need 3.5 %. Everything identified was measured, back to
+back, on the final code (DECISIONS.md, "Measured rejects"):
+
+- the LU panels finished target by target and 32-cell groups were the two
+  gains, 9 % and 24 % at one thread, and are in;
+- forming each solve's right-hand side inside the kernel instead of a
+  separate pass and a copy: bit-identical, 1.5 % slower (76 KB more code);
+- the solution, error, and norm in one pass: bit-identical, 3 % more
+  instructions, no faster;
+- removing the compiler's loop prefetches: 2.8 % fewer instructions, 3 %
+  slower;
+- the error norm's division costs nothing measurable (a build without it
+  runs in the same time);
+- a greedy minimum-fill ordering would save 5 % of the elimination
+  multiply-adds and 3 % of the solve's, about 2 % of the run, and give up
+  bit-for-bit comparison with MICM.
+
+What remains is the formulation's floor: 47,700 instructions per cell and
+internal step at 3.75 per cycle, with the LU, solves, Jacobian, and forcing
+each at one to two instructions per multiply-add, the same operation
+counts as MICM's method, and code that no longer fits the instruction cache
+however it is grouped. The remaining ideas (two-row register tiles in the
+trailing update, the pivot reciprocals stored in the diagonal) are each
+worth about 1 % of the instructions, less than the machine's run-to-run
+spread, so the one-thread target was not reached and is judged out of reach
+for this design.
+
 ## Where the time goes
 
 Instructions per cell and internal step (`/usr/bin/time -l`, one thread,
