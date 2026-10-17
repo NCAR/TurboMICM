@@ -450,14 +450,28 @@ tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
     }
     H = fmin(H, fabs(time_step - present_time));
 
-    forcing(s, st, Y, initial_forcing);
+    bool factored = false;
+    if (s->kernels && s->kernels->forcing_jacobian)
+    {
+      /* the forcing and the shifted Jacobian of Y in one pass, for the first attempt's H */
+      const double alpha = 1.0 / (H * p->gamma[0]);
+      s->kernels->forcing_jacobian(Y->data, st->rate_constants->data, alpha, initial_forcing->data, st->jacobian->data, st->n_blocks);
+      s->kernels->lu_decompose(st->jacobian->data, st->reciprocals, st->n_blocks);
+      stats->jacobian_updates += 1;
+      stats->decompositions += 1;
+      factored = true;
+    }
+    else
+      forcing(s, st, Y, initial_forcing);
     stats->function_calls += 1;
 
     bool accepted = false;
     while (!accepted)
     {
       const double alpha = 1.0 / (H * p->gamma[0]);
-      factor(s, st, Y, alpha, stats);
+      if (!factored)
+        factor(s, st, Y, alpha, stats);
+      factored = false;
 
       /* The stages. Stage s solves (alpha I - J) K_s = F(Y + sum_j a_sj K_j) + sum_j (c_sj / H) K_j.
        * A stage that reuses the previous stage's forcing gets it before the
