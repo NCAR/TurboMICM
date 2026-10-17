@@ -1,0 +1,4 @@
+-Iinclude
+-Isrc
+-std=c11
+-DTMC_WIDTH=2

@@ -1,0 +1,9 @@
+/.conda/
+/.conda-pkgs/
+/build/
+/bin/
+/generated/
+/results/
+*.o
+*.a
+ts1_final.csv
