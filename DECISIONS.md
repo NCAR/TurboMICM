@@ -37,21 +37,20 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   AVX2 or AVX-512 machines; W = 1 is MICM's standard ordering. Every width
   gives correct results; the generated kernels are compiled for one width and
   refuse another.
-- **Groups of 8 cells, 32 on one thread (`GROUP_SIZE`, `--group-size`).** A
-  group is one state with one step size and one error norm, as MICM's OpenMP
-  tutorial does per thread. The kernels run a group's blocks in lock step:
-  each loop body of straight-line code is fetched once per group and reused
-  for every block, and the blocks' dependency chains overlap. The generated
-  code (500 KB) is far larger than the 192 KB instruction cache, so the
-  fetch is what small groups pay for: at one thread, groups of 4 cells run at
-  2.4 instructions per cycle, 8 at 2.8, and 32 at 3.7, and 32-cell groups
-  take 24 % less time than 8-cell groups; 64 are slower again. At 10 threads
-  8, 16, and 32 are equal within noise, and 8 keeps a state's footprint
-  (0.5 MB) smallest for the efficiency cores' shared cache; so the benchmark
-  runs 32-cell groups on one thread and 8-cell groups otherwise. The error
-  norm is a root mean square over the group, so small groups are stricter
-  per cell; from 4 cells up TS1 takes MICM's 9 internal steps per 30 s step
-  in every group.
+- **Groups of 32 cells (`GROUP_SIZE`, `--group-size`).** A group is one
+  state with one step size and one error norm, as MICM's OpenMP tutorial
+  does per thread. The kernels run a group's blocks in lock step: each loop
+  body of straight-line code is fetched once per group and reused for every
+  block, and the blocks' dependency chains overlap. The generated code
+  (500 KB) is far larger than the 192 KB instruction cache, so the fetch is
+  what small groups pay for: at one thread, groups of 4 cells run at 2.4
+  instructions per cycle, 8 at 2.8, and 32 at 3.7. In the final timing
+  session (RESULTS.md) 32-cell groups took 26.4 s against 33.3 s for 16 and
+  about 32 s for 8 at one thread, and 4,850 ms against 4,917 (16) and
+  5,030 (8) at 10 threads; 64 are slower again at one thread. The error norm
+  is a root mean square over the group, so small groups are stricter per
+  cell; from 4 cells up TS1 takes MICM's 9 internal steps per 30 s step in
+  every group.
 - **Scheduling.** The benchmark hands groups to threads with
   `schedule(dynamic, 1)` by default (`--schedule`, `--chunk`): the four
   performance cores and six efficiency cores differ in speed, and 1,250

@@ -22,7 +22,7 @@ PYTHON := $(CURDIR)/.conda/bin/python
 
 # Tuning parameters (see DESIGN.md). Every value gives correct results.
 WIDTH ?= 2
-GROUP_SIZE ?= 8
+GROUP_SIZE ?= 32
 KERNEL_CHUNK ?= 16
 KERNEL_MODE ?= fast
 GEN_FLAGS ?=

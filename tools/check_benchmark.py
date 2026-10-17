@@ -23,11 +23,12 @@ HERE = Path(__file__).resolve().parent.parent
 REFERENCE = Path("../reference")
 
 DEFAULT_VARIANTS = [
-    ("default (all threads, groups of 8)", ""),
+    ("default (all threads, groups of 32)", ""),
     ("1 thread", "--threads 1"),
     ("groups of 4", "--group-size 4"),
+    ("groups of 8", "--group-size 8"),
     ("groups of 16", "--group-size 16"),
-    ("groups of 32", "--group-size 32"),
+    ("groups of 64", "--group-size 64"),
     ("generic kernels", "--generic"),
     ("static schedule", "--schedule static"),
     ("guided schedule", "--schedule guided"),
