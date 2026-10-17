@@ -10,16 +10,28 @@ static const double DEFAULT_H_START = 1.0e-6; /* relative to the time step */
 /* The forcing F(y) into `forcing` (overwritten). */
 static void forcing(const tmc_solver *s, tmc_state *st, const tmc_dense *y, tmc_dense *f)
 {
-  if (s->kernels)
-    s->kernels->forcing(y->data, st->rate_constants->data, f->data, st->n_blocks);
-  else
+  tmc_eval_forcing(s, st, y, f);
+}
+
+/* AlphaMinusJacobian: alpha M on the diagonal of every block, M the mass
+ * matrix (0 for algebraic rows). */
+static void alpha_minus_jacobian(const tmc_solver *s, tmc_state *st, double alpha)
+{
+  const int L = st->L, nnz = st->jacobian->nnz;
+  for (int g = 0; g < st->jacobian->n_groups; ++g)
   {
-    tmc_dense_fill(f, 0.0);
-    tmc_generic_forcing(s, st->rate_constants, y, f);
+    double *J = st->jacobian->data + (size_t)g * (size_t)nnz * L;
+    for (int i = 0; i < st->n_vars; ++i)
+    {
+      const double scaled_alpha = alpha * s->mass_diagonal[i];
+      double *d = J + (size_t)s->lu->mz_diag[i] * L;
+      for (int c = 0; c < L; ++c)
+        d[c] += scaled_alpha;
+    }
   }
 }
 
-/* alpha I - J(y) into the state's LU matrix, then its factorization. */
+/* alpha M - J(y) into the state's LU matrix, then its factorization. */
 static void factor(const tmc_solver *s, tmc_state *st, const tmc_dense *y, double alpha, tmc_stats *stats)
 {
   if (s->kernels)
@@ -29,24 +41,28 @@ static void factor(const tmc_solver *s, tmc_state *st, const tmc_dense *y, doubl
   }
   else
   {
-    tmc_sparse_fill(st->jacobian, 0.0);
-    tmc_generic_jacobian(s, st->rate_constants, y, st->jacobian);
-    /* AlphaMinusJacobian: alpha on the diagonal of every block */
-    const int L = st->L, nnz = st->jacobian->nnz;
-    for (int g = 0; g < st->jacobian->n_groups; ++g)
-    {
-      double *J = st->jacobian->data + (size_t)g * (size_t)nnz * L;
-      for (int i = 0; i < st->n_vars; ++i)
-      {
-        double *d = J + (size_t)s->lu->mz_diag[i] * L;
-        for (int c = 0; c < L; ++c)
-          d[c] += alpha;
-      }
-    }
+    tmc_eval_jacobian(s, st, y, st->jacobian);
+    alpha_minus_jacobian(s, st, alpha);
     tmc_lu_decompose_in_place(s->lu, st->jacobian, st->reciprocals);
   }
   stats->jacobian_updates += 1;
   stats->decompositions += 1;
+}
+
+/* K_stage += (c / H) K_j on the differential rows only (MICM's mass_coupling). */
+static void add_coupling_masked(const tmc_solver *s, tmc_dense *k_stage, double c_over_h, const tmc_dense *k_j)
+{
+  const int L = k_stage->L, n_vars = s->n_vars;
+  for (int g = 0; g < k_stage->n_groups; ++g)
+    for (int v = 0; v < n_vars; ++v)
+    {
+      if (s->mass_diagonal[v] == 0.0)
+        continue;
+      double *ks = k_stage->data + ((size_t)g * n_vars + v) * L;
+      const double *kj = k_j->data + ((size_t)g * n_vars + v) * L;
+      for (int c = 0; c < L; ++c)
+        ks[c] += c_over_h * kj[c];
+    }
 }
 
 static void solve(const tmc_solver *s, tmc_state *st, tmc_dense *x, tmc_stats *stats)
@@ -176,6 +192,217 @@ static double normalized_error(const tmc_state *st, const tmc_dense *y, const tm
   return error > 1.0e-10 ? error : 1.0e-10;
 }
 
+/* ---- Newton initialization of the algebraic variables (MICM's InitializeConstraints) ---- */
+
+typedef struct algebraic_check
+{
+  bool nan, inf;
+  double max_residual;
+} algebraic_check;
+
+/* Over the algebraic rows of the active lanes: non-finite flags and the largest magnitude. */
+static algebraic_check check_algebraic(const tmc_solver *s, const tmc_state *st, const tmc_dense *m)
+{
+  algebraic_check r = { false, false, 0.0 };
+  const int L = st->L, n_vars = s->n_vars;
+  for (int a = 0; a < s->n_algebraic; ++a)
+  {
+    int v = s->algebraic_ids[a];
+    for (int block = 0; block < st->n_blocks; ++block)
+    {
+      const int lanes = block == st->n_blocks - 1 ? st->n_cells - block * L : L;
+      const double *x = m->data + ((size_t)block * n_vars + v) * L;
+      for (int lane = 0; lane < lanes; ++lane)
+      {
+        double val = x[lane];
+        if (isnan(val))
+          r.nan = true;
+        else if (isinf(val))
+          r.inf = true;
+        else
+        {
+          double av = fabs(val);
+          if (av > r.max_residual)
+            r.max_residual = av;
+        }
+      }
+    }
+  }
+  return r;
+}
+
+/* max over algebraic rows and active lanes of |delta| / (atol + rtol max(|z|, |z + delta|)) */
+static double weighted_correction(const tmc_solver *s, const tmc_state *st, const tmc_dense *y, const tmc_dense *delta)
+{
+  double q_max = 0.0;
+  const int L = st->L, n_vars = s->n_vars;
+  const double rtol = st->relative_tolerance;
+  for (int a = 0; a < s->n_algebraic; ++a)
+  {
+    int v = s->algebraic_ids[a];
+    const double atol = st->absolute_tolerance[v];
+    for (int block = 0; block < st->n_blocks; ++block)
+    {
+      const int lanes = block == st->n_blocks - 1 ? st->n_cells - block * L : L;
+      size_t base = ((size_t)block * n_vars + v) * L;
+      for (int lane = 0; lane < lanes; ++lane)
+      {
+        double z = y->data[base + lane], correction = delta->data[base + lane];
+        double corrected = z + correction;
+        double z_max = fabs(z) > fabs(corrected) ? fabs(z) : fabs(corrected);
+        double scale = atol + rtol * z_max;
+        double q = scale > 0.0 ? fabs(correction) / scale : (correction == 0.0 ? 0.0 : INFINITY);
+        if (q > q_max)
+          q_max = q;
+      }
+    }
+  }
+  return q_max;
+}
+
+/* y[alg] += delta[alg] where delta is finite */
+static void apply_update(const tmc_solver *s, const tmc_state *st, tmc_dense *y, const tmc_dense *delta)
+{
+  const int L = st->L, n_vars = s->n_vars;
+  for (int a = 0; a < s->n_algebraic; ++a)
+  {
+    int v = s->algebraic_ids[a];
+    for (int g = 0; g < y->n_groups; ++g)
+    {
+      size_t base = ((size_t)g * n_vars + v) * L;
+      for (int lane = 0; lane < L; ++lane)
+      {
+        double d = delta->data[base + lane];
+        if (!isnan(d) && !isinf(d))
+          y->data[base + lane] += d;
+      }
+    }
+  }
+}
+
+/* The constraint residuals G(y) into delta (overwritten) */
+static void constraint_residuals(const tmc_solver *s, tmc_state *st, const tmc_dense *y, tmc_dense *delta)
+{
+  tmc_dense_fill(delta, 0.0);
+  if (s->n_constraints)
+    tmc_constraints_add_forcing(s, y, st->custom_rate_parameters, delta);
+  if (s->n_external)
+    tmc_external_add_constraint_residual(s, st->custom_rate_parameters, y, delta);
+}
+
+static void constraint_jacobian_factor(const tmc_solver *s, tmc_state *st, const tmc_dense *y, tmc_stats *stats)
+{
+  tmc_sparse_fill(st->jacobian, 0.0);
+  if (s->n_constraints)
+    tmc_constraints_subtract_jacobian(s, y, st->custom_rate_parameters, st->jacobian);
+  if (s->n_external)
+    tmc_external_subtract_constraint_jacobian(s, st->custom_rate_parameters, y, st->jacobian);
+  stats->jacobian_updates += 1;
+  alpha_minus_jacobian(s, st, 1.0);
+  tmc_lu_decompose_in_place(s->lu, st->jacobian, st->reciprocals);
+  stats->decompositions += 1;
+}
+
+static tmc_solver_state initialize_constraints(const tmc_solver *s, tmc_state *st, const tmc_rosenbrock_parameters *p, tmc_stats *stats)
+{
+  tmc_dense *Y = st->variables;
+  tmc_dense *delta = st->initial_forcing;   /* residual and Newton correction */
+  tmc_dense *original = st->K[0];           /* rollback copy */
+  tmc_dense *candidate = st->ynew;
+  tmc_dense *trial_delta = st->yerror;
+  bool modified = false;
+#define RESTORE_AND_RETURN(status)                   \
+  do                                                 \
+  {                                                  \
+    if (modified)                                    \
+      tmc_dense_copy_into(Y, original);              \
+    return (status);                                 \
+  } while (0)
+
+  for (int update = 0; update <= p->constraint_init_max_iterations; ++update)
+  {
+    constraint_residuals(s, st, Y, delta);
+    algebraic_check chk = check_algebraic(s, st, delta);
+    if (chk.nan)
+      RESTORE_AND_RETURN(TMC_NAN_DETECTED);
+    if (chk.inf)
+      RESTORE_AND_RETURN(TMC_INF_DETECTED);
+    stats->constraint_init_iterations += 1;
+    if (chk.max_residual == 0.0)
+      return TMC_CONVERGED;
+
+    constraint_jacobian_factor(s, st, Y, stats);
+    solve(s, st, delta, stats);
+    chk = check_algebraic(s, st, delta);
+    if (chk.nan)
+      RESTORE_AND_RETURN(TMC_NAN_DETECTED);
+    if (chk.inf)
+      RESTORE_AND_RETURN(TMC_INF_DETECTED);
+
+    double max_correction = weighted_correction(s, st, Y, delta);
+    if (max_correction <= p->constraint_init_tolerance)
+      return TMC_CONVERGED;
+    if (update == p->constraint_init_max_iterations)
+      break;
+
+    if (!modified)
+    {
+      tmc_dense_copy_into(original, Y);
+      modified = true;
+    }
+    if (p->constraint_init_max_backtracks > 0)
+    {
+      const double current_norm = max_correction;
+      double step = 1.0;
+      bool accepted = false;
+      for (int backtrack = 0;; ++backtrack, step *= p->constraint_init_backtrack_factor)
+      {
+        if (backtrack > p->constraint_init_max_backtracks)
+          RESTORE_AND_RETURN(TMC_CONSTRAINT_INITIALIZATION_FAILED);
+        tmc_dense_fill(trial_delta, 0.0);
+        tmc_dense_axpy(trial_delta, step, delta);
+        tmc_dense_copy_into(candidate, Y);
+        apply_update(s, st, candidate, trial_delta);
+        chk = check_algebraic(s, st, candidate);
+        if (chk.nan || chk.inf)
+          continue;
+        constraint_residuals(s, st, candidate, trial_delta);
+        chk = check_algebraic(s, st, trial_delta);
+        if (chk.nan || chk.inf)
+          continue;
+        if (chk.max_residual == 0.0)
+        {
+          accepted = true;
+          break;
+        }
+        solve(s, st, trial_delta, stats);
+        chk = check_algebraic(s, st, trial_delta);
+        if (chk.nan || chk.inf)
+          continue;
+        max_correction = weighted_correction(s, st, candidate, trial_delta);
+        if (max_correction <= p->constraint_init_tolerance || max_correction < (1 - p->constraint_init_sufficient_decrease * step) * current_norm)
+        {
+          accepted = true;
+          break;
+        }
+      }
+      if (accepted)
+      {
+        tmc_dense_copy_into(Y, candidate);
+        continue; /* recheck convergence at the accepted state with a fresh Jacobian */
+      }
+    }
+    apply_update(s, st, Y, delta);
+    chk = check_algebraic(s, st, delta);
+    if (chk.nan)
+      RESTORE_AND_RETURN(TMC_NAN_DETECTED);
+    if (chk.inf)
+      RESTORE_AND_RETURN(TMC_INF_DETECTED);
+  }
+  RESTORE_AND_RETURN(TMC_CONSTRAINT_INITIALIZATION_FAILED);
+#undef RESTORE_AND_RETURN
+}
+
 tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
 {
   const tmc_rosenbrock_parameters *p = &s->ros;
@@ -194,6 +421,16 @@ tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
   const double h_max = p->h_max == 0.0 ? time_step : fmin(time_step, p->h_max);
   const double h_start = p->h_start == 0.0 ? DEFAULT_H_START * time_step : fmin(h_max, p->h_start);
   double H = fmin(fmax(h_min, fabs(h_start)), fabs(h_max));
+
+  if (s->n_algebraic)
+  {
+    tmc_solver_state init = initialize_constraints(s, st, p, stats);
+    if (init != TMC_CONVERGED)
+    {
+      result.state = init;
+      return result;
+    }
+  }
 
   double present_time = 0.0;
   bool reject_last_h = false;
@@ -245,12 +482,19 @@ tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
         {
           tmc_dense_copy_into(raw, K[stage]);
         }
-        if (stage > 0)
+        if (stage > 0 && s->n_algebraic == 0)
         {
           double c_over_h[TMC_MAX_STAGES];
           for (int j = 0; j < stage; ++j)
             c_over_h[j] = p->c[stage_combinations + j] / H;
           combine(K[stage], raw, stage, c_over_h, K);
+        }
+        else if (stage > 0)
+        {
+          if (raw != K[stage])
+            tmc_dense_copy_into(K[stage], raw);
+          for (int j = 0; j < stage; ++j)
+            add_coupling_masked(s, K[stage], p->c[stage_combinations + j] / H, K[j]);
         }
         else if (raw != K[0])
         {
@@ -261,6 +505,10 @@ tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
 
       combine(Ynew, Y, p->stages, p->m, K);
       combine(Yerror, NULL, p->stages, p->e, K);
+      /* For DAE systems the embedded error is near zero on algebraic rows;
+       * MICM uses the step change there instead. */
+      if (s->n_algebraic)
+        tmc_set_algebraic_errors(s, Yerror, Y, Ynew);
 
       const double error = normalized_error(st, Y, Ynew, Yerror);
       const double fac = s->controller(error, p, s->controller_context);

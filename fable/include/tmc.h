@@ -611,6 +611,102 @@ typedef struct tmc_kernels
 } tmc_kernels;
 
 /* ------------------------------------------------------------------------- */
+/* Constraints (algebraic equations replacing a species' ODE)                 */
+/* ------------------------------------------------------------------------- */
+
+typedef enum tmc_constraint_type
+{
+  TMC_CONSTRAINT_EQUILIBRIUM, /* K_eq prod(reactants^nu) - prod(products^nu) = 0 */
+  TMC_CONSTRAINT_LINEAR       /* sum(coefficient * species) - constant = 0 */
+} tmc_constraint_type;
+
+/* Van 't Hoff temperature dependence of an equilibrium constant:
+ * K = K_HLC_ref exp((delta_H / R) (1 / T - 1 / T_ref)). */
+typedef struct tmc_vant_hoff
+{
+  double K_HLC_ref; /* at T_ref */
+  double delta_H;   /* J mol-1 */
+  double R;         /* J mol-1 K-1; 0 selects the gas constant */
+  double T_ref;     /* K; 0 selects 298.15 */
+} tmc_vant_hoff;
+
+typedef struct tmc_constraint
+{
+  tmc_constraint_type type;
+  char name[TMC_NAME_MAX];
+  tmc_species algebraic_species; /* the variable the constraint determines */
+  int n_reactants;               /* equilibrium */
+  tmc_stoich_species *reactants;
+  int n_products;
+  tmc_stoich_species *products;
+  tmc_vant_hoff vant_hoff;
+  int n_terms; /* linear */
+  tmc_stoich_species *terms;
+  double constant;
+} tmc_constraint;
+
+/* Validate and build a constraint (MICM's error codes on failure); the
+ * equilibrium constraint's K_eq is a state parameter named after it. */
+int tmc_equilibrium_constraint(tmc_constraint *out, const char *name, const tmc_species *algebraic_species, const tmc_stoich_species *reactants, int n_reactants, const tmc_stoich_species *products, int n_products, tmc_vant_hoff vant_hoff, tmc_error *err);
+int tmc_linear_constraint(tmc_constraint *out, const char *name, const tmc_species *algebraic_species, const tmc_stoich_species *terms, int n_terms, double constant, tmc_error *err);
+tmc_constraint tmc_constraint_copy(const tmc_constraint *c);
+void tmc_constraint_free(tmc_constraint *c);
+/* The species the constraint depends on, in order (reactants then products,
+ * or the terms); returns the count. */
+int tmc_constraint_dependencies(const tmc_constraint *c, char (*names)[TMC_NAME_MAX], int max_names);
+/* The constraint's state parameter labels (one for an equilibrium constant). */
+int tmc_constraint_parameter_names(const tmc_constraint *c, char (*names)[TMC_NAME_MAX], int max_names);
+/* The equilibrium constant at a temperature. */
+double tmc_vant_hoff_constant(tmc_vant_hoff p, double temperature);
+
+/* ------------------------------------------------------------------------- */
+/* External models                                                            */
+/* ------------------------------------------------------------------------- */
+
+/* A name-to-index map handed to external model callbacks. */
+typedef struct tmc_name_map tmc_name_map;
+int tmc_name_map_lookup(const tmc_name_map *map, const char *name); /* -1 if absent */
+int tmc_name_map_size(const tmc_name_map *map);
+const char *tmc_name_map_name(const tmc_name_map *map, int index);
+
+typedef struct tmc_index_pair
+{
+  int row, col;
+} tmc_index_pair;
+
+/* A model outside the mechanism that adds state variables and parameters,
+ * processes (forcing and Jacobian terms), or constraints. Each callback may be
+ * NULL; a model with any process callback must provide them all, likewise
+ * for the constraint callbacks. Name callbacks write up to `max` names and
+ * return the count; the library sorts the names as MICM's std::set does. The
+ * matrices handed to the callbacks are the state's (vector ordered, see
+ * tmc_dense_index and tmc_sparse_data_index). */
+typedef struct tmc_external_model
+{
+  void *context;
+  int (*state_variable_names)(void *context, char (*names)[TMC_NAME_MAX], int max);
+  int (*state_parameter_names)(void *context, char (*names)[TMC_NAME_MAX], int max);
+  /* processes */
+  int (*species_used)(void *context, char (*names)[TMC_NAME_MAX], int max);
+  int (*nonzero_jacobian_elements)(void *context, const tmc_name_map *variables, tmc_index_pair *out, int max);
+  void (*finalize_process_setup)(void *context, const tmc_name_map *parameters, const tmc_name_map *variables, const tmc_sparse *jacobian);
+  void (*update_state_parameters)(void *context, const tmc_conditions *conditions, int n_cells, tmc_dense *state_parameters);
+  void (*add_forcing_terms)(void *context, const tmc_dense *state_parameters, const tmc_dense *variables, tmc_dense *forcing);
+  void (*subtract_jacobian_terms)(void *context, const tmc_dense *state_parameters, const tmc_dense *variables, tmc_sparse *jacobian);
+  /* constraints */
+  int (*constraint_algebraic_variable_names)(void *context, char (*names)[TMC_NAME_MAX], int max);
+  int (*constraint_species_dependencies)(void *context, char (*names)[TMC_NAME_MAX], int max);
+  int (*nonzero_constraint_jacobian_elements)(void *context, const tmc_name_map *variables, tmc_index_pair *out, int max);
+  int (*constraint_state_parameter_names)(void *context, char (*names)[TMC_NAME_MAX], int max);
+  int (*initialize_constraint_parameter_names)(void *context, char (*names)[TMC_NAME_MAX], int max);
+  void (*finalize_constraint_setup)(void *context, const tmc_name_map *parameters, const tmc_name_map *variables, const tmc_sparse *jacobian);
+  void (*update_constraint_state_parameters)(void *context, const tmc_conditions *conditions, int n_cells, tmc_dense *state_parameters);
+  void (*add_constraint_residual)(void *context, const tmc_dense *state_parameters, const tmc_dense *variables, tmc_dense *forcing);
+  void (*subtract_constraint_jacobian)(void *context, const tmc_dense *state_parameters, const tmc_dense *variables, tmc_sparse *jacobian);
+  void (*initialize_constraint_parameters)(void *context, const tmc_dense *variables, tmc_dense *state_parameters);
+} tmc_external_model;
+
+/* ------------------------------------------------------------------------- */
 /* Solver builder                                                             */
 /* ------------------------------------------------------------------------- */
 
@@ -638,6 +734,9 @@ void tmc_builder_set_lu_algorithm(tmc_builder *b, tmc_lu_algorithm algorithm);
  * match the built solver, else the generic kernels run (see tmc_solver_uses_kernels). */
 void tmc_builder_set_kernels(tmc_builder *b, const tmc_kernels *kernels);
 void tmc_builder_set_step_controller(tmc_builder *b, tmc_step_controller controller, void *context);
+void tmc_builder_add_constraint(tmc_builder *b, const tmc_constraint *constraint);
+/* The model struct is copied; its context stays the caller's. */
+void tmc_builder_add_external_model(tmc_builder *b, const tmc_external_model *model);
 /* Build; returns NULL and sets err on failure. The builder can be reused. */
 tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err);
 
@@ -658,6 +757,14 @@ bool tmc_solver_uses_kernels(const tmc_solver *s);
 int tmc_solver_num_variables(const tmc_solver *s);
 int tmc_solver_num_reactions(const tmc_solver *s);
 int tmc_solver_num_custom_parameters(const tmc_solver *s);
+int tmc_solver_num_constraints(const tmc_solver *s);
+/* 1 for a differential variable, 0 for an algebraic one (the mass matrix diagonal). */
+const double *tmc_solver_mass_matrix_diagonal(const tmc_solver *s);
+/* The algebraic variable ids in ascending order; returns the count. */
+int tmc_solver_algebraic_variables(const tmc_solver *s, const int **ids);
+/* The index map of the state variables, for external model callbacks. */
+const tmc_name_map *tmc_solver_variable_map(const tmc_solver *s);
+const tmc_name_map *tmc_solver_parameter_map(const tmc_solver *s);
 const char *tmc_solver_variable_name(const tmc_solver *s, int index);
 const char *tmc_solver_custom_parameter_label(const tmc_solver *s, int index);
 int tmc_solver_width(const tmc_solver *s);

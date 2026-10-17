@@ -53,10 +53,15 @@ LIB_OBJECTS := $(patsubst src/%.c,build/%.o,$(LIB_SOURCES))
 
 .PHONY: env cpu bench test-cpu micm-ref clean
 
-env: .conda/conda-meta/history
-.conda/conda-meta/history: environment.yml
+# The environment is created once, when its Python is missing; after editing
+# environment.yml, `make env-recreate` builds it again.
+env: | $(PYTHON)
+$(PYTHON):
 	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
-	@touch $@
+env-recreate:
+	rm -rf .conda
+	$(MAKE) env
+.PHONY: env-recreate
 
 cpu: bin/ts1_bench_cpu
 bench: cpu
@@ -77,10 +82,10 @@ build/libtmc.a: $(LIB_OBJECTS)
 	$(AR) rcs $@ $^
 
 # ---- generated mechanisms ----------------------------------------------
-configs/ts1.json: tools/translate_ts1.py $(MICM)/test/benchmark/ts1_mechanism.hpp .conda/conda-meta/history
+configs/ts1.json: tools/translate_ts1.py $(MICM)/test/benchmark/ts1_mechanism.hpp | $(PYTHON)
 	$(PYTHON) tools/translate_ts1.py $(MICM)/test/benchmark/ts1_mechanism.hpp $@
 
-generated/ts1.c generated/ts1.h: configs/ts1.json tools/generate.py tools/mechanism.py .conda/conda-meta/history
+generated/ts1.c generated/ts1.h: configs/ts1.json tools/generate.py tools/mechanism.py | $(PYTHON)
 	@mkdir -p generated
 	$(PYTHON) tools/generate.py configs/ts1.json generated/ts1 --name ts1 --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE) $(GEN_FLAGS)
 
@@ -99,13 +104,13 @@ TEST_MECHANISMS := $(patsubst %,generated/%.o,$(EXAMPLES))
 test-cpu: cpu bin/test_cpu
 	TMC_TEST_MICM=$(MICM) TMC_TEST_REFERENCE=$(REFERENCE) bin/test_cpu $(TEST_FILTER)
 
-generated/tests/registry.h generated/tests/case_list.inc: $(TEST_SOURCES) $(REFERENCE)/micm_cases.txt tools/test_registry.py .conda/conda-meta/history
+generated/tests/registry.h generated/tests/case_list.inc: $(TEST_SOURCES) $(REFERENCE)/micm_cases.txt tools/test_registry.py | $(PYTHON)
 	@mkdir -p generated/tests
 	$(PYTHON) tools/test_registry.py $(REFERENCE)/micm_cases.txt tests generated/tests
 
 # the example configurations; their tests compare them with the same mechanisms built in code
 .SECONDEXPANSION:
-generated/%.c generated/%.h: $$(wildcard configs/examples/%/*) tools/generate.py tools/mechanism.py .conda/conda-meta/history
+generated/%.c generated/%.h: $$(wildcard configs/examples/%/*) tools/generate.py tools/mechanism.py | $(PYTHON)
 	@mkdir -p generated
 	$(PYTHON) tools/generate.py $(firstword $(wildcard configs/examples/$*/config.yaml configs/examples/$*/config.json)) generated/$* --name $* --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE)
 

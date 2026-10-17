@@ -72,11 +72,9 @@ tmc_result tmc_backward_euler_solve(tmc_solver *s, double time_step, tmc_state *
     do
     {
       result.stats.number_of_steps++;
-      tmc_dense_fill(forcing, 0.0);
-      tmc_generic_forcing(s, st->rate_constants, Yn1, forcing);
+      tmc_eval_forcing(s, st, Yn1, forcing);
       result.stats.function_calls++;
-      tmc_sparse_fill(st->jacobian, 0.0);
-      tmc_generic_jacobian(s, st->rate_constants, Yn1, st->jacobian);
+      tmc_eval_jacobian(s, st, Yn1, st->jacobian);
       result.stats.jacobian_updates++;
       tmc_sparse_add_to_diagonal(st->jacobian, 1.0 / H);
       tmc_lu_decompose_in_place(s->lu, st->jacobian, st->reciprocals);
