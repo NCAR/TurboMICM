@@ -3,6 +3,7 @@
  *
  *   test_cpu [FILTER]      run only the cases whose id contains FILTER
  *   test_cpu --list        print the registered ids
+ *   test_cpu --extra       run the registered checks that are not MICM cases
  */
 #include "harness.h"
 #include "registry.h"
@@ -85,6 +86,7 @@ int main(int argc, char **argv)
 {
   const char *filter = argc > 1 && argv[1][0] != '-' ? argv[1] : NULL;
   bool list_only = argc > 1 && strcmp(argv[1], "--list") == 0;
+  bool extra_only = argc > 1 && strcmp(argv[1], "--extra") == 0;
   int n_registered = 0;
   const tmc_test_case *const *groups = tmc_test_groups(&n_registered);
   if (list_only)
@@ -96,6 +98,34 @@ int main(int argc, char **argv)
   }
   const size_t n_cases = sizeof case_list / sizeof case_list[0];
   int pass = 0, fail = 0, na = 0;
+  if (extra_only)
+  {
+    /* checks of this port's own (generated kernels, the TS1 gate) */
+    for (int g = 0; groups[g]; ++g)
+      for (const tmc_test_case *c = groups[g]; c->id; ++c)
+      {
+        bool listed = false;
+        for (size_t i = 0; i < n_cases && !listed; ++i)
+          listed = strcmp(case_list[i], c->id) == 0;
+        if (listed)
+          continue;
+        current_id = c->id;
+        failures = 0;
+        reason[0] = '\0';
+        int status = c->run();
+        if (status == TMC_TEST_PASS && failures > 0)
+          status = TMC_TEST_FAIL;
+        if (status == TMC_TEST_PASS)
+          ++pass;
+        else if (status == TMC_TEST_NA)
+          ++na;
+        else
+          ++fail;
+        printf("%s %s%s%s\n", c->id, status == TMC_TEST_PASS ? "PASS" : status == TMC_TEST_NA ? "N/A" : "FAIL", reason[0] ? " " : "", reason);
+      }
+    fprintf(stderr, "extra checks: %d PASS, %d FAIL, %d N/A\n", pass, fail, na);
+    return fail ? 1 : 0;
+  }
   for (size_t i = 0; i < n_cases; ++i)
   {
     const char *id = case_list[i];

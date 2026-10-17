@@ -103,6 +103,7 @@ TEST_MECHANISMS := $(patsubst %,generated/%.o,$(EXAMPLES))
 
 test-cpu: cpu bin/test_cpu
 	TMC_TEST_MICM=$(MICM) TMC_TEST_REFERENCE=$(REFERENCE) bin/test_cpu $(TEST_FILTER)
+	@TMC_TEST_MICM=$(MICM) TMC_TEST_REFERENCE=$(REFERENCE) bin/test_cpu --extra 1>&2
 
 generated/tests/registry.h generated/tests/case_list.inc: $(TEST_SOURCES) $(REFERENCE)/micm_cases.txt tools/test_registry.py | $(PYTHON)
 	@mkdir -p generated/tests

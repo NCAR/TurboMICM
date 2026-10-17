@@ -85,11 +85,31 @@ class Mechanism:
 # Reading
 # ---------------------------------------------------------------------------
 
+def _yaml_loader():
+    """PyYAML's SafeLoader with YAML 1.2 floats: YAML 1.1 reads 2.3e2 (no sign in the
+    exponent, no dot before it) as a string, and MICM's examples write floats that way."""
+    import re as _re
+    import yaml
+
+    class Loader(yaml.SafeLoader):
+        pass
+
+    Loader.add_implicit_resolver(
+        "tag:yaml.org,2002:float",
+        _re.compile(r"""^(?:[-+]?(?:[0-9][0-9_]*)\.[0-9_]*(?:[eE][-+]?[0-9]+)?
+                        |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
+                        |[-+]?\.[0-9_]+(?:[eE][-+]?[0-9]+)?
+                        |[-+]?\.(?:inf|Inf|INF)
+                        |\.(?:nan|NaN|NAN))$""", _re.X),
+        list("-+0123456789."))
+    return Loader
+
+
 def _load(path: Path):
     text = path.read_text()
     if path.suffix.lower() in (".yaml", ".yml"):
         import yaml
-        return yaml.safe_load(text)
+        return yaml.load(text, Loader=_yaml_loader())
     return json.loads(text)
 
 
