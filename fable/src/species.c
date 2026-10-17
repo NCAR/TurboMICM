@@ -118,7 +118,7 @@ static int get_property(const tmc_species *s, const char *key, tmc_property_type
 
 int tmc_species_get_double(const tmc_species *s, const char *key, double *value, tmc_error *err)
 {
-  const tmc_property *p;
+  const tmc_property *p = NULL;
   int rc = get_property(s, key, TMC_PROPERTY_DOUBLE, &p, err);
   if (rc == TMC_OK)
     *value = p->value_double;
@@ -127,7 +127,7 @@ int tmc_species_get_double(const tmc_species *s, const char *key, double *value,
 
 int tmc_species_get_string(const tmc_species *s, const char *key, const char **value, tmc_error *err)
 {
-  const tmc_property *p;
+  const tmc_property *p = NULL;
   int rc = get_property(s, key, TMC_PROPERTY_STRING, &p, err);
   if (rc == TMC_OK)
     *value = p->value_string;
@@ -136,7 +136,7 @@ int tmc_species_get_string(const tmc_species *s, const char *key, const char **v
 
 int tmc_species_get_int(const tmc_species *s, const char *key, int *value, tmc_error *err)
 {
-  const tmc_property *p;
+  const tmc_property *p = NULL;
   int rc = get_property(s, key, TMC_PROPERTY_INT, &p, err);
   if (rc == TMC_OK)
     *value = p->value_int;
@@ -145,7 +145,7 @@ int tmc_species_get_int(const tmc_species *s, const char *key, int *value, tmc_e
 
 int tmc_species_get_bool(const tmc_species *s, const char *key, bool *value, tmc_error *err)
 {
-  const tmc_property *p;
+  const tmc_property *p = NULL;
   int rc = get_property(s, key, TMC_PROPERTY_BOOL, &p, err);
   if (rc == TMC_OK)
     *value = p->value_bool;
@@ -236,7 +236,11 @@ int tmc_phase_species_names(const tmc_phase *p, bool qualified, char (*names)[TM
     if (names && n < max_names)
     {
       if (qualified)
-        snprintf(names[n], TMC_NAME_MAX, "%s.%s", p->name, p->species[i].species.name);
+      {
+        char buffer[2 * TMC_NAME_MAX];
+        snprintf(buffer, sizeof buffer, "%s.%s", p->name, p->species[i].species.name);
+        tmc_strlcpy(names[n], buffer, TMC_NAME_MAX);
+      }
       else
         tmc_strlcpy(names[n], p->species[i].species.name, TMC_NAME_MAX);
     }
