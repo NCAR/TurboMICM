@@ -62,37 +62,36 @@ one cell group per thread) and the fastest configuration found on
 2026-10-16 (vector ordering of 8, in-place Mozart, 32-cell groups). The data
 are in `results/2026-10-17-fable-reference-entry`.
 
-**The final build** (minimum-fill ordering, 32-cell groups), 2026-10-17
-07:02 to 07:37; all 50 runs within 1.04e-13 of MICM:
+**The final build** (minimum-fill ordering, 32-cell groups, the second
+stage's forcing formed block by block), 2026-10-17 08:02 to 08:37; all 50
+runs within 1.04e-13 of MICM:
 
 | Program | 10 threads, median ms (range) | vs MICM | vs MICM's fastest | 1 thread, median ms (range) | vs MICM | vs MICM's fastest |
 |---|---:|---:|---:|---:|---:|---:|
-| MICM, default | 26,789 (25,628–27,801) | 1.00× | | 145,266 (144,453–145,969) | 1.00× | |
-| MICM's fastest: vector8, in-place Mozart, 32-cell groups | 9,731 (9,410–9,987) | 2.75× | 1.00× | 50,735 (50,320–51,009) | 2.86× | 1.00× |
-| this port, default (32-cell groups) | 4,757 (4,583–4,862) | 5.63× | 2.05× | 25,786 (25,663–25,850) | 5.63× | 1.97× |
-| the same configuration, timed again as `--group-size 32` | 4,608 (4,592–4,757) | 5.81× | 2.11× | 25,719 (25,626–25,804) | 5.65× | 1.97× |
-| this port, 16-cell groups | 4,788 (4,636–4,875) | 5.60× | 2.03× | 36,115 (32,728–37,613) | 4.02× | 1.40× |
+| MICM, default | 26,824 (25,890–27,505) | 1.00× | | 145,280 (144,403–147,173) | 1.00× | |
+| MICM's fastest: vector8, in-place Mozart, 32-cell groups | 9,892 (9,285–9,949) | 2.71× | 1.00× | 50,900 (50,547–51,059) | 2.85× | 1.00× |
+| this port, default (32-cell groups) | 4,594 (4,541–4,798) | 5.84× | 2.15× | 25,558 (25,452–25,589) | 5.68× | 1.99× |
+| the same configuration, timed again as `--group-size 32` | 4,558 (4,551–4,701) | 5.89× | 2.17× | 25,536 (25,412–25,569) | 5.69× | 1.99× |
+| this port, 16-cell groups | 4,776 (4,665–4,898) | 5.62× | 2.07× | 36,877 (34,961–37,289) | 3.94× | 1.38× |
 
-**The build before the minimum-fill ordering** (MICM's ordering, 8-cell
-groups by default), 05:01 to 05:37; all 50 runs within 1.1e-13:
+The two earlier sessions, each five rounds against the same MICM programs:
+the minimum-fill build without the block-by-block forcing (07:02 to 07:37)
+gave 4,757 ms at 10 threads against 9,731 (2.05×) and 25,786 ms at one
+thread against 50,735 (1.97×); the build before the minimum-fill ordering,
+with MICM's order (05:01 to 05:37), 4,850 against 9,782 (2.02×) and 26,364
+against 50,792 (1.93×), its 16-cell groups 33,324 and its 8-cell groups
+5,030 at 10 threads (1.94×).
 
-| Program | 10 threads, median ms (range) | vs MICM's fastest | 1 thread, median ms (range) | vs MICM's fastest |
-|---|---:|---:|---:|---:|
-| MICM, default | 26,979 (26,652–27,303) | | 145,166 (144,632–146,272) | |
-| MICM's fastest | 9,782 (9,233–9,866) | 1.00× | 50,792 (50,354–51,024) | 1.00× |
-| this port, 32-cell groups | 4,850 (4,816–4,916) | 2.02× | 26,364 (26,228–26,465) | 1.93× |
-| this port, 16-cell groups | 4,917 (4,898–5,055) | 1.99× | 33,324 (30,559–34,126) | 1.52× |
-| this port, 8-cell groups | 5,030 (4,957–5,129) | 1.94× | (its 1-thread default was 32 cells) | |
-
-Against MICM's fastest configuration the port is 2.05× at 10 threads, the
-ranking configuration, and 1.97× at 1 thread. The 10-thread speedups of the
-two codes over their own 1-thread times are the same (5.2–5.4×), so both are
-bound by the same thing there: the mixed cores' throughput.
+Against MICM's fastest configuration the port is 2.15× at 10 threads, the
+ranking configuration, and 1.99× at 1 thread. The 10-thread speedups of the
+two codes over their own 1-thread times are close (5.1× and 5.6×), so both
+are bound by the same thing there: the mixed cores' throughput.
 
 ### The one-thread target
 
-The one-thread ratio is 1.97× in the final session (1.93× before the
-minimum-fill ordering); 2× would need another 1.5 %. Everything identified
+The one-thread ratio is 1.99× in the final session (1.97× and 1.93× in the
+two before it, as the code and the machine's state changed); 2× would need
+another 0.4 %, less than the sessions' own spread. Everything identified
 was measured, back to back, on the final code (DECISIONS.md, "Measured
 rejects"):
 

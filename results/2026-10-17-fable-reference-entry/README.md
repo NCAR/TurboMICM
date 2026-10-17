@@ -18,7 +18,10 @@ a cool-down.
   fill, 32-cell groups by default), the same programs; `fable` and
   `fable-g32` are the same configuration timed twice. 5 rounds; all 50 runs
   within 1.04e-13 of MICM.
-- `gate-matrix/`: the final build in every benchmark setting (groupings,
+- `session-3/`: 08:02 to 08:37, the final commit (`5e770a9`, which adds the
+  second stage's forcing formed block by block; the kernels are otherwise
+  session 2's), the same programs. 5 rounds; all 50 runs within 1.04e-13.
+- `gate-matrix/`: the build of session 2 in every benchmark setting (groupings,
   one thread, the generic kernels, the schedules), each checked against
   MICM's final state: every setting passes, 1.04e-13 at most, the generic
   kernels exact.
@@ -29,8 +32,9 @@ The input is 10,000 cells from `reference/make_cells_csv.py 10000 2026`,
 
 | Program | 10 threads, median ms | vs MICM's fastest | 1 thread, median ms | vs MICM's fastest |
 |---|---:|---:|---:|---:|
-| MICM default (session 2) | 26,789 | | 145,266 | |
-| MICM fastest (session 2) | 9,731 | 1.00× | 50,735 | 1.00× |
-| fable, final build (session 2) | 4,757 | 2.05× | 25,786 | 1.97× |
-| the same, timed as `fable-g32` (session 2) | 4,608 | 2.11× | 25,719 | 1.97× |
+| MICM default (session 3) | 26,824 | | 145,280 | |
+| MICM fastest (session 3) | 9,892 | 1.00× | 50,900 | 1.00× |
+| fable, final commit (session 3) | 4,594 | 2.15× | 25,558 | 1.99× |
+| the same, timed as `fable-g32` (session 3) | 4,558 | 2.17× | 25,536 | 1.99× |
+| fable, minimum fill (session 2) | 4,757 | 2.05× (MICM's fastest: 9,731) | 25,786 | 1.97× (50,735) |
 | fable, before minimum fill, 32-cell groups (session 1) | 4,850 | 2.02× (MICM's fastest: 9,782) | 26,364 | 1.93× (50,792) |
