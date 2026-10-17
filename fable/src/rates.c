@@ -155,9 +155,14 @@ int tmc_rate_constant_custom_parameter_labels(const tmc_rate_constant *rc, char 
   {
     case TMC_RATE_USER_DEFINED: tmc_strlcpy(labels[0], rc->p.user_defined.label, TMC_NAME_MAX); return 1;
     case TMC_RATE_SURFACE:
-      snprintf(labels[0], TMC_NAME_MAX, "%s.effective radius [m]", rc->p.surface.label);
-      snprintf(labels[1], TMC_NAME_MAX, "%s.particle number concentration [# m-3]", rc->p.surface.label);
+    {
+      char buffer[2 * TMC_NAME_MAX];
+      snprintf(buffer, sizeof buffer, "%s.effective radius [m]", rc->p.surface.label);
+      tmc_strlcpy(labels[0], buffer, TMC_NAME_MAX);
+      snprintf(buffer, sizeof buffer, "%s.particle number concentration [# m-3]", rc->p.surface.label);
+      tmc_strlcpy(labels[1], buffer, TMC_NAME_MAX);
       return 2;
+    }
     default: return 0;
   }
 }
