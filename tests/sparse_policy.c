@@ -7,9 +7,11 @@
  * variables, column views, and vector views become the lane pointers of
  * tmc_array_group_element, _variable, _column, and _vector, and each
  * ForEachBlock lambda a lane function whose x[k] is the current lane of
- * operand k. MICM's GetBlockView takes VectorIndex(0, row, column), which
- * numbers the same element that tmc_sparse_element returns, so the "Scalar"
- * indices of MICM's tests are element ids here. Where MICM throws, the C call
+ * operand k. MICM's GetBlockView takes VectorIndex(0, row, column), the
+ * element's offset within group 0 (e at L = 1, e * L in the vector
+ * orderings); tmc_array_group_element takes the element id e itself, as
+ * tmc_sparse_element returns it, so the "Scalar" indices of MICM's tests are
+ * element ids here. Where MICM throws, the C call
  * returns TMC_ERROR_MATRIX with MICM's code; where MICM asserts (EXPECT_DEATH,
  * compiled only into debug builds) the C accessor returns an error code, which
  * is checked. MICM's int-valued matrices and vectors hold the same integers in
