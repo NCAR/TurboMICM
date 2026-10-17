@@ -212,5 +212,20 @@ const double *tmc_state_absolute_tolerances(const tmc_state *st)
 
 void tmc_state_clamp(tmc_state *st)
 {
-  tmc_dense_max(st->variables, 0.0);
+  const tmc_solver *s = st->solver;
+  if (s->n_algebraic == 0)
+  {
+    tmc_dense_max(st->variables, 0.0);
+    return;
+  }
+  const int L = st->L, n_vars = st->n_vars;
+  for (int g = 0; g < st->variables->n_groups; ++g)
+    for (int v = 0; v < n_vars; ++v)
+    {
+      if (s->mass_diagonal[v] <= 0.0)
+        continue;
+      double *y = st->variables->data + ((size_t)g * n_vars + v) * L;
+      for (int c = 0; c < L; ++c)
+        y[c] = y[c] > 0.0 ? y[c] : 0.0;
+    }
 }

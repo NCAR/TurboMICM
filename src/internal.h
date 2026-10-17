@@ -72,6 +72,21 @@ struct tmc_lu
 
 /* ---- Compiled mechanism (solver) --------------------------------------- */
 
+typedef struct tmc_constraint_plan
+{
+  int row;            /* the algebraic variable */
+  int n_dependencies; /* reactants then products, or the terms */
+  int *dependencies;  /* state ids */
+  int *flat_ids;      /* LU element of (row, dependency) */
+  int parameter_index; /* the equilibrium constant's state parameter, or -1 */
+} tmc_constraint_plan;
+
+struct tmc_name_map
+{
+  int n;
+  char (*names)[TMC_NAME_MAX];
+};
+
 typedef struct tmc_process_plan
 {
   int n_reactants; /* non-parameterized reactants (state variable ids) */
@@ -119,6 +134,23 @@ struct tmc_solver
   const tmc_sparse *lu_pattern; /* lu->pattern */
   unsigned long long fingerprint;
   const tmc_kernels *kernels; /* NULL when the generic kernels are used */
+
+  /* constraints and algebraic variables */
+  int n_constraints;
+  tmc_constraint *constraints;
+  tmc_constraint_plan *constraint_plans;
+  int n_algebraic;
+  int *algebraic_ids;          /* ascending */
+  unsigned char *is_algebraic; /* [n_vars] */
+  double *mass_diagonal;       /* [n_vars] 1 or 0 */
+  /* external models */
+  int n_external;
+  tmc_external_model *externals;
+  unsigned char *external_constraint_active; /* [n_external] */
+  bool has_external_processes;
+  int n_algebraic_flat;   /* external process elements in algebraic rows, cleared after evaluation */
+  int *algebraic_flat_ids;
+  tmc_name_map variable_map, parameter_map;
 };
 
 struct tmc_state
@@ -142,12 +174,35 @@ struct tmc_state
 
 /* ---- Internal kernels (process.c) --------------------------------------- */
 
+/* The complete forcing F(y) and the complete shifted-free negative Jacobian
+ * -dF/dy of a state: kinetic terms (generic or generated kernels), external
+ * models, and constraints. forcing and jacobian are overwritten. */
+void tmc_eval_forcing(const tmc_solver *s, tmc_state *st, const tmc_dense *y, tmc_dense *forcing);
+void tmc_eval_jacobian(const tmc_solver *s, tmc_state *st, const tmc_dense *y, tmc_sparse *jacobian);
+
 /* Rate constants of every cell from conditions and custom parameters. */
 void tmc_calculate_rate_constants(const tmc_solver *s, tmc_state *state);
 /* Generic forcing: forcing += F(variables) over all blocks. */
 void tmc_generic_forcing(const tmc_solver *s, const tmc_dense *rate_constants, const tmc_dense *variables, tmc_dense *forcing);
 /* Generic negative Jacobian: jacobian -= dF/dy (added to existing values). */
 void tmc_generic_jacobian(const tmc_solver *s, const tmc_dense *rate_constants, const tmc_dense *variables, tmc_sparse *jacobian);
+
+/* ---- Constraints (constraints.c) ---------------------------------------- */
+void tmc_constraints_update_parameters(const tmc_solver *s, const tmc_conditions *conditions, int n_cells, tmc_dense *params);
+void tmc_constraints_add_forcing(const tmc_solver *s, const tmc_dense *variables, const tmc_dense *params, tmc_dense *forcing);
+void tmc_constraints_subtract_jacobian(const tmc_solver *s, const tmc_dense *variables, const tmc_dense *params, tmc_sparse *jacobian);
+void tmc_set_algebraic_errors(const tmc_solver *s, tmc_dense *yerror, const tmc_dense *y, const tmc_dense *ynew);
+
+/* ---- External models (external.c) -------------------------------------- */
+void tmc_external_update_parameters(const tmc_solver *s, const tmc_conditions *conditions, int n_cells, tmc_dense *params);
+void tmc_external_add_forcing(const tmc_solver *s, const tmc_dense *params, const tmc_dense *y, tmc_dense *forcing);
+void tmc_external_subtract_jacobian(const tmc_solver *s, const tmc_dense *params, const tmc_dense *y, tmc_sparse *jacobian);
+void tmc_external_update_constraint_parameters(const tmc_solver *s, const tmc_conditions *conditions, int n_cells, tmc_dense *params);
+void tmc_external_add_constraint_residual(const tmc_solver *s, const tmc_dense *params, const tmc_dense *y, tmc_dense *forcing);
+void tmc_external_subtract_constraint_jacobian(const tmc_solver *s, const tmc_dense *params, const tmc_dense *y, tmc_sparse *jacobian);
+void tmc_external_initialize_constraint_parameters(const tmc_solver *s, const tmc_dense *y, tmc_dense *params);
+/* Sorted unique names from a name callback (NULL callback: none). Returns the count. */
+int tmc_external_names(const tmc_external_model *m, int (*cb)(void *, char (*)[TMC_NAME_MAX], int), char (**out)[TMC_NAME_MAX]);
 
 /* ---- LU internals (lu.c) ------------------------------------------------ */
 void tmc_lu_decompose_mozart_in_place(const tmc_lu *lu, tmc_sparse *ALU, double *reciprocals);

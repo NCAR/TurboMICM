@@ -1,5 +1,6 @@
-/* The solver builder: from a system and reactions to the compiled plans a
- * solver and its states use (MICM's SolverBuilder::Build). */
+/* The solver builder: from a system, reactions, constraints, and external
+ * models to the compiled plans a solver and its states use (MICM's
+ * SolverBuilder::Build, step for step). */
 #include "internal.h"
 
 #include <stdint.h>
@@ -14,6 +15,10 @@ struct tmc_builder
   tmc_system system;
   int n_reactions;
   tmc_reaction *reactions;
+  int n_constraints;
+  tmc_constraint *constraints;
+  int n_external;
+  tmc_external_model *externals;
   bool reorder_state;
   bool ignore_unused_species;
   int width;
@@ -58,6 +63,10 @@ void tmc_builder_free(tmc_builder *b)
   if (b->has_system)
     tmc_system_free(&b->system);
   tmc_reactions_free(b->reactions, b->n_reactions);
+  for (int i = 0; i < b->n_constraints; ++i)
+    tmc_constraint_free(&b->constraints[i]);
+  free(b->constraints);
+  free(b->externals);
   free(b);
 }
 
@@ -76,6 +85,18 @@ void tmc_builder_set_reactions(tmc_builder *b, const tmc_reaction *reactions, in
   for (int i = 0; i < n; ++i)
     b->reactions[i] = tmc_reaction_copy(&reactions[i]);
   b->n_reactions = n;
+}
+
+void tmc_builder_add_constraint(tmc_builder *b, const tmc_constraint *constraint)
+{
+  b->constraints = tmc_realloc(b->constraints, (size_t)(b->n_constraints + 1) * sizeof *b->constraints);
+  b->constraints[b->n_constraints++] = tmc_constraint_copy(constraint);
+}
+
+void tmc_builder_add_external_model(tmc_builder *b, const tmc_external_model *model)
+{
+  b->externals = tmc_realloc(b->externals, (size_t)(b->n_external + 1) * sizeof *b->externals);
+  b->externals[b->n_external++] = *model;
 }
 
 void tmc_builder_set_reorder_state(tmc_builder *b, bool reorder)
@@ -111,7 +132,9 @@ void tmc_builder_set_step_controller(tmc_builder *b, tmc_step_controller control
 
 /* ---- helpers ---- */
 
-static int name_index(char (*names)[TMC_NAME_MAX], int n, const char *name)
+typedef char tmc_name[TMC_NAME_MAX];
+
+static int name_index(const tmc_name *names, int n, const char *name)
 {
   for (int i = 0; i < n; ++i)
     if (strcmp(names[i], name) == 0)
@@ -119,10 +142,26 @@ static int name_index(char (*names)[TMC_NAME_MAX], int n, const char *name)
   return -1;
 }
 
-static int compare_type(const void *a, const void *b)
+/* A growable list of names. */
+typedef struct names_list
 {
-  const tmc_reaction *ra = a, *rb = b;
-  return (int)ra->rate_constant.type - (int)rb->rate_constant.type;
+  tmc_name *v;
+  int n, cap;
+} names_list;
+
+static void names_push(names_list *l, const char *name)
+{
+  if (l->n == l->cap)
+  {
+    l->cap = l->cap ? 2 * l->cap : 16;
+    l->v = tmc_realloc(l->v, (size_t)l->cap * sizeof *l->v);
+  }
+  tmc_strlcpy(l->v[l->n++], name, TMC_NAME_MAX);
+}
+
+static bool names_contains(const names_list *l, const char *name)
+{
+  return name_index(l->v, l->n, name) >= 0;
 }
 
 /* A stable sort by rate constant type (qsort is not stable). */
@@ -136,12 +175,23 @@ static void sort_reactions(tmc_reaction *reactions, int n)
         sorted[k++] = reactions[i];
   memcpy(reactions, sorted, (size_t)n * sizeof *sorted);
   free(sorted);
-  (void)compare_type;
 }
 
-static void hash_bytes(unsigned long long *h, const void *p, size_t n)
+/* Dense 0/1 pattern with set semantics. */
+typedef struct pattern
 {
-  *h = tmc_fnv1a(*h, p, n);
+  int n;
+  unsigned char *p;
+} pattern;
+
+static void pattern_add(pattern *pt, int row, int col)
+{
+  pt->p[(size_t)row * pt->n + col] = 1;
+}
+
+static bool pattern_has(const pattern *pt, int row, int col)
+{
+  return pt->p[(size_t)row * pt->n + col] != 0;
 }
 
 static void hash_text(unsigned long long *h, const char *s)
@@ -169,11 +219,13 @@ static void hash_double(unsigned long long *h, double v)
       bytes[i] = bytes[7 - i];
       bytes[7 - i] = t;
     }
-  hash_bytes(h, bytes, 8);
+  *h = tmc_fnv1a(*h, bytes, 8);
 }
 
-static void free_solver_plans(tmc_solver *s)
+void tmc_solver_free(tmc_solver *s)
 {
+  if (!s)
+    return;
   if (s->processes)
     for (int i = 0; i < s->n_reactions; ++i)
     {
@@ -195,16 +247,59 @@ static void free_solver_plans(tmc_solver *s)
   free(s->variable_names);
   free(s->custom_labels);
   free(s->absolute_tolerance);
-}
-
-void tmc_solver_free(tmc_solver *s)
-{
-  if (!s)
-    return;
-  free_solver_plans(s);
+  for (int i = 0; i < s->n_constraints; ++i)
+  {
+    tmc_constraint_free(&s->constraints[i]);
+    if (s->constraint_plans)
+    {
+      free(s->constraint_plans[i].dependencies);
+      free(s->constraint_plans[i].flat_ids);
+    }
+  }
+  free(s->constraints);
+  free(s->constraint_plans);
+  free(s->algebraic_ids);
+  free(s->is_algebraic);
+  free(s->mass_diagonal);
+  free(s->externals);
+  free(s->external_constraint_active);
+  free(s->algebraic_flat_ids);
   tmc_system_free(&s->system);
   tmc_reactions_free(s->reactions, s->n_reactions);
   free(s);
+}
+
+/* Everything the build allocates before it can fail. */
+typedef struct build_scratch
+{
+  names_list declared;      /* merged state variable names in declaration order */
+  tmc_ivec *rids, *pids;    /* per sorted reaction: reactant / product declared ids */
+  int n_rxn;
+  int *new_of;              /* declared id -> solver id */
+  names_list params;        /* custom parameter labels */
+  names_list constraint_params; /* per constraint parameter, in order */
+  tmc_ivec alg_ids;         /* algebraic variable ids, in insertion order */
+  tmc_ivec *ext_var_ids;    /* per external model: its algebraic ids */
+  pattern jac;              /* Jacobian pattern in solver ids */
+} build_scratch;
+
+static void scratch_free(build_scratch *sc)
+{
+  free(sc->declared.v);
+  if (sc->rids)
+    for (int r = 0; r < sc->n_rxn; ++r)
+    {
+      tmc_ivec_free(&sc->rids[r]);
+      tmc_ivec_free(&sc->pids[r]);
+    }
+  free(sc->rids);
+  free(sc->pids);
+  free(sc->new_of);
+  free(sc->params.v);
+  free(sc->constraint_params.v);
+  tmc_ivec_free(&sc->alg_ids);
+  free(sc->ext_var_ids);
+  free(sc->jac.p);
 }
 
 tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
@@ -215,16 +310,12 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
     tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_MISSING_CHEMICAL_SYSTEM, "Missing chemical system.");
     return NULL;
   }
-  int n_vars = tmc_system_state_size(&b->system);
-  if (n_vars == 0)
-  {
-    tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_MISSING_CHEMICAL_SPECIES, "Provided chemical system contains no species.");
-    return NULL;
-  }
   for (int i = 0; i < b->n_reactions; ++i)
     if (tmc_reaction_validate(&b->reactions[i], err) != TMC_OK)
       return NULL;
 
+  build_scratch sc;
+  memset(&sc, 0, sizeof sc);
   tmc_solver *s = tmc_calloc(1, sizeof *s);
   s->method = b->method;
   s->ros = b->ros;
@@ -239,58 +330,97 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
   for (int i = 0; i < b->n_reactions; ++i)
     s->reactions[i] = tmc_reaction_copy(&b->reactions[i]);
   sort_reactions(s->reactions, s->n_reactions);
+  s->n_constraints = b->n_constraints;
+  s->constraints = tmc_calloc((size_t)(b->n_constraints > 0 ? b->n_constraints : 1), sizeof *s->constraints);
+  for (int i = 0; i < b->n_constraints; ++i)
+    s->constraints[i] = tmc_constraint_copy(&b->constraints[i]);
+  s->n_external = b->n_external;
+  s->externals = tmc_calloc((size_t)(b->n_external > 0 ? b->n_external : 1), sizeof *s->externals);
+  memcpy(s->externals, b->externals, (size_t)b->n_external * sizeof *s->externals);
+  s->external_constraint_active = tmc_calloc((size_t)(b->n_external > 0 ? b->n_external : 1), 1);
 
-  /* Species map: declaration order, then the diagonal Markowitz reordering of
-   * the Jacobian pattern built in that order. */
+  /* 1. The state variable names: the gas phase's, then each external model's
+   *    (in std::set order), all in declaration order. */
+  {
+    int n_gas = tmc_system_state_size(&s->system);
+    tmc_name *gas = tmc_malloc((size_t)(n_gas > 0 ? n_gas : 1) * sizeof *gas);
+    tmc_system_unique_names(&s->system, gas, n_gas);
+    for (int i = 0; i < n_gas; ++i)
+      names_push(&sc.declared, gas[i]);
+    free(gas);
+    for (int m = 0; m < s->n_external; ++m)
+    {
+      tmc_name *names;
+      int n = tmc_external_names(&s->externals[m], s->externals[m].state_variable_names, &names);
+      for (int i = 0; i < n; ++i)
+        names_push(&sc.declared, names[i]);
+      free(names);
+    }
+  }
+  const int n_vars = sc.declared.n;
+  if (n_vars == 0)
+  {
+    tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_MISSING_CHEMICAL_SPECIES, "Provided chemical system contains no species.");
+    goto fail;
+  }
   s->n_vars = n_vars;
-  s->variable_names = tmc_malloc((size_t)n_vars * sizeof *s->variable_names);
-  char (*declared)[TMC_NAME_MAX] = tmc_malloc((size_t)n_vars * sizeof *declared);
-  tmc_system_unique_names(&s->system, declared, n_vars);
-  memcpy(s->variable_names, declared, (size_t)n_vars * sizeof *declared);
 
-  /* Reactant and product ids in declared order (skipping parameterized species) */
-  int n_rxn = s->n_reactions;
-  tmc_ivec *rids = tmc_calloc((size_t)(n_rxn > 0 ? n_rxn : 1), sizeof *rids);
-  tmc_ivec *pids = tmc_calloc((size_t)(n_rxn > 0 ? n_rxn : 1), sizeof *pids);
-  for (int r = 0; r < n_rxn; ++r)
+  /* 2. Reactant and product ids in declared order (parameterized species skipped) */
+  sc.n_rxn = s->n_reactions;
+  sc.rids = tmc_calloc((size_t)(sc.n_rxn > 0 ? sc.n_rxn : 1), sizeof *sc.rids);
+  sc.pids = tmc_calloc((size_t)(sc.n_rxn > 0 ? sc.n_rxn : 1), sizeof *sc.pids);
+  for (int r = 0; r < sc.n_rxn; ++r)
   {
     const tmc_reaction *rx = &s->reactions[r];
     for (int i = 0; i < rx->n_reactants; ++i)
     {
       if (rx->reactants[i].parameterized)
         continue;
-      int id = name_index(declared, n_vars, rx->reactants[i].name);
+      int id = name_index(sc.declared.v, n_vars, rx->reactants[i].name);
       if (id < 0)
       {
         tmc_error_set(err, TMC_ERROR_PROCESS, TMC_PROCESS_REACTANT_DOES_NOT_EXIST, "%s", rx->reactants[i].name);
         goto fail;
       }
-      tmc_ivec_push(&rids[r], id);
+      tmc_ivec_push(&sc.rids[r], id);
     }
     for (int i = 0; i < rx->n_products; ++i)
     {
       if (rx->products[i].species.parameterized)
         continue;
-      int id = name_index(declared, n_vars, rx->products[i].species.name);
+      int id = name_index(sc.declared.v, n_vars, rx->products[i].species.name);
       if (id < 0)
       {
         tmc_error_set(err, TMC_ERROR_PROCESS, TMC_PROCESS_PRODUCT_DOES_NOT_EXIST, "%s", rx->products[i].species.name);
         goto fail;
       }
-      tmc_ivec_push(&pids[r], id);
+      tmc_ivec_push(&sc.pids[r], id);
     }
   }
 
-  /* Unused species check */
+  /* 3. Unused species: every state variable must appear in a reaction or be
+   *    used by an external model. */
   if (!b->ignore_unused_species)
   {
     unsigned char *used = tmc_calloc((size_t)n_vars, 1);
-    for (int r = 0; r < n_rxn; ++r)
+    for (int r = 0; r < sc.n_rxn; ++r)
     {
-      for (int i = 0; i < rids[r].n; ++i)
-        used[rids[r].v[i]] = 1;
-      for (int i = 0; i < pids[r].n; ++i)
-        used[pids[r].v[i]] = 1;
+      for (int i = 0; i < sc.rids[r].n; ++i)
+        used[sc.rids[r].v[i]] = 1;
+      for (int i = 0; i < sc.pids[r].n; ++i)
+        used[sc.pids[r].v[i]] = 1;
+    }
+    for (int m = 0; m < s->n_external; ++m)
+    {
+      tmc_name *names;
+      int n = tmc_external_names(&s->externals[m], s->externals[m].species_used, &names);
+      for (int i = 0; i < n; ++i)
+      {
+        int id = name_index(sc.declared.v, n_vars, names[i]);
+        if (id >= 0)
+          used[id] = 1;
+      }
+      free(names);
     }
     char msg[1024] = "Unused species in chemical system:";
     bool any = false;
@@ -299,7 +429,7 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
       {
         any = true;
         size_t len = strlen(msg);
-        snprintf(msg + len, sizeof msg - len, " '%s'", declared[i]);
+        snprintf(msg + len, sizeof msg - len, " '%s'", sc.declared.v[i]);
       }
     free(used);
     if (any)
@@ -311,45 +441,69 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
     }
   }
 
-  int *perm = tmc_malloc((size_t)n_vars * sizeof(int)); /* perm[new] = declared index */
-  for (int i = 0; i < n_vars; ++i)
-    perm[i] = i;
-  if (b->reorder_state)
+  /* 4. The species order: declaration order, then the Markowitz reordering of
+   *    the kinetic Jacobian pattern (and the external process patterns). */
   {
-    unsigned char *pattern = tmc_calloc((size_t)n_vars * (size_t)n_vars, 1);
-    for (int r = 0; r < n_rxn; ++r)
-      for (int a = 0; a < rids[r].n; ++a)
+    int *perm = tmc_malloc((size_t)n_vars * sizeof(int));
+    for (int i = 0; i < n_vars; ++i)
+      perm[i] = i;
+    if (b->reorder_state)
+    {
+      unsigned char *pat = tmc_calloc((size_t)n_vars * (size_t)n_vars, 1);
+      for (int r = 0; r < sc.n_rxn; ++r)
+        for (int a = 0; a < sc.rids[r].n; ++a)
+        {
+          int ind = sc.rids[r].v[a];
+          for (int d = 0; d < sc.rids[r].n; ++d)
+            pat[(size_t)sc.rids[r].v[d] * n_vars + ind] = 1;
+          for (int d = 0; d < sc.pids[r].n; ++d)
+            pat[(size_t)sc.pids[r].v[d] * n_vars + ind] = 1;
+        }
+      if (s->n_external)
       {
-        int ind = rids[r].v[a];
-        for (int d = 0; d < rids[r].n; ++d)
-          pattern[(size_t)rids[r].v[d] * n_vars + ind] = 1;
-        for (int d = 0; d < pids[r].n; ++d)
-          pattern[(size_t)pids[r].v[d] * n_vars + ind] = 1;
+        tmc_name_map declared_map = { n_vars, sc.declared.v };
+        for (int m = 0; m < s->n_external; ++m)
+        {
+          const tmc_external_model *em = &s->externals[m];
+          if (!em->nonzero_jacobian_elements)
+            continue;
+          int n = em->nonzero_jacobian_elements(em->context, &declared_map, NULL, 0);
+          if (n > 0)
+          {
+            tmc_index_pair *e = tmc_malloc((size_t)n * sizeof *e);
+            n = em->nonzero_jacobian_elements(em->context, &declared_map, e, n);
+            for (int i = 0; i < n; ++i)
+              pat[(size_t)e[i].row * n_vars + e[i].col] = 1;
+            free(e);
+          }
+        }
       }
-    tmc_markowitz_reorder(n_vars, pattern, perm);
-    free(pattern);
+      tmc_markowitz_reorder(n_vars, pat, perm);
+      free(pat);
+    }
+    sc.new_of = tmc_malloc((size_t)n_vars * sizeof(int));
+    s->variable_names = tmc_malloc((size_t)n_vars * sizeof *s->variable_names);
+    for (int k = 0; k < n_vars; ++k)
+    {
+      sc.new_of[perm[k]] = k;
+      memcpy(s->variable_names[k], sc.declared.v[perm[k]], TMC_NAME_MAX);
+    }
+    free(perm);
   }
-  int *new_of = tmc_malloc((size_t)n_vars * sizeof(int));
-  for (int k = 0; k < n_vars; ++k)
-  {
-    new_of[perm[k]] = k;
-    memcpy(s->variable_names[k], declared[perm[k]], TMC_NAME_MAX);
-  }
-  free(perm);
+  s->variable_map.n = n_vars;
+  s->variable_map.names = s->variable_names;
 
-  /* Process plans in the new order */
-  s->processes = tmc_calloc((size_t)(n_rxn > 0 ? n_rxn : 1), sizeof *s->processes);
-  s->custom_labels = tmc_malloc((size_t)(2 * n_rxn + 1) * sizeof *s->custom_labels);
-  s->n_custom = 0;
-  for (int r = 0; r < n_rxn; ++r)
+  /* 5. Process plans in solver ids, and the custom parameter labels */
+  s->processes = tmc_calloc((size_t)(sc.n_rxn > 0 ? sc.n_rxn : 1), sizeof *s->processes);
+  for (int r = 0; r < sc.n_rxn; ++r)
   {
     tmc_process_plan *p = &s->processes[r];
     const tmc_reaction *rx = &s->reactions[r];
-    p->n_reactants = rids[r].n;
+    p->n_reactants = sc.rids[r].n;
     p->reactants = tmc_malloc((size_t)(p->n_reactants > 0 ? p->n_reactants : 1) * sizeof(int));
     for (int i = 0; i < p->n_reactants; ++i)
-      p->reactants[i] = new_of[rids[r].v[i]];
-    p->n_products = pids[r].n;
+      p->reactants[i] = sc.new_of[sc.rids[r].v[i]];
+    p->n_products = sc.pids[r].n;
     p->products = tmc_malloc((size_t)(p->n_products > 0 ? p->n_products : 1) * sizeof(int));
     p->yields = tmc_malloc((size_t)(p->n_products > 0 ? p->n_products : 1) * sizeof(double));
     int k = 0;
@@ -357,7 +511,7 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
     {
       if (rx->products[i].species.parameterized)
         continue;
-      p->products[k] = new_of[pids[r].v[k]];
+      p->products[k] = sc.new_of[sc.pids[r].v[k]];
       p->yields[k] = rx->products[i].coefficient;
       ++k;
     }
@@ -366,26 +520,41 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
       if (rx->reactants[i].parameterized && p->n_parameterized < 4)
         p->parameterized[p->n_parameterized++] = rx->reactants[i];
     p->custom_index = -1;
-    char labels[2][TMC_NAME_MAX];
+    tmc_name labels[2];
     int n_labels = tmc_rate_constant_custom_parameter_labels(&rx->rate_constant, labels);
     if (n_labels > 0)
-      p->custom_index = s->n_custom;
+      p->custom_index = sc.params.n;
     for (int i = 0; i < n_labels; ++i)
     {
-      if (name_index(s->custom_labels, s->n_custom, labels[i]) >= 0)
+      if (names_contains(&sc.params, labels[i]))
       {
         tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_DUPLICATE_PARAMETER, "Duplicate parameter labels detected:\n  - %s (from reaction)\n", labels[i]);
-        free(new_of);
         goto fail;
       }
-      memcpy(s->custom_labels[s->n_custom++], labels[i], TMC_NAME_MAX);
+      names_push(&sc.params, labels[i]);
     }
   }
+  for (int m = 0; m < s->n_external; ++m)
+  {
+    tmc_name *names;
+    int n = tmc_external_names(&s->externals[m], s->externals[m].state_parameter_names, &names);
+    for (int i = 0; i < n; ++i)
+    {
+      if (names_contains(&sc.params, names[i]))
+      {
+        tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_DUPLICATE_PARAMETER, "Duplicate parameter labels detected:\n  - %s (from external_model)\n", names[i]);
+        free(names);
+        goto fail;
+      }
+      names_push(&sc.params, names[i]);
+    }
+    free(names);
+  }
 
-  /* Jacobian jobs: (independent variable, process) pairs, stably ordered by variable */
+  /* 6. Jacobian jobs: (independent variable, process) pairs, stably ordered by variable */
   {
     tmc_ivec job_ind = { 0 }, job_proc = { 0 };
-    for (int r = 0; r < n_rxn; ++r)
+    for (int r = 0; r < sc.n_rxn; ++r)
       for (int i = 0; i < s->processes[r].n_reactants; ++i)
       {
         tmc_ivec_push(&job_ind, s->processes[r].reactants[i]);
@@ -442,21 +611,276 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
     tmc_ivec_free(&job_proc);
   }
 
-  /* Jacobian pattern (with the diagonal) and the LU */
+  /* 7. The kinetic Jacobian pattern in solver ids, plus the external process patterns */
+  sc.jac.n = n_vars;
+  sc.jac.p = tmc_calloc((size_t)n_vars * (size_t)n_vars, 1);
+  for (int r = 0; r < sc.n_rxn; ++r)
   {
-    tmc_sparse_builder *sb = tmc_sparse_builder_create(n_vars);
-    for (int r = 0; r < n_rxn; ++r)
+    const tmc_process_plan *p = &s->processes[r];
+    for (int a = 0; a < p->n_reactants; ++a)
     {
-      const tmc_process_plan *p = &s->processes[r];
-      for (int a = 0; a < p->n_reactants; ++a)
+      int ind = p->reactants[a];
+      for (int d = 0; d < p->n_reactants; ++d)
+        pattern_add(&sc.jac, p->reactants[d], ind);
+      for (int d = 0; d < p->n_products; ++d)
+        pattern_add(&sc.jac, p->products[d], ind);
+    }
+  }
+  pattern ext_processes = { n_vars, tmc_calloc((size_t)n_vars * (size_t)n_vars, 1) };
+  for (int m = 0; m < s->n_external; ++m)
+  {
+    const tmc_external_model *em = &s->externals[m];
+    if (!em->nonzero_jacobian_elements)
+      continue;
+    s->has_external_processes = true;
+    int n = em->nonzero_jacobian_elements(em->context, &s->variable_map, NULL, 0);
+    if (n > 0)
+    {
+      tmc_index_pair *e = tmc_malloc((size_t)n * sizeof *e);
+      n = em->nonzero_jacobian_elements(em->context, &s->variable_map, e, n);
+      for (int i = 0; i < n; ++i)
       {
-        int ind = p->reactants[a];
-        for (int d = 0; d < p->n_reactants; ++d)
-          tmc_sparse_builder_with_element(sb, p->reactants[d], ind, NULL);
-        for (int d = 0; d < p->n_products; ++d)
-          tmc_sparse_builder_with_element(sb, p->products[d], ind, NULL);
+        pattern_add(&sc.jac, e[i].row, e[i].col);
+        pattern_add(&ext_processes, e[i].row, e[i].col);
+      }
+      free(e);
+    }
+  }
+  for (int m = 0; m < s->n_external; ++m)
+    if (s->externals[m].add_forcing_terms)
+      s->has_external_processes = true;
+
+  /* 8. Constraints: algebraic variables, their parameters, and their pattern */
+  s->mass_diagonal = tmc_malloc((size_t)n_vars * sizeof(double));
+  s->is_algebraic = tmc_calloc((size_t)n_vars, 1);
+  for (int i = 0; i < n_vars; ++i)
+    s->mass_diagonal[i] = 1.0;
+  if (s->n_constraints)
+  {
+    s->constraint_plans = tmc_calloc((size_t)s->n_constraints, sizeof *s->constraint_plans);
+    /* parameter labels, made unique as MICM's SetUniqueParameterNames does */
+    names_list used = { 0 };
+    for (int k = 0; k < s->n_constraints; ++k)
+    {
+      tmc_name labels[1];
+      int n = tmc_constraint_parameter_names(&s->constraints[k], labels, 1);
+      for (int i = 0; i < n; ++i)
+      {
+        tmc_name label;
+        memcpy(label, labels[i], TMC_NAME_MAX);
+        int count = 0;
+        while (names_contains(&used, label))
+          snprintf(label, TMC_NAME_MAX, "%s_%d", labels[i], ++count);
+        names_push(&used, label);
+        names_push(&sc.constraint_params, label);
       }
     }
+    free(used.v);
+    for (int i = 0; i < sc.constraint_params.n; ++i)
+    {
+      if (names_contains(&sc.params, sc.constraint_params.v[i]))
+      {
+        tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_DUPLICATE_PARAMETER, "Duplicate parameter name: %s", sc.constraint_params.v[i]);
+        free(ext_processes.p);
+        goto fail;
+      }
+      names_push(&sc.params, sc.constraint_params.v[i]);
+    }
+    int param_k = 0;
+    for (int k = 0; k < s->n_constraints; ++k)
+    {
+      const tmc_constraint *c = &s->constraints[k];
+      tmc_constraint_plan *plan = &s->constraint_plans[k];
+      plan->row = name_index(s->variable_names, n_vars, c->algebraic_species.name);
+      if (plan->row < 0)
+      {
+        tmc_error_set(err, TMC_ERROR_CONSTRAINT, TMC_CONSTRAINT_UNKNOWN_SPECIES, "Constraint '%s' targets unknown algebraic species '%s'", c->name, c->algebraic_species.name);
+        free(ext_processes.p);
+        goto fail;
+      }
+      if (s->is_algebraic[plan->row])
+      {
+        tmc_error_set(err, TMC_ERROR_CONSTRAINT, TMC_CONSTRAINT_INVALID_STOICHIOMETRY, "Multiple constraints map to the same algebraic species row '%s'", c->algebraic_species.name);
+        free(ext_processes.p);
+        goto fail;
+      }
+      s->is_algebraic[plan->row] = 1;
+      tmc_ivec_push(&sc.alg_ids, plan->row);
+      plan->n_dependencies = tmc_constraint_dependencies(c, NULL, 0);
+      plan->dependencies = tmc_malloc((size_t)(plan->n_dependencies > 0 ? plan->n_dependencies : 1) * sizeof(int));
+      plan->flat_ids = tmc_malloc((size_t)(plan->n_dependencies > 0 ? plan->n_dependencies : 1) * sizeof(int));
+      tmc_name *deps = tmc_malloc((size_t)(plan->n_dependencies > 0 ? plan->n_dependencies : 1) * sizeof *deps);
+      tmc_constraint_dependencies(c, deps, plan->n_dependencies);
+      for (int i = 0; i < plan->n_dependencies; ++i)
+      {
+        plan->dependencies[i] = name_index(s->variable_names, n_vars, deps[i]);
+        if (plan->dependencies[i] < 0)
+        {
+          tmc_error_set(err, TMC_ERROR_CONSTRAINT, TMC_CONSTRAINT_UNKNOWN_SPECIES, "Constraint '%s' depends on unknown species '%s'", c->name, deps[i]);
+          free(deps);
+          free(ext_processes.p);
+          goto fail;
+        }
+      }
+      free(deps);
+      plan->parameter_index = -1;
+      if (c->type == TMC_CONSTRAINT_EQUILIBRIUM)
+        plan->parameter_index = name_index(sc.params.v, sc.params.n, sc.constraint_params.v[param_k++]);
+    }
+    /* algebraic rows take no kinetic terms; the constraints' own pattern replaces them */
+    for (int i = 0; i < n_vars; ++i)
+      if (s->is_algebraic[i])
+        memset(sc.jac.p + (size_t)i * n_vars, 0, (size_t)n_vars);
+    for (int k = 0; k < s->n_constraints; ++k)
+    {
+      const tmc_constraint_plan *plan = &s->constraint_plans[k];
+      pattern_add(&sc.jac, plan->row, plan->row);
+      for (int i = 0; i < plan->n_dependencies; ++i)
+        pattern_add(&sc.jac, plan->row, plan->dependencies[i]);
+    }
+  }
+  /* external constraints */
+  {
+    names_list seen_params = { 0 }, seen_init = { 0 };
+    for (int m = 0; m < s->n_external; ++m)
+    {
+      const tmc_external_model *em = &s->externals[m];
+      tmc_name *alg;
+      int n_alg = tmc_external_names(em, em->constraint_algebraic_variable_names, &alg);
+      if (n_alg == 0)
+      {
+        free(alg);
+        continue;
+      }
+      s->external_constraint_active[m] = 1;
+      for (int i = 0; i < n_alg; ++i)
+      {
+        int id = name_index(s->variable_names, n_vars, alg[i]);
+        if (id < 0)
+        {
+          tmc_error_set(err, TMC_ERROR_CONSTRAINT, TMC_CONSTRAINT_UNKNOWN_SPECIES, "External model constraint targets unknown algebraic species '%s'", alg[i]);
+          free(alg);
+          free(seen_params.v);
+          free(seen_init.v);
+          free(ext_processes.p);
+          goto fail;
+        }
+        if (s->is_algebraic[id])
+        {
+          tmc_error_set(err, TMC_ERROR_CONSTRAINT, TMC_CONSTRAINT_DUPLICATE_ALGEBRAIC_SPECIES, "Multiple constraints map to the same algebraic species row '%s'", alg[i]);
+          free(alg);
+          free(seen_params.v);
+          free(seen_init.v);
+          free(ext_processes.p);
+          goto fail;
+        }
+        s->is_algebraic[id] = 1;
+        tmc_ivec_push(&sc.alg_ids, id);
+      }
+      free(alg);
+      tmc_name *names;
+      int n = tmc_external_names(em, em->constraint_state_parameter_names, &names);
+      for (int i = 0; i < n; ++i)
+      {
+        if (names_contains(&seen_params, names[i]))
+        {
+          tmc_error_set(err, TMC_ERROR_CONSTRAINT, TMC_CONSTRAINT_DUPLICATE_PARAMETER, "Duplicate external constraint parameter name across models: %s", names[i]);
+          free(names);
+          free(seen_params.v);
+          free(seen_init.v);
+          free(ext_processes.p);
+          goto fail;
+        }
+        if (names_contains(&sc.params, names[i]))
+        {
+          tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_DUPLICATE_PARAMETER, "Duplicate parameter name: %s", names[i]);
+          free(names);
+          free(seen_params.v);
+          free(seen_init.v);
+          free(ext_processes.p);
+          goto fail;
+        }
+        names_push(&seen_params, names[i]);
+        names_push(&sc.params, names[i]);
+      }
+      free(names);
+      n = tmc_external_names(em, em->initialize_constraint_parameter_names, &names);
+      for (int i = 0; i < n; ++i)
+      {
+        if (names_contains(&seen_init, names[i]))
+        {
+          tmc_error_set(err, TMC_ERROR_CONSTRAINT, TMC_CONSTRAINT_DUPLICATE_PARAMETER, "Duplicate external initialize constraint parameter name across models: %s", names[i]);
+          free(names);
+          free(seen_params.v);
+          free(seen_init.v);
+          free(ext_processes.p);
+          goto fail;
+        }
+        if (names_contains(&sc.params, names[i]))
+        {
+          tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_DUPLICATE_PARAMETER, "Duplicate parameter name: %s", names[i]);
+          free(names);
+          free(seen_params.v);
+          free(seen_init.v);
+          free(ext_processes.p);
+          goto fail;
+        }
+        names_push(&seen_init, names[i]);
+        names_push(&sc.params, names[i]);
+      }
+      free(names);
+      if (em->nonzero_constraint_jacobian_elements)
+      {
+        int ne = em->nonzero_constraint_jacobian_elements(em->context, &s->variable_map, NULL, 0);
+        if (ne > 0)
+        {
+          tmc_index_pair *e = tmc_malloc((size_t)ne * sizeof *e);
+          ne = em->nonzero_constraint_jacobian_elements(em->context, &s->variable_map, e, ne);
+          for (int i = 0; i < ne; ++i)
+            pattern_add(&sc.jac, e[i].row, e[i].col);
+          free(e);
+        }
+      }
+      for (int i = 0; i < n_vars; ++i)
+        if (s->is_algebraic[i])
+          pattern_add(&sc.jac, i, i);
+    }
+    free(seen_params.v);
+    free(seen_init.v);
+  }
+  /* algebraic ids ascending (MICM keeps them in a std::set) */
+  s->n_algebraic = sc.alg_ids.n;
+  s->algebraic_ids = tmc_malloc((size_t)(s->n_algebraic > 0 ? s->n_algebraic : 1) * sizeof(int));
+  {
+    int k = 0;
+    for (int i = 0; i < n_vars; ++i)
+      if (s->is_algebraic[i])
+      {
+        s->algebraic_ids[k++] = i;
+        s->mass_diagonal[i] = 0.0;
+      }
+  }
+  /* external process elements in algebraic rows stay in the pattern and are cleared after evaluation */
+  tmc_ivec alg_flat_pairs = { 0 };
+  if (s->n_algebraic)
+    for (int i = 0; i < n_vars; ++i)
+      if (s->is_algebraic[i])
+        for (int j = 0; j < n_vars; ++j)
+          if (pattern_has(&ext_processes, i, j))
+          {
+            pattern_add(&sc.jac, i, j);
+            tmc_ivec_push(&alg_flat_pairs, i);
+            tmc_ivec_push(&alg_flat_pairs, j);
+          }
+  free(ext_processes.p);
+
+  /* 9. The Jacobian pattern (with the diagonal) and the LU */
+  {
+    tmc_sparse_builder *sb = tmc_sparse_builder_create(n_vars);
+    for (int i = 0; i < n_vars; ++i)
+      for (int j = 0; j < n_vars; ++j)
+        if (pattern_has(&sc.jac, i, j))
+          tmc_sparse_builder_with_element(sb, i, j, NULL);
     for (int i = 0; i < n_vars; ++i)
       tmc_sparse_builder_with_element(sb, i, i, NULL);
     s->jacobian_pattern = tmc_sparse_build(sb, TMC_SPARSE_CSR, s->width, true);
@@ -464,14 +888,24 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
     s->lu = tmc_lu_create(s->jacobian_pattern, b->lu_algorithm, err);
     if (!s->lu)
     {
-      free(new_of);
+      tmc_ivec_free(&alg_flat_pairs);
       goto fail;
     }
     s->lu_pattern = s->lu->pattern;
   }
+  s->n_algebraic_flat = alg_flat_pairs.n / 2;
+  s->algebraic_flat_ids = tmc_malloc((size_t)(s->n_algebraic_flat > 0 ? s->n_algebraic_flat : 1) * sizeof(int));
+  for (int i = 0; i < s->n_algebraic_flat; ++i)
+    s->algebraic_flat_ids[i] = tmc_sparse_element(s->lu_pattern, alg_flat_pairs.v[2 * i], alg_flat_pairs.v[2 * i + 1]);
+  tmc_ivec_free(&alg_flat_pairs);
 
-  /* Flat LU element ids for the Jacobian jobs: dependents, the independent's
-   * diagonal, then the products. */
+  /* 10. The custom parameter labels, and the flat LU ids of the jobs and constraints */
+  s->n_custom = sc.params.n;
+  s->custom_labels = tmc_malloc((size_t)(s->n_custom > 0 ? s->n_custom : 1) * sizeof *s->custom_labels);
+  for (int i = 0; i < s->n_custom; ++i)
+    memcpy(s->custom_labels[i], sc.params.v[i], TMC_NAME_MAX);
+  s->parameter_map.n = s->n_custom;
+  s->parameter_map.names = s->custom_labels;
   {
     s->n_job_flat_total = s->n_job_dependent_total + s->n_jobs + s->n_job_products_total;
     s->job_flat_ids = tmc_malloc((size_t)(s->n_job_flat_total > 0 ? s->n_job_flat_total : 1) * sizeof(int));
@@ -479,15 +913,31 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
     for (int q = 0; q < s->n_jobs; ++q)
     {
       int ind = s->job_independent[q];
-      for (int i = 0; i < s->job_n_dependent[q]; ++i)
-        s->job_flat_ids[f++] = tmc_sparse_element(s->lu_pattern, s->job_dependent_ids[d++], ind);
-      s->job_flat_ids[f++] = tmc_sparse_element(s->lu_pattern, ind, ind);
-      for (int i = 0; i < s->job_n_products[q]; ++i)
-        s->job_flat_ids[f++] = tmc_sparse_element(s->lu_pattern, s->job_product_ids[pr++], ind);
+      for (int i = 0; i < s->job_n_dependent[q]; ++i, ++d)
+        s->job_flat_ids[f++] = s->is_algebraic[s->job_dependent_ids[d]] ? -1 : tmc_sparse_element(s->lu_pattern, s->job_dependent_ids[d], ind);
+      s->job_flat_ids[f++] = s->is_algebraic[ind] ? -1 : tmc_sparse_element(s->lu_pattern, ind, ind);
+      for (int i = 0; i < s->job_n_products[q]; ++i, ++pr)
+        s->job_flat_ids[f++] = s->is_algebraic[s->job_product_ids[pr]] ? -1 : tmc_sparse_element(s->lu_pattern, s->job_product_ids[pr], ind);
+    }
+    for (int k = 0; k < s->n_constraints; ++k)
+    {
+      tmc_constraint_plan *plan = &s->constraint_plans[k];
+      for (int i = 0; i < plan->n_dependencies; ++i)
+        plan->flat_ids[i] = tmc_sparse_element(s->lu_pattern, plan->row, plan->dependencies[i]);
     }
   }
 
-  /* Absolute tolerances: 1e-3 unless the species sets a property */
+  /* 11. External models bind their indices */
+  for (int m = 0; m < s->n_external; ++m)
+  {
+    const tmc_external_model *em = &s->externals[m];
+    if (em->finalize_process_setup)
+      em->finalize_process_setup(em->context, &s->parameter_map, &s->variable_map, s->lu_pattern);
+    if (em->finalize_constraint_setup && s->external_constraint_active[m])
+      em->finalize_constraint_setup(em->context, &s->parameter_map, &s->variable_map, s->lu_pattern);
+  }
+
+  /* 12. Absolute tolerances: 1e-3 unless the species sets a property */
   s->absolute_tolerance = tmc_malloc((size_t)n_vars * sizeof(double));
   for (int k = 0; k < n_vars; ++k)
   {
@@ -498,14 +948,14 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
       s->absolute_tolerance[k] = v;
   }
 
-  /* Fingerprint of what generated kernels depend on */
+  /* 13. Fingerprint of what generated kernels depend on */
   {
     unsigned long long h = TMC_FNV_OFFSET;
     hash_int(&h, n_vars);
     for (int k = 0; k < n_vars; ++k)
       hash_text(&h, s->variable_names[k]);
-    hash_int(&h, n_rxn);
-    for (int r = 0; r < n_rxn; ++r)
+    hash_int(&h, sc.n_rxn);
+    for (int r = 0; r < sc.n_rxn; ++r)
     {
       const tmc_process_plan *p = &s->processes[r];
       hash_int(&h, (int)s->reactions[r].rate_constant.type);
@@ -530,35 +980,24 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
 
   if (b->kernels)
   {
+    if (s->n_constraints || s->n_external || s->n_algebraic)
+    {
+      tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_KERNEL_MISMATCH, "Generated kernels cover kinetic mechanisms only; this solver has constraints or external models");
+      goto fail;
+    }
     if (b->kernels->width != s->width || b->kernels->fingerprint != s->fingerprint)
     {
       tmc_error_set(err, TMC_ERROR_SOLVER, TMC_SOLVER_KERNEL_MISMATCH, "Generated kernels (width %d, fingerprint %llx) do not match the solver (width %d, fingerprint %llx)", b->kernels->width, b->kernels->fingerprint, s->width, s->fingerprint);
-      free(new_of);
       goto fail;
     }
     s->kernels = b->kernels;
   }
 
-  free(new_of);
-  for (int r = 0; r < n_rxn; ++r)
-  {
-    tmc_ivec_free(&rids[r]);
-    tmc_ivec_free(&pids[r]);
-  }
-  free(rids);
-  free(pids);
-  free(declared);
+  scratch_free(&sc);
   return s;
 
 fail:
-  for (int r = 0; r < n_rxn; ++r)
-  {
-    tmc_ivec_free(&rids[r]);
-    tmc_ivec_free(&pids[r]);
-  }
-  free(rids);
-  free(pids);
-  free(declared);
+  scratch_free(&sc);
   tmc_solver_free(s);
   return NULL;
 }
@@ -605,6 +1044,33 @@ int tmc_solver_num_custom_parameters(const tmc_solver *s)
   return s->n_custom;
 }
 
+int tmc_solver_num_constraints(const tmc_solver *s)
+{
+  return s->n_algebraic;
+}
+
+const double *tmc_solver_mass_matrix_diagonal(const tmc_solver *s)
+{
+  return s->mass_diagonal;
+}
+
+int tmc_solver_algebraic_variables(const tmc_solver *s, const int **ids)
+{
+  if (ids)
+    *ids = s->algebraic_ids;
+  return s->n_algebraic;
+}
+
+const tmc_name_map *tmc_solver_variable_map(const tmc_solver *s)
+{
+  return &s->variable_map;
+}
+
+const tmc_name_map *tmc_solver_parameter_map(const tmc_solver *s)
+{
+  return &s->parameter_map;
+}
+
 const char *tmc_solver_variable_name(const tmc_solver *s, int index)
 {
   return s->variable_names[index];
@@ -649,6 +1115,8 @@ unsigned long long tmc_solver_fingerprint(const tmc_solver *s)
 
 tmc_result tmc_solver_solve(tmc_solver *s, double time_step, tmc_state *state)
 {
+  if (s->n_external)
+    tmc_external_initialize_constraint_parameters(s, state->variables, state->custom_rate_parameters);
   tmc_result r;
   if (s->method == TMC_METHOD_BACKWARD_EULER)
     r = tmc_backward_euler_solve(s, time_step, state);
