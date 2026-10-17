@@ -223,7 +223,7 @@ void tmc_lu_decompose_mozart_in_place(const tmc_lu *lu, tmc_sparse *ALU, double 
 void tmc_lu_decompose_doolittle_in_place(const tmc_lu *lu, tmc_sparse *ALU, double *reciprocals);
 
 /* ---- Solvers ----------------------------------------------------------- */
-tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *state);
-tmc_result tmc_backward_euler_solve(tmc_solver *s, double time_step, tmc_state *state);
+tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state *state);
+tmc_result tmc_backward_euler_solve(const tmc_solver *s, double time_step, tmc_state *state);
 
 #endif

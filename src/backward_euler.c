@@ -46,7 +46,7 @@ static bool any_nonfinite(const tmc_dense *m, bool *nan_found, bool *inf_found)
   return *nan_found || *inf_found;
 }
 
-tmc_result tmc_backward_euler_solve(tmc_solver *s, double time_step, tmc_state *st)
+tmc_result tmc_backward_euler_solve(const tmc_solver *s, double time_step, tmc_state *st)
 {
   const tmc_backward_euler_parameters *p = &s->be;
   tmc_result result;

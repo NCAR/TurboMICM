@@ -7,3 +7,4 @@
 *.o
 *.a
 ts1_final.csv
+__pycache__/

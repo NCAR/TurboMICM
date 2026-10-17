@@ -450,7 +450,7 @@ tmc_solver_state tmc_rosenbrock_initialize_constraints(const tmc_solver *s, tmc_
 #undef RESTORE_AND_RETURN
 }
 
-tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
+tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state *st)
 {
   const tmc_rosenbrock_parameters *p = &s->ros;
   tmc_result result;
