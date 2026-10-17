@@ -96,7 +96,13 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   skewed array addresses against 4 KB aliasing (3 % slower), and block
   offsets the compiler cannot analyze, which remove its loop prefetches
   (2.8 % fewer instructions, 3 % slower: the prefetches hide the L2 latency
-  of a block's data).
+  of a block's data), and a generated solve that forms each row's right-hand
+  side on the way (f + c0 K0 + c1 K1) instead of the stage combination pass
+  and the copy of the initial forcing: bit-identical, but three forward
+  substitutions in the code (76 KB more), one more instruction per 150, and
+  1.5 % slower at one thread, 3 % at ten; and the solution, error estimate,
+  and error norm in one variable-major pass (bit-identical, 3 % more
+  instructions, the same time at one thread and 2 % slower at ten).
 
 ## Configuration format
 
