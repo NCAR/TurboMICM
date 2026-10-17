@@ -196,6 +196,10 @@ void tmc_generic_jacobian(const tmc_solver *s, const tmc_dense *rate_constants, 
 void tmc_rosenbrock_alpha_minus_jacobian(const tmc_solver *s, tmc_state *st, double alpha);
 /* MICM's normalized error over the state's active lanes (see rosenbrock.c). */
 double tmc_rosenbrock_normalized_error(const tmc_state *st, const tmc_dense *y, const tmc_dense *ynew, const tmc_dense *errors);
+/* MICM's InitializeConstraints: the Newton projection of the algebraic
+ * variables with the given parameters; on failure the variables are restored.
+ * stats is required. */
+tmc_solver_state tmc_rosenbrock_initialize_constraints(const tmc_solver *s, tmc_state *st, const tmc_rosenbrock_parameters *p, tmc_stats *stats);
 
 /* ---- Constraints (constraints.c) ---------------------------------------- */
 void tmc_constraints_update_parameters(const tmc_solver *s, const tmc_conditions *conditions, int n_cells, tmc_dense *params);
