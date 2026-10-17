@@ -437,11 +437,12 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
                     out(f"      {lane} inv[c] = 1.0 / {A((p, p))};")
                 out(f"      {lane} recip[{p}*{W}+c] = inv[c];")
                 if below:
-                    out("      { " + " ".join(f"double u{q - i0}[{W}];" for q in up))
-                    for q in up:
+                    col_targets = [(j, [q for q in up if q in row_set[j]]) for j in below]
+                    used = [q for q in up if any(q in terms for _, terms in col_targets)]
+                    out("      { " + " ".join(f"double u{q - i0}[{W}];" for q in used))
+                    for q in used:
                         out(f"        {lane} u{q - i0}[c] = {A((q, p))};")
-                    for j in below:
-                        terms = [q for q in up if q in row_set[j]]
+                    for j, terms in col_targets:
                         out(f"        {{ double t[{W}];")
                         out(f"          {lane} t[c] = {A((j, p))};")
                         for q in terms:
@@ -451,8 +452,9 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
                 row_targets = [(k, [q for q in lp if k in row_set[q]]) for k in right]
                 row_targets = [(k, terms) for k, terms in row_targets if terms]
                 if row_targets:
-                    out("      { " + " ".join(f"double l{q - i0}[{W}];" for q in lp))
-                    for q in lp:
+                    used = [q for q in lp if any(q in terms for _, terms in row_targets)]
+                    out("      { " + " ".join(f"double l{q - i0}[{W}];" for q in used))
+                    for q in used:
                         out(f"        {lane} l{q - i0}[c] = {A((p, q))};")
                     for k, terms in row_targets:
                         out(f"        {{ double t[{W}];")
