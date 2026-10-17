@@ -78,13 +78,13 @@ int n = ts1_reactions(&reactions);
 tmc_builder *b = tmc_builder_create_rosenbrock(tmc_rosenbrock_three_stage());
 tmc_builder_set_system(b, &system);
 tmc_builder_set_reactions(b, reactions, n);
-tmc_builder_set_ignore_unused_species(b, true);
 tmc_builder_set_kernels(b, ts1_kernels());      /* optional: the generated kernels */
 tmc_error error;
 tmc_solver *solver = tmc_builder_build(b, &error);
 tmc_state *state = tmc_solver_create_state(solver, 8);   /* 8 cells, one step size */
-ts1_initial_state(state);
-/* set conditions, concentrations (tmc_state_set_concentration), parameters ... */
+ts1_initial_state(state);                               /* the configuration's values in every cell */
+/* set conditions (tmc_state_conditions), concentrations (tmc_state_set, or
+   tmc_state_set_concentrations per species), parameters ... */
 tmc_solver_update_state_parameters(solver, state);       /* rate constants */
 tmc_result result = tmc_solver_solve(solver, 30.0, state);
 ```
