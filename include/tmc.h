@@ -610,6 +610,9 @@ typedef struct tmc_kernels
   void (*jacobian)(const double *y, const double *rate_constants, double alpha, double *lu, int nb);
   void (*lu_decompose)(double *lu, double *reciprocals, int nb);
   void (*lu_solve)(double *x, const double *lu, const double *reciprocals, int nb);
+  /* Optional (may be NULL): the forcing and alpha I - J of the same y in one
+   * pass, as at the start of a Rosenbrock step. */
+  void (*forcing_jacobian)(const double *y, const double *rate_constants, double alpha, double *forcing, double *lu, int nb);
 } tmc_kernels;
 
 /* ------------------------------------------------------------------------- */

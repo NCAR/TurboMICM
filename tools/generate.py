@@ -246,6 +246,7 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
             out("  }")
         out("}")
         out()
+    forcing_funcs = list(funcs)
     out(f"static void {name}_forcing(const double *restrict y, const double *restrict rc, double *restrict f, int nb)")
     out("{")
     out(f"  double *restrict rate = {name}_rates;")
@@ -324,6 +325,7 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
             out("  }")
         out("}")
         out()
+    jacobian_funcs = list(funcs)
     out(f"static void {name}_jacobian(const double *restrict y, const double *restrict rc, double alpha, double *restrict a, int nb)")
     out("{")
     out(f"  double *restrict d = {name}_partials;")
@@ -333,6 +335,54 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
         if "_partials_" in fn:
             out(f"    {fn}(y, rc, d);")
         else:
+            out(f"    {fn}(d, alpha, a);")
+    out("  }")
+    out("}")
+    out()
+
+    # ---- forcing and Jacobian of the same y in one pass: the rates come from the
+    # partials (the last reactant's partial times that reactant, MICM's product order),
+    # so the reactions are read once
+    out("/* forcing and alpha I - dF/dy of the same y: the partials once, the rates from the")
+    out("   last reactant's partial, then the two gathers */")
+    last_job = {}  # reaction -> job index of its last reactant occurrence
+    for q, (proc, ind, dep, ps) in enumerate(c.jobs):
+        rs, _ = c.processes[proc]
+        # jobs of a reaction are in reactant order within MICM's stable sort by variable;
+        # the job whose dependents are all but the last occurrence is the last reactant's
+        if dep == rs[:-1]:
+            last_job[proc] = (q, rs[-1])
+    rate_funcs = []
+    for start in range(0, nr, chunk * 4):
+        fn = f"{name}_rates_from_partials_{start}"
+        rate_funcs.append(fn)
+        out(f"static void {fn}(const double *restrict y, const double *restrict rc, const double *restrict d, double *restrict rate)")
+        out("{")
+        out("  (void)y; (void)rc; (void)d;")
+        for r in range(start, min(nr, start + chunk * 4)):
+            if r in last_job:
+                q, v = last_job[r]
+                out(f"  {lane} rate[{r}*{W}+c] = d[{q}*{W}+c] * {Y(v)};")
+            else:
+                out(f"  {lane} rate[{r}*{W}+c] = {RC(r)};")
+        out("}")
+        out()
+    out(f"static void {name}_forcing_jacobian(const double *restrict y, const double *restrict rc, double alpha, double *restrict f, double *restrict a, int nb)")
+    out("{")
+    out(f"  double *restrict d = {name}_partials;")
+    out(f"  double *restrict rate = {name}_rates;")
+    out(f"  for (int b = 0; b < nb; ++b, y += {n}*{W}, rc += {nr}*{W}, f += {n}*{W}, a += {nnz}*{W})")
+    out("  {")
+    for fn in jacobian_funcs:
+        if "_partials_" in fn:
+            out(f"    {fn}(y, rc, d);")
+    for fn in rate_funcs:
+        out(f"    {fn}(y, rc, d, rate);")
+    for fn in forcing_funcs:
+        if "_gather_" in fn:
+            out(f"    {fn}(rate, f);")
+    for fn in jacobian_funcs:
+        if "_assemble_" in fn:
             out(f"    {fn}(d, alpha, a);")
     out("  }")
     out("}")
@@ -508,7 +558,7 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
     out("  (void)recip;")
     out("}")
     out()
-    out(f"static const tmc_kernels {name}_kernel_table = {{ {width}, {c.fingerprint}ULL, {name}_forcing, {name}_jacobian, {name}_lu, {name}_solve }};")
+    out(f"static const tmc_kernels {name}_kernel_table = {{ {width}, {c.fingerprint}ULL, {name}_forcing, {name}_jacobian, {name}_lu, {name}_solve, {name}_forcing_jacobian }};")
     out(f"const tmc_kernels *{name}_kernels(void)")
     out("{")
     out(f"  return &{name}_kernel_table;")
