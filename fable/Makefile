@@ -74,7 +74,7 @@ build/flags.txt: FORCE
 .PHONY: FORCE
 FORCE:
 
-build/%.o: src/%.c include/tmc.h src/internal.h build/flags.txt
+build/%.o: src/%.c $(wildcard include/*.h) src/internal.h build/flags.txt
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -92,7 +92,7 @@ generated/ts1.c generated/ts1.h: configs/ts1.json tools/generate.py tools/mechan
 build/ts1.o: generated/ts1.c generated/ts1.h include/tmc.h build/flags.txt
 	$(CC) $(CFLAGS) -Igenerated -c $< -o $@
 
-bin/ts1_bench_cpu: bench/ts1_bench.c build/ts1.o build/libtmc.a generated/ts1.h
+bin/ts1_bench_cpu: bench/ts1_bench.c build/ts1.o build/libtmc.a generated/ts1.h $(wildcard include/*.h)
 	@mkdir -p bin
 	$(CC) $(CFLAGS) -Igenerated bench/ts1_bench.c build/ts1.o build/libtmc.a $(LDLIBS) -o $@
 
@@ -119,7 +119,7 @@ generated/%.c generated/%.h: $$(wildcard configs/examples/%/*) tools/generate.py
 generated/%.o: generated/%.c generated/%.h include/tmc.h build/flags.txt
 	$(CC) $(CFLAGS) -Igenerated -c $< -o $@
 
-bin/test_cpu: $(TEST_SOURCES) tests/harness.h generated/tests/registry.h generated/tests/case_list.inc build/ts1.o $(TEST_MECHANISMS) build/libtmc.a
+bin/test_cpu: $(TEST_SOURCES) $(wildcard tests/*.h include/*.h) generated/tests/registry.h generated/tests/case_list.inc build/ts1.o $(TEST_MECHANISMS) build/libtmc.a
 	@mkdir -p bin
 	$(CC) $(CFLAGS) -Itests -Igenerated -Igenerated/tests -Isrc $(TEST_SOURCES) build/ts1.o $(TEST_MECHANISMS) build/libtmc.a $(LDLIBS) -o $@
 
@@ -133,6 +133,6 @@ clean:
 	rm -rf build bin generated
 
 # ---- development tools (not part of the entry's targets) -----------------
-bin/kernel_bench: bench/kernel_bench.c build/ts1.o build/libtmc.a generated/ts1.h
+bin/kernel_bench: bench/kernel_bench.c build/ts1.o build/libtmc.a generated/ts1.h $(wildcard include/*.h)
 	@mkdir -p bin
 	$(CC) $(CFLAGS) -Igenerated -Isrc bench/kernel_bench.c build/ts1.o build/libtmc.a $(LDLIBS) -o $@

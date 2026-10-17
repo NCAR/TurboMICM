@@ -350,7 +350,7 @@ static void constraint_jacobian_factor(const tmc_solver *s, tmc_state *st, const
   stats->decompositions += 1;
 }
 
-static tmc_solver_state initialize_constraints(const tmc_solver *s, tmc_state *st, const tmc_rosenbrock_parameters *p, tmc_stats *stats)
+tmc_solver_state tmc_rosenbrock_initialize_constraints(const tmc_solver *s, tmc_state *st, const tmc_rosenbrock_parameters *p, tmc_stats *stats)
 {
   tmc_dense *Y = st->variables;
   tmc_dense *delta = st->initial_forcing;   /* residual and Newton correction */
@@ -471,7 +471,7 @@ tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
 
   if (s->n_algebraic)
   {
-    tmc_solver_state init = initialize_constraints(s, st, p, stats);
+    tmc_solver_state init = tmc_rosenbrock_initialize_constraints(s, st, p, stats);
     if (init != TMC_CONVERGED)
     {
       result.state = init;

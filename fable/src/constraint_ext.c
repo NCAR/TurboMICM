@@ -4,7 +4,7 @@
 
 #include "internal.h"
 
-#include <float.h>
+#include <string.h>
 
 int tmc_solver_constraint_jacobian_elements(const tmc_solver *s, tmc_index_pair *out, int max)
 {
@@ -34,38 +34,19 @@ tmc_solver_state tmc_solver_initialize_constraints(const tmc_solver *s, tmc_stat
 {
   if (s->method != TMC_METHOD_ROSENBROCK)
     return TMC_CONSTRAINT_INITIALIZATION_FAILED;
-  tmc_result r;
-  if (s->n_algebraic == 0)
-  {
-    /* MICM's loop finds a zero residual and returns after one iteration */
-    memset(&r, 0, sizeof r);
-    r.state = TMC_CONVERGED;
-    r.stats.constraint_init_iterations = 1;
-  }
-  else
-  {
-    /* The Rosenbrock solve projects first and then steps while
-     * present_time - time_step + round_off <= 0, which a zero time step and a
-     * positive round-off make false at once. The projection reads neither.
-     * A shallow copy of the solver carries the parameters, so the caller's
-     * solver is not changed. */
-    tmc_solver projection = *s;
-    if (parameters)
-      projection.ros = *parameters;
-    if (!(projection.ros.round_off > 0.0))
-      projection.ros.round_off = DBL_EPSILON;
-    r = tmc_rosenbrock_solve(&projection, 0.0, state);
-  }
+  tmc_stats projection;
+  memset(&projection, 0, sizeof projection);
+  tmc_solver_state result = tmc_rosenbrock_initialize_constraints(s, state, parameters ? parameters : &s->ros, &projection);
   if (stats)
   {
-    stats->function_calls += r.stats.function_calls;
-    stats->jacobian_updates += r.stats.jacobian_updates;
-    stats->number_of_steps += r.stats.number_of_steps;
-    stats->accepted += r.stats.accepted;
-    stats->rejected += r.stats.rejected;
-    stats->decompositions += r.stats.decompositions;
-    stats->solves += r.stats.solves;
-    stats->constraint_init_iterations += r.stats.constraint_init_iterations;
+    stats->function_calls += projection.function_calls;
+    stats->jacobian_updates += projection.jacobian_updates;
+    stats->number_of_steps += projection.number_of_steps;
+    stats->accepted += projection.accepted;
+    stats->rejected += projection.rejected;
+    stats->decompositions += projection.decompositions;
+    stats->solves += projection.solves;
+    stats->constraint_init_iterations += projection.constraint_init_iterations;
   }
-  return r.state;
+  return result;
 }
