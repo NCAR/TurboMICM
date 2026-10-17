@@ -17,6 +17,8 @@ import sys
 INTERLEAVE = 4  # independent accumulations emitted side by side
 SPLIT_MIN = 12  # fast mode splits sums with at least this many terms
 PANEL = 4  # pivots per LU panel
+ROW_BUDGET = 0  # solve terms per block loop body (0: one row per loop)
+CONSTANT_TABLE = False
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -148,7 +150,8 @@ def emit_mechanism(out, name, m: mech.Mechanism, c: mech.Compiled):
 # Kernels
 # ---------------------------------------------------------------------------
 
-def emit_kernels(out, name, c: mech.Compiled, width, chunk, fast):
+def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast):
+    out = Emitter()
     n = len(c.variables)
     nnz = len(c.lu_elements)
     nr = len(c.reactions)
@@ -171,6 +174,23 @@ def emit_kernels(out, name, c: mech.Compiled, width, chunk, fast):
         return f"x[{v}*{W}+c]"
 
     lane = f"for (int c = 0; c < {W}; ++c)"
+
+    def block_ptr(base, stride, table):
+        return f"{base} + (size_t)b * ({stride})"
+
+    # Product yields and their negatives live in one constant table: a load is one
+    # instruction, where a literal costs several to materialize.
+    constants = {}
+
+    def K(value):
+        """C expression for a constant, through the table or as a literal."""
+        value = float(value)
+        if not CONSTANT_TABLE:
+            return c_double(value)
+        if value not in constants:
+            constants[value] = len(constants)
+        return f"{name}_constants[{constants[value]}]"
+
     out(f"#if TMC_WIDTH != {width}")
     out(f'#error "{name} kernels were generated for TMC_WIDTH == {width}"')
     out("#endif")
@@ -227,7 +247,7 @@ def emit_kernels(out, name, c: mech.Compiled, width, chunk, fast):
                     if yld is None:
                         out(f"    {lane} t{k}[c] {'= -' if first else '-='} rate[{r}*{W}+c];")
                     else:
-                        out(f"    {lane} t{k}[c] {'=' if first else '+='} {c_double(yld)} * rate[{r}*{W}+c];")
+                        out(f"    {lane} t{k}[c] {'=' if first else '+='} {K(yld)} * rate[{r}*{W}+c];")
             for k, v in enumerate(grp):
                 if not terms[v]:
                     out(f"    {lane} t{k}[c] = 0.0;")
@@ -300,8 +320,10 @@ def emit_kernels(out, name, c: mech.Compiled, width, chunk, fast):
                     first = step == 0
                     if yld is None:
                         out(f"    {lane} t{k}[c] {'=' if first else '+='} d[{q}*{W}+c];")
+                    elif first:
+                        out(f"    {lane} t{k}[c] = {K(-yld)} * d[{q}*{W}+c];")
                     else:
-                        out(f"    {lane} t{k}[c] {'= -(' if first else '-= '}{c_double(yld)} * d[{q}*{W}+c]{')' if first else ''};")
+                        out(f"    {lane} t{k}[c] -= {K(yld)} * d[{q}*{W}+c];")
             for k, e in enumerate(grp):
                 if not eterms[e]:
                     out(f"    {lane} t{k}[c] = 0.0;")
@@ -423,36 +445,65 @@ def emit_kernels(out, name, c: mech.Compiled, width, chunk, fast):
                 out(f"    {lane} t[c] -= {A((i, j))} * {X(j)};")
             out("    " + lane + " " + final.format(t="t[c]"))
 
-    for start in range(0, n, chunk * 2):
+    def row_groups(order, js_of):
+        """Consecutive rows per block loop: about ROW_BUDGET terms per loop body, so the
+        out-of-order window still overlaps the blocks' iterations."""
+        groups, cur, cost = [], [], 0
+        for i in order:
+            w = max(1, len(js_of(i)))
+            if cur and (ROW_BUDGET == 0 or cost + w > ROW_BUDGET):
+                groups.append(cur)
+                cur, cost = [], 0
+            cur.append(i)
+            cost += w
+        if cur:
+            groups.append(cur)
+        return groups
+
+    fw_groups = row_groups(range(n), lambda i: [j for j in rows[i] if j < i])
+    bw_groups = row_groups(range(n - 1, -1, -1), lambda i: [j for j in rows[i] if j > i])
+    per_fn = 8
+    for start in range(0, len(fw_groups), per_fn):
+        if not any(j < i for grp in fw_groups[start:start + per_fn] for i in grp for j in rows[i]):
+            continue
         fn = f"{name}_fwd_{start}"
         funcs.append(fn)
         out(f"static void {fn}(double *restrict x0, const double *restrict a0, int nb)")
         out("{")
-        for i in range(start, min(n, start + chunk * 2)):
-            js = [j for j in rows[i] if j < i]
-            if not js:
+        for grp in fw_groups[start:start + per_fn]:
+            if not any(j < i for i in grp for j in rows[i]):
                 continue
-            out(f"  for (int b = 0; b < nb; ++b) {{ double *restrict x = x0 + (size_t)b * ({n}*{W}); const double *restrict a = a0 + (size_t)b * ({nnz}*{W});")
-            emit_row_sum(i, js, f"{X(i)} = {{t}};")
+            out(f"  for (int b = 0; b < nb; ++b) {{ double *restrict x = {block_ptr('x0', f'{n}*{W}', 'xb')}; const double *restrict a = {block_ptr('a0', f'{nnz}*{W}', 'ab')};")
+            for i in grp:
+                js = [j for j in rows[i] if j < i]
+                if not js:
+                    continue
+                out("    {")
+                emit_row_sum(i, js, f"{X(i)} = {{t}};")
+                out("    }")
             out("  }")
         out("}")
         out()
-    for start in range(0, n, chunk * 2):
+    for start in range(0, len(bw_groups), per_fn):
         fn = f"{name}_bwd_{start}"
         funcs.append(fn)
         out(f"static void {fn}(double *restrict x0, const double *restrict a0, const double *restrict r0, int nb)")
         out("{")
         if not fast:
             out("  (void)r0;")
-        for r in range(start, min(n, start + chunk * 2)):
-            i = n - 1 - r
-            js = [j for j in rows[i] if j > i]
-            recip_decl = f" const double *restrict recip = r0 + (size_t)b * ({n}*{W});" if fast else ""
-            out(f"  for (int b = 0; b < nb; ++b) {{ double *restrict x = x0 + (size_t)b * ({n}*{W}); const double *restrict a = a0 + (size_t)b * ({nnz}*{W});{recip_decl}")
-            if fast:
-                emit_row_sum(i, js, f"{X(i)} = {{t}} * recip[{i}*{W}+c];")
-            else:
-                emit_row_sum(i, js, f"{X(i)} = {{t}} / {A((i, i))};")
+        for grp in bw_groups[start:start + per_fn]:
+            recip_decl = f" const double *restrict recip = {block_ptr('r0', f'{n}*{W}', 'rb')};" if fast else ""
+            uses_a = (not fast) or any(j > i for i in grp for j in rows[i])
+            a_decl = f" const double *restrict a = {block_ptr('a0', f'{nnz}*{W}', 'ab')};" if uses_a else ""
+            out(f"  for (int b = 0; b < nb; ++b) {{ double *restrict x = {block_ptr('x0', f'{n}*{W}', 'xb')};{a_decl}{recip_decl}")
+            for i in grp:
+                js = [j for j in rows[i] if j > i]
+                out("    {")
+                if fast:
+                    emit_row_sum(i, js, f"{X(i)} = {{t}} * recip[{i}*{W}+c];")
+                else:
+                    emit_row_sum(i, js, f"{X(i)} = {{t}} / {A((i, i))};")
+                out("    }")
             out("  }")
         out("}")
         out()
@@ -472,6 +523,12 @@ def emit_kernels(out, name, c: mech.Compiled, width, chunk, fast):
     out(f"  return &{name}_kernel_table;")
     out("}")
     out()
+    if constants:
+        final_out(f"static const double {name}_constants[{len(constants)}] = {{")
+        final_out("  " + ", ".join(c_double(v) for v in sorted(constants, key=constants.get)))
+        final_out("};")
+        final_out()
+    final_out.lines += out.lines
 
 
 def main():
@@ -483,12 +540,16 @@ def main():
     ap.add_argument("--chunk", type=int, default=16, help="pivots per generated LU function")
     ap.add_argument("--no-kernels", action="store_true", help="emit only the mechanism tables")
     ap.add_argument("--panel", type=int, default=4, help="pivots per LU panel")
+    ap.add_argument("--row-budget", type=int, default=0, help="solve terms per block loop body (0: one row)")
+    ap.add_argument("--constants", choices=("table", "literal"), default="literal")
     ap.add_argument("--mode", choices=("fast", "exact"), default="fast",
                     help="exact: MICM's operation order bit for bit; fast: split long sums, pivot reciprocals")
     args = ap.parse_args()
 
-    global PANEL
+    global PANEL, ROW_BUDGET, CONSTANT_TABLE
     PANEL = max(1, args.panel)
+    ROW_BUDGET = args.row_budget
+    CONSTANT_TABLE = args.constants == "table"
     m = mech.read(args.config)
     c = mech.compile_mechanism(m)
     name = args.name

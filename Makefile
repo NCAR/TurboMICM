@@ -25,6 +25,7 @@ WIDTH ?= 2
 GROUP_SIZE ?= 8
 KERNEL_CHUNK ?= 16
 KERNEL_MODE ?= fast
+GEN_FLAGS ?=
 
 UNAME_S := $(shell uname -s)
 CC_VERSION := $(shell $(CC) --version 2>/dev/null | head -n 1)
@@ -81,7 +82,7 @@ configs/ts1.json: tools/translate_ts1.py $(MICM)/test/benchmark/ts1_mechanism.hp
 
 generated/ts1.c generated/ts1.h: configs/ts1.json tools/generate.py tools/mechanism.py .conda/conda-meta/history
 	@mkdir -p generated
-	$(PYTHON) tools/generate.py configs/ts1.json generated/ts1 --name ts1 --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE)
+	$(PYTHON) tools/generate.py configs/ts1.json generated/ts1 --name ts1 --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE) $(GEN_FLAGS)
 
 build/ts1.o: generated/ts1.c generated/ts1.h include/tmc.h build/flags.txt
 	$(CC) $(CFLAGS) -Igenerated -c $< -o $@

@@ -143,7 +143,7 @@ static tmc_sparse *from_pattern(int n, const unsigned char *present, tmc_sparse_
   m->size = (size_t)m->n_groups * (size_t)L * (size_t)nnz;
   if (!indexing_only)
   {
-    m->data = tmc_malloc(m->size * sizeof(double));
+    m->data = tmc_alloc_doubles(m->size);
     for (size_t i = 0; i < m->size; ++i)
       m->data[i] = initial_value;
   }
@@ -172,7 +172,7 @@ tmc_sparse *tmc_sparse_copy(const tmc_sparse *src)
     memcpy(m->data, src->data, m->size * sizeof(double));
   else
   {
-    free(m->data);
+    tmc_free_doubles(m->data);
     m->data = NULL;
   }
   return m;
@@ -192,7 +192,7 @@ void tmc_sparse_free(tmc_sparse *m)
   free(m->col_elem);
   free(m->diag);
   free(m->lookup);
-  free(m->data);
+  tmc_free_doubles(m->data);
   free(m);
 }
 

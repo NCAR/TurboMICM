@@ -18,7 +18,8 @@ tmc_state *tmc_solver_create_state(const tmc_solver *s, int n_cells)
   st->custom_rate_parameters = tmc_dense_create(n_cells, s->n_custom, L, 0.0);
   st->conditions = tmc_calloc((size_t)st->n_blocks * (size_t)L, sizeof *st->conditions);
   st->jacobian = tmc_lu_matrix(s->lu, n_cells, 0.0);
-  st->reciprocals = tmc_calloc((size_t)st->n_blocks * (size_t)L * (size_t)s->n_vars, sizeof(double));
+  st->reciprocals = tmc_alloc_doubles((size_t)st->n_blocks * (size_t)L * (size_t)s->n_vars);
+  memset(st->reciprocals, 0, (size_t)st->n_blocks * (size_t)L * (size_t)s->n_vars * sizeof(double));
   st->relative_tolerance = 1.0e-6;
   st->absolute_tolerance = tmc_malloc((size_t)s->n_vars * sizeof(double));
   memcpy(st->absolute_tolerance, s->absolute_tolerance, (size_t)s->n_vars * sizeof(double));
@@ -48,7 +49,7 @@ void tmc_state_free(tmc_state *st)
   tmc_dense_free(st->custom_rate_parameters);
   free(st->conditions);
   tmc_sparse_free(st->jacobian);
-  free(st->reciprocals);
+  tmc_free_doubles(st->reciprocals);
   free(st->absolute_tolerance);
   tmc_dense_free(st->ynew);
   tmc_dense_free(st->initial_forcing);
