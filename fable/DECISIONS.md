@@ -116,7 +116,12 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   then starts from zero (bit-identical, 570 fewer instructions per block,
   but 25 % slower at one thread); and the pivot reciprocals kept in the
   diagonal instead of their own array (bit-identical, 140 fewer
-  instructions per block, 5 % slower).
+  instructions per block, 5 % slower); and the LU's trailing update in row
+  pairs sharing their loads of the panel's row values (bit-identical, 0.6 %
+  more instructions, the same time at one thread). The one small pass fusion
+  that measured no worse, the second stage's forcing at y + a k formed block
+  by block in a thread-local buffer instead of a group-wide pass, stays:
+  0.5 % at one thread, bit-identical.
 
 ## Configuration format
 

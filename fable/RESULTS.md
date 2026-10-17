@@ -112,18 +112,23 @@ rejects"):
 - the error norm's division costs nothing measurable (a build without it
   runs in the same time);
 - minimum degree and weighted fill-plus-cost orderings leave more fill than
-  greedy minimum fill.
+  greedy minimum fill;
+- the LU's trailing update in row pairs sharing their loads of the panel's
+  row values: bit-identical, 0.6 % more instructions, the same time;
+- the second stage's forcing with its combination y + a k formed block by
+  block in a thread-local buffer: bit-identical, 0.5 % faster at one thread,
+  the one small fusion kept.
 
 What remains is the formulation's floor: 45,900 instructions per cell and
 internal step at 3.75 per cycle, with the LU, solves, Jacobian, and forcing
 each at one to two instructions per multiply-add, the same operation counts
 as MICM's method with a better pivot order, and code that no longer fits the
-instruction cache however it is grouped. The remaining ideas (two-row
-register tiles in the trailing update) are worth about 1 % of the
-instructions, less than the machine's run-to-run spread, and the rejects
-above show that fewer instructions do not reliably mean less time on this
-core; so the one-thread target was not reached and is judged out of reach
-for this design.
+instruction cache however it is grouped. Every idea identified was
+implemented and measured, the last being the row-pair tiles above; the
+rejects show that fewer instructions do not reliably mean less time on this
+core, and the machine's thermal state moves the one-thread ratio by about
+2 %, more than the shortfall. The one-thread target was not reached and is
+judged out of reach for this design.
 
 ## Where the time goes
 

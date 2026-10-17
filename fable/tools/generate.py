@@ -261,6 +261,25 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast, ordering
     out("  }")
     out("}")
     out()
+    # the forcing at y + a k, the stage combination formed block by block into a
+    # thread-local buffer (one fused multiply-add per element, as the library's pass)
+    out(f"static _Thread_local double {name}_ytmp[{n}*{W}];")
+    out(f"static void {name}_forcing_at(const double *restrict y, const double *restrict k, double a, const double *restrict rc, double *restrict f, int nb)")
+    out("{")
+    out(f"  double *restrict rate = {name}_rates;")
+    out(f"  double *restrict yt = {name}_ytmp;")
+    out(f"  for (int b = 0; b < nb; ++b, y += {n}*{W}, k += {n}*{W}, rc += {nr}*{W}, f += {n}*{W})")
+    out("  {")
+    out(f"    for (int i = 0; i < {n}*{W}; ++i)")
+    out("      yt[i] = y[i] + a * k[i];")
+    for fn in funcs:
+        if "_rates_" in fn:
+            out(f"    {fn}(yt, rc, rate);")
+        else:
+            out(f"    {fn}(rate, f);")
+    out("  }")
+    out("}")
+    out()
 
     # ---- Jacobian, gather form: the job partials once per block, then each LU element sums
     # its terms in MICM's order (jobs by independent variable, then process; within a job the
@@ -601,7 +620,7 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast, ordering
     out("  (void)recip;")
     out("}")
     out()
-    out(f"static const tmc_kernels {name}_kernel_table = {{ {width}, {c.fingerprint}ULL, {ORDERING_ENUM[ordering]}, {name}_forcing, {name}_jacobian, {name}_lu, {name}_solve, {name}_forcing_jacobian }};")
+    out(f"static const tmc_kernels {name}_kernel_table = {{ {width}, {c.fingerprint}ULL, {ORDERING_ENUM[ordering]}, {name}_forcing, {name}_jacobian, {name}_lu, {name}_solve, {name}_forcing_jacobian, {name}_forcing_at }};")
     out(f"const tmc_kernels *{name}_kernels(void)")
     out("{")
     out(f"  return &{name}_kernel_table;")

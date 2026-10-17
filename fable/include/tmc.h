@@ -623,6 +623,9 @@ typedef struct tmc_kernels
   /* Optional (may be NULL): the forcing and alpha I - J of the same y in one
    * pass, as at the start of a Rosenbrock step. */
   void (*forcing_jacobian)(const double *y, const double *rate_constants, double alpha, double *forcing, double *lu, int nb);
+  /* Optional (may be NULL): the forcing at y + a k, the stage combination
+   * formed on the way (one fused multiply-add per element). */
+  void (*forcing_at)(const double *y, const double *k, double a, const double *rate_constants, double *forcing, int nb);
 } tmc_kernels;
 
 /* ------------------------------------------------------------------------- */
