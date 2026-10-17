@@ -32,8 +32,9 @@ make micm-ref                  # MICM's reference driver, bin/micm_ts1_ref, with
 the Makefile adds language, warning, include, OpenMP, and link flags.
 Build-time tuning parameters: `WIDTH` (lanes per block, default 2),
 `GROUP_SIZE` (cells per solver state in the benchmark, default 8),
-`KERNEL_MODE` (`fast` or `exact`), `KERNEL_CHUNK`, and `GEN_FLAGS` passed to
-the generator. The generated files live in `generated/` and are not
+`KERNEL_MODE` (`fast` or `exact`), `TS1_ORDERING` (`minimum-fill`, or
+`markowitz` for MICM's species order, the default in exact mode),
+`KERNEL_CHUNK`, and `GEN_FLAGS` passed to the generator. The generated files live in `generated/` and are not
 committed.
 
 ## Test

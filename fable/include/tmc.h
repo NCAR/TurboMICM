@@ -511,6 +511,15 @@ void tmc_lu_solve(const tmc_lu *lu, const tmc_sparse *L, const tmc_sparse *U, tm
 bool tmc_lu_is_singular(const tmc_lu *lu, const tmc_sparse *ALU, int block);
 /* Diagonal Markowitz ordering of a square 0/1 pattern (n x n, row-major). */
 void tmc_markowitz_reorder(int n, const unsigned char *pattern, int *permutation);
+/* Greedy minimum fill: at each step the pivot whose elimination adds the
+ * fewest elements, ties by the Markowitz cost and then the lowest index. */
+void tmc_minimum_fill_reorder(int n, const unsigned char *pattern, int *permutation);
+
+typedef enum tmc_ordering
+{
+  TMC_ORDERING_MARKOWITZ,   /* MICM's diagonal Markowitz ordering, the default */
+  TMC_ORDERING_MINIMUM_FILL /* fewer LU elements; the fast TS1 kernels use it */
+} tmc_ordering;
 
 /* ------------------------------------------------------------------------- */
 /* Solver parameters                                                          */
@@ -606,6 +615,7 @@ typedef struct tmc_kernels
 {
   int width;
   unsigned long long fingerprint; /* of the species order, reactions, and LU pattern */
+  int ordering;                   /* the tmc_ordering the kernels were generated for; the builder adopts it */
   void (*forcing)(const double *y, const double *rate_constants, double *forcing, int nb);
   void (*jacobian)(const double *y, const double *rate_constants, double alpha, double *lu, int nb);
   void (*lu_decompose)(double *lu, double *reciprocals, int nb);
@@ -731,6 +741,8 @@ void tmc_builder_free(tmc_builder *b);
 void tmc_builder_set_system(tmc_builder *b, const tmc_system *system);
 void tmc_builder_set_reactions(tmc_builder *b, const tmc_reaction *reactions, int n);
 void tmc_builder_set_reorder_state(tmc_builder *b, bool reorder);
+/* The species ordering (default Markowitz); attached kernels impose their own. */
+void tmc_builder_set_ordering(tmc_builder *b, tmc_ordering ordering);
 void tmc_builder_set_ignore_unused_species(tmc_builder *b, bool ignore);
 /* Vector width L of the solver's states (default TMC_WIDTH). */
 void tmc_builder_set_width(tmc_builder *b, int L);

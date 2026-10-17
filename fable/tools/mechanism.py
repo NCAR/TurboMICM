@@ -315,6 +315,41 @@ def markowitz(n, pattern):
     return perm
 
 
+def minimum_fill(n, pattern):
+    """Greedy minimum-fill ordering: at each step the pivot whose elimination adds the
+    fewest new elements, ties broken by the Markowitz cost (exact degrees) and then the
+    lowest index; returns perm[new] = old. The C library's tmc_minimum_fill_reorder is
+    the same algorithm, so a solver and the kernels generated for it agree."""
+    out = [set() for _ in range(n)]
+    inc = [set() for _ in range(n)]
+    for i, j in pattern:
+        out[i].add(j)
+        inc[j].add(i)
+    alive = [True] * n
+    perm = []
+    for _ in range(n):
+        best = None
+        for v in range(n):
+            if not alive[v]:
+                continue
+            cols = [c for c in out[v] if c != v and alive[c]]
+            ins = [i for i in inc[v] if i != v and alive[i]]
+            fill = sum(1 for i in ins for c in cols if c not in out[i])
+            key = (fill, len(cols) * len(ins), v)
+            if best is None or key < best:
+                best = key
+        pivot = best[2]
+        perm.append(pivot)
+        alive[pivot] = False
+        cols = [c for c in out[pivot] if c != pivot and alive[c]]
+        ins = [i for i in inc[pivot] if i != pivot and alive[i]]
+        for i in ins:
+            for c in cols:
+                out[i].add(c)
+                inc[c].add(i)
+    return perm
+
+
 def lu_fill(n, pattern):
     """MICM's GetLUMatrix: the pattern closed under elimination fill."""
     p = set(pattern)
@@ -350,7 +385,7 @@ class Compiled:
     custom_labels: list      # custom rate parameter labels in order
 
 
-def compile_mechanism(m: Mechanism, reorder=True) -> Compiled:
+def compile_mechanism(m: Mechanism, reorder=True, ordering="markowitz") -> Compiled:
     by_name = m.species_by_name()
     reactions = sorted(m.reactions, key=lambda r: RATE_TYPE_INDEX[r.type])  # Python's sort is stable
     declared = [s.name for s in m.species if not s.third_body]
@@ -367,7 +402,7 @@ def compile_mechanism(m: Mechanism, reorder=True) -> Compiled:
                     pattern.add((d, ind))
                 for d, _ in ps:
                     pattern.add((d, ind))
-        perm = markowitz(n, pattern)
+        perm = minimum_fill(n, pattern) if ordering == "minimum-fill" else markowitz(n, pattern)
     new_of = {old: k for k, old in enumerate(perm)}
     variables = [declared[old] for old in perm]
     index = {v: k for k, v in enumerate(variables)}

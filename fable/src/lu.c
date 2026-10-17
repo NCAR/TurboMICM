@@ -6,6 +6,61 @@
 
 #include <math.h>
 
+/* ---- Greedy minimum-fill ordering ---------------------------------------- */
+
+void tmc_minimum_fill_reorder(int n, const unsigned char *pattern, int *permutation)
+{
+  unsigned char *live = tmc_malloc((size_t)n * (size_t)n);
+  memcpy(live, pattern, (size_t)n * (size_t)n);
+  unsigned char *alive = tmc_malloc((size_t)n);
+  int *cols = tmc_malloc((size_t)n * sizeof(int));
+  int *ins = tmc_malloc((size_t)n * sizeof(int));
+  memset(alive, 1, (size_t)n);
+  for (int step = 0; step < n; ++step)
+  {
+    int pivot = -1;
+    unsigned long long best_fill = 0, best_cost = 0;
+    for (int v = 0; v < n; ++v)
+    {
+      if (!alive[v])
+        continue;
+      int nc = 0, ni = 0;
+      for (int c = 0; c < n; ++c)
+        if (c != v && alive[c] && live[(size_t)v * n + c])
+          cols[nc++] = c;
+      for (int i = 0; i < n; ++i)
+        if (i != v && alive[i] && live[(size_t)i * n + v])
+          ins[ni++] = i;
+      unsigned long long fill = 0;
+      for (int a = 0; a < ni; ++a)
+        for (int b = 0; b < nc; ++b)
+          if (!live[(size_t)ins[a] * n + cols[b]])
+            ++fill;
+      unsigned long long cost = (unsigned long long)nc * (unsigned long long)ni;
+      if (pivot < 0 || fill < best_fill || (fill == best_fill && cost < best_cost))
+      {
+        best_fill = fill;
+        best_cost = cost;
+        pivot = v;
+      }
+    }
+    permutation[step] = pivot;
+    alive[pivot] = 0;
+    for (int i = 0; i < n; ++i)
+    {
+      if (i == pivot || !alive[i] || !live[(size_t)i * n + pivot])
+        continue;
+      for (int c = 0; c < n; ++c)
+        if (c != pivot && alive[c] && live[(size_t)pivot * n + c])
+          live[(size_t)i * n + c] = 1;
+    }
+  }
+  free(ins);
+  free(cols);
+  free(alive);
+  free(live);
+}
+
 /* ---- Diagonal Markowitz ordering (MICM's DiagonalMarkowitzReorder) ------ */
 
 void tmc_markowitz_reorder(int n, const unsigned char *pattern, int *permutation)
