@@ -134,7 +134,7 @@ void tmc_builder_set_step_controller(tmc_builder *b, tmc_step_controller control
 
 typedef char tmc_name[TMC_NAME_MAX];
 
-static int name_index(const tmc_name *names, int n, const char *name)
+static int name_index(tmc_name *names, int n, const char *name)
 {
   for (int i = 0; i < n; ++i)
     if (strcmp(names[i], name) == 0)
@@ -412,15 +412,38 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
     }
     for (int m = 0; m < s->n_external; ++m)
     {
-      tmc_name *names;
-      int n = tmc_external_names(&s->externals[m], s->externals[m].species_used, &names);
-      for (int i = 0; i < n; ++i)
+      const tmc_external_model *em = &s->externals[m];
+      int (*callbacks[3])(void *, char (*)[TMC_NAME_MAX], int) = { em->species_used, em->constraint_species_dependencies, em->constraint_algebraic_variable_names };
+      for (int k = 0; k < 3; ++k)
       {
-        int id = name_index(sc.declared.v, n_vars, names[i]);
+        tmc_name *names;
+        int n = tmc_external_names(em, callbacks[k], &names);
+        for (int i = 0; i < n; ++i)
+        {
+          int id = name_index(sc.declared.v, n_vars, names[i]);
+          if (id >= 0)
+            used[id] = 1;
+        }
+        free(names);
+      }
+    }
+    /* a constraint's algebraic species and dependencies count as used, as in MICM */
+    for (int k = 0; k < s->n_constraints; ++k)
+    {
+      const tmc_constraint *c = &s->constraints[k];
+      int id = name_index(sc.declared.v, n_vars, c->algebraic_species.name);
+      if (id >= 0)
+        used[id] = 1;
+      int nd = tmc_constraint_dependencies(c, NULL, 0);
+      tmc_name *deps = tmc_malloc((size_t)(nd > 0 ? nd : 1) * sizeof *deps);
+      tmc_constraint_dependencies(c, deps, nd);
+      for (int i = 0; i < nd; ++i)
+      {
+        id = name_index(sc.declared.v, n_vars, deps[i]);
         if (id >= 0)
           used[id] = 1;
       }
-      free(names);
+      free(deps);
     }
     char msg[1024] = "Unused species in chemical system:";
     bool any = false;
