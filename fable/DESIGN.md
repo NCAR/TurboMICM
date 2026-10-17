@@ -147,6 +147,7 @@ the generated kernels hold the reaction rates and Jacobian partials.
 | threads | all cores | `--threads`, `OMP_NUM_THREADS` | OpenMP threads over groups |
 | schedule | dynamic, 1 | `--schedule static|dynamic|guided`, `--chunk` | how groups are handed to threads |
 | LU panel | 4 | `make GEN_FLAGS="--panel N"` | pivots per generated LU panel |
+| solve row budget | 64 | `make GEN_FLAGS="--row-budget N"` | terms per block loop in the generated solves; short rows share a loop |
 | kernel mode | fast | `make KERNEL_MODE=exact` | fast: split sums and pivot reciprocals in the solve; exact: MICM's order bit for bit |
 | kernel chunk | 16 | `make KERNEL_CHUNK=` | pivots or rows per generated function (compile time only) |
 | kernels | generated | `--generic` | the benchmark runs the generic index-list kernels instead |
