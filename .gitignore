@@ -53,3 +53,6 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# MICM checkout, linked from the run root for the fable/ entry
+/micm
