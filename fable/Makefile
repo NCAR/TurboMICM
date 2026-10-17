@@ -111,6 +111,7 @@ generated/tests/registry.h generated/tests/case_list.inc: $(TEST_SOURCES) $(REFE
 
 # the example configurations; their tests compare them with the same mechanisms built in code
 .SECONDEXPANSION:
+.SECONDARY: # keep the generated example sources between builds
 generated/%.c generated/%.h: $$(wildcard configs/examples/%/*) tools/generate.py tools/mechanism.py | $(PYTHON)
 	@mkdir -p generated
 	$(PYTHON) tools/generate.py $(firstword $(wildcard configs/examples/$*/config.yaml configs/examples/$*/config.json)) generated/$* --name $* --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE)

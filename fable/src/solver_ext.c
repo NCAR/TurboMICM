@@ -16,75 +16,15 @@ double tmc_solver_normalized_error(const tmc_solver *s, const tmc_state *st, con
   (void)s;
   if (!shaped_like_variables(st, y) || !shaped_like_variables(st, ynew) || !shaped_like_variables(st, errors))
     return NAN;
-  /* The accumulation of src/rosenbrock.c: variable by variable, block by
-   * block, lane by lane, padded lanes excluded. */
-  const int L = st->L, n_vars = st->n_vars, n_cells = st->n_cells, n_blocks = st->n_blocks;
-  const double rtol = st->relative_tolerance;
-  double acc = 0.0;
-  for (int v = 0; v < n_vars; ++v)
-  {
-    const double atol = st->absolute_tolerance[v];
-    for (int block = 0; block < n_blocks; ++block)
-    {
-      const size_t base = ((size_t)block * n_vars + v) * L;
-      const int lanes = block == n_blocks - 1 ? n_cells - block * L : L;
-      for (int lane = 0; lane < lanes; ++lane)
-      {
-        double a = fabs(y->data[base + lane]), b = fabs(ynew->data[base + lane]);
-        double ymax = a > b ? a : b;
-        double e = errors->data[base + lane] / (atol + rtol * ymax);
-        acc += e * e;
-      }
-    }
-  }
-  size_t N = (size_t)n_cells * (size_t)n_vars;
-  if (N == 0)
-    N = 1;
-  double error = sqrt(acc / (double)N);
-  return error > 1.0e-10 ? error : 1.0e-10;
+  return tmc_rosenbrock_normalized_error(st, y, ynew, errors);
 }
 
 void tmc_solver_alpha_minus_jacobian(const tmc_solver *s, tmc_state *st, double alpha)
 {
-  /* As the generic path of src/rosenbrock.c shifts the diagonal before factoring. */
-  tmc_sparse *J = st->jacobian;
-  const int L = J->L, nnz = J->nnz;
-  for (int g = 0; g < J->n_groups; ++g)
-  {
-    double *block = J->data + (size_t)g * (size_t)nnz * L;
-    for (int i = 0; i < s->n_vars; ++i)
-    {
-      double *d = block + (size_t)s->lu->mz_diag[i] * L;
-      for (int c = 0; c < L; ++c)
-        d[c] += alpha;
-    }
-  }
+  tmc_rosenbrock_alpha_minus_jacobian(s, st, alpha);
 }
 
-bool tmc_backward_euler_is_converged(const tmc_backward_euler_parameters *p, const tmc_dense *residual, const tmc_dense *yn1, const double *absolute_tolerance, double relative_tolerance)
-{
-  /* The test of src/backward_euler.c with the tolerances passed in. */
-  const int L = residual->L, n_vars = residual->n_cols, n_cells = residual->n_rows, n_blocks = residual->n_groups;
-  for (int v = 0; v < n_vars; ++v)
-  {
-    const double atol = absolute_tolerance[v];
-    for (int block = 0; block < n_blocks; ++block)
-    {
-      const size_t base = ((size_t)block * n_vars + v) * L;
-      const int lanes = block == n_blocks - 1 ? n_cells - block * L : L;
-      for (int lane = 0; lane < lanes; ++lane)
-      {
-        double r = residual->data[base + lane];
-        if (!isfinite(r))
-          return false;
-        double ar = fabs(r);
-        if (ar > p->small && ar > atol && ar > relative_tolerance * fabs(yn1->data[tmc_dense_index(yn1, block * L + lane, v)]))
-          return false;
-      }
-    }
-  }
-  return true;
-}
+/* tmc_backward_euler_is_converged is the solver's own test, in src/backward_euler.c. */
 
 int tmc_state_unsafely_set_custom_rate_parameters(tmc_state *st, const double *values, int n_cells, int n_parameters, tmc_error *err)
 {

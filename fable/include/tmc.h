@@ -740,7 +740,10 @@ void tmc_builder_set_lu_algorithm(tmc_builder *b, tmc_lu_algorithm algorithm);
 void tmc_builder_set_kernels(tmc_builder *b, const tmc_kernels *kernels);
 void tmc_builder_set_step_controller(tmc_builder *b, tmc_step_controller controller, void *context);
 void tmc_builder_add_constraint(tmc_builder *b, const tmc_constraint *constraint);
-/* The model struct is copied; its context stays the caller's. */
+/* The model struct is copied; its context stays the caller's, and the build
+ * binds it (index maps, Jacobian elements) to the solver being built: one
+ * context serves one solver, so a builder reused for another configuration
+ * needs another context. */
 void tmc_builder_add_external_model(tmc_builder *b, const tmc_external_model *model);
 /* Build; returns NULL and sets err on failure. The builder can be reused. */
 tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err);
@@ -800,10 +803,16 @@ void tmc_state_set(tmc_state *state, int cell, int variable, double value);
 int tmc_state_variable_index(const tmc_state *state, const char *name); /* -1 if unknown */
 const char *tmc_state_variable_name(const tmc_state *state, int index);
 int tmc_state_custom_parameter_index(const tmc_state *state, const char *label);
+/* MICM's setters: one value is for a one-cell state (otherwise
+ * TMC_STATE_INVALID_CONCENTRATION_COUNT_MULTIGRID or its parameter
+ * counterpart); `values` holds one value per cell. */
 int tmc_state_set_concentration(tmc_state *state, const char *name, double value, tmc_error *err);
 int tmc_state_set_concentrations(tmc_state *state, const char *name, const double *values, int n, tmc_error *err);
 int tmc_state_set_custom_rate_parameter(tmc_state *state, const char *label, double value, tmc_error *err);
 int tmc_state_set_custom_rate_parameters(tmc_state *state, const char *label, const double *values, int n, tmc_error *err);
+/* The same value in every cell (not in MICM; the generated initial states use these). */
+int tmc_state_fill_concentration(tmc_state *state, const char *name, double value, tmc_error *err);
+int tmc_state_fill_custom_rate_parameter(tmc_state *state, const char *label, double value, tmc_error *err);
 void tmc_state_set_relative_tolerance(tmc_state *state, double rtol);
 double tmc_state_relative_tolerance(const tmc_state *state);
 int tmc_state_set_absolute_tolerances(tmc_state *state, const double *atol, int n, tmc_error *err);

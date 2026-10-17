@@ -32,6 +32,7 @@ static tmc_builder *create(void)
 {
   tmc_builder *b = tmc_calloc(1, sizeof *b);
   b->reorder_state = true;
+  b->ignore_unused_species = true; /* MICM's default */
   b->width = TMC_WIDTH;
   b->lu_algorithm = TMC_LU_MOZART;
   b->controller = tmc_default_step_controller;
@@ -555,8 +556,15 @@ tmc_solver *tmc_builder_build(const tmc_builder *b, tmc_error *err)
     }
     p->n_parameterized = 0;
     for (int i = 0; i < rx->n_reactants; ++i)
-      if (rx->reactants[i].parameterized && p->n_parameterized < 4)
+      if (rx->reactants[i].parameterized)
+      {
+        if (p->n_parameterized == TMC_MAX_PARAMETERIZED_REACTANTS)
+        {
+          tmc_error_set(err, TMC_ERROR_SPECIES, TMC_SPECIES_PROPERTY_NOT_FOUND, "Reaction has more parameterized reactants than ParameterizedMultiplier::kMaxFuncs; increase kMaxFuncs.");
+          goto fail;
+        }
         p->parameterized[p->n_parameterized++] = rx->reactants[i];
+      }
     p->custom_index = -1;
     tmc_name labels[2];
     int n_labels = tmc_rate_constant_custom_parameter_labels(&rx->rate_constant, labels);

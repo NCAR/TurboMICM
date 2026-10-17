@@ -25,16 +25,18 @@ extern "C" {
  * Returns NaN when a matrix does not match the state. */
 double tmc_solver_normalized_error(const tmc_solver *s, const tmc_state *state, const tmc_dense *y, const tmc_dense *ynew, const tmc_dense *errors);
 
-/* MICM's AbstractRosenbrockSolver::AlphaMinusJacobian: adds alpha to every
- * diagonal element of the state's Jacobian, which holds -J, giving alpha I - J
- * (in every lane, as the solver does before factoring). */
+/* MICM's AbstractRosenbrockSolver::AlphaMinusJacobian: adds alpha times the
+ * mass-matrix diagonal (1 for every ODE variable, 0 for an algebraic one) to
+ * every diagonal element of the state's Jacobian, which holds -J, giving
+ * alpha M - J in every lane; the solver's own function, as it runs before
+ * factoring. */
 void tmc_solver_alpha_minus_jacobian(const tmc_solver *s, tmc_state *state, double alpha);
 
-/* MICM's AbstractBackwardEuler::IsConverged: true when every residual of every
- * cell is finite and at most `small`, the variable's absolute tolerance, or
- * relative_tolerance |yn1|. residual and yn1 have one row per cell and one
- * column per variable (absolute_tolerance has one entry per column); padded
- * lanes are excluded. */
+/* MICM's AbstractBackwardEuler::IsConverged, the solver's own test: true when
+ * every residual of every cell is finite and at most `small`, the variable's
+ * absolute tolerance, or relative_tolerance |yn1|. residual and yn1 have one
+ * row per cell and one column per variable, in the same layout
+ * (absolute_tolerance has one entry per column); padded lanes are excluded. */
 bool tmc_backward_euler_is_converged(const tmc_backward_euler_parameters *p, const tmc_dense *residual, const tmc_dense *yn1, const double *absolute_tolerance, double relative_tolerance);
 
 /* MICM's State::UnsafelySetCustomRateParameters: values holds n_cells rows of

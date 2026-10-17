@@ -15,7 +15,7 @@ static void forcing(const tmc_solver *s, tmc_state *st, const tmc_dense *y, tmc_
 
 /* AlphaMinusJacobian: alpha M on the diagonal of every block, M the mass
  * matrix (0 for algebraic rows). */
-static void alpha_minus_jacobian(const tmc_solver *s, tmc_state *st, double alpha)
+void tmc_rosenbrock_alpha_minus_jacobian(const tmc_solver *s, tmc_state *st, double alpha)
 {
   const int L = st->L, nnz = st->jacobian->nnz;
   for (int g = 0; g < st->jacobian->n_groups; ++g)
@@ -42,7 +42,7 @@ static void factor(const tmc_solver *s, tmc_state *st, const tmc_dense *y, doubl
   else
   {
     tmc_eval_jacobian(s, st, y, st->jacobian);
-    alpha_minus_jacobian(s, st, alpha);
+    tmc_rosenbrock_alpha_minus_jacobian(s, st, alpha);
     tmc_lu_decompose_in_place(s->lu, st->jacobian, st->reciprocals);
   }
   stats->jacobian_updates += 1;
@@ -191,7 +191,7 @@ static void combine_solution_and_error(tmc_dense *ynew, tmc_dense *yerror, const
 /* MICM's normalized error: the root mean square over all cells and variables
  * of error / (atol + rtol max(|y|, |ynew|)), accumulated variable by variable
  * and cell by cell, padded lanes excluded, floored at 1e-10. */
-static double normalized_error(const tmc_state *st, const tmc_dense *y, const tmc_dense *ynew, const tmc_dense *errors)
+double tmc_rosenbrock_normalized_error(const tmc_state *st, const tmc_dense *y, const tmc_dense *ynew, const tmc_dense *errors)
 {
   const int L = st->L, n_vars = st->n_vars, n_cells = st->n_cells;
   const double rtol = st->relative_tolerance;
@@ -345,7 +345,7 @@ static void constraint_jacobian_factor(const tmc_solver *s, tmc_state *st, const
   if (s->n_external)
     tmc_external_subtract_constraint_jacobian(s, st->custom_rate_parameters, y, st->jacobian);
   stats->jacobian_updates += 1;
-  alpha_minus_jacobian(s, st, 1.0);
+  tmc_rosenbrock_alpha_minus_jacobian(s, st, 1.0);
   tmc_lu_decompose_in_place(s->lu, st->jacobian, st->reciprocals);
   stats->decompositions += 1;
 }
@@ -570,7 +570,7 @@ tmc_result tmc_rosenbrock_solve(tmc_solver *s, double time_step, tmc_state *st)
       if (s->n_algebraic)
         tmc_set_algebraic_errors(s, Yerror, Y, Ynew);
 
-      const double error = normalized_error(st, Y, Ynew, Yerror);
+      const double error = tmc_rosenbrock_normalized_error(st, Y, Ynew, Yerror);
       const double fac = s->controller(error, p, s->controller_context);
       double Hnew = H * fac;
       stats->number_of_steps += 1;

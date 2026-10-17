@@ -119,6 +119,10 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   reference input, and the experiment's gate on the 100-cell reference input.
 - Randomized MICM tests use fixed seeds in C; the checks compare against an
   independent computation, so the values drawn do not change what is tested.
+- Internals MICM's tests reach (the error norm, the alpha shift, the backward
+  Euler convergence test, constraint terms on their own, array functions, name
+  maps) are exposed in `include/tmc_*_ext.h` and `tmc_support.h`, and they
+  call the solvers' own functions, so the tests check the code that runs.
 
 ## C API
 
@@ -133,3 +137,14 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
 - Errors are returned, never aborted on: functions that can fail take a
   `tmc_error *` and return its category; the codes follow MICM's error.hpp.
   Out-of-memory aborts, since nothing useful can follow.
+- MICM's defaults and rules hold where its tests observe them: the builder
+  ignores unused species unless told otherwise; a single concentration or
+  parameter value is for a one-cell state (the `tmc_state_fill_*` functions,
+  which MICM lacks, set every cell, and the generated initial states use
+  them); the post-solve clamp is `std::max(y, 0)`, which keeps a NaN visible;
+  a reaction has at most four parameterized reactants, whose product is
+  accumulated from 1 before it scales the rate constant.
+- An external model's context belongs to the caller and is bound to one
+  solver when it is built; a builder reused for another configuration needs
+  another context. MICM copies the model object instead; C has no copy of an
+  opaque context without another callback, and no case needs one.

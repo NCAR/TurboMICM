@@ -33,6 +33,7 @@ src/external.c           external model dispatch and name maps
 src/rosenbrock.c         the Rosenbrock loop, the DAE path, the error norm
 src/backward_euler.c     the backward Euler loop
 src/util.c               errors, allocation, hashing, version
+src/*_ext.c, support.c   internals MICM's tests reach (include/tmc_*_ext.h, tmc_support.h): error norm, alpha shift, convergence test, constraint terms, array functions, name maps
 bench/ts1_bench.c        the benchmark driver; bench/kernel_bench.c times the kernels one by one
 tests/                   the ported test suite (tests/README.md)
 ```

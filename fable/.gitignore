@@ -1,5 +1,5 @@
-/.conda/
-/.conda-pkgs/
+/.conda
+/.conda-pkgs
 /build/
 /bin/
 /generated/

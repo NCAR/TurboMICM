@@ -76,16 +76,19 @@ void tmc_dense_axpy(tmc_dense *y, double alpha, const tmc_dense *x)
     yd[i] += alpha * xd[i];
 }
 
+/* y = std::max(y, x) and y = std::min(y, x) as MICM writes them: the
+ * comparison is on x, so a NaN or a -0.0 in y stays (MICM's post-solve clamp
+ * leaves a failed solve's NaN visible). */
 void tmc_dense_max(tmc_dense *m, double x)
 {
   for (size_t i = 0; i < m->size; ++i)
-    m->data[i] = m->data[i] > x ? m->data[i] : x;
+    m->data[i] = m->data[i] < x ? x : m->data[i];
 }
 
 void tmc_dense_min(tmc_dense *m, double x)
 {
   for (size_t i = 0; i < m->size; ++i)
-    m->data[i] = m->data[i] < x ? m->data[i] : x;
+    m->data[i] = x < m->data[i] ? x : m->data[i];
 }
 
 size_t tmc_dense_row_stride(const tmc_dense *m)

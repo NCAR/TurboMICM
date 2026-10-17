@@ -129,6 +129,7 @@ static void process_set_case(int L)
 
   /* MICM's SpeciesUsed: every reactant and product, so all species but corge.
    * The builder's unused-species check names exactly the species that are not. */
+  tmc_builder_set_ignore_unused_species(b, false);
   tmc_error err;
   tmc_solver *s = tmc_builder_build(b, &err);
   TMC_EXPECT_TRUE(s == NULL);

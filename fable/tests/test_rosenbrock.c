@@ -250,11 +250,10 @@ TMC_TEST(vector_normalized_error)
   return TMC_TEST_PASS;
 }
 
-/* MICM's TestNormalizedErrorIncludesAllVariables builds A -> B plus an
- * equilibrium constraint B <-> C, so C is an algebraic variable, checks that
- * the state has one constraint, and checks that the error norm includes every
- * variable. The library has no algebraic constraints (DAE), so only the norm
- * over the three variables can be checked; the case reports the gap. */
+/* MICM's TestNormalizedErrorIncludesAllVariables: A -> B with an equilibrium
+ * constraint B <-> C whose algebraic variable is C, so the state has one
+ * constraint; the error norm must include every variable, the algebraic one
+ * too. */
 static void test_normalized_error_includes_all_variables(tmc_rosenbrock_parameters parameters, int L, int n_cells)
 {
   tmc_species a = tmc_species_create("A"), b = tmc_species_create("B"), c = tmc_species_create("C");
@@ -271,12 +270,19 @@ static void test_normalized_error_includes_all_variables(tmc_rosenbrock_paramete
   tmc_builder *builder = tmc_builder_create_rosenbrock(parameters);
   tmc_builder_set_reorder_state(builder, false);
   tmc_builder_set_width(builder, L);
-  /* C would be the constraint's algebraic variable; without the constraint it is unused */
-  tmc_builder_set_ignore_unused_species(builder, true);
+  tmc_stoich_species reactants[1] = { { b, 1.0 } }, products[1] = { { c, 1.0 } };
+  tmc_vant_hoff vant_hoff = { 10.0, -2400.0, 0.0, 0.0 };
+  tmc_constraint constraint;
+  tmc_error err;
+  tmc_error_clear(&err);
+  TMC_EXPECT_EQ(tmc_equilibrium_constraint(&constraint, "B_C_eq", &c, reactants, 1, products, 1, vant_hoff, &err), TMC_OK);
+  tmc_builder_add_constraint(builder, &constraint);
+  tmc_constraint_free(&constraint);
   tmc_solver *solver = build(builder, &system, &r, 1, &gas);
   TMC_EXPECT_TRUE(solver != NULL);
   if (!solver)
     return;
+  TMC_EXPECT_EQ(tmc_solver_num_constraints(solver), 1);
   tmc_state *state = tmc_solver_create_state(solver, n_cells);
   const int n_vars = tmc_state_num_variables(state);
   TMC_EXPECT_EQ(n_vars, 3);
@@ -311,8 +317,6 @@ static void test_normalized_error_includes_all_variables(tmc_rosenbrock_paramete
   tmc_solver_free(solver);
 }
 
-static const char *const no_constraints = "needs algebraic constraints (an EquilibriumConstraint and the state's constraint count), which the library does not implement; the error norm over all variables passes";
-
 TMC_TEST(standard_normalized_error_with_constraints)
 {
   test_normalized_error_includes_all_variables(tmc_rosenbrock_two_stage(), 1, 2);
@@ -321,8 +325,7 @@ TMC_TEST(standard_normalized_error_with_constraints)
   test_normalized_error_includes_all_variables(tmc_rosenbrock_four_stage_dae(), 1, 2);
   test_normalized_error_includes_all_variables(tmc_rosenbrock_six_stage_dae(), 1, 2);
   test_normalized_error_includes_all_variables(tmc_rosenbrock_three_stage(), 1, 5);
-  tmc_test_set_reason(no_constraints);
-  return TMC_TEST_FAIL;
+  return TMC_TEST_PASS;
 }
 
 TMC_TEST(vector_normalized_error_with_constraints)
@@ -333,8 +336,7 @@ TMC_TEST(vector_normalized_error_with_constraints)
   test_normalized_error_includes_all_variables(tmc_rosenbrock_four_stage_dae(), 4, 3);
   test_normalized_error_includes_all_variables(tmc_rosenbrock_six_stage_dae(), 4, 3);
   test_normalized_error_includes_all_variables(tmc_rosenbrock_three_stage(), 4, 5);
-  tmc_test_set_reason(no_constraints);
-  return TMC_TEST_FAIL;
+  return TMC_TEST_PASS;
 }
 
 /* ---- rejected steps -------------------------------------------------------- */
