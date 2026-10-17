@@ -22,8 +22,9 @@ PYTHON := $(CURDIR)/.conda/bin/python
 
 # Tuning parameters (see DESIGN.md). Every value gives correct results.
 WIDTH ?= 2
-GROUP_SIZE ?= 4
+GROUP_SIZE ?= 8
 KERNEL_CHUNK ?= 16
+KERNEL_MODE ?= fast
 
 UNAME_S := $(shell uname -s)
 CC_VERSION := $(shell $(CC) --version 2>/dev/null | head -n 1)
@@ -80,7 +81,7 @@ configs/ts1.json: tools/translate_ts1.py $(MICM)/test/benchmark/ts1_mechanism.hp
 
 generated/ts1.c generated/ts1.h: configs/ts1.json tools/generate.py tools/mechanism.py .conda/conda-meta/history
 	@mkdir -p generated
-	$(PYTHON) tools/generate.py configs/ts1.json generated/ts1 --name ts1 --width $(WIDTH) --chunk $(KERNEL_CHUNK)
+	$(PYTHON) tools/generate.py configs/ts1.json generated/ts1 --name ts1 --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE)
 
 build/ts1.o: generated/ts1.c generated/ts1.h include/tmc.h build/flags.txt
 	$(CC) $(CFLAGS) -Igenerated -c $< -o $@
@@ -105,3 +106,8 @@ bin/micm_ts1_ref: $(REFERENCE)/micm_ts1_ref.cpp
 
 clean:
 	rm -rf build bin generated
+
+# ---- development tools (not part of the entry's targets) -----------------
+bin/kernel_bench: bench/kernel_bench.c build/ts1.o build/libtmc.a generated/ts1.h
+	@mkdir -p bin
+	$(CC) $(CFLAGS) -Igenerated -Isrc bench/kernel_bench.c build/ts1.o build/libtmc.a $(LDLIBS) -o $@
