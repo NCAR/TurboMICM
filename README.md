@@ -26,7 +26,7 @@ its id is `d57cf5ee-4422-4a52-8b7f-2a60d5ce7ae2`.
 
 | File | Role | Harness | Original size |
 |---|---|---|---:|
-| `transcripts/fable-reference-entry.jsonl.gz` | the main session | Claude Code 2.1.301 | 38.8 MB |
+| `transcripts/fable-reference-entry.jsonl.gz` | the main session, to 08:45 on 2026-10-17 | Claude Code 2.1.301 | 44.8 MB |
 | `transcripts/fable-reference-entry-agents/port-dense.jsonl.gz` | matrix, vector_matrix, grouped_views, view_category_sfinae tests | Claude Code subagent | 7.2 MB |
 | `transcripts/fable-reference-entry-agents/port-solver.jsonl.gz` | rosenbrock, backward_euler, state, linear_solver, lu_decomposition, jacobian_verification, chapman_ode_solver tests | Claude Code subagent | 10.3 MB |
 | `transcripts/fable-reference-entry-agents/port-constraints.jsonl.gz` | constraint and DAE tests | Claude Code subagent | 9.9 MB |
