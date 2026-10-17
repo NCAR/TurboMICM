@@ -577,13 +577,15 @@ def main():
     ap.add_argument("--no-kernels", action="store_true", help="emit only the mechanism tables")
     ap.add_argument("--panel", type=int, default=4, help="pivots per LU panel")
     ap.add_argument("--row-budget", type=int, default=64, help="solve terms per block loop body")
+    ap.add_argument("--interleave", type=int, default=4, help="independent accumulations emitted side by side")
     ap.add_argument("--mode", choices=("fast", "exact"), default="fast",
                     help="exact: MICM's operation order bit for bit; fast: split long sums, pivot reciprocals")
     args = ap.parse_args()
 
-    global PANEL, ROW_BUDGET
+    global PANEL, ROW_BUDGET, INTERLEAVE
     PANEL = max(1, args.panel)
     ROW_BUDGET = max(1, args.row_budget)
+    INTERLEAVE = max(1, args.interleave)
     m = mech.read(args.config)
     c = mech.compile_mechanism(m)
     name = args.name
