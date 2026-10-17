@@ -1,0 +1,14 @@
+date: 2026-10-17T05:01:28
+host: Gemini.local
+platform: macOS-27.0.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,2 | Apple M5 | 4 | 6
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=22872163)	100%; charged; 0:00 remaining present: true
+uptime: 5:01  up  5:48, 2 users, load averages: 1.40 1.51 1.80
+input: <scratch>/bench10k/cells_10000_seed2026.csv
+reference: <scratch>/bench10k/micm/ts1_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 10,1; rounds: 5
+program micm-standard-in-place-mozart: <scratch>/timing/bin/micm-standard-in-place-mozart
+program micm-vector8-in-place-mozart-g32: <scratch>/timing/bin/micm-vector8-in-place-mozart --group-size 32
+program fable: /Users/fillmore/NSF-NCAR/TurboMICM/fable/bin/ts1_bench_cpu
+program fable-g16: /Users/fillmore/NSF-NCAR/TurboMICM/fable/bin/ts1_bench_cpu --group-size 16
+program fable-g32: /Users/fillmore/NSF-NCAR/TurboMICM/fable/bin/ts1_bench_cpu --group-size 32

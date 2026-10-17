@@ -1,0 +1,119 @@
+{
+ "label": "",
+ "cells": 10000,
+ "seed": 2026,
+ "steps": 100,
+ "dt": 30.0,
+ "rows": [
+  {
+   "variant": "default (all threads, groups of 32)",
+   "arguments": "",
+   "elapsed_ms": [
+    4577.43
+   ],
+   "median_ms": 4577.43,
+   "statistics": "internal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100",
+   "gate": "PASS",
+   "max_relative_difference": "1.04e-13"
+  },
+  {
+   "variant": "1 thread",
+   "arguments": "--threads 1",
+   "elapsed_ms": [
+    25949.745
+   ],
+   "median_ms": 25949.745,
+   "statistics": "internal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100",
+   "gate": "PASS",
+   "max_relative_difference": "1.04e-13"
+  },
+  {
+   "variant": "groups of 4",
+   "arguments": "--group-size 4",
+   "elapsed_ms": [
+    6395.3
+   ],
+   "median_ms": 6395.3,
+   "statistics": "internal_steps=2250000 accepted=2250000 rejected=0 function_calls=4500000 jacobian_updates=2250000 decompositions=2250000 solves=6750000",
+   "gate": "PASS",
+   "max_relative_difference": "1.04e-13"
+  },
+  {
+   "variant": "groups of 8",
+   "arguments": "--group-size 8",
+   "elapsed_ms": [
+    4950.352
+   ],
+   "median_ms": 4950.352,
+   "statistics": "internal_steps=1125000 accepted=1125000 rejected=0 function_calls=2250000 jacobian_updates=1125000 decompositions=1125000 solves=3375000",
+   "gate": "PASS",
+   "max_relative_difference": "1.04e-13"
+  },
+  {
+   "variant": "groups of 16",
+   "arguments": "--group-size 16",
+   "elapsed_ms": [
+    4875.539
+   ],
+   "median_ms": 4875.539,
+   "statistics": "internal_steps=562500 accepted=562500 rejected=0 function_calls=1125000 jacobian_updates=562500 decompositions=562500 solves=1687500",
+   "gate": "PASS",
+   "max_relative_difference": "1.04e-13"
+  },
+  {
+   "variant": "groups of 64",
+   "arguments": "--group-size 64",
+   "elapsed_ms": [
+    5463.543
+   ],
+   "median_ms": 5463.543,
+   "statistics": "internal_steps=141300 accepted=141300 rejected=0 function_calls=282600 jacobian_updates=141300 decompositions=141300 solves=423900",
+   "gate": "PASS",
+   "max_relative_difference": "1.04e-13"
+  },
+  {
+   "variant": "generic kernels",
+   "arguments": "--generic",
+   "elapsed_ms": [
+    27828.603
+   ],
+   "median_ms": 27828.603,
+   "statistics": "internal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100",
+   "gate": "PASS",
+   "max_relative_difference": "0"
+  },
+  {
+   "variant": "static schedule",
+   "arguments": "--schedule static",
+   "elapsed_ms": [
+    4916.93
+   ],
+   "median_ms": 4916.93,
+   "statistics": "internal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100",
+   "gate": "PASS",
+   "max_relative_difference": "1.04e-13"
+  },
+  {
+   "variant": "guided schedule",
+   "arguments": "--schedule guided",
+   "elapsed_ms": [
+    4866.348
+   ],
+   "median_ms": 4866.348,
+   "statistics": "internal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100",
+   "gate": "PASS",
+   "max_relative_difference": "1.04e-13"
+  },
+  {
+   "variant": "2 threads, groups of 3",
+   "arguments": "--threads 2 --group-size 3",
+   "elapsed_ms": [
+    49480.841
+   ],
+   "median_ms": 49480.841,
+   "statistics": "internal_steps=3000600 accepted=3000600 rejected=0 function_calls=6001200 jacobian_updates=3000600 decompositions=3000600 solves=9001800",
+   "gate": "PASS",
+   "max_relative_difference": "1.04e-13"
+  }
+ ]
+}
