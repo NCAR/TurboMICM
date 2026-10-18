@@ -28,7 +28,7 @@ env: .conda/bin/python
 	@if test -x $@; then CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env update --prefix $(CURDIR)/.conda --file environment.yml; else CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml; fi
 	@touch $@
 cpu: bin/ts1_bench_cpu
-bench: cpu
+bench: cpu bin/ts1_scenario
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mechanism.hpp build/configuration.txt
 	@mkdir -p bin
@@ -36,7 +36,7 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mecha
 clean:
 	rm -rf build bin generated
 
-LIB_SOURCES = src/rates.c src/model.c src/state.c src/process.c src/parameters.c src/solver.c src/constraints.c src/backward_euler.c src/matrix.c src/system.c src/external.c src/verify.c
+LIB_SOURCES = src/rates.c src/model.c src/state.c src/process.c src/parameters.c src/solver.c src/constraints.c src/backward_euler.c src/matrix.c src/system.c src/external.c src/verify.c src/integrator.c
 LIB_OBJECTS = $(LIB_SOURCES:src/%.c=build/%.o)
 build/%.o: src/%.c $(wildcard include/*.h) src/internal.h build/configuration.txt
 	@mkdir -p build
@@ -51,7 +51,11 @@ build/ts1.o: generated/ts1.c include/chem.h build/configuration.txt
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 GROUP_SIZE ?= 32
-bin/ts1_bench_cpu: src/bench.c build/ts1.o build/libchem.a
+bin/ts1_bench_cpu: src/bench.c src/bench_io.h build/ts1.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) -DCK_DEFAULT_GROUP_SIZE=$(GROUP_SIZE) $< build/ts1.o build/libchem.a $(LDLIBS) -o $@
+
+bin/ts1_scenario: src/scenario.c src/bench_io.h build/ts1.o build/libchem.a
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) -DCK_DEFAULT_GROUP_SIZE=$(GROUP_SIZE) $< build/ts1.o build/libchem.a $(LDLIBS) -o $@
 

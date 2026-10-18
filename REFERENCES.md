@@ -1,0 +1,40 @@
+# Sources and use
+
+No external implementation was downloaded or incorporated. New integrators and
+experiment tooling were written here. Existing Tier 1 MICM attribution is in
+NOTICE; MICM source e15898ce and its parameter tables remain the baseline.
+
+1. A. Sandu, J. G. Verwer, J. G. Blom, E. J. Spee, G. R. Carmichael and F. A.
+   Potra (1997), *Benchmarking stiff ODE solvers for atmospheric chemistry
+   problems II: Rosenbrock solvers*, Atmospheric Environment 31, 3459–3472.
+   [Paper](https://ir.cwi.nl/pub/125/0125D.pdf).
+   Used the work–precision experiment design, thresholded significant-digit
+   accuracy concept, emphasis on roughly 1% chemistry accuracy, and the warning
+   that local tolerance is not achieved global accuracy. The supplied score.py
+   uses pooled RMS plus species requirements; the paper's aggregate uses the
+   worst species. We retain the supplied metric rather than equating them.
+2. KPP numerical methods documentation,
+   [Rosenbrock methods](https://kpp.readthedocs.io/en/stable/num_methods/rosenbrock-methods.html)
+   and [integrator options](https://kpp.readthedocs.io/en/stable/num_methods/controlling_the_integrator.html),
+   accessed 2026-10-18. Used the stage equations, method families, orders,
+   stability classifications, and distinction between autonomous and explicitly
+   time-dependent forcing. Existing C coefficient tables are retained from MICM.
+3. E. Hairer and C. Lubich (1988), *Extrapolation at stiff differential
+   equations*, Numerische Mathematik 52, 377–400,
+   [abstract](https://archive-ouverte.unige.ch/unige:12472).
+   Motivates testing extrapolation of linearly implicit Euler and treating stiff
+   order effects cautiously. Only the abstract was accessible; no claims about
+   its detailed algorithm are made. Our fixed 1,2,3-substep Richardson tableau
+   is derived directly and is not an implementation of SEULEX.
+4. E. Hairer, *Numerical solution of ordinary differential equations*,
+   [overview](https://www.unige.ch/~hairer/preprints/pcam-ode.pdf).
+   Used the description of linearly implicit Euler as one Newton iteration,
+   L-stability, and stiff order reduction to frame the experiments.
+5. SUNDIALS CVODE user documentation,
+   [linear solver setup and Jacobian reuse](https://sundials.readthedocs.io/en/v7.5.0/cvode/Usage/),
+   accessed 2026-10-18. Used the distinction between reusing Jacobians and
+   reusing factorizations, refresh after failure, and bounded reuse age. Our
+   implementation only reuses a factorization with exactly unchanged step and
+   Jacobian. Reusing an old Jacobian in an ordinary Rosenbrock table does not
+   establish W-method order conditions; it is an experimental approximation
+   assessed separately, not a claim of retained formal order.

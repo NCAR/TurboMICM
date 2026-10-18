@@ -10,3 +10,6 @@ results/*.csv
 results/*.log
 PROMPT.md
 results/
+
+*.log
+ts1_snapshots.csv
