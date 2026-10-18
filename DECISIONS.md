@@ -116,3 +116,24 @@ host. Static, dynamic and guided schedules and explicit chunk sizes are exposed
 for other machines. Numerical checks cover all three policies, irregular tails,
 and groups larger than the domain. Full measurements and sample counts are in
 RESULTS.md; reference single samples are not presented as medians of repeated runs.
+
+## Tier 3 research setup
+
+- Keep the original integration functions and coefficients unchanged. Add a
+  separate autonomous-ODE API and a scenario runner; new solvers explicitly
+  reject algebraic mechanisms rather than silently integrating constraints.
+- Use all six disclosed scenarios. Initial structure scans use the first 64
+  cells and matching reference rows, with the supplied scorer. These are
+  screening data, not final operating-point evidence. Final validation uses
+  every disclosed cell, snapshots, and both compilers.
+- Projection of negative candidate concentrations is charged to the local error
+  norm before acceptance. Count projected values and summed corrections. Never
+  suppress NaN/Inf by projection; reject and retry. Preserve the reference
+  wrapper's behavior on the separate compatibility path.
+- Snapshot CSV output occurs outside each timed interval. Each interval includes
+  photolysis interpolation, rate updates, integration, parallel scheduling, and
+  finite/nonnegative validation. There is no warm-up in scenario runs.
+- Add linearly implicit Euler extrapolation with sequences 1,2,...,p, p=2..4.
+  Freeze the Jacobian during a macro step; extrapolate to zero substep size with
+  the Neville recurrence. The preceding diagonal supplies an embedded estimate.
+  It is an experimental method, not claimed to be uniformly stiffly accurate.

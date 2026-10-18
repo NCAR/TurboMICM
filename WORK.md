@@ -25,3 +25,13 @@ Group-size and scheduling measurements support retaining the default of 32 cells
 with static scheduling. All requested deliverables are present.
 Earlier incremental checkpoints are retained in git history. RESULTS.md is the
 source for final measurements and numerical gate evidence.
+
+## Tier 3 checkpoint 1
+
+Implemented scenario I/O/timing, separate adaptive Rosenbrock and extrapolation
+paths, and reproducible logged structure scans. `scans/family64.csv` contains all
+54 initial configurations/scenarios, including baseline failures. Screening
+costs are exploratory: the early rows overlapped compilation/tests. All 680
+Clang Tier 1 tests pass, as does the default 100-cell TS1 roundoff gate (maximum
+relative difference 4.25e-14). Prototype equivalence, broader scans, final
+operating points, both-compiler final validation, and updated reports remain.

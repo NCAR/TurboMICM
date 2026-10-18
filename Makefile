@@ -33,11 +33,15 @@ env: .conda/conda-meta/history
 .conda/conda-meta/history: environment.yml
 	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
 
-SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c src/array.c src/sparse.c src/factor.c src/version.c src/system.c src/process.c src/solver.c src/external.c
+SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c src/array.c src/sparse.c src/factor.c src/version.c src/system.c src/process.c src/solver.c src/external.c src/adaptive.c
 OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
 
 cpu: bin/ts1_bench_cpu bin/tutorial build/libchem.a
-bench: cpu
+bench: cpu bin/ts1_scenario
+
+bin/ts1_scenario: build/scenario.o build/ts1.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
 
 test-cpu: cpu bin/test_cpu
 	bin/test_cpu $(TEST_FILTER)

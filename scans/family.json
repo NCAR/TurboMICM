@@ -1,0 +1,11 @@
+[
+  {"id":"micm-default", "method":"micm", "options":{}},
+  {"id":"ros2", "method":"ros2", "options":{"rtol":0.001,"atol":1e-18}},
+  {"id":"ros3", "method":"ros3", "options":{"rtol":0.001,"atol":1e-18}},
+  {"id":"ros4", "method":"ros4", "options":{"rtol":0.001,"atol":1e-18}},
+  {"id":"rodas3", "method":"rodas3", "options":{"rtol":0.001,"atol":1e-18}},
+  {"id":"rodas4", "method":"rodas4", "options":{"rtol":0.001,"atol":1e-18}},
+  {"id":"extrap2", "method":"extrap", "options":{"rtol":0.001,"atol":1e-18,"order":2}},
+  {"id":"extrap3", "method":"extrap", "options":{"rtol":0.001,"atol":1e-18,"order":3}},
+  {"id":"extrap4", "method":"extrap", "options":{"rtol":0.001,"atol":1e-18,"order":4}}
+]
