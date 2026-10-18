@@ -20,11 +20,16 @@ def main():
         output=subprocess.check_output(cmd+[str(work/'scenario.txt')],cwd=work,text=True)
         assert 'cells=3 groups=2 group_size=2 threads=2' in output
         with (work/'ts1_snapshots.csv').open() as f: snapshots=list(csv.DictReader(f))
+        snapshot_text=(work/'ts1_snapshots.csv').read_text()
         with (work/'ts1_final.csv').open() as f: final=list(csv.DictReader(f))
         assert [(int(r['step']),int(r['cell'])) for r in snapshots]==[(s,c) for s in [2,4,5] for c in range(3)]
         assert len(final)==3
         for snap,last in zip(snapshots[-3:],final):
             assert all(snap[k]==v for k,v in last.items())
+        for schedule in [0,1,2]:
+            subprocess.run(cmd+['--option',f'schedule={schedule}','--option','schedule_chunk=1',
+                str(work/'scenario.txt')],cwd=work,check=True,capture_output=True)
+            assert (work/'ts1_snapshots.csv').read_text()==snapshot_text
         reference=ROOT/'bin/micm_scenario'
         if reference.exists():
             # Independent C++ driver checks factor interpolation, constant

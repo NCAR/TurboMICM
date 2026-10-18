@@ -288,6 +288,8 @@ int main(int argc, char **argv)
   const char *path = NULL, *method = "micm3";
   ck_integrator_options options = ck_integrator_defaults();
   size_t threads = (size_t)omp_get_max_threads(), width = CK_DEFAULT_GROUP_SIZE;
+  size_t schedule_chunk = 0;
+  int schedule_option = -1, explicit_chunk = 0;
   double rtol = -1, atol = -1;
   int legacy = 1, experimental_options = 0;
   const char *env = getenv("CK_GROUP_SIZE");
@@ -318,7 +320,8 @@ int main(int argc, char **argv)
         goto usage;
       memcpy(key, argv[a], (size_t)(eq - argv[a]));
       key[eq - argv[a]] = 0;
-      if (strcmp(key, "rtol") && strcmp(key, "atol") && strcmp(key, "group_size"))
+      if (strcmp(key, "rtol") && strcmp(key, "atol") && strcmp(key, "group_size") &&
+          strcmp(key, "schedule") && strcmp(key, "schedule_chunk"))
         experimental_options = 1;
       if (!strcmp(key, "rtol") && v >= 0)
         rtol = v;
@@ -326,6 +329,11 @@ int main(int argc, char **argv)
         atol = v;
       else if (!strcmp(key, "group_size") && size_argument(eq + 1, &width) && width)
         explicit_width = 1;
+      else if (!strcmp(key, "schedule") && (v == 0 || v == 1 || v == 2))
+        schedule_option = (int)v;
+      else if (!strcmp(key, "schedule_chunk") && size_argument(eq + 1, &schedule_chunk) &&
+               schedule_chunk <= INT_MAX)
+        explicit_chunk = 1;
       else if (!strcmp(key, "jacobian_steps") && size_argument(eq + 1, &options.jacobian_steps) &&
                options.jacobian_steps)
       {
@@ -394,8 +402,17 @@ int main(int argc, char **argv)
   if (threads > ngroups)
     threads = ngroups;
   omp_set_num_threads((int)threads);
-  if (!getenv("OMP_SCHEDULE"))
-    omp_set_schedule(omp_sched_static, 0);
+  omp_sched_t schedule_kind = omp_sched_static;
+  int chunk = 0;
+  if (getenv("OMP_SCHEDULE"))
+    omp_get_schedule(&schedule_kind, &chunk);
+  if (schedule_option >= 0)
+    schedule_kind = schedule_option == 0   ? omp_sched_static
+                    : schedule_option == 1 ? omp_sched_dynamic
+                                           : omp_sched_guided;
+  if (explicit_chunk)
+    chunk = (int)schedule_chunk;
+  omp_set_schedule(schedule_kind, chunk);
   ck_model *model = NULL;
   group *groups = calloc(ngroups, sizeof *groups);
   ck_integrator **integrators = calloc(ngroups, sizeof *integrators);

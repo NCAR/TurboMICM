@@ -225,7 +225,8 @@ and groups larger than the cell count become one actual group. `OMP_SCHEDULE`
 selects the OpenMP runtime schedule; static is the default. No valid parameter
 selection bypasses error/status checks; a particularly strict or inefficient
 combination can return an explicit integration failure instead of a result.
-Only rtol, atol and group_size are accepted for `micm*` methods; experimental
+Only rtol, atol, group_size and the shared scheduling options are accepted for
+`micm*` methods; experimental
 options require a new-engine method. Defaults never change the MICM path.
 
 The I controller multiplies h by safety E^(-1/q), with q the embedded error's
@@ -278,3 +279,13 @@ bounds, and positivity checks apply to every controller. These are adaptive
 controller parameters, not changes to the integration order conditions.
 `safety` now accepts any finite positive value; values above one are tested as
 suggested by Dreger et al., with acceptance still requiring E <= 1.
+
+The scenario driver accepts `schedule=0` (static), `schedule=1` (dynamic), or
+`schedule=2` (guided), and `schedule_chunk=N` for an integer in [0,INT_MAX].
+Zero requests the OpenMP policy's default chunk size. Without either option,
+`OMP_SCHEDULE` is honored, or static scheduling is used if it is unset.
+Explicit options override the corresponding environment choice. These shared
+driver options are accepted for legacy methods too. Different scheduling
+policies give identical trajectories because each group owns its state and
+integrator; dynamic/guided scheduling can balance unequal core speeds and
+unequal chemical workloads without an operating-system-specific API.

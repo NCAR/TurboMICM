@@ -25,6 +25,13 @@ FIELDS = ['suite', 'configuration', 'scenario', 'repeat', 'compiler', 'threads',
           'binary_sha256', 'optflags', 'revision']
 
 def configurations(suite):
+    if suite == 'final-tune':
+        return [('rodas31', {'atol':1e-18,**o}) for o in [
+            {'rtol':.002}, {'rtol':.0015}, {'rtol':.0007},
+            {'rtol':.0003,'atol':1e-17}, {'rtol':.0003,'atol':1e-16},
+            {'rtol':.0015,'atol':1e-16},
+            {'rtol':.0005,'controller':1}, {'rtol':.0005,'controller':2},
+            {'rtol':.001,'controller':1}, {'rtol':.001,'controller':2}]]
     if suite == 'baseline':
         return [('micm3', {}), ('micm3', {'rtol': 1e-4, 'atol': 1e-18})]
     if suite == 'family':
@@ -59,17 +66,19 @@ def configurations(suite):
                 for j,d in [(1,0),(2,0),(4,0),(8,0),(2,0.2),(4,0.2),(8,0.2),(4,0.5)]]
     raise ValueError(suite)
 
-def run(method, options, name, threads, work, level=3):
+def run(method, options, name, threads, work, level=3, scenario_dir=None, reference_dir=None):
+    scenario_dir=Path(scenario_dir) if scenario_dir else SCENARIOS/name
+    reference_dir=Path(reference_dir) if reference_dir else scenario_dir
     command = [str(ROOT/'bin/ts1_scenario'), '--threads', str(threads), '--method', method]
     for key,value in options.items(): command += ['--option', f'{key}={value}']
-    command += [str(SCENARIOS/name/'scenario.txt')]
+    command += [str(scenario_dir/'scenario.txt')]
     result = subprocess.run(command, cwd=work, capture_output=True, text=True)
     data = dict(re.findall(r'(\w+)=([^\s]+)', result.stdout))
     data.update(returncode=result.returncode, message=result.stderr.strip().replace('\n',' | '))
     if result.returncode == 0:
-        filename = 'snapshots' if (SCENARIOS/name/'reference_snapshots.csv').exists() else 'final'
+        filename = 'snapshots' if (reference_dir/'reference_snapshots.csv').exists() else 'final'
         scored = subprocess.run([sys.executable, str(SCENARIOS/'score.py'),
-            str(work/f'ts1_{filename}.csv'), str(SCENARIOS/name/f'reference_{filename}.csv'),
+            str(work/f'ts1_{filename}.csv'), str(reference_dir/f'reference_{filename}.csv'),
             '--json', '--level', str(level)],
             capture_output=True, text=True)
         try:
