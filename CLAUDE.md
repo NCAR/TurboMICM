@@ -229,10 +229,13 @@ Tier-2-Results.
   references (converged to 10.2–10.8 digits) are done; see `tier3/README.md`.
   - MICM's default fails on 3 of the 5 day–night scenarios (absolute tolerance
     1e-3 mol m-3); 1e-15 fixes it.
-  - Remaining: the undisclosed scenarios, whose parameters the SSE chooses and
-    which are kept outside the run root; a test of `admin/time_entries.py`'s
-    scenario mode; and a MICM baseline per scenario at tolerances that reach 2
-    and 3 digits.
+  - Undisclosed scenarios: five, approved by the SSE on 2026-10-18 and fixed in
+    `~/NSF-NCAR/.tier3-heldout/make_heldout.sh` (its own git repository, no
+    remote; SHA-256 `08016cac…195c` in `admin/runs.md`). Make their files
+    (1,000 and 10,000 cells) and references between runs, never during one, and
+    publish the script after the last run.
+  - Remaining: a test of `admin/time_entries.py`'s scenario mode, and a MICM
+    baseline per scenario at tolerances that reach 2 and 3 digits.
 
 ## Open items
 

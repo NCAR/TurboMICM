@@ -66,8 +66,10 @@ the Tier 3 run root, `ODE/benchmarks/tier3`; keep the two identical.
 | `scenarios/README.md` | the scenario, output, and scoring formats, for the agents | written |
 
 Still to do, before the ranking (the agents need neither):
-- the undisclosed scenarios, made the same way and kept outside the run root
-  (their parameters for the SSE to choose);
+- the undisclosed scenarios, made the same way and kept outside the run root:
+  five, approved by the SSE and fixed on 2026-10-18 at 01:50, before any result
+  (the script's SHA-256 is in `admin/runs.md`); their files and references are
+  made between runs;
 - test the scenario mode of `admin/time_entries.py` (written), then time MICM
   on every scenario at tolerances that reach 2 and 3 digits, for context.
 

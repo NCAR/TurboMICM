@@ -274,6 +274,16 @@ Order
   Tier 3 run: its arm waits on its Tier 1 runs, which have not been rerun since
   luna-high was stopped on 2026-10-16.
 
+Undisclosed scenarios
+- 2026-10-18, 01:50: the SSE approved five held-out scenarios, and their
+  parameters were fixed, before any Tier 3 result, in a script kept outside the
+  run root and this repository. Its SHA-256 is
+  `08016cac9dfb41c1824648e843b2962686de94a1fcc2ddefb58a9445268e195c`. They vary
+  what the agents' scenarios README announces: seeds, latitudes, seasons, and
+  48-hour runs, with steps of 5 to 30 minutes and initial NOx from x0.1 to x10, as
+  in the disclosed set. The script will be published here once the runs end; its
+  scenario files and reference solutions are made between runs, never during one.
+
 Launch changes
 - 2026-10-18: `admin/launch_codex_run.sh` gained `--tier3`. In that mode it checks
   that the run directory is an untouched clone at the Tier 1 commit its prompt
