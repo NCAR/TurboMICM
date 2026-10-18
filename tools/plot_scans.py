@@ -25,7 +25,7 @@ def main():
     reference = read('micm-timings.csv')
     dest = ROOT / 'plots'; dest.mkdir(exist_ok=True)
     plt.rcParams.update({'font.size': 10, 'axes.spines.top': False, 'axes.spines.right': False,
-                         'svg.fonttype': 'none', 'savefig.facecolor': 'white'})
+                         'svg.fonttype': 'none', 'svg.hashsalt': 'work-precision', 'savefig.facecolor': 'white'})
     for metric, label, filename in [('overall_digits', 'Overall significant digits', 'work_precision'),
                                     ('worst_digits', 'Worst-species significant digits', 'worst_species_precision')]:
         fig, axes = plt.subplots(2, 3, figsize=(12, 7), layout='constrained')
@@ -64,7 +64,9 @@ def main():
         fig.suptitle('TS1: 1,000 cells, 10 workers, clang -O3 -DNDEBUG\n'
                      'Median of five native runs; bars span observed minimum–maximum', fontsize=13)
         fig.savefig(dest / f'{filename}.png', dpi=180)
-        fig.savefig(dest / f'{filename}.svg')
+        svg = dest / f'{filename}.svg'
+        fig.savefig(svg, metadata={'Date': None})
+        svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
         plt.close(fig)
     print('wrote plots/work_precision and plots/worst_species_precision (.png, .svg)')
 

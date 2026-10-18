@@ -81,7 +81,15 @@ def main():
         print('wrote operating points from complete full-cell validation')
         return
     large = read('final-clang-10000.csv'); verify(large, 10000, 5)
+    gcc = read('final-gcc-1000.csv'); verify(gcc, 1000, 1)
+    for point in POINTS:
+        rs = [r for r in gcc if r['configuration'] == point]
+        level = 2 if point in ['fast', 'balanced'] else 3
+        assert all(float(r['overall_digits']) >= level and float(r['worst_digits']) >= level-1 for r in rs)
     baseline = read('micm-timings.csv'); stress = read('stress-final.csv')
+    big_baseline = read('micm-large.csv')
+    assert len(big_baseline) == 12
+    assert all(r['status'] == 'OK' and r['gate'] == 'PASS' for r in big_baseline if r['configuration'] == 'MICM3-controlled')
     assert len(stress) == 15 and all(r['status'] == 'OK' and r['gate'] == 'PASS' for r in stress)
     assert all(float(r['overall_digits']) >= 3 and float(r['worst_digits']) >= 2
                for r in stress if r['configuration'] == 'recommended')
@@ -103,7 +111,9 @@ def main():
               'the listed concentration differences are accumulated double-precision roundoff. '
               'Scenario interpolation, photolysis caching, partial groups, snapshots, schedule independence, '
               'forcing discontinuities, ownership, invalid settings, and stiff nonnegative transfer are checked. '
-              '`scans/validation.json` contains commands/flags, hashes, and the supplied all-cell/all-species roundoff gates.', '',
+              '`scans/validation.json` contains commands/flags, hashes, and the supplied all-cell/all-species roundoff gates. '
+              'All 30 operating-point/scenario combinations also pass their declared accuracy levels and output gate '
+              'with GCC (`scans/final-gcc-1000.csv`); GCC times are individual validation observations.', '',
               '## Operating-point accuracy', '',
               'The following table uses all 1,000 disclosed cells and all reference snapshots. Each cell is '
               '`overall / worst-species` significant digits from the unmodified supplied scorer.', '']
@@ -139,9 +149,18 @@ def main():
               'All output values pass the gate. Relative-error scores cover the first 1,000 cells, which the '
               'generator verifies match the supplied inputs exactly; there is no claim of tight-reference '
               'accuracy for the remaining 9,000 cells.', '']
-    lines += [table(['Scenario']+POINTS, [[name]+[f'{timing(large, p, name):.1f}' for p in POINTS] for name in NAMES]), '',
+    rows = []
+    for name in NAMES:
+        default = subset(big_baseline, 'MICM3-default', name)[0]
+        default_time = f"{float(default['elapsed_ms']):.1f}" if default['status'] == 'OK' else 'FAIL'
+        controlled = timing(big_baseline, 'MICM3-controlled', name)
+        rows.append([name]+[f'{timing(large, p, name):.1f}' for p in POINTS]+
+                    [default_time, f'{controlled:.1f}', f"{controlled/timing(large, 'recommended', name):.2f}×"])
+    lines += [table(['Scenario']+POINTS+['MICM3 defaults', 'MICM3 controlled', 'Controlled / recommended'], rows), '',
               'Full per-run times, counters, output hashes, and measured accuracy are in `scans/final-clang-10000.csv`. '
-              '`scans/micm-large.csv` records independent single-run large MICM baseline comparisons. '
+              'The MICM columns are individual native C++ observations, not five-run medians; '
+              '`scans/micm-large.csv` records those comparisons. Its defaults fail on three large scenarios. '
+              'Ratios therefore compare a single controlled baseline observation with a C median. '
               'The experimenter supplies the authoritative idle-machine medians and hidden-scenario scores.', '',
               '## Additional 48-hour validation', '',
               'Three locally generated 64-cell cases vary seed, latitude, season, duration, step length, and NOx. '

@@ -3,6 +3,7 @@ import argparse
 import csv
 import hashlib
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -25,6 +26,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--compilers', default='clang,gcc-15')
     args = parser.parse_args()
+    assert Path(sys.prefix).resolve() == (ROOT / '.conda').resolve()
     (ROOT / 'scans').mkdir(exist_ok=True); (ROOT / 'build').mkdir(exist_ok=True)
     required = (ROOT.parent / 'reference/micm_cases.txt').read_text().splitlines()
     own = (ROOT / 'case-list.txt').read_text().splitlines()
@@ -38,9 +40,26 @@ def main():
     assert cells.exists(), 'run tools/large_scenarios.py first'
     command([str(ROOT / 'bin/micm_ts1_ref'), '--threads', '10', '--group-size', '32',
              '10000', '100', '30', str(cells)], reference / 'run.log', cwd=reference)
+    runtime = sorted([*ROOT.glob('src/*.c'), *ROOT.glob('src/*.h'), *ROOT.glob('include/*.h'), *ROOT.glob('generated/*.c')])
+    allowed = set(('assert complex ctype errno fenv float inttypes iso646 limits locale math setjmp signal '
+                   'stdalign stdarg stdatomic stdbool stddef stdint stdio stdlib stdnoreturn string tgmath threads '
+                   'time uchar wchar wctype omp').split())
+    headers = set()
+    for path in runtime:
+        text = path.read_text()
+        assert not re.search(r'\blong\s+double\b|__builtin_|__attribute__|vector_size|ext_vector_type|\basm\s*\(|#pragma[^\n]*\btarget\b', text), path
+        for header in re.findall(r'^\s*#\s*include\s*<([^>]+)>', text, re.M):
+            assert header.endswith('.h') and header[:-2] in allowed, (path, header)
+            headers.add(header)
     report = dict(case_list_sha256=sha(ROOT.parent / 'reference/micm_cases.txt'),
                   reference_10000_sha256=sha(reference / 'ts1_final.csv'),
-                  reference_input_sha256=sha(cells), compilers={})
+                  reference_input_sha256=sha(cells), portability=dict(
+                      angle_headers=sorted(headers), source_hashes={str(p.relative_to(ROOT)):sha(p) for p in runtime}), compilers={})
+    report['provided_inputs'] = {name:sha(ROOT.parent / name) for name in [
+        'scenarios/score.py', 'scenarios/make_scenario.py', 'scenarios/micm_scenario.cpp',
+        'reference/compare_final.py', 'reference/micm_ts1_ref.cpp', 'reference/micm_cases.txt', 'reference/ts1_defaults.csv']}
+    report['micm_commit'] = subprocess.run(['git', '-C', str(ROOT.parent / 'micm'), 'rev-parse', 'HEAD'],
+                                            capture_output=True, text=True, check=True).stdout.strip()
     report_path = ROOT / 'scans/validation.json'
     for compiler in args.compilers.split(','):
         build_log = ROOT / 'build' / f'validation-build-{compiler}.log'
@@ -84,6 +103,9 @@ def main():
             prototype_cases=len(prototype_rows), prototype_max_absolute_difference=max(float(r['max_absolute_difference']) for r in prototype_rows),
             flags=(ROOT / 'build' / compiler / 'flags').read_text().strip(),
             scenario_binary_sha256=sha(ROOT / 'bin/ts1_scenario'), gates=gates)
+        if sys.platform == 'darwin':
+            report['compilers'][compiler]['native_dependencies'] = subprocess.run(
+                ['otool', '-L', str(ROOT / 'bin/ts1_scenario')], check=True, capture_output=True, text=True).stdout
         report_path.write_text(json.dumps(report, indent=2)+'\n')
         print(compiler, counts, '45 prototype cases, scenario checks, 100- and 10000-cell roundoff gates PASS', flush=True)
 

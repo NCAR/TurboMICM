@@ -1,0 +1,129 @@
+{
+  "case_list_sha256": "95615128d26687fbf371e99551062160d9d0c0aff4e5c8c36ca38e4dec840da4",
+  "reference_10000_sha256": "133290093c64317d520dff78e89622db36dc467110eb0f3d0e4bc6b24f16ba7d",
+  "reference_input_sha256": "43febf31a0a1f8e0acfe02d93ac96d95ecc024df9572547dd1000926a85ad8b5",
+  "portability": {
+    "angle_headers": [
+      "ctype.h",
+      "errno.h",
+      "float.h",
+      "limits.h",
+      "math.h",
+      "omp.h",
+      "stdarg.h",
+      "stddef.h",
+      "stdint.h",
+      "stdio.h",
+      "stdlib.h",
+      "string.h"
+    ],
+    "source_hashes": {
+      "generated/example_no_user.c": "c9aae21c7f91f6cd67d45d5e930ff7e3e423d85b4e2028e45af17bb51e2c6cbe",
+      "generated/example_robertson.c": "d1c452d417de1dfd2e8310b68348fb63bfefc71f9cd8d4a832a6a83c769c1ae6",
+      "generated/example_user.c": "6fe344cdd1674d8e12bab95a442ff94cb75e8026cd455ac35bf85f9501c56fb4",
+      "generated/ts1.c": "2dc781043859dbe84d0b70c127c1f839d5ec3b1c427e5e4f9c482e3ae7815939",
+      "generated/validation.c": "17cbf25de60b22baacb7c79c2702937b457c756c67b86c0c1a76bd461448db13",
+      "include/chem.h": "e6c4a554352380fc0462d48727d390d84477b6e51f2dacf721c40b8ef6b3e0a0",
+      "include/chem_adaptive.h": "1af51644b1fd3823a46242c3d8ce7c23c2b5fb575794d3cbcc8bc1fc169e7492",
+      "include/chem_array.h": "2eae940c31c71855a4e6b22f1756d9b5d689f731dc26d9568bf762c6da2c44d8",
+      "include/chem_system.h": "edff04ab237cd47c268ef9f4154e5d0e310aaa22157ebc8890fced0fd99ff7b7",
+      "include/chem_verify.h": "2a38e4e0e2e1b71b70a02d7ecc019d00de467e857bcae70c22889b1ce6b032f3",
+      "src/adaptive.c": "9f07d1d114e3f3828aaa30a39397148bf94a61483349febada73996b875f8c97",
+      "src/adaptive_internal.h": "f773b1108684645986e5cd6ed1ac9b911754d0d038c02394095407762e86f190",
+      "src/advance.c": "95a964445d0a96ecc9b710511b88cc14b62bb7d9db3de1e5c66431a855ad047d",
+      "src/array.c": "4c2a81f8d775900154e04379969d682f3927a8afdaa5698aaa97f0c89a829e44",
+      "src/backward_euler.c": "2204c6f803ba5e1c4dcfbec8b71d308df5c347cbb77eb4997f2a1e0b641674ea",
+      "src/bdf.c": "ee6ef5f55c7d628f78ec434745223aaf8dc422f5e0611ccb8972ea5a72c74148",
+      "src/bench.c": "456805538c1e8329eec63a1bd9b043f0da80ca3e59340891e5674ecd3e95bc3a",
+      "src/bench_io.h": "cc4a52931a2bab2563b1b06c9be5d85c17ed422f24394689d7b2f94e58619a94",
+      "src/internal.h": "41e90ee19336c758d4defe2c0177ea523d1a421ad4c81282cbaab015f7588072",
+      "src/linear.c": "8e1764719f8fa38c13aaf1d44f6925b26bfbecd8b3ec9ee3d8c8aaa318bffb8e",
+      "src/model.c": "975f182f29b80a15c88609f85b0ff9f934bf86f9b75e097d59c3a43d197e3425",
+      "src/parameters.c": "c07cede40f77feb872b3d16f098a791400edb85bc4622f1c3857fa15a98a89e6",
+      "src/process.c": "dda89d743967ba2e390f5233cc77ffa050b8724b049aed975ac098c122239be3",
+      "src/rates.c": "9f84258c456b66c3be2b67f8fdbaaa04b8b66b4f0dc046e63cadff307d180e38",
+      "src/reorder.c": "594f0c33b553ad90981e5ba7d859e9e586f7845f543526a7fffe47f28db26d9a",
+      "src/rosenbrock.c": "be7d2bd944d844d363291eaf8a2735c4a3a38affc2cc298c22adb6427e0e071c",
+      "src/scenario.c": "c28dbc9f5dcfbd388f1aa6e3bdf4bc24e845d5b52be341bcf0fce9dfd0608f73",
+      "src/state.c": "08b36dabe1acf4d6ba0df3604c65866a4cf7f9d670bdb06d2f7af6b8416ad450",
+      "src/system.c": "ad13cf7063920d5177e535a6992c007a7a90a56960b01c3264edac4190f73e27",
+      "src/verify.c": "c40c2e76876be65ddc22169e47f1d98056458952e271833044b0d4574ba7e3de"
+    }
+  },
+  "compilers": {
+    "clang": {
+      "tier1": {
+        "PASS": 675,
+        "N/A": 5,
+        "FAIL": 0
+      },
+      "tier1_log_sha256": "bd3a8b6c3bc1e309efc370da1f85a99b149d08718121ff8c67af4435f5ddf4dd",
+      "tier3_log": "prototype agreement: 45 configurations, matching counts; stiff/positivity/API checks PASS\nnative scenario test: interpolation, all-rate vs cached-rate agreement, partial groups, snapshots, CLI errors PASS\n",
+      "prototype_cases": 45,
+      "prototype_max_absolute_difference": 6.789013795582832e-14,
+      "flags": "clang -std=c11 -Wall -Wextra -Wpedantic -O3 -DNDEBUG -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include -Iinclude -Igenerated -DCHEM_GROUP_SIZE=32 -L/opt/homebrew/opt/libomp/lib -lomp -lm",
+      "scenario_binary_sha256": "080f4ac859c64af2d5c9e7e5f9b5f620614f2417d6564cf67dcc3c0155dc4da3",
+      "gates": [
+        {
+          "cells": 100,
+          "input_sha256": "c8dd45eac8630bf62716e2d67278442f1f3705cbe3d1ee137f59c3a508962082",
+          "reference_sha256": "002948001f5158f2daad66d1c436e20195d91883d02f1a8ad75348a5cf13b01c",
+          "result_sha256": "72430eca45f92ac9faaa796298edc800480a2316dd0f323dc311164508f1b4b8",
+          "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.48e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)\n",
+          "stdout": "elapsed_ms=401.910\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+        },
+        {
+          "cells": 10000,
+          "input_sha256": "43febf31a0a1f8e0acfe02d93ac96d95ecc024df9572547dd1000926a85ad8b5",
+          "reference_sha256": "133290093c64317d520dff78e89622db36dc467110eb0f3d0e4bc6b24f16ba7d",
+          "result_sha256": "a63cbd0c9866c9a40cf293d61839255d89044ee80a54c330f6b7561100856e2e",
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 1.26e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)\n",
+          "stdout": "elapsed_ms=7107.033\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n"
+        }
+      ],
+      "native_dependencies": "/Users/fillmore/NSF-NCAR/ODE/benchmarks/tier3/sol-max/bin/ts1_scenario:\n\t/opt/homebrew/opt/libomp/lib/libomp.dylib (compatibility version 5.0.0, current version 5.0.0)\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1356.0.0)\n"
+    },
+    "gcc-15": {
+      "tier1": {
+        "PASS": 675,
+        "N/A": 5,
+        "FAIL": 0
+      },
+      "tier1_log_sha256": "bd3a8b6c3bc1e309efc370da1f85a99b149d08718121ff8c67af4435f5ddf4dd",
+      "tier3_log": "prototype agreement: 45 configurations, matching counts; stiff/positivity/API checks PASS\nnative scenario test: interpolation, all-rate vs cached-rate agreement, partial groups, snapshots, CLI errors PASS\n",
+      "prototype_cases": 45,
+      "prototype_max_absolute_difference": 3.502753642692369e-14,
+      "flags": "gcc-15 -std=c11 -Wall -Wextra -Wpedantic -O3 -DNDEBUG -fopenmp -Iinclude -Igenerated -DCHEM_GROUP_SIZE=32 -fopenmp -lm",
+      "scenario_binary_sha256": "1a544a5215e5c96f843c6ecbb1df36b4a71396b26d3f17aba907278453020c29",
+      "gates": [
+        {
+          "cells": 100,
+          "input_sha256": "c8dd45eac8630bf62716e2d67278442f1f3705cbe3d1ee137f59c3a508962082",
+          "reference_sha256": "002948001f5158f2daad66d1c436e20195d91883d02f1a8ad75348a5cf13b01c",
+          "result_sha256": "37525cf5afe4cfd989b28bc930c1480ce4341b9f57620dba7386c4d73643e067",
+          "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.43e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)\n",
+          "stdout": "elapsed_ms=419.281\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+        },
+        {
+          "cells": 10000,
+          "input_sha256": "43febf31a0a1f8e0acfe02d93ac96d95ecc024df9572547dd1000926a85ad8b5",
+          "reference_sha256": "133290093c64317d520dff78e89622db36dc467110eb0f3d0e4bc6b24f16ba7d",
+          "result_sha256": "6858f79094ab627ca02a6f6fd21a71bbc874ecaefc0dcc30ccbeb0759e3779e2",
+          "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 1.16e-13 (BCARYO2VBS, cell 6455) (rtol 1e-10, atol 1e-30)\n",
+          "stdout": "elapsed_ms=7727.129\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100\n"
+        }
+      ],
+      "native_dependencies": "/Users/fillmore/NSF-NCAR/ODE/benchmarks/tier3/sol-max/bin/ts1_scenario:\n\t/opt/homebrew/opt/gcc/lib/gcc/current/libgomp.1.dylib (compatibility version 2.0.0, current version 2.0.0)\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1356.0.0)\n"
+    }
+  },
+  "provided_inputs": {
+    "scenarios/score.py": "2a0ee04cbcdc7ea10abd6fc508c7c8f207377f224a011985a44d9e0c49b2b250",
+    "scenarios/make_scenario.py": "babab56a0208b87197a864994f8f7622a5c72e2507223f49067218f6d621c6d4",
+    "scenarios/micm_scenario.cpp": "a0795cd77d1a878c62cc0d1d0b7d743b2fb41df9435c6e10cfb4710bb778509f",
+    "reference/compare_final.py": "fec0758370b1772d711a09b19bae3254f32fba43084aec3c02c636fe4e454804",
+    "reference/micm_ts1_ref.cpp": "791c061fc880654167faf45c23e68da95173ac0659fcb8bc24d1b512bc621b30",
+    "reference/micm_cases.txt": "95615128d26687fbf371e99551062160d9d0c0aff4e5c8c36ca38e4dec840da4",
+    "reference/ts1_defaults.csv": "3273b20959c8e4dc49679c65b42875d497c8e713797ffe66ff8b9508fa64c09f"
+  },
+  "micm_commit": "e15898ce482a979594397144c76258e1ada6b79d"
+}

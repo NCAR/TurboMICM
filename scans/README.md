@@ -13,6 +13,7 @@ Each CSV row is one native run, including failures. `options` is a JSON object o
 - `large-structure.csv`: 10,000-cell group-size and scheduling screen, with the supplied reference covering the first 1,000 cells. The gate checks all output cells.
 - `throughput-validation.csv`: full disclosed validation for 16-cell dynamic groups, with species diagnostics in the corresponding `-species.csv` file.
 - `final-clang-1000.csv` and `final-clang-10000.csv`: five-repeat final operating points with 16-cell dynamic groups. The 1,000-cell study has full reference coverage; the 10,000-cell study has reference coverage for its first 1,000 cells and gate coverage for every output cell.
+- `final-gcc-1000.csv`: all 30 declared configuration/scenario combinations built with GCC, one native validation run each, with full reference coverage.
 - `stress-reference-generation.csv`: tight and looser independent MICM6 runs. The tight run scores against itself (16 digits, a setup check); only the looser-vs-tight comparison establishes convergence. All three comparisons exceed 10 overall digits and 9 worst-species digits.
 - `stress-final.csv`: final operating points on three extra 64-cell, 48-hour scenarios; `stress-48h.csv` is the earlier 32-cell-group comparison. Both have independent tight references and species diagnostics.
 - `micm-large.csv`: independent three-stage baselines on the large extensions, with the same limited reference coverage and complete output gate.

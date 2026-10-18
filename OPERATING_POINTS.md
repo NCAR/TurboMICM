@@ -22,7 +22,7 @@ bin/ts1_scenario --method rodas3 --option rtol=0.005 --option group=16 --option 
 bin/ts1_scenario --method rodas3 --option rtol=0.0005 --option group=16 --option schedule=dynamic SCENARIO
 ```
 
-## recommended — recommended for an atmospheric model
+## recommended (chosen for an atmospheric model)
 
 ```sh
 bin/ts1_scenario --method rodas3 --option rtol=0.0003 --option group=16 --option schedule=dynamic SCENARIO

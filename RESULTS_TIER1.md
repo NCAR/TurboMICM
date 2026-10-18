@@ -1,3 +1,7 @@
+# Historical Tier 1 record
+
+This is the measurement record inherited from commit `001fb64`. Current validation and Tier 3 results are in `RESULTS.md`.
+
 # Validation and measurements
 
 Validated on the provided 10-core M5 machine, macOS 27.0.1, with Apple clang 21.0.0 and GCC 15.2.0. Both C builds and the independent clang++ reference use `OPTFLAGS='-O3 -DNDEBUG'`. The C build adds C11, warnings, include paths, shared-library support, and the prescribed OpenMP flags. There are no target, floating-point, LTO, or profile-guided optimization flags.

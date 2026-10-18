@@ -1,76 +1,90 @@
-# Validation and measurements
+# Tier 3 results
 
-Validated on the provided 10-core M5 machine, macOS 27.0.1, with Apple clang 21.0.0 and GCC 15.2.0. Both C builds and the independent clang++ reference use `OPTFLAGS='-O3 -DNDEBUG'`. The C build adds C11, warnings, include paths, shared-library support, and the prescribed OpenMP flags. There are no target, floating-point, LTO, or profile-guided optimization flags.
+Measurements use the supplied 10-core machine, clang 21 and GCC 15.2, with `OPTFLAGS=-O3 -DNDEBUG`. Numerical methods solve all 547 reactions and 209 variable species. Only native C/C++ clocks supply elapsed times. Setup, validation, and CSV writing are excluded. No benchmark jobs or compiler jobs overlap the final timing batches.
 
-## Required cases
+## Current validation
 
-| Build | PASS | N/A | FAIL | Reported case lines |
-| --- | ---: | ---: | ---: | ---: |
-| `make test-cpu CC=clang` | 675 | 5 | 0 | 680 |
-| `make test-cpu CC=gcc-15` | 675 | 5 | 0 | 680 |
-| `make test-cpu CC=clang KERNEL_CHUNK=7` | 675 | 5 | 0 | 680 |
+| Compiler | Tier 1 PASS | N/A | FAIL | Prototype comparisons | Maximum prototype difference | 100 / 10000-cell gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| clang | 675 | 5 | 0 | 45 | 6.79e-14 | PASS |
+| gcc-15 | 675 | 5 | 0 | 45 | 3.5e-14 | PASS |
 
-The identifiers and ordering match `../reference/micm_cases.txt` exactly. Of the passing cases, 667 are GoogleTest equivalents and eight are native C tutorial programs. The five N/A cases are the four compile-only `ViewCategorySFINAE` cases and `GroupedView.CategoryTagsAreDistinct`: C has no corresponding concepts, template category tags, or overload resolution. Runtime grouped-view and vector behavior remains tested.
+Every one of the 680 supplied identifiers is audited, including all eight plain programs. The five N/A cases are the retained compile-time C++ category/SFINAE cases. `scans/tier1-*.csv` records each result. All new-method prototype operation counts agree exactly; the listed concentration differences are accumulated double-precision roundoff. Scenario interpolation, photolysis caching, partial groups, snapshots, schedule independence, forcing discontinuities, ownership, invalid settings, and stiff nonnegative transfer are checked. `scans/validation.json` contains commands/flags, hashes, and the supplied all-cell/all-species roundoff gates. All 30 operating-point/scenario combinations also pass their declared accuracy levels and output gate with GCC (`scans/final-gcc-1000.csv`); GCC times are individual validation observations.
 
-The suite checks all reference rate families, dense/grouped/sparse arrays and views, copying and error returns, both LU algorithms, finite-difference Jacobians, all five Rosenbrock tables, backward Euler, analytical and stiff reference problems, algebraic initialization and rollback, external model composition, conservation, overshoot, and shared-model OpenMP execution. The eight tutorial outputs match the recorded reference stdout exactly after excluding elapsed time and interleaved thread-startup diagnostics, as detailed in `DECISIONS.md`.
+## Operating-point accuracy
 
-All three supplied YAML/JSON examples are compared with independently code-built mechanisms. Tests compare rate constants, forcing, every Jacobian entry, and integrated species values with a bound of `1e-30 + 1e-10 * abs(reference)`. Both generic and generated paths run. An additional configuration exercises every serializable rate family, a third body, repeated reactants, a 16-coefficient Taylor polynomial, and distinct cell conditions. Generated TS1 kernels are compared directly with generic evaluation and integration through the same library.
+The following table uses all 1,000 disclosed cells and all reference snapshots. Each cell is `overall / worst-species` significant digits from the unmodified supplied scorer.
 
-## TS1 accuracy gate
+| Scenario | fast | balanced | accurate | recommended | precise |
+| --- | --- | --- | --- | --- | --- |
+| tier1-30s | 5.062 / 4.374 | 5.322 / 4.682 | 5.822 / 4.995 | 5.842 / 5.003 | 5.862 / 5.017 |
+| diurnal-30min | 2.122 / 1.064 | 2.328 / 1.386 | 3.701 / 2.404 | 3.884 / 2.632 | 4.296 / 3.08 |
+| diurnal-10min | 2.509 / 1.401 | 2.628 / 1.523 | 3.273 / 2.341 | 3.626 / 2.593 | 4.458 / 3.161 |
+| diurnal-5min | 2.041 / 1.153 | 2.29 / 1.413 | 3.414 / 2.388 | 3.571 / 2.554 | 4.25 / 3.069 |
+| polluted-10min | 2.401 / 1.305 | 2.566 / 1.578 | 3.344 / 2.425 | 3.759 / 2.663 | 4.428 / 3.217 |
+| clean-10min | 2.413 / 1.528 | 2.644 / 1.603 | 3.299 / 2.398 | 3.665 / 2.696 | 4.422 / 3.261 |
 
-Every run below includes one warm-up and 100 timed steps of 30 seconds. The supplied comparison tool checks every species and condition in every cell at `atol=1e-30`, `rtol=1e-10`.
+All five points pass the nonfinite/negative gate on every run. `fast` and `balanced` meet level two on every disclosed scenario; the other three meet level three. `recommended` uses `rtol=3e-4`, 16-cell groups, and dynamic scheduling. `ACCURACY.md` explains the scientific target, primary-species diagnostics, and measured small-negative projections.
 
-| Input | Compiler | Cells × output columns | Maximum relative difference | Gate |
-| --- | --- | ---: | ---: | --- |
-| supplied seed 1 | clang | 100 × 211 | 3.48e-14 | PASS |
-| supplied seed 1 | gcc-15 | 100 × 211 | 3.43e-14 | PASS |
-| generated seed 314159 | clang | 1,000 × 211 | 6.46e-14 | PASS |
-| generated seed 314159 | gcc-15 | 1,000 × 211 | 5.67e-14 | PASS |
-| generated seed 2026 | clang | 10,000 × 211 | 1.26e-13 | PASS |
-| generated seed 2026 | gcc-15 | 10,000 × 211 | 1.16e-13 | PASS |
+## Native elapsed time: 1,000 cells
 
-There are 209 variable species plus temperature and pressure in each output row; the model has 210 species including its parameterized third body, and 547 reactions. The 10,000-cell comparison therefore checks 2,110,000 values per run.
+Values are milliseconds, medians of five complete scenario runs. The independent MICM3 baseline uses its exact default controls, or `rtol=3e-4, atol=1e-18` for the accuracy-controlled column. MICM uses groups of 32; the selected C points use groups of 16 with dynamic scheduling. The comparison includes both the retained C implementation improvements and numerical-control changes.
 
-Additional passing gates cover groups of 1, 17, 1000, partial final groups, 1/2/3/4/default workers, static/dynamic/guided scheduling, and generated kernel chunks of 7 and 32. Large clang runs with groups of 16, 32, and 64 all pass. The one-worker and all-worker MICM 10,000-cell results agree exactly for this input.
+| Scenario | fast | balanced | accurate | recommended | precise | MICM3 defaults | MICM3 controlled | Controlled / recommended |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| tier1-30s | 156.5 | 162.7 | 204.6 | 228.5 | 264.8 | 2621.9 | 2637.9 | 11.55× |
+| diurnal-30min | 250.5 | 296.0 | 720.4 | 893.5 | 1284.9 | FAIL | 3145.0 | 3.52× |
+| diurnal-10min | 322.9 | 381.0 | 955.0 | 1245.1 | 1990.7 | 3660.7 | 6489.1 | 5.21× |
+| diurnal-5min | 471.5 | 494.8 | 1088.1 | 1431.5 | 2530.0 | 7394.0 | 11137.0 | 7.78× |
+| polluted-10min | 371.7 | 461.6 | 1294.6 | 1676.1 | 2425.8 | FAIL | 6924.9 | 4.13× |
+| clean-10min | 305.5 | 354.9 | 916.0 | 1206.8 | 1970.5 | 3585.8 | 6288.6 | 5.21× |
 
-The 10,000-cell input SHA-256 is `43febf31a0a1f8e0acfe02d93ac96d95ecc024df9572547dd1000926a85ad8b5`. Its independently generated one-worker MICM output SHA-256 is `133290093c64317d520dff78e89622db36dc467110eb0f3d0e4bc6b24f16ba7d`.
+A finite default MICM result is not necessarily accurate: the defaults fail on two scenarios, produce very inaccurate finite output on another, and miss level three on others. Default failures are not assigned a speedup. The controlled baseline qualifies at level three, but its achieved accuracy is generally higher than that threshold; ratios compare qualifying operating points rather than identical final errors.
 
-## Performance
+![Overall work–precision curves](plots/work_precision.png)
 
-These are local elapsed times reported by the native programs, excluding initialization, warm-up, and CSV output. The main comparison uses 10,000 distinct cells, seed 2026, 100 timed steps of 30 seconds. Group size is 32 for the C port. Reference measurements are individual runs; the main clang result is the median of five runs. They are measurements of this machine, rather than a performance guarantee.
+![Worst-species work–precision curves](plots/worst_species_precision.png)
 
-| Program | Workers | Elapsed ms | Speedup over matching MICM run |
-| --- | --- | ---: | ---: |
-| MICM, clang++ | 1 | 136,187.244 | 1.00× |
-| C port, clang | 1 | 36,954.738 | 3.69× |
-| C port, gcc-15 | 1 | 40,535.136 | 3.36× |
-| MICM, clang++ | all 10 | 26,010.763 | 1.00× |
-| C port, clang, median of 5 | all 10 | 6,935.493 | 3.75× |
-| C port, gcc-15 | all 10 | 7,329.128 | 3.55× |
+Each curve uses measured median C time; bars show the observed minimum–maximum range. Dashed lines show the ranking thresholds. SVG versions are available beside the PNGs. The worst-species figure is necessary because the overall score alone is insufficient.
 
-The five clang times were 6,813.886, 7,171.708, 6,855.476, 6,935.493, and 7,091.086 ms; every run passed the complete gate. The 100-cell, one-worker runs took 382.289 ms with clang and 407.043 ms with GCC. A prior same-flags MICM 100-cell measurement took 1,197.123 ms.
+## Native elapsed time: 10,000 cells
 
-A coarse all-worker group-size sweep gave 6,688.210/7,088.742 ms for group 16, 6,813.886/7,171.708 ms for group 32, and 7,408.583/7,663.285 ms for group 64. Groups 16 and 32 were close relative to run variation. The default remains 32, which halves the number of adaptive controllers relative to group 16 while retaining a modest working set. The setting remains a build/run parameter.
+These are independently measured complete 10,000-cell extensions, again medians of five native runs. All output values pass the gate. Relative-error scores cover the first 1,000 cells, which the generator verifies match the supplied inputs exactly; there is no claim of tight-reference accuracy for the remaining 9,000 cells.
 
-Timed solver totals for the 10,000-cell C run were 281,700 internal/accepted steps, zero rejections, 563,400 forcing calls, 281,700 Jacobian updates/decompositions, and 845,100 solves. There are 313 independent groups. MICM's one-worker run has one group and reports 900 accepted steps, 1,800 forcing calls, 900 Jacobian updates/decompositions, and 2,700 solves; its ten-worker run reports ten times those counts. Both implementations take nine internal steps per group per timed call. Grouping accounts for the different totals; coefficients, tolerances, and step-size rules are unchanged.
+| Scenario | fast | balanced | accurate | recommended | precise | MICM3 defaults | MICM3 controlled | Controlled / recommended |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| tier1-30s | 1528.8 | 1580.6 | 2003.2 | 2192.5 | 2499.7 | 22505.6 | 23306.2 | 10.63× |
+| diurnal-30min | 2564.1 | 2980.4 | 7478.5 | 8719.8 | 12112.5 | FAIL | 27755.0 | 3.18× |
+| diurnal-10min | 3208.5 | 3781.0 | 9859.2 | 12185.8 | 18372.0 | FAIL | 57908.7 | 4.75× |
+| diurnal-5min | 4651.7 | 4902.5 | 10962.2 | 13537.7 | 23025.2 | 64499.3 | 100399.3 | 7.42× |
+| polluted-10min | 3786.3 | 4641.5 | 12881.8 | 15466.1 | 22123.0 | FAIL | 61642.7 | 3.99× |
+| clean-10min | 2994.5 | 3493.2 | 8706.4 | 11181.0 | 18081.3 | 31704.0 | 57497.8 | 5.14× |
+
+Full per-run times, counters, output hashes, and measured accuracy are in `scans/final-clang-10000.csv`. The MICM columns are individual native C++ observations, not five-run medians; `scans/micm-large.csv` records those comparisons. Its defaults fail on three large scenarios. Ratios therefore compare a single controlled baseline observation with a C median. The experimenter supplies the authoritative idle-machine medians and hidden-scenario scores.
+
+## Additional 48-hour validation
+
+Three locally generated 64-cell cases vary seed, latitude, season, duration, step length, and NOx. Their MICM6 references at `rtol=1e-10, atol=1e-23` agree with looser independent runs by more than ten overall digits and nine worst-species digits. These are additional tests, not hidden experimenter inputs. Every declared point passes the gate.
+
+| Scenario | fast | balanced | accurate | recommended | precise |
+| --- | --- | --- | --- | --- | --- |
+| clean-winter-48h-5min | 2.777 / 1.951 | 2.778 / 1.951 | 3.562 / 2.55 | 3.717 / 2.735 | 4.588 / 3.613 |
+| polluted-48h-10min | 2.736 / 1.623 | 2.791 / 1.687 | 3.582 / 2.783 | 3.962 / 3.112 | 4.833 / 3.682 |
+| summer-48h-30min | 2.249 / 1.272 | 2.45 / 1.611 | 3.664 / 2.667 | 3.944 / 2.9 | 4.407 / 3.367 |
+
+`scans/stress-scenarios.json` and `tools/stress_references.py` reproduce these inputs and their reference-convergence checks. The recommended point also clears the stated accuracy target on these longer, different-regime tests.
 
 ## Reproduction
 
 ```sh
 make env
-mkdir -p results
-make test-cpu CC=clang > results/clang-tests.log
-make test-cpu CC=gcc-15 > results/gcc-tests.log
-make micm-ref
-.conda/bin/python ../reference/make_cells_csv.py 10000 2026 --output results/cells.csv
-mkdir -p results/reference-run
-(cd results/reference-run && ../../bin/micm_ts1_ref --threads 1 10000 100 30 ../cells.csv)
 make bench CC=clang
-.conda/bin/python tools/check_benchmark.py 10000 100 30 \
-  results/cells.csv results/reference-run/ts1_final.csv results/clang-run \
-  --compiler clang
+.conda/bin/python tools/large_scenarios.py
+.conda/bin/python tools/scan.py scans/operating-points-throughput.json --study local-small --repeats 5 --metrics
+.conda/bin/python tools/scan.py scans/operating-points-throughput.json --study local-large --scenario-root results/large --repeats 5
+make micm-scenario
+.conda/bin/python tools/scan.py scans/micm-baselines.json --study local-micm --backend micm --compiler clang++ --repeats 5
+.conda/bin/python tools/validate.py
 ```
 
-Omit `--threads 1` on the reference command for its all-worker timing. Add `--threads 1`, `--group N`, or `--schedule dynamic,1` to the check tool for other settings. Select `CC=gcc-15` and label that compiler in the check tool to repeat with GCC. The tool retains stdout, the complete final CSV, gate output, input/reference hashes, and command metadata under the chosen output directory. Generated CSVs, build products, environment, caches, and local run logs are ignored by git.
-
-The portability audit found only standard C headers and `omp.h` in runtime sources, and only CPU OpenMP pragmas. The native executable links the system C runtime and OpenMP; it has no Python, MICM, or MUSICA runtime dependency.
+Use fresh study names for changed code/options. The supplied input directories remain read-only. `SCANS.md`, `REFERENCES.md`, and `scans/README.md` give the controlled comparisons, provenance, schema, and caveats. `tools/report.py` regenerates this report from the committed final study names. Historical Tier 1 measurements are retained in `RESULTS_TIER1.md`; the validation above is current.
