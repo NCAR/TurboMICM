@@ -18,12 +18,13 @@ from agents that are still running.
 ## Tier 3 runs
 
 Each Tier 3 run starts from a clone of the same model's Tier 1 repository and
-runs with web search on (`codex --search`). The files and redaction are as for
-the contest runs below.
+runs with web search on (`codex --search`). The file format and the redaction
+are those described under Contest runs, below.
 
 | File | Run | Harness | Session id | Original size |
 |---|---|---|---|---:|
 | `transcripts/tier3/sol-xhigh.jsonl.gz` | Tier 3 sol-xhigh | Codex CLI 0.163.0 | `01a14df8-cf84-7851-b9c3-3c76c4eef53e` | 8.2 MB |
+| `transcripts/tier3/sol-max.jsonl.gz` | Tier 3 sol-max | Codex CLI 0.163.0 | `01a14e89-d573-77d2-8286-e1d020bdb20d` | 5.9 MB |
 
 ## Fable's reference entry (not a contest run)
 
