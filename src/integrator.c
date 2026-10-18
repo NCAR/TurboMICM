@@ -166,8 +166,10 @@ static int sdirk_trial(ch_integrator *w, double h, ch_stats *stats, ch_integrato
       }
     }
   }
+  /* High-order minus embedded candidate: projecting the high-order candidate
+   * upward must add the same correction to this signed error. */
   for (size_t k = 0; k < n; ++k)
-    s->error[k] = first_increment[k]/gamma-(s->new_y[k]-s->y[k]);
+    s->error[k] = (s->new_y[k]-s->y[k])-first_increment[k]/gamma;
   return 1;
 }
 

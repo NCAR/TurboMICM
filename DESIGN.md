@@ -39,8 +39,11 @@ SDIRK2 uses `g = 1 - 1/sqrt(2)` and solves
 `Y1 = y + g*h*f(Y1)`, then `Y2 = y + (1-g)*h*f(Y1) + g*h*f(Y2)`.
 Chord iterations share `I/(g*h) - J(y)` across both stages. Each correction
 solves the scaled residual equation; its normalized size must be at most
-`newton_tolerance`. Failure rejects the trial. The candidate is `Y2`; its
-first-order embedded error is `y + (Y1-y)/g - Y2`, with controller order 2.
+`newton_tolerance`. Failure rejects the trial. The candidate is `Y2`; the
+first-order embedded candidate is `y + (Y1-y)/g`. Store the error as
+`Y2 - [y + (Y1-y)/g]`, with controller order 2, so adding a projection to `Y2`
+adds the same signed amount to the error. A stiff scalar regression checks
+the acceptance decision when that projection moves the error through one.
 This inexpensive estimator is not L-stable; fewer stages do not guarantee lower
 cost on stiff transients.
 
@@ -294,9 +297,13 @@ does not depend on a fixed size, SIMD width, or worker identity.
 
 No hard-coded vector width, processor affinity, architecture flags, or compiler
 optimization experiments are used. Larger groups reduce dispatch overhead but
-increase working-set size. The measured 16/32/64/128/256 sweep favored 32; this is
-a configurable default, not a numerical requirement. The primary runtime uses
-all cores and dynamic group assignment to allow different group costs.
+increase working-set size. The Tier 1 16/32/64/128/256 sweep favored 32; the final
+Tier 3 comparison also selected 32, with a modest advantage over 16 described in
+[SCANS.md](SCANS.md). This is a configurable default, not a numerical requirement.
+The primary runtime uses all cores and dynamic group assignment to allow
+different group costs. The retained benchmark schedules a group's complete
+history at once. The scenario runner schedules groups at each external step,
+retaining each group's private solver history.
 
 ## Extension points
 

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "sdirk2-corrected",
+    "method": "sdirk2",
+    "options": {
+      "rtol": 0.0001,
+      "atol": 1e-18
+    }
+  }
+]

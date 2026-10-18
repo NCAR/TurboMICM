@@ -1,0 +1,4 @@
+Reproduced before correction: ('projection must cause rejection', 0, 1, 0)
+Analytical projected error / atol: 1.0228860101147619; previous sign produced 0.9837227120693738.
+After correction: clang and GCC pass the regression; accepted=0, rejected=1, final_time=0, original state preserved.
+The independent prototype also rejects and matches every operation counter.

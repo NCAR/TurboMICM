@@ -23,7 +23,7 @@ gcc-15 -Iinclude -Ibuild/generated -DCH_DEFAULT_GROUP_SIZE=32 -std=c11 -Wall -We
 <repository>/.conda/bin/python tests/test_integrator.py
 PASS: 147 C/prototype comparisons with identical counters; seven stiff analytical cases; invalid options
 Observed orders: [(2, 2, 1.8743065675689146), (3, 3, 2.9742611750674226), (4, 4, 3.932516522266501), (43, 3, 2.982349291852172), (6, 4, 4.005321532930031), (102, 2, 2.0043463541991904), (431, 3, 2.989657413376079)]
-PASS: overflowing trials, failed nonlinear iterations, exhausted steps, invalid states, DAE exclusion
+PASS: overflowing trials, failed nonlinear iterations, exhausted steps, invalid states, DAE exclusion, projected SDIRK error
 <repository>/.conda/bin/python tests/test_scenario.py
 PASS: default/Tier 1 equivalence, piecewise photolysis and boundaries, final/nonmultiple snapshots, threads, invalid CLI
 <repository>/.conda/bin/python tests/run_cases.py

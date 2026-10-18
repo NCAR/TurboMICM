@@ -25,6 +25,8 @@ check seven stiff irreversible-chain solutions, conservation, nonnegativity,
 formal convergence orders on a nonstiff chain, zero/invalid intervals and
 invalid options. Native scenario contract tests cover real TS1 input/output,
 forcing interpolation, boundary values, snapshot timing and thread independence.
+A scalar stiff-decay regression also checks that projecting the SDIRK candidate
+charges the embedded error with the correct sign in both implementations.
 
 The first draft used NumPy's dense solve and counted algorithmic LU work. The
 committed prototype instead performs and reuses its own explicit factors, so

@@ -2,12 +2,12 @@
   "clang": {
     "compiler": "Apple clang version 21.0.0 (clang-2100.0.123.102)",
     "cases_passed": 680,
-    "binary_sha256": "87ef8696625e074f580f8283641b77883e75b7fa1bfad3f4d8fd8b4e03a4d6a8",
+    "binary_sha256": "1c890016ee02659e867b90f9e516440de5fabfcdfc451a6be50a18e781f18ea8",
     "gates": {
       "small": {
         "cells": 100,
         "threads": 1,
-        "stdout": "elapsed_ms=491.129\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800",
+        "stdout": "elapsed_ms=482.921\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800",
         "comparison": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)",
         "input_sha256": "c8dd45eac8630bf62716e2d67278442f1f3705cbe3d1ee137f59c3a508962082",
         "reference_sha256": "002948001f5158f2daad66d1c436e20195d91883d02f1a8ad75348a5cf13b01c",
@@ -16,7 +16,7 @@
       "large": {
         "cells": 10000,
         "threads": 10,
-        "stdout": "elapsed_ms=8668.291\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100",
+        "stdout": "elapsed_ms=7991.107\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100",
         "comparison": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
         "input_sha256": "43febf31a0a1f8e0acfe02d93ac96d95ecc024df9572547dd1000926a85ad8b5",
         "reference_sha256": "133290093c64317d520dff78e89622db36dc467110eb0f3d0e4bc6b24f16ba7d",
@@ -27,12 +27,12 @@
   "gcc": {
     "compiler": "gcc-15 (Homebrew GCC 15.2.0) 15.2.0",
     "cases_passed": 680,
-    "binary_sha256": "849aefc9e00b15c43f9bce4132c3991f8795e8f514896bd09d5c4402f8771581",
+    "binary_sha256": "a3936897f049a97b6fc9c446b5fa7324d1fc6fa13317e41eee8049ccb36b10a8",
     "gates": {
       "small": {
         "cells": 100,
         "threads": 1,
-        "stdout": "elapsed_ms=548.659\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800",
+        "stdout": "elapsed_ms=549.770\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800",
         "comparison": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.66e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)",
         "input_sha256": "c8dd45eac8630bf62716e2d67278442f1f3705cbe3d1ee137f59c3a508962082",
         "reference_sha256": "002948001f5158f2daad66d1c436e20195d91883d02f1a8ad75348a5cf13b01c",
@@ -41,7 +41,7 @@
       "large": {
         "cells": 10000,
         "threads": 10,
-        "stdout": "elapsed_ms=9202.528\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100",
+        "stdout": "elapsed_ms=9259.448\ninternal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100",
         "comparison": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.75e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
         "input_sha256": "43febf31a0a1f8e0acfe02d93ac96d95ecc024df9572547dd1000926a85ad8b5",
         "reference_sha256": "133290093c64317d520dff78e89622db36dc467110eb0f3d0e4bc6b24f16ba7d",

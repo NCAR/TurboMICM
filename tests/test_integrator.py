@@ -196,15 +196,49 @@ def failures():
             assert not integrator_create(s.handle,C.byref(o))
 
 
+def projection_error():
+    # For y'=-100*y, h=1, SDIRK's high-order candidate is -0.0440587;
+    # its embedded candidate is -2.3014935. Projection makes the accepted
+    # candidate zero, so the error is 2.3014935 / 2.25 > 1 and must reject.
+    # Reversing only the projection's sign would incorrectly give 0.98372.
+    with Model(['A']) as m:
+        rate = rate_default(0); rate.p[0] = 100
+        m.reaction(['A'],{},rate); m.finalize()
+        with State(m) as s:
+            s.conditions(); s.set('A',1); s.update(); s.tolerance(rtol=0,atol=2.25)
+            o = integrator_default(102); o.h_start = 1; o.max_steps = 1
+            work = integrator_create(s.handle,C.byref(o)); assert work
+            st,ex = Stats(),Extra()
+            try:
+                status = integrator_step(work,1,C.byref(st),C.byref(ex))
+                assert status == -7,('projection must cause rejection',status,st.accepted,st.rejected)
+                assert st.accepted == 0 and st.rejected == 1 and st.final_time == 0
+                near(s.y,np.array([[1.]]),rtol=0)
+                oracle = Integrator(lambda y:-100*y,lambda y:np.array([[[-100.]]]),
+                    np.array([[1.]]),Options(method=102,h_start=1,max_steps=1),None,rtol=0,atol=2.25)
+                try:
+                    oracle.step(1)
+                except AssertionError:
+                    assert oracle.counts['accepted'] == 0 and oracle.counts['rejected'] == 1
+                else:
+                    raise AssertionError('prototype accepted excessive projected error')
+                actual = {k:getattr(st,k) if hasattr(st,k) else getattr(ex,k) for k in COUNTERS}
+                assert actual == oracle.counts
+                near(oracle.y,s.y,rtol=0)
+            finally:
+                integrator_free(work)
+
+
 if __name__ == '__main__':
     rows = equivalence()
     analytical()
     order_results = orders()
     failures()
+    projection_error()
     if len(sys.argv) == 2:
         with open(sys.argv[1],'w',newline='') as file:
             writer = csv.DictWriter(file,fieldnames=list(rows[0]),lineterminator='\n')
             writer.writeheader(); writer.writerows(rows)
     print(f'PASS: {len(rows)} C/prototype comparisons with identical counters; seven stiff analytical cases; invalid options')
     print('Observed orders:',order_results)
-    print('PASS: overflowing trials, failed nonlinear iterations, exhausted steps, invalid states, DAE exclusion')
+    print('PASS: overflowing trials, failed nonlinear iterations, exhausted steps, invalid states, DAE exclusion, projected SDIRK error')

@@ -140,7 +140,7 @@ class Integrator:
             if not stage:
                 increment = candidate-self.y
                 base = self.y+((1-gamma)/gamma)*increment
-        return candidate,increment/gamma-(candidate-self.y),True
+        return candidate,(candidate-self.y)-increment/gamma,True
 
     def step(self,dt):
         self.counts = {name:0 for name in COUNTERS}

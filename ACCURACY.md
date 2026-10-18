@@ -38,7 +38,8 @@ The default legacy TS1 atol (`1e-3 mol m-3`) was preserved for compatibility,
 not selected as the new accuracy target. Its short-step benchmark accuracy
 does not carry over to long chemistry intervals, as the disclosed failures show.
 
-An RMS bound is not a per-value bound. Species below the threshold are excluded
+An RMS bound is not a per-value bound. The score covers the prescribed snapshots;
+errors between those reporting times can be larger. Species below the threshold are excluded
 from digit scoring, but still participate in every RHS and Jacobian evaluation.
 No reactions or low-abundance species are removed. The supplied references use
 a converged six-stage method at rtol `1e-10`, atol `1e-23`; reported reference

@@ -1,4 +1,8 @@
-# Results
+# Tier 1 results (archived)
+
+Historical results retained from Tier 1. Current measurements are in
+[the Tier 3 report](../RESULTS.md); links below have been adjusted for this
+archive's location.
 
 Validated on 2026-10-16 on the supplied Apple M5 machine (10 CPU cores, 16 GB
 memory, macOS 27.0.1). C compilers were Apple clang 21.0.0 and Homebrew GCC
@@ -15,8 +19,8 @@ by `make micm-ref` with clang++, C++20, and the same `-O3 -DNDEBUG` flags.
 
 These are all 672 GoogleTest IDs and eight plain-program IDs in the supplied
 case list. The committed per-case records are
-[`validation/clang-cases.txt`](validation/clang-cases.txt) and
-[`validation/gcc-cases.txt`](validation/gcc-cases.txt). Their IDs were checked
+[`validation/clang-cases.txt`](clang-cases.txt) and
+[`validation/gcc-cases.txt`](gcc-cases.txt). Their IDs were checked
 against the supplied list for missing entries and duplicates. Final builds had
 no compiler warnings.
 
@@ -30,7 +34,7 @@ wall-loss trajectories pass the original absolute tolerance of 1e-10.
 
 All eight plain-program comparisons match their deterministic reference output.
 Timing values and concurrent startup ordering are handled as specified in
-[`DECISIONS.md`](DECISIONS.md); numerical output and printed solver counters are
+[`DECISIONS.md`](../DECISIONS.md); numerical output and printed solver counters are
 compared exactly. There are no N/A exceptions.
 
 ## TS1 numerical gate
@@ -106,9 +110,9 @@ are summed over independent states, so their totals differ with group count:
 | decompositions | 281,700 | 9,000 | 900 |
 | solves | 845,100 | 27,000 | 2,700 |
 
-[`validation/benchmarks.json`](validation/benchmarks.json) retains the raw
+[`validation/benchmarks.json`](benchmarks.json) retains the raw
 elapsed times, counters, and native gate results. Reproduction commands are in
-[`README.md`](README.md). Environment recreation/update was checked with
+[`README.md`](../README.md). Environment recreation/update was checked with
 `make env`; the final clang executable was rebuilt and matched the binary used
 for the recorded measurements byte for byte. Dynamic dependency inspection
 showed only the compiler's OpenMP runtime and the system C runtime for both C

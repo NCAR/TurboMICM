@@ -29,6 +29,7 @@ tolerance value itself guarantees a number of digits.
 | `08-stress-candidates` | Independent 48-hour scenarios with converged references; four candidate operating points |
 | `09-groups` | 10,000 cells; only group size changes (16, 32, 64, 128), scoring the disclosed prefix |
 | `10-copy-elision` | Repeat two leading groups after eliminating the unnecessary preserved-Jacobian copy |
+| `11-sdirk-projection` | Retest SDIRK on the final engine after correcting its signed projected-error estimate |
 
 In scan 03, `structure-base` is the parent unless stated otherwise.
 `restart-large` differs only in starting h from `restart`; `h211b-b1` differs
@@ -42,9 +43,17 @@ norm. The projection correction was also charged to the embedded error before
 acceptance. Source hashes distinguish these stages. The norm-loop change
 produced byte-identical output CSV hashes on all six baseline scenarios.
 Scan 04's first configuration overlapped reference compilation; its exploratory
-timing is not used as an idle-machine performance claim. Early single-run times
+timing is excluded from the work–precision figure and is not used as an
+idle-machine performance claim. Early single-run times
 guide candidate selection, while final operating-point comparisons use repeated
 native measurements without concurrent build or test jobs.
+
+MICM baseline runs retain the supplied runner's default one group per thread;
+new C runs use the recorded group size. The unchanged MICM timer includes its
+in-memory snapshot copies, whereas the native C timer excludes them. Baseline
+comparisons consequently reflect implementation and grouping as well as the
+numerical method. Formula comparisons within a structural scan keep these
+execution choices fixed.
 
 ## Findings from the controlled scans
 
@@ -124,6 +133,23 @@ rule. Every full output hash and every operation counter matched the respective
 pre-copy-elision run across all 24 comparisons; see
 `validation/copy-elision.json`. Preliminary GCC point checks with group 16 are
 retained with `-group16` suffixes, separately from the final group-32 checks.
+
+The final review found that SDIRK stored `embedded - candidate`, while the shared
+projection correction assumed `candidate - embedded`. A scalar regression with
+`y' = -100*y`, `y(0)=1`, `h=1`, and atol `2.25` reproduced a false acceptance:
+the projected normalized error should be 1.022886, but the reversed sign gave
+0.983723. C and the independent prototype now use the consistent signed error,
+and both reject that trial. Both compiler suites were rerun. Scan 11 repeats
+SDIRK's original six-case setting on the final engine: 48,798 ms total,
+4.420 minimum overall digits and 3.408 minimum species digits. Other engine
+optimizations also occurred since scan 01, so the time difference is not an
+isolated performance effect of the sign correction. The superseded six SDIRK
+observations stay in scan 01 but are excluded from the plot.
+
+The RODAS3 operating-point formulas are unaffected. Earlier point measurements
+remain under `pre-sdirk-fix-*`; final accuracy and five-run timing series were
+refreshed against the corrected binary. The unchanged MICM baseline binary and
+its complete five-run series remain the same reference comparison.
 
 ## Scope of the conclusions
 
