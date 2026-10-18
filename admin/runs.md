@@ -310,7 +310,7 @@ Launch changes
 | Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|---|
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45–03:34 | `63d246f` | done, verified |
-| sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 04:23– | | running |
+| sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 04:23–06:03 | `c122d12` | done, verified |
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | | | | queued |
 | astra-max | gpt-6-astra | max | `0dc7f67` | | | | queued |
 
@@ -384,3 +384,40 @@ Launch changes
 - Launched after sol-xhigh was collected, archived, and verified, and after the
   held-out scenarios were made. The machine was idle, on AC power, with load
   averages falling from that work (2.05 over 1 minute).
+- The whole run was one turn, from the goal at 04:23:40 to its end at 06:03:04
+  (1 h 39 min 23 s), with no context compaction. Its one turn context shows
+  gpt-6.1-sol at max. The session marked its goal complete and ended with DONE.
+  Claude Code closed it with `/quit` at 06:14, after the record had been idle
+  for 10 minutes.
+- Tokens: 775,162 total; input 598,037 (plus 26,008,576 cached); output 177,125
+  (106,937 reasoning). Codex's weekly limit went from 24 % used to 27 %.
+- Web: 10 web items: 3 searches (6 queries), 2 pages opened, 3 finds in a page,
+  and 2 page reads. It searched for Sandu et al. (1997), Rosenbrock W-methods
+  (ROS3P, ROS3PRL2), and accuracy targets for chemistry solvers, and read Verwer
+  et al. (1999) on ROS2 and Dreger et al. (2025, GMD). REFERENCES.md cites both
+  pages it opened.
+- 4 commits after `001fb64`, from 04:33 to 06:02, ending `c122d12`, "Finalize
+  compiler gates, operating-point benchmarks, and research reports": 88 files
+  changed, 26,469 lines added and 241 removed. No remote; the working tree is
+  clean.
+- Compliance: no command reads outside its directory and the read-only inputs,
+  apart from Codex's own check for AGENTS.md in the parent folders; no install or
+  download command.
+- Self-reported, not yet verified: both compilers pass the Tier 1 gate (675 PASS,
+  5 N/A); five RODAS3 points at rtol 1e-2 to 1e-4 (atol 1e-18), all with 16-cell
+  groups and dynamic scheduling; the recommended point (rtol 3e-4) reaches 3.57
+  digits overall and 2.55 for every species on the disclosed scenarios, 3.5 to
+  11.6 times faster than MICM's three-stage Rosenbrock at rtol 3e-4 and atol
+  1e-18, on 1,000 cells.
+- Other load during the session: Claude Code made two read-only progress checks
+  and edited the run log and wiki. No builds, tests, or timing ran.
+- Collected as `tier3/sol/max`; transcript `transcripts/tier3/sol-max.jsonl.gz`.
+- Verified, 06:15–06:19, with `admin/verify_tier3.py`
+  (`results/2026-10-18-tier3-sol-max-verification`): both compilers build
+  without warnings; 675 PASS, 0 FAIL, 5 N/A with each; the Tier 1 TS1 gate
+  passes (largest relative difference 1.26e-13 with clang, 1.16e-13 with
+  gcc-15); the audit finds nothing outside the rules. All five points pass the
+  gate on the 6 disclosed and 5 held-out scenarios. fast and balanced reach
+  level 2 on all 11, and accurate, recommended, and precise reach level 3 on all
+  11. The disclosed scores match the agent's OPERATING_POINTS.md to the third
+  decimal.
