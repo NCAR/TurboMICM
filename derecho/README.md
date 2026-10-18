@@ -6,7 +6,9 @@ of two AMD EPYC 7763 (Milan, Zen 3) processors, 128 cores with two hardware
 threads each, 8 NUMA domains, AVX2 and FMA, 512 KB of L2 per core and 32 MB of
 L3 per 8-core complex, with the GCC that MUSICA builds with there (gcc 14.3.0
 from ncarenv/25.10). The question: does the port stay 2x faster than MICM's
-fastest configuration on this machine, at a whole node and at one thread?
+fastest configuration on this machine, at a whole node and at one thread? It
+does: 3.2x at one thread and 2.8x on a whole node with each program at its
+best thread count (the final session, below).
 
 Everything here lives on branch `derecho/fable`, under `derecho/`, so the other
 branches' work on `fable/` and the run root is untouched.
@@ -278,4 +280,31 @@ within the noise and stay at the entry's values. The paired solves, which
 give the core two independent chains, change nothing, consistent with the
 profile: the solves wait on L2, not on the chains.
 
-(The final session follows as it completes.)
+### The final session (`results/2026-10-18-final-session`)
+
+Node dec0810, 04:10 to 05:41, five rotating rounds at 128, 256, and 1 threads;
+all 90 runs passed the gate. The port's build is the committed default (width
+4, omp simd lanes, aligned arrays, fast norm, groups of 32 halved while there
+are fewer than four per thread); `fable-derecho-g16` is the same binary with
+`--group-size 16`, `fable-derecho-p16` the same sources generated with
+`--panel 16`.
+
+| Program | 128 threads, median ms (range) | 256 threads, median ms (range) | 1 thread, median ms (range) |
+|---|---:|---:|---:|
+| MICM default | 3,349 (3,006–3,618) | 2,501 (2,496–2,535) | 364,720 (362,031–365,611) |
+| MICM vector8, in-place Mozart, one group per thread | **1,915** (1,824–1,968) | **1,391** (1,388–1,394) | 240,972 (238,733–241,182) |
+| MICM vector8, in-place Mozart, 32-cell groups | 1,963 (1,854–2,004) | 1,577 (1,552–1,585) | **141,011** (140,142–141,912) |
+| **fable-derecho** (the defaults) | **504** (501–507) | 537 (530–538) | 44,259 (44,058–44,476) |
+| fable-derecho-g16 | 503 (502–506) | 613 (606–617) | **43,159** (43,103–43,704) |
+| fable-derecho-p16 | 504 (502–506) | **514** (510–514) | 43,574 (43,315–44,623) |
+
+Against MICM's fastest at each thread count the port is 3.80x at 128 threads,
+2.59x at 256 (2.71x with 16-pivot panels), and 3.19x at one thread (3.27x with
+groups of 16). On a whole node with each program at its best thread count, 504
+ms at 128 threads against 1,391 ms at 256, the port is 2.76x. The goal, 2x over
+the fastest MICM configuration on Derecho, is met.
+
+Follow-up (a new branch): groups of 16 as the default, groups of 8 at 128
+threads, the error norm fused into the solution-and-error pass with the
+stage-0 copy replaced by an out-of-place forward solve, and the Jacobian
+assembled panel by panel inside the LU.
