@@ -25,6 +25,7 @@ are those described under Contest runs, below.
 |---|---|---|---|---:|
 | `transcripts/tier3/sol-xhigh.jsonl.gz` | Tier 3 sol-xhigh | Codex CLI 0.163.0 | `01a14df8-cf84-7851-b9c3-3c76c4eef53e` | 8.2 MB |
 | `transcripts/tier3/sol-max.jsonl.gz` | Tier 3 sol-max | Codex CLI 0.163.0 | `01a14e89-d573-77d2-8286-e1d020bdb20d` | 5.9 MB |
+| `transcripts/tier3/astra-xhigh.jsonl.gz` | Tier 3 astra-xhigh | Codex CLI 0.163.0 | `01a14ef4-db46-7743-8cf5-57c66c1aa74c` | 7.5 MB |
 
 ## Fable's reference entry (not a contest run)
 
