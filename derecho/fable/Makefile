@@ -142,7 +142,7 @@ bin/test_cpu: $(TEST_SOURCES) $(wildcard tests/*.h include/*.h) generated/tests/
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: $(REFERENCE)/micm_ts1_ref.cpp
 	@mkdir -p bin
-	$(CXX) -std=c++20 $(OPTFLAGS) -fopenmp -I$(MICM)/include -I$(MICM)/test/benchmark $< -o $@
+	$(CXX) -std=c++20 $(OPTFLAGS) -I$(MICM)/include -I$(MICM)/test/benchmark $< -o $@
 
 clean:
 	rm -rf build bin generated

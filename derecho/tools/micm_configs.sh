@@ -10,7 +10,7 @@
 #    admin/micm_configs_source.py and builds the 24 configurations (matrix
 #    layout: standard, vector 1, 2, 4, 8, 128; LU storage: in-place, separate;
 #    LU algorithm: Mozart, Doolittle) into OUT/bin with
-#    `g++ -std=c++20 $OPTFLAGS -fopenmp`; OPTFLAGS defaults to the entry's
+#    `g++ -std=c++20 $OPTFLAGS`; OPTFLAGS defaults to the entry's
 #    Derecho flags, -O3 -DNDEBUG -march=znver3 -ffp-contract=fast;
 # 2. runs each on the 100-cell example on one thread against MICM's result
 #    from the experiment's machine (OUT/check.csv): the gate, and whether the
@@ -56,6 +56,9 @@ if [[ ! -f $out/flags.txt || "$(cat "$out/flags.txt")" != "$optflags" ]]; then
   printf '%s\n' "$optflags" > "$out/flags.txt"
 fi
 
+# No -fopenmp: the reference threads with std::thread, and a linked libgomp
+# pins the main thread to one core under OMP_PROC_BIND (env.sh), which every
+# std::thread inherits: 128 threads on one core.
 build() {
   local config=$1
   local flags=()
@@ -65,7 +68,7 @@ build() {
   fi
   [[ $config == *-separate-* ]] && flags+=(-DTS1_LU_SEPARATE)
   [[ $config == *-doolittle ]] && flags+=(-DTS1_LU_DOOLITTLE)
-  g++ -std=c++20 $optflags -fopenmp "${flags[@]}" -I "$micm/include" -I "$micm/test/benchmark" \
+  g++ -std=c++20 $optflags "${flags[@]}" -I "$micm/include" -I "$micm/test/benchmark" \
       "$source" -o "$out/bin/micm-$config"
 }
 

@@ -35,15 +35,23 @@ programs=()
 for v in "${variants[@]}"; do
   [[ -x work/variants/$v/bin/ts1_bench_cpu ]] || { echo "variant $v failed:"; tail -20 work/variants/$v.build.log; exit 1; }
   cp work/variants/$v/variant.txt "$out/variant-$v.txt"
-  programs+=("$v=work/variants/$v/bin/ts1_bench_cpu")
+  programs+=("$v=$here/work/variants/$v/bin/ts1_bench_cpu")
 done
 grep -H 'build seconds' work/variants/{w4,w2,w8,w4-nofma,w4-generic-x86}/variant.txt
 
 # the gate's reference and the MICM programs come from the baseline job
+# admin/time_entries.py runs every program from a fresh working directory, so
+# the programs' paths must be absolute: relative ones are taken from derecho/
+micm=()
+for item in "$@"; do
+  name=${item%%=*}; command=${item#*=}
+  [[ $command == /* ]] || command="$here/$command"
+  micm+=("$name=$command")
+done
 for i in $(seq 1 120); do
   ready=1
   [[ -f $micm_final ]] || ready=0
-  for item in "$@"; do
+  for item in "${micm[@]}"; do
     program=${item#*=}; program=${program%% *}
     [[ -x $program ]] || ready=0
   done
@@ -54,4 +62,4 @@ done
 
 echo "== timing ($(date -Is))"
 python3 "$repo/admin/time_entries.py" --input "$cells" --reference "$micm_final" --out "$out" --threads 128,1 --rounds 3 \
-    "$@" "${programs[@]}"
+    "${micm[@]}" "${programs[@]}"

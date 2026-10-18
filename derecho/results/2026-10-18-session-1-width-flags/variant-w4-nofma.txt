@@ -1,0 +1,8 @@
+variant: w4-nofma
+variables: OPTFLAGS=-O3 -DNDEBUG -march=znver3
+compiler: /glade/u/apps/common/25.10/spack/opt/spack/gcc/14.3.0/nw2m/bin/gcc (gcc (Spack GCC) 14.3.0)
+cflags: -std=c11 -Wall -Wextra -Wpedantic -O3 -DNDEBUG -march=znver3 -fopenmp -Iinclude -DTMC_WIDTH=4 -DTMC_DEFAULT_GROUP_SIZE=32
+build seconds: 0
+generated/ts1.c lines: 44029
+ts1.o text bytes: 541373
+built: 2026-10-18T01:52:11-06:00 on dec2443
