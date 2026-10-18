@@ -63,6 +63,9 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
     `cd <run> && codex -m <model> -c model_reasoning_effort=<effort> -c features.memories=false`.
   - Then give the session `/goal read PROMPT.md and work until done, commit`.
   - Always pass the effort: Codex's model picker saves the last choice in config.toml.
+  - Tier 3: `admin/launch_codex_run.sh --tier3 <run> <model> <effort>` adds
+    `--search`, names the tmux session `tier3-<run>`, and requires an untouched
+    clone at the Tier 1 commit the prompt names.
 - **Monitor:** follow the session record read-only, in the background:
   `until admin/run_state.py <rollout.jsonl> <codex pid>; do sleep 60; done`.
   - A run is done when its last event is `task_complete` and the record has been
@@ -186,10 +189,10 @@ Tier-2-Results.
 - Still to do: settle the draft's choices, choose the arms, give Tier 2 its own
   `scenarios/` (copies of the disclosed day-night scenarios, plus MICM's results
   at the gate's settings; not Tier 3's folder, which leaves tolerances to its
-  agents), port `make_prompts.py` and `setup_runs.py` from `tier3/`, and let
-  `admin/launch_codex_run.sh` launch runs that start from a Tier 1 clone.
+  agents), port `make_prompts.py` and `setup_runs.py` from `tier3/`, and give
+  `admin/launch_codex_run.sh` a Tier 2 mode like its `--tier3`.
 
-## Tier 3: algorithm design (approved 2026-10-15 as Tier 2; renumbered 2026-10-16; not yet launched)
+## Tier 3: algorithm design (approved 2026-10-15 as Tier 2; renumbered 2026-10-16; launched 2026-10-18)
 
 - **Files:** `tier3/prompt.v1` is the template and `tier3/README.md` is the plan
   and build list; the wiki pages are Tier-3-Design, Tier-3-Prompt, and
@@ -198,8 +201,10 @@ Tier-2-Results.
     the template says Tier 3, and the unstarted sol-max and sol-xhigh runs in
     `ODE/benchmarks/tier3/` have regenerated prompts. Tier 3 runs will go on
     branches `tier3/<model>/<effort>`.
-- **Order:** finish Tier 1 (Luna), then the Tier 2 and Tier 3 runs, in an order
-  the SSE chooses.
+- **Order:** the SSE started Tier 3 on 2026-10-18, ahead of Luna's Tier 1 reruns
+  and Tier 2: one run at a time, in the order of the Tier 1 runs (sol-xhigh,
+  sol-max, astra-xhigh, astra-max), each collected, archived, and gate-checked
+  before the next launches. Status is in `admin/runs.md`.
 - **Arms:**
   - Sol and Astra at xhigh and max, a 2 x 2 matrix, each started from a clone of
     the run's own Tier 1 repository (`<tier1_commit>` placeholder);
@@ -220,7 +225,7 @@ Tier-2-Results.
     and L - 1 digits per species on every scenario, at L = 2 and L = 3.
   - Scenarios: f(t) photolysis applied per step, 24-hour day and night, 5–30
     minute steps, clean and polluted cells, some held out.
-- **Before launch:** the tooling, the six disclosed scenarios, and their
+- **Before the ranking:** the tooling, the six disclosed scenarios, and their
   references (converged to 10.2–10.8 digits) are done; see `tier3/README.md`.
   - MICM's default fails on 3 of the 5 day–night scenarios (absolute tolerance
     1e-3 mol m-3); 1e-15 fixes it.

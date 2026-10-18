@@ -9,7 +9,9 @@ from its own Tier 1 solution, researches the literature, prototypes and scans
 method structures, and implements the fastest methods it can justify as accurate
 enough for an atmospheric model.
 
-Status: designed and approved on 2026-10-15; tooling built; not yet launched.
+Status: designed and approved on 2026-10-15; tooling built; launched on 2026-10-18,
+one run at a time in the order of the Tier 1 runs (sol-xhigh, sol-max,
+astra-xhigh, astra-max; see `admin/runs.md`).
 The prompt template is `prompt.v1`. This directory mirrors the committed files of
 the Tier 3 run root, `ODE/benchmarks/tier3`; keep the two identical.
 
@@ -55,15 +57,15 @@ the Tier 3 run root, `ODE/benchmarks/tier3`; keep the two identical.
 
 | Path | Purpose | Status |
 |---|---|---|
-| `prompts/make_prompts.py` | fills the template; `<tier1_commit>` is the Tier 1 run's last commit | built; sol-xhigh and sol-max prompts made |
-| `admin/setup_runs.py` | clones each Tier 1 run repository into the Tier 3 root (no shared files, no remote), writes PROMPT.md, links `micm/` and `reference/` | built and tested; sol-xhigh and sol-max set up |
+| `prompts/make_prompts.py` | fills the template; `<tier1_commit>` is the Tier 1 run's last commit | built; all four prompts made |
+| `admin/setup_runs.py` | clones each Tier 1 run repository into the Tier 3 root (no shared files, no remote), writes PROMPT.md, links `micm/` and `reference/` | built and tested; all four runs set up |
 | `scenarios/micm_scenario.cpp` | MICM on a scenario: f(t) photolysis at the start of each step, any MICM Rosenbrock method and tolerances, snapshots | built; bit-identical to `micm_ts1_ref` on Tier 1's scenario |
 | `admin/make_scenarios.sh`, `scenarios/make_scenario.py` | the six disclosed scenarios, and 10,000-cell versions for timing | built; regenerates the disclosed set byte for byte |
 | `admin/make_references.sh` | references: MICM's six-stage Rosenbrock at 1e-10 relative and 1e-23 absolute, checked against 1e-9 and 1e-22 | all six done on 2026-10-15 (10 threads, 16:31–17:00): converged to 10.18–10.79 digits overall, no species below 8.86 |
 | `scenarios/score.py` | significant digits overall and per species, and the gate | built |
 | `scenarios/README.md` | the scenario, output, and scoring formats, for the agents | written |
 
-Still to do before launch:
+Still to do, before the ranking (the agents need neither):
 - the undisclosed scenarios, made the same way and kept outside the run root
   (their parameters for the SSE to choose);
 - test the scenario mode of `admin/time_entries.py` (written), then time MICM
@@ -104,9 +106,16 @@ tolerances is part of their research.
 
 ## Launch
 
+Claude Code launches each run from TurboMICM with
+
+    admin/launch_codex_run.sh --tier3 <run> <model> <effort>
+
+which checks that the run directory is an untouched clone at its Tier 1 commit,
+then types into a detached tmux session (`tmux -L turbomicm attach -t tier3-<run>`)
+
     cd ~/NSF-NCAR/ODE/benchmarks/tier3/<run>
     codex --search -m <model> -c model_reasoning_effort=<effort> -c features.memories=false
 
-then
+and then
 
     /goal read PROMPT.md and work until done, commit

@@ -1,6 +1,7 @@
 # Run log
 
-Launch record for the MICM-to-C runs. Times are local (MDT).
+Launch record for the MICM-to-C runs. Times are local (MDT). Tier 1 comes first;
+the Tier 3 runs follow, under [Tier 3](#tier-3).
 
 Each run is an interactive session started in its run directory,
 `benchmarks/<run>/`, and launched with one instruction:
@@ -249,3 +250,57 @@ Token counts are as Codex reports them: total = uncached input + output.
   paths, was moved intact to `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`,
   outside the run root, and `luna-high/` was recreated from its prompt with
   `admin/setup_runs.py` for a fresh run, overnight.
+
+# Tier 3
+
+Launch record for the Tier 3 runs (algorithm design; see `tier3/README.md`).
+
+Each run works in `benchmarks/tier3/<run>/`, a clone of its own Tier 1 repository
+at the Tier 1 run's final commit, made by `tier3/admin/setup_runs.py`: it shares
+no files with the Tier 1 repository, has no remote, and its PROMPT.md holds the
+Tier 3 prompt. Claude Code launches every run with
+
+    admin/launch_codex_run.sh --tier3 <run> <model> <effort>
+
+which types `codex --search -m <model> -c model_reasoning_effort=<effort> -c features.memories=false`
+into a detached tmux session (socket `turbomicm`, session `tier3-<run>`), and
+then the goal:
+
+    /goal read PROMPT.md and work until done, commit
+
+Order
+- 2026-10-18: the runs go one at a time, in the order of their Tier 1 runs:
+  sol-xhigh, sol-max, astra-xhigh, astra-max (the SSE's decision). Luna has no
+  Tier 3 run: its arm waits on its Tier 1 runs, which have not been rerun since
+  luna-high was stopped on 2026-10-16.
+
+Launch changes
+- 2026-10-18: `admin/launch_codex_run.sh` gained `--tier3`. In that mode it checks
+  that the run directory is an untouched clone at the Tier 1 commit its prompt
+  names (HEAD at that commit, no remote, nothing changed or added but PROMPT.md),
+  adds `--search`, and names the tmux session `tier3-<run>`. Its check of the
+  status line now looks for the model's name: the old check, for "GPT-6-", would
+  have stopped every Sol launch, since Sol is GPT-6.1-Sol.
+- 2026-10-18, 01:43: the Tier 3 mode was tested on a throwaway repository in
+  Claude Code's scratch space, with gpt-6.1-sol at low effort and a one-line task
+  that needed web search (session `01a14df7-2727-70b3-a00e-4769b27dc0a0`). The
+  session searched the web (`web.run`, recorded as `web.search` items), opened two
+  pages, committed, and ended with DONE in 21 s.
+
+| Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
+|---|---|---|---|---|---|---|---|
+| sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45– | | running |
+| sol-max | gpt-6.1-sol | max | `001fb64` | | | | queued |
+| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | | | | queued |
+| astra-max | gpt-6-astra | max | `0dc7f67` | | | | queued |
+
+## Tier 3: sol-xhigh
+
+- Session start: 2026-10-18 01:45:12, launched by Claude Code with
+  `admin/launch_codex_run.sh --tier3 sol-xhigh gpt-6.1-sol xhigh`; the goal was
+  sent at 01:45:16. The session record shows gpt-6.1-sol at xhigh, base
+  instructions from gpt-6.1-sol, Codex 0.163.0, and no model switch; the `codex`
+  command line carries `--search`.
+- Codex session `01a14df8-cf84-7851-b9c3-3c76c4eef53e`.
+- The machine had restarted at 01:31. At launch, macOS's photo analysis
+  (`mediaanalysisd`) was still using part of one core.

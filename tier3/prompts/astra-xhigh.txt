@@ -1,0 +1,190 @@
+You are part of a controlled experiment comparing LLM coding agents.
+Every agent receives this same prompt. You are Astra.
+This prompt is also in PROMPT.md in your directory. Below, ROOT means /Users/fillmore/NSF-NCAR/ODE/benchmarks/tier3.
+
+This is Tier 3. In Tier 1 you ported MICM's CPU solver to portable C and made it
+fast while keeping MICM's numerical methods. Your directory, ROOT/astra-xhigh/, is a copy
+of your own Tier 1 repository at commit fbd365c, with its history; PROMPT.md
+now holds this prompt. In Tier 3 the numerical methods are yours to research,
+choose, design, and test. The aim is the fastest solution of atmospheric chemistry
+that is accurate enough for an atmospheric model.
+
+RULES
+- Work only in ROOT/astra-xhigh/, your own git repository; never commit to a repository
+  that encloses it. Commit as you go; the last commit is graded.
+- There is no time limit. Expect to work through a night, and keep going for as
+  long as you are making real progress. You decide, on your own judgment, when the
+  work is done; if progress stalls, the experimenter may stop the run. When the
+  work is complete, end your final message with the word DONE.
+- Read-only inputs:
+    ROOT/micm
+        MICM source, commit e15898ce (v3.7.0-259), with its tests built in ROOT/micm/build
+    ROOT/reference
+        Tier 1's test-case list, TS1 tools and inputs, and MICM results; see
+        README.md
+    ROOT/scenarios
+        Tier 3's scenarios, their high-accuracy reference solutions, and the
+        scoring tool; see README.md
+- Apart from these, do not read other directories under ROOT, and do not look at
+  other solutions to this task, on this machine or online. Do not modify anything
+  outside your directory.
+- You may search the web and read the mathematical and atmospheric-chemistry
+  literature and documentation. Do not download or copy code: implement methods
+  yourself from their descriptions, and cite every source you use in REFERENCES.md,
+  saying what you took from it. Apart from that, do not install software or
+  download anything, except packages installed into your own conda environment
+  (see PYTHON).
+- Do not put your model or vendor name in any file. Reviews are blind.
+- No one will answer questions. When something is unspecified, decide, and record
+  the decision and your reasoning in DECISIONS.md.
+
+MACHINE AND TOOLCHAIN
+- Apple M5 laptop: 10 CPU cores (4 "Super" + 6 "Efficiency"), 16 GB unified memory,
+  macOS 27.0.1, with Xcode installed.
+- Compilers: Apple clang 21.0.0 (/usr/bin/clang) and GCC 15.2.0
+  (/opt/homebrew/bin/gcc-15). Build: GNU Make 3.81 (/usr/bin/make).
+- On this machine Apple clang links only with
+  SDKROOT=$(xcrun --sdk macosx --show-sdk-path); with the default SDK the linker
+  fails with "unknown architecture arm64e.x1". Set SDKROOT in your Makefile, on
+  macOS only.
+- OpenMP: with Apple clang, use libomp 22.1.8 in /opt/homebrew/opt/libomp: compile
+  with -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include (-isystem
+  keeps omp.h out of -pedantic diagnostics) and link with
+  -L/opt/homebrew/opt/libomp/lib -lomp. With gcc-15, use -fopenmp.
+- Also installed: cmake 4.1.3 (/opt/homebrew/bin/cmake; MICM builds with it, your
+  code builds with make) and conda 26.3.2 (~/miniforge3/bin/conda).
+
+TASK
+Find, design, and implement faster ways to integrate atmospheric chemistry, and
+show how accurate they are.
+
+- Any numerical method for the chemical ODE system is allowed. For example: other
+  Rosenbrock and W-methods, BDF and NDF, extrapolation, exponential integrators,
+  QSSA and Euler-backward-iterative schemes, positivity-preserving Patankar-type
+  schemes, partitioned, multirate, and IMEX schemes, adaptive reuse of Jacobians
+  and factorizations, mixed precision, or methods of your own design.
+- Methods stay mechanism-generic. Anything specialized to a mechanism, such as
+  choosing which species to treat differently, must be done automatically, for any
+  mechanism, and be tested.
+- The chemistry must not change: no mechanism reduction (removing or lumping
+  species or reactions), and no machine-learned surrogates. Every method solves TS1
+  as given.
+- Keep what you built in Tier 1. MICM's methods stay available, and the Tier 1 gate
+  must still pass with both compilers: every non-N/A case in
+  ROOT/reference/micm_cases.txt, and TS1 agreement with MICM to 1e-10 relative with
+  MICM's three-stage Rosenbrock. New methods are additions, selected at run time.
+- Decide what accuracy is good enough for an atmospheric model, and justify it from
+  the literature and your own measurements, in ACCURACY.md. Agreement with MICM to
+  roundoff is no longer required of new methods.
+- Research systematically. A structure scan is a controlled series of runs that
+  changes one structural choice at a time (method family, stages and order, error
+  estimator, step-size controller, reuse of Jacobians and factorizations,
+  splitting, precision) and measures accuracy and cost on the scenarios. Log every
+  configuration you try in scans/: CSV files with one row per run, giving the
+  configuration, the scenario, the accuracy from ROOT/scenarios/score.py, the
+  operation counts, and, for C, the time. Summarize what you learned in SCANS.md.
+
+PYTHON
+- You may prototype methods in Python, with numpy and scipy, or by driving your C
+  library's pieces (rate constants, forcing, Jacobian, LU) through ctypes.
+  Prototypes go in prototypes/.
+- Python measures accuracy and operation counts (steps, function and Jacobian
+  evaluations, factorizations, linear solves, nonlinear iterations), not speed. All
+  speed claims come from C.
+- A method counts only once it runs in your C library through bin/ts1_scenario.
+  For each method that reaches C, a test shows that the C implementation agrees
+  with its prototype on a small case: the same solution to within roundoff and the
+  same operation counts, or an explanation of any difference.
+- As in Tier 1, Python never runs when the library or the benchmarks run, and it
+  comes only from a conda environment inside your directory: `make env` creates it
+  from an environment.yml you commit, with versions pinned but not build strings;
+  CONDA_PKGS_DIRS points inside your directory; conda's base environment is never
+  modified. Any packages may be used for tooling and prototypes, but nothing
+  third-party goes into the library or the benchmarks.
+
+PORTABILITY
+- C is ISO C11 and uses only the C standard library, libm, and OpenMP (CPU constructs
+  only, no target offload). No Apple frameworks or libraries (Accelerate,
+  libdispatch) and no other operating-system-specific APIs.
+- No intrinsics, inline assembly, compiler vector extensions (vector_size,
+  ext_vector_type), or target-specific attributes, builtins, or pragmas. Get SIMD
+  from data layout, restrict, and `#pragma omp simd`.
+- No long double: it is 64 bits here, 80 bits on x86-64 Linux, and 128 bits on ARM
+  Linux.
+- Values tuned for speed (cell-group size, vector length, thread count, scheduling,
+  method parameters) are parameters with defaults, set at build or run time and
+  listed in DESIGN.md. Every value must give a valid run.
+- `make cpu`, `make test-cpu`, and `make bench` work unchanged with CC=clang and with
+  CC=gcc-15, choosing OpenMP flags to suit the compiler.
+- Do not tune compiler flags. Your Makefile takes the compiler from CC and the
+  optimization flags from OPTFLAGS (default -O3 -DNDEBUG), and adds no other
+  optimization, target (-march, -mcpu, -mtune), floating-point (-ffast-math or its
+  parts), LTO, or profile-guided flags; it may add language, warning, include,
+  OpenMP, and link flags. The experimenter builds every entry, and MICM, with the
+  same OPTFLAGS.
+
+SCENARIOS
+ROOT/scenarios/README.md defines the scenario files and output formats, and
+ROOT/scenarios/<name>/ holds each disclosed scenario with its high-accuracy
+reference solution. Every scenario is TS1 with:
+- cells from a CELLS_CSV, as in Tier 1;
+- a step length DT and a number of steps;
+- a photolysis factor f(t), piecewise linear in time. At the start of each step,
+  every photolysis rate of every cell is set to its CELLS_CSV value times f at
+  that time, and it stays constant through the step. All other conditions stay
+  constant;
+- the steps after which the state is recorded (snapshots).
+
+The scenarios include Tier 1's benchmark, 24-hour runs through a day and a night,
+steps of 5 to 30 minutes, and clean and polluted cells. The reference solutions
+come from MICM's Rosenbrock solver at very tight tolerances, checked for
+convergence. The ranking also uses scenarios that are not disclosed.
+
+`make bench` builds bin/ts1_scenario as well as Tier 1's bin/ts1_bench_cpu:
+
+    bin/ts1_scenario [--threads N] [--method NAME] [--option KEY=VALUE ...] SCENARIO
+
+- It runs SCENARIO with the named method and options, all documented in DESIGN.md.
+  The default method is MICM's three-stage Rosenbrock with its default parameters
+  and tolerances.
+- It times all the steps, including updating the photolysis rates at each step,
+  and nothing else: not reading the input, setup, or writing output. It prints
+  `elapsed_ms=<ms>` and the solver statistics as in Tier 1, followed by any
+  counters of your own as key=value pairs.
+- It writes the final state to ts1_final.csv and the snapshots to
+  ts1_snapshots.csv, in the formats README.md gives, in the working directory.
+- It uses all cores by default; --threads N limits the run to N threads.
+
+EVALUATION
+- Gate:
+  - the Tier 1 gate still passes;
+  - every operating point you declare runs every scenario, disclosed and
+    undisclosed, without a NaN, an infinity, or a value below -1e-20 mol m-3;
+  - the code follows the portability rules.
+- Accuracy is measured by ROOT/scenarios/score.py against the high-accuracy
+  reference, in significant digits, following Sandu et al. (1997). It takes the
+  relative error |y - y_ref| / y_ref over every cell, snapshot, and species whose
+  reference value is at least 1e-14 mol m-3. Overall accuracy is -log10 of the
+  root mean square of these errors; a species' accuracy is the same over that
+  species alone.
+- Primary ranking: the experimenter times every declared operating point, built
+  with CC=clang, on 10,000-cell scenarios (median of 5 runs, idle machine).
+  - An entry's result at accuracy level L is its fastest operating point whose
+    accuracy is at least L digits overall, and at least L - 1 digits for every
+    species, on every scenario.
+  - Entries are ranked at L = 2 (1 %) and at L = 3 (0.1 %).
+  - Each operating point's accuracy and time are also reported, together with the
+    operating point you recommend and your justification.
+- Secondary ranking: a blind review of the research (use of the literature, rigor
+  of the scans, soundness of the accuracy argument) and of the code (readability,
+  maintainability, extensibility).
+
+DELIVERABLES
+- OPERATING_POINTS.md: up to five configurations of bin/ts1_scenario for the
+  experimenter to evaluate, each with its method, options, and the accuracy you
+  expect. Mark the one you recommend for an atmospheric model, and say why.
+- ACCURACY.md, SCANS.md with scans/, prototypes/, and REFERENCES.md.
+- README.md, DESIGN.md (including the methods and how to add one), DECISIONS.md,
+  RESULTS.md (the accuracy and speed of your operating points on the disclosed
+  scenarios, against MICM's three-stage Rosenbrock, with work-precision plots), and
+  environment.yml, all updated from Tier 1.
