@@ -189,6 +189,30 @@ int ch_solve_many(ch_state *const *states, size_t count, double time_step,
 int ch_initialize_constraints(ch_state *, const ch_rosenbrock_parameters *, ch_stats *);
 void ch_stats_add(ch_stats *, const ch_stats *);
 
+/* Experimental ODE integrators. Legacy ch_solve and its ABI are unchanged.
+ * A workspace borrows one state, which must outlive it. It keeps a step-size
+ * prediction across calls, but invalidates matrices at every call (rates may
+ * have changed). Algebraic constraints are handled by the legacy solvers only. */
+typedef struct ch_integrator ch_integrator;
+typedef struct {
+  int method;                    /* 2, 3, 4, 43, 6, 431: Rosenbrock; 102: SDIRK2 */
+  int controller;                /* 0: integral, 1: PI, 2: H211b */
+  int norm;                      /* 0: RMS, 1: max cell RMS, 2: infinity */
+  int jacobian_steps, warm_start, max_steps, newton_iterations;
+  double h_start, h_max, safety, factor_min, factor_max;
+  double pi_beta, lu_band, positivity, newton_tolerance, filter_b, filter_k;
+} ch_integrator_options;
+typedef struct {
+  size_t jacobian_reuses, factor_reuses, positivity_rejections;
+  size_t nonfinite_rejections, clipped_values, nonlinear_iterations, nonlinear_failures;
+} ch_integrator_stats;
+ch_integrator_options ch_integrator_default(int method);
+ch_integrator *ch_integrator_create(ch_state *, const ch_integrator_options *);
+void ch_integrator_free(ch_integrator *);
+void ch_integrator_reset(ch_integrator *);
+int ch_integrator_step(ch_integrator *, double dt, ch_stats *, ch_integrator_stats *);
+void ch_integrator_stats_add(ch_integrator_stats *, const ch_integrator_stats *);
+
 typedef struct {
   double small, h_start;
   int max_iterations, reduction_count;

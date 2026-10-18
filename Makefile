@@ -32,7 +32,7 @@ SOURCES = $(wildcard src/*.c)
 OBJECTS = $(patsubst src/%.c,build/%.o,$(SOURCES))
 EXAMPLE_OBJECTS = build/example_no_user.o build/example_user.o build/example_robertson.o
 
-.PHONY: all cpu env bench test-cpu micm-ref clean FORCE
+.PHONY: all cpu env bench test-cpu test-methods micm-ref clean FORCE
 all: cpu
 env:
 	@if test -x .conda/bin/python; then \
@@ -57,7 +57,7 @@ lib/libchem.so: $(OBJECTS)
 	$(CC) $(OPTFLAGS) $(SHARED) $^ $(LDLIBS) -o $@
 
 cpu: lib/libchem.so bin/ts1_bench_cpu
-bench: cpu
+bench: cpu bin/ts1_scenario
 
 build/generated/ts1.c: configs/ts1.json tools/configure.py .conda/bin/python
 	$(PYTHON) tools/configure.py $< $@ --name ts1
@@ -65,9 +65,17 @@ build/generated/ts1.c: configs/ts1.json tools/configure.py .conda/bin/python
 build/ts1.o: build/generated/ts1.c include/chem.h build/flags
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-bin/ts1_bench_cpu: tools/ts1_bench.c build/ts1.o $(OBJECTS) include/chem.h build/flags
+bin/ts1_bench_cpu: tools/ts1_bench.c tools/ts1_io.h build/ts1.o $(OBJECTS) include/chem.h build/flags
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) tools/ts1_bench.c build/ts1.o $(OBJECTS) $(LDLIBS) -o $@
+
+bin/ts1_scenario: tools/ts1_scenario.c tools/ts1_io.h build/ts1.o $(OBJECTS) include/chem.h build/flags
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) tools/ts1_scenario.c build/ts1.o $(OBJECTS) $(LDLIBS) -o $@
+
+bin/micm_scenario: ../scenarios/micm_scenario.cpp ../micm/test/benchmark/ts1_mechanism.hpp build/flags
+	@mkdir -p bin
+	clang++ -std=c++20 $(OPTFLAGS) -I../micm/include -I../micm/test/benchmark $< -o $@
 
 bin/test_native_cpu: tests/native_cases.c $(OBJECTS) include/chem.h build/flags
 	@mkdir -p bin
@@ -88,6 +96,9 @@ bin/tutorial_cpu: tools/tutorials.c $(EXAMPLE_OBJECTS) $(OBJECTS) include/chem.h
 test-cpu: cpu bin/test_native_cpu bin/tutorial_cpu
 	@bin/test_native_cpu extensions
 	$(PYTHON) tests/run_cases.py
+
+test-methods: bench
+	$(PYTHON) tests/test_integrator.py
 
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mechanism.hpp build/flags

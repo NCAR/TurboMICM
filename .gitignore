@@ -8,4 +8,7 @@
 __pycache__/
 *.pyc
 /ts1_final.csv
+/ts1_snapshots.csv
+/env-setup.log
+/build-first.log
 /PROMPT.md

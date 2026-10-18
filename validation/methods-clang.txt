@@ -1,0 +1,1 @@
+PASS: 105 C/prototype comparisons with identical counters; seven stiff analytical cases; invalid options

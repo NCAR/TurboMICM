@@ -1,5 +1,39 @@
 # Decisions
 
+## Tier 3 experiment decisions
+
+- The legacy `ch_solve` arithmetic, coefficients, tolerances and counters remain
+  unchanged. A separate `ch_integrator` API owns new adaptive policies, so the
+  roundoff gate and research targets can be checked independently.
+- New methods integrate the full mechanism with the analytical sparse Jacobian.
+  No species are removed, lumped, classified by name, or replaced by surrogates.
+  New algorithms initially cover ODEs; the retained solvers cover DAEs.
+- Use all six disclosed 1,000-cell scenarios for structural scans. Each native
+  run is scored by the supplied `score.py`, and failures remain in the CSV.
+  Five-repeat 10,000-cell measurements are reserved for selected configurations.
+  Timing belongs to C only. Prototype operation counts describe mathematical
+  factorizations even though NumPy's small dense linear solve refactors internally.
+- The first candidate families are sparse Rosenbrock pairs and a two-stage
+  SDIRK scheme with chord iterations. RODAS3.1's published mathematical table is
+  an additional stage-coefficient experiment. Table entries are not tuned to TS1.
+- A finite candidate with a component below `-positivity * atol[i]` is rejected.
+  Smaller negative roundoff/truncation residues are projected to zero and counted.
+  This loses exact linear-invariant conservation when projection occurs; its
+  size and effect must be measured, not asserted harmless. Nonfinite trials are
+  retried with a smaller step. There is no forced acceptance at a minimum step.
+- Carry only the proposed step size between scenario steps. Every external call
+  invalidates Jacobians and factors because photolysis, parameters or state may
+  have changed. Lagged Jacobians within a call are experiments, not formal
+  W-methods. A failed trial first refreshes a stale matrix, then shrinks the step.
+- Scenario timing sums the intervals containing rate updates and all group
+  solves. Input, initialization, diagnostic state checks, snapshot copies, and
+  CSV writing occur outside those intervals. Group counters count group work;
+  they must not be compared across group sizes without the corresponding cell
+  count. OpenMP scheduling and independent group histories follow Tier 1.
+- Research scripts retain source/binary hashes and exact options per run. Inputs
+  under the supplied read-only directories are never modified. Reference
+  executables and generated stress scenarios live only in this repository.
+
 - The public C interface uses owned model and state handles, explicit error codes,
   and callback tables in place of C++ builders, exceptions, and policy templates.
   All numerical storage is double precision. Mechanisms built in C and mechanisms
