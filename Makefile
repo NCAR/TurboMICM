@@ -94,6 +94,12 @@ bin/integrator_probe: tests/integrator_probe.c build/libchem.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
 .PHONY: test-methods
-test-methods: bin/integrator_probe bin/ts1_scenario
+test-methods: bin/integrator_probe bin/ts1_scenario bin/test_new_methods
 	$(PYTHON) prototypes/check.py
 	$(PYTHON) tools/test_scenario.py
+	bin/test_new_methods
+
+bin/test_new_methods: tests/test_new_methods.c build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+

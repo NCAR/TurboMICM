@@ -28,12 +28,16 @@ def configurations(suite):
     if suite == 'family':
         return [(m, {'rtol': t, 'atol': 1e-18}) for m, t in itertools.product(
             ['ros2', 'ros3', 'ros4', 'rodas3', 'rodas4', 'extrap2', 'extrap3'], [1e-3, 1e-4, 1e-5])]
+    if suite == 'loose':
+        return [(m, {'rtol': t, 'atol': 1e-18}) for m,t in itertools.product(
+            ['ros3','ros4','rodas3','rodas4'], [0.003,0.01,0.03])]
     if suite == 'controller':
-        return [('ros4', dict(rtol=1e-4, atol=1e-18, **o)) for o in [
+        return [('ros3', dict(rtol=1e-3, atol=1e-18, **o)) for o in [
             {}, {'controller': 1}, {'norm': 0}, {'norm': 2}, {'warm_start': 0},
-            {'start': 1e-4}, {'start': 1}, {'positivity': 0}]]
+            {'start': 1e-4}, {'start': 1}, {'positivity': 0},
+            {'safety': .7}, {'safety': .95}, {'growth': 2}, {'growth': 3}]]
     if suite == 'reuse':
-        return [('ros4', dict(rtol=1e-4, atol=1e-18, jacobian_steps=j, deadband=d))
+        return [('ros3', dict(rtol=1e-3, atol=1e-18, jacobian_steps=j, deadband=d))
                 for j,d in [(1,0),(2,0),(4,0),(8,0),(2,0.2),(4,0.2),(8,0.2),(4,0.5)]]
     raise ValueError(suite)
 
@@ -63,6 +67,7 @@ def main():
     p.add_argument('--threads',type=int,default=10)
     p.add_argument('--repeat',type=int,default=1)
     p.add_argument('--method')
+    p.add_argument('--resume',action='store_true')
     p.add_argument('--option',action='append',default=[])
     a=p.parse_args()
     configs = [(a.method,dict(v.split('=',1) for v in a.option))] if a.method else configurations(a.suite)
@@ -71,12 +76,17 @@ def main():
     a.output.parent.mkdir(parents=True,exist_ok=True)
     compiler=(ROOT/'build/configuration.txt').read_text().splitlines()[0]
     exists=a.output.exists()
+    done=set()
+    if a.resume and exists:
+        with a.output.open() as previous:
+            done={(r['configuration'],r['scenario'],int(r['repeat'])) for r in csv.DictReader(previous)}
     with a.output.open('a',newline='') as file:
         writer=csv.DictWriter(file,FIELDS,extrasaction='ignore')
         if not exists: writer.writeheader()
         for method,options in configs:
             config=json.dumps({'method':method,**options},sort_keys=True,separators=(',',':'))
             for name,repeat in itertools.product(a.scenario or NAMES,range(a.repeat)):
+                if (config,name,repeat) in done: continue
                 row=run(method,options,name,a.threads,work)
                 row.update(suite=a.suite,configuration=config,scenario=name,repeat=repeat,compiler=compiler,threads=a.threads)
                 writer.writerow(row); file.flush()

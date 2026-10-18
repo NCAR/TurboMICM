@@ -38,3 +38,10 @@ NOTICE; MICM source e15898ce and its parameter tables remain the baseline.
    Jacobian. Reusing an old Jacobian in an ordinary Rosenbrock table does not
    establish W-method order conditions; it is an experimental approximation
    assessed separately, not a claim of retained formal order.
+6. G. Söderlind (2002), *Automatic control and adaptive time-stepping*,
+   Numerical Algorithms 31, 281–310,
+   [author's paper](https://citeseerx.ist.psu.edu/document?doi=f5fd153e99b16dd4b5348bcbde0f2121b7096db8&repid=rep1&type=pdf).
+   Used equation (4.21)'s PI.3.4 control structure: current error exponent
+   -0.7/q and previous error exponent 0.4/q, with an I-controller safety net
+   after rejection. Our multiplicative safety 0.9 and clamps are explicitly
+   configurable choices, not coefficients copied from an implementation.
