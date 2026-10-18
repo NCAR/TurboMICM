@@ -1,0 +1,156 @@
+[
+  {
+    "id": "structure-base",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "structure-restart",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "warm_start": 0
+    }
+  },
+  {
+    "id": "structure-restart-large",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "warm_start": 0,
+      "h_start": 1
+    }
+  },
+  {
+    "id": "structure-pi",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "controller": "pi"
+    }
+  },
+  {
+    "id": "structure-h211b",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "controller": "h211b"
+    }
+  },
+  {
+    "id": "structure-h211b-b1",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "controller": "h211b",
+      "filter_b": 1
+    }
+  },
+  {
+    "id": "structure-h211b-b1-k2",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "controller": "h211b",
+      "filter_b": 1,
+      "filter_k": 2
+    }
+  },
+  {
+    "id": "structure-rms",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "norm": "rms"
+    }
+  },
+  {
+    "id": "structure-max",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "norm": "max"
+    }
+  },
+  {
+    "id": "structure-jac2",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian_steps": 2
+    }
+  },
+  {
+    "id": "structure-jac4",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian_steps": 4
+    }
+  },
+  {
+    "id": "structure-jac8",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian_steps": 8
+    }
+  },
+  {
+    "id": "structure-lu15",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian_steps": 4,
+      "lu_band": 1.5
+    }
+  },
+  {
+    "id": "structure-atol17",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-17
+    }
+  },
+  {
+    "id": "structure-atol16",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-16
+    }
+  },
+  {
+    "id": "structure-atol15",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-15
+    }
+  },
+  {
+    "id": "structure-positive1",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "positivity": 1
+    }
+  }
+]

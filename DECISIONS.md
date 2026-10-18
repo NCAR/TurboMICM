@@ -11,8 +11,9 @@
 - Use all six disclosed 1,000-cell scenarios for structural scans. Each native
   run is scored by the supplied `score.py`, and failures remain in the CSV.
   Five-repeat 10,000-cell measurements are reserved for selected configurations.
-  Timing belongs to C only. Prototype operation counts describe mathematical
-  factorizations even though NumPy's small dense linear solve refactors internally.
+  Timing belongs to C only. The prototype explicitly factors dense matrices and
+  reuses their LU factors, so its operation counts describe actual algorithmic
+  calls as well as agreeing with the C counters.
 - The first candidate families are sparse Rosenbrock pairs and a two-stage
   SDIRK scheme with chord iterations. RODAS3.1's published mathematical table is
   an additional stage-coefficient experiment. Table entries are not tuned to TS1.

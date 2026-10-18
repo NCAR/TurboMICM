@@ -1,0 +1,6 @@
+[
+  {"id":"stress-reference-9","binary":"micm_scenario","method":"rosenbrock6dae",
+   "options":{"rtol":1e-9,"atol":1e-22,"max_steps":100000}},
+  {"id":"stress-reference-10","binary":"micm_scenario","method":"rosenbrock6dae",
+   "options":{"rtol":1e-10,"atol":1e-23,"max_steps":100000}}
+]

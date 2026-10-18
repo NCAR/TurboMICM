@@ -222,6 +222,13 @@ int main(int argc, char **argv) {
   }
   o.method = method_id(method,&legacy);
   if (!path || !o.method || !threads || !group_size) goto usage;
+  if (legacy) for (int i = 1; i < argc; ++i) if (!strcmp(argv[i],"--option") && i+1 < argc) {
+    const char *v = argv[++i];
+    if (strncmp(v,"rtol=",5) && strncmp(v,"atol=",5) && strncmp(v,"h_start=",8) &&
+        strncmp(v,"h_max=",6) && strncmp(v,"max_steps=",10) && strncmp(v,"group_size=",11)) goto usage;
+    if ((!strncmp(v,"h_start=",8) && o.h_start <= 0) ||
+        (!strncmp(v,"max_steps=",10) && o.max_steps < 1)) goto usage;
+  }
   scenario sc = {0}; sunlight *sun = NULL; size_t nsun = 0, ngroups = 0;
   group *groups = NULL; ch_model *m = NULL;
   double *snapshots = NULL; size_t *snapshot_steps = NULL;
@@ -252,7 +259,9 @@ int main(int argc, char **argv) {
     if (!legacy || rtol >= 0 || atol >= 0) {
       double r = rtol >= 0 ? rtol : legacy ? ch_state_relative_tolerance(s) : 1e-4;
       double a = atol >= 0 ? atol : 1e-18;
-      status = ch_state_tolerances(s,r,&a,1); if (status) goto cleanup;
+      status = legacy && atol < 0 ? ch_state_tolerances(s,r,ch_state_absolute_tolerances(s),nv) :
+        ch_state_tolerances(s,r,&a,1);
+      if (status) goto cleanup;
     }
     if (!legacy) {
       groups[g].integrator = ch_integrator_create(s,&o);
@@ -318,6 +327,7 @@ report:;
     elapsed*1000,total.internal_steps,total.accepted,total.rejected,total.function_calls,total.jacobian_updates,total.decompositions,total.solves);
   printf("jacobian_reuses=%zu factor_reuses=%zu positivity_rejections=%zu nonfinite_rejections=%zu clipped_values=%zu nonlinear_iterations=%zu nonlinear_failures=%zu minimum_concentration=%.17g\n",
     extra.jacobian_reuses,extra.factor_reuses,extra.positivity_rejections,extra.nonfinite_rejections,extra.clipped_values,extra.nonlinear_iterations,extra.nonlinear_failures,minimum);
+  printf("clipped_amount=%.17g maximum_clip=%.17g\n",extra.clipped_amount,extra.maximum_clip);
 cleanup:
   if (groups) for (size_t g = 0; g < ngroups; ++g) {
     ch_integrator_free(groups[g].integrator); ch_state_free(groups[g].state); free(groups[g].base_parameters);

@@ -19,11 +19,12 @@ SCENARIOS = ['tier1-30s', 'diurnal-30min', 'diurnal-10min', 'diurnal-5min',
 COUNTERS = ['internal_steps', 'accepted', 'rejected', 'function_calls', 'jacobian_updates',
             'decompositions', 'solves', 'jacobian_reuses', 'factor_reuses',
             'positivity_rejections', 'nonfinite_rejections', 'clipped_values',
-            'nonlinear_iterations', 'nonlinear_failures', 'minimum_concentration']
+            'nonlinear_iterations', 'nonlinear_failures', 'minimum_concentration',
+            'clipped_amount', 'maximum_clip']
 FIELDS = ['timestamp', 'id', 'scenario', 'repeat', 'compiler', 'source_sha256',
           'binary_sha256', 'method', 'options', 'threads', 'status', 'elapsed_ms',
           *COUNTERS, 'overall_digits', 'worst_species', 'worst_digits', 'gate',
-          'score_json', 'stderr', 'output_sha256']
+          'score_json', 'stderr', 'output_sha256', 'accuracy_scope']
 
 
 def run(config, scenario, repeat, args):
@@ -56,10 +57,22 @@ def run(config, scenario, repeat, args):
                             for line in scenario.read_text().splitlines())
         basename = 'snapshots' if has_snapshots else 'final'
         output = directory/f'ts1_{basename}.csv'
-        reference = scenario.parent/f'reference_{basename}.csv'
+        reference = ((args.reference_root/name) if args.reference_root else scenario.parent)/f'reference_{basename}.csv'
+        scored_output = output
+        row['accuracy_scope'] = 'all supplied cells'
+        if args.prefix_cells:
+            scored_output = directory/'score-prefix.csv'
+            with output.open() as source, scored_output.open('w',newline='') as target:
+                reader = csv.DictReader(source)
+                writer = csv.DictWriter(target,fieldnames=reader.fieldnames,lineterminator='\n')
+                writer.writeheader()
+                for i,values in enumerate(reader):
+                    if int(values.get('cell',i)) < args.prefix_cells:
+                        writer.writerow(values)
+            row['accuracy_scope'] = f'first {args.prefix_cells} cells only'
         if reference.exists():
             score = subprocess.run([sys.executable, str(ROOT.parent/'scenarios'/'score.py'),
-                                    str(output),str(reference),'--json'],capture_output=True,text=True)
+                                    str(scored_output),str(reference),'--json'],capture_output=True,text=True)
             if not score.stdout.strip():
                 raise RuntimeError(f'Scorer failed: {score.stderr}')
             summary = json.loads(score.stdout)
@@ -76,6 +89,7 @@ def run(config, scenario, repeat, args):
     if not args.keep:
         for file in directory.glob('ts1_*.csv'):
             file.unlink()
+        (directory/'score-prefix.csv').unlink(missing_ok=True)
     return row
 
 
@@ -85,6 +99,8 @@ def main():
     parser.add_argument('--log', type=Path, required=True)
     parser.add_argument('--scenarios', nargs='+', default=SCENARIOS)
     parser.add_argument('--scenario-root', type=Path, default=ROOT.parent/'scenarios')
+    parser.add_argument('--reference-root',type=Path)
+    parser.add_argument('--prefix-cells',type=int,default=0)
     parser.add_argument('--repeat', type=int, default=1)
     parser.add_argument('--threads', type=int, default=10)
     parser.add_argument('--compiler', default='clang')
@@ -99,7 +115,7 @@ def main():
     args.log.parent.mkdir(parents=True,exist_ok=True)
     is_new = not args.log.exists()
     with args.log.open('a',newline='') as file:
-        writer = csv.DictWriter(file,fieldnames=FIELDS)
+        writer = csv.DictWriter(file,fieldnames=FIELDS,lineterminator='\n')
         if is_new:
             writer.writeheader()
         for config in configs:

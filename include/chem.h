@@ -205,6 +205,7 @@ typedef struct {
 typedef struct {
   size_t jacobian_reuses, factor_reuses, positivity_rejections;
   size_t nonfinite_rejections, clipped_values, nonlinear_iterations, nonlinear_failures;
+  double clipped_amount, maximum_clip;
 } ch_integrator_stats;
 ch_integrator_options ch_integrator_default(int method);
 ch_integrator *ch_integrator_create(ch_state *, const ch_integrator_options *);

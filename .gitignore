@@ -11,4 +11,5 @@ __pycache__/
 /ts1_snapshots.csv
 /env-setup.log
 /build-first.log
+/runs-reference-build.log
 /PROMPT.md

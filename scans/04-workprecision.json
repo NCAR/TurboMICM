@@ -1,0 +1,154 @@
+[
+  {
+    "id": "rodas3-r0.0002-a18",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0002,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas3-r0.0005-a18",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0005,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas3-r0.003-a18",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas3-r0.005-a18",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.005,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas31-r0.0002-a18",
+    "method": "rodas31",
+    "options": {
+      "rtol": 0.0002,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas31-r0.0005-a18",
+    "method": "rodas31",
+    "options": {
+      "rtol": 0.0005,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas31-r0.003-a18",
+    "method": "rodas31",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas31-r0.005-a18",
+    "method": "rodas31",
+    "options": {
+      "rtol": 0.005,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas3-r0.0002-a1e-17",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0002,
+      "atol": 1e-17
+    }
+  },
+  {
+    "id": "rodas3-r0.0005-a1e-17",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0005,
+      "atol": 1e-17
+    }
+  },
+  {
+    "id": "rodas3-r0.001-a1e-17",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-17
+    }
+  },
+  {
+    "id": "rodas3-r0.003-a1e-17",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-17
+    }
+  },
+  {
+    "id": "rodas3-r0.0002-a1e-16",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0002,
+      "atol": 1e-16
+    }
+  },
+  {
+    "id": "rodas3-r0.0005-a1e-16",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0005,
+      "atol": 1e-16
+    }
+  },
+  {
+    "id": "rodas3-r0.001-a1e-16",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-16
+    }
+  },
+  {
+    "id": "rodas3-r0.003-a1e-16",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-16
+    }
+  },
+  {
+    "id": "ros3-r0.003-a18",
+    "method": "ros3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas4-r0.0005-a18",
+    "method": "rodas4",
+    "options": {
+      "rtol": 0.0005,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "norm-simd-check",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18
+    }
+  }
+]

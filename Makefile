@@ -99,6 +99,7 @@ test-cpu: cpu bin/test_native_cpu bin/tutorial_cpu
 
 test-methods: bench
 	$(PYTHON) tests/test_integrator.py
+	$(PYTHON) tests/test_scenario.py
 
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mechanism.hpp build/flags

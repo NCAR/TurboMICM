@@ -14,7 +14,7 @@ class OptionsC(C.Structure):
 
 
 class Extra(C.Structure):
-    _fields_ = [(name,Z) for name in COUNTERS[7:]]
+    _fields_ = [(name,Z) for name in COUNTERS[7:]]+[('clipped_amount',D),('maximum_clip',D)]
 
 
 integrator_default = bind('integrator_default',OptionsC,I)
@@ -131,11 +131,39 @@ def analytical():
             assert not integrator_create(s.handle,C.byref(o))
 
 
+def orders():
+    rows = []
+    for method,order in ((2,2),(3,3),(4,4),(43,3),(6,4),(102,2),(431,3)):
+        errors = []
+        for steps in (8,16,32):
+            with Model(['A','B']) as m:
+                rate = rate_default(0); rate.p[0] = 1
+                m.reaction(['A'],{'B':1},rate); m.finalize()
+                with State(m) as s:
+                    s.conditions(); s.set('A',1); s.update(); s.tolerance(rtol=1,atol=1)
+                    o = integrator_default(method)
+                    o.h_start = o.h_max = 1/steps; o.newton_tolerance = 1e-10
+                    work = integrator_create(s.handle,C.byref(o)); assert work
+                    st,ex = Stats(),Extra()
+                    try:
+                        require(integrator_step(work,1,C.byref(st),C.byref(ex)))
+                        assert st.accepted == steps and st.rejected == 0
+                        errors.append(abs(s.y[0,0]-np.exp(-1)))
+                    finally:
+                        integrator_free(work)
+        measured = np.log2(errors[-2]/errors[-1])
+        assert abs(measured-order) < .15,(method,errors,measured)
+        rows.append((method,order,float(measured)))
+    return rows
+
+
 if __name__ == '__main__':
     rows = equivalence()
     analytical()
+    order_results = orders()
     if len(sys.argv) == 2:
         with open(sys.argv[1],'w',newline='') as file:
-            writer = csv.DictWriter(file,fieldnames=list(rows[0]))
+            writer = csv.DictWriter(file,fieldnames=list(rows[0]),lineterminator='\n')
             writer.writeheader(); writer.writerows(rows)
     print(f'PASS: {len(rows)} C/prototype comparisons with identical counters; seven stiff analytical cases; invalid options')
+    print('Observed orders:',order_results)

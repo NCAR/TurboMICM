@@ -70,15 +70,36 @@ class Integrator:
 
     def solve(self, rhs):
         self.counts['solves'] += 1
-        # Factorization is mathematically reused even though NumPy's small-case
-        # dense solve refactors internally. Counts model the numerical algorithm,
-        # not BLAS calls; no Python timing is used.
-        return np.stack([np.linalg.solve(self.matrix[c],rhs[:,c])
-                         for c in range(rhs.shape[1])],axis=1)
+        result = rhs.copy()
+        nv,nc = result.shape
+        for c in range(nc):
+            for i in range(nv):
+                for j in range(i):
+                    result[i,c] -= self.lu[c,i,j]*result[j,c]
+            for i in range(nv-1,-1,-1):
+                for j in range(i+1,nv):
+                    result[i,c] -= self.lu[c,i,j]*result[j,c]
+                result[i,c] *= self.inverse_diagonal[c,i]
+        return result
+
+    def factor(self, matrix):
+        """Dense no-pivot LU, explicitly reused for all following stage solves."""
+        self.lu = matrix.copy()
+        nc,nv,_ = matrix.shape
+        self.inverse_diagonal = np.empty((nc,nv))
+        for c in range(nc):
+            for i in range(nv):
+                self.inverse_diagonal[c,i] = 1/self.lu[c,i,i]
+                for j in range(i+1,nv):
+                    self.lu[c,j,i] *= self.inverse_diagonal[c,i]
+                    for k in range(i+1,nv):
+                        self.lu[c,j,k] -= self.lu[c,j,i]*self.lu[c,i,k]
 
     def ros_trial(self,h):
         p = self.table
-        stages, forcing = [], self.force(self.y)
+        if self.cached_force is None:
+            self.cached_force = self.force(self.y)
+        stages, forcing = [], self.cached_force
         for i in range(p['stages']):
             offset = i*(i-1)//2
             if i and p['new'][i]:
@@ -123,6 +144,7 @@ class Integrator:
 
     def step(self,dt):
         self.counts = {name:0 for name in COUNTERS}
+        self.cached_force = None
         if dt == 0:
             return self.y,self.counts
         o = self.o
@@ -149,14 +171,19 @@ class Integrator:
                 for c in range(self.y.shape[1]):
                     for i in range(self.y.shape[0]):
                         self.matrix[c,i,i] += 1/(gamma*h)
+                self.factor(self.matrix)
                 self.counts['decompositions'] += 1
                 have_factor,factor_h = True,h
             else:
                 self.counts['factor_reuses'] += 1
             self.counts['internal_steps'] += 1
             candidate,error,ok = self.sdirk_trial(h) if o.method == 102 else self.ros_trial(h)
-            e = self.norm(error,candidate) if ok else math.inf
             negative = ok and np.any(candidate < -o.positivity*self.atol[:,None])
+            clip_mask = (candidate < 0) & (candidate >= -o.positivity*self.atol[:,None]) if ok else np.zeros_like(candidate,dtype=bool)
+            correction = np.where(clip_mask,-candidate,0)
+            error += correction
+            candidate += correction
+            e = self.norm(error,candidate) if ok else math.inf
             if not math.isfinite(e):
                 self.counts['nonfinite_rejections'] += 1
             if negative:
@@ -172,8 +199,9 @@ class Integrator:
                           math.pow(h/previous_h,-1/o.filter_b))
             factor = min(o.factor_max,max(o.factor_min,factor))
             if math.isfinite(e) and e <= 1 and not negative:
-                self.counts['clipped_values'] += int(np.sum(candidate < 0))
+                self.counts['clipped_values'] += int(np.sum(clip_mask))
                 self.y = np.maximum(candidate,0)
+                self.cached_force = None
                 self.counts['accepted'] += 1
                 age += 1
                 time = dt if h >= dt-time else time+h

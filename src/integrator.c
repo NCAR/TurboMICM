@@ -66,6 +66,8 @@ void ch_integrator_stats_add(ch_integrator_stats *a, const ch_integrator_stats *
   a->positivity_rejections += b->positivity_rejections;
   a->nonfinite_rejections += b->nonfinite_rejections; a->clipped_values += b->clipped_values;
   a->nonlinear_iterations += b->nonlinear_iterations; a->nonlinear_failures += b->nonlinear_failures;
+  a->clipped_amount += b->clipped_amount;
+  a->maximum_clip = fmax(a->maximum_clip,b->maximum_clip);
 }
 
 static void add(size_t n, double a, const double *restrict x, double *restrict y) {
@@ -78,27 +80,45 @@ static double norm(const ch_integrator *w, const double *v, const double *candid
   const ch_state *s = w->state;
   size_t nv = s->model->nv, nc = s->cells;
   double sum = 0, maximum = 0;
-  for (size_t c = 0; c < nc; ++c) {
-    double cell_sum = 0;
-    for (size_t i = 0; i < nv; ++i) {
-      size_t k = i*nc+c;
-      double scale = s->atol[i]+s->rtol*fmax(fabs(s->y[k]),fabs(candidate[k]));
-      double e = v[k] == 0 ? 0 : fabs(v[k])/scale;
-      if (!isfinite(e) || !isfinite(candidate[k])) return INFINITY;
-      if (w->options.norm == 2) maximum = fmax(maximum,e);
-      else cell_sum += e*e;
+  int bad = 0;
+  double *restrict cell_sum = s->scratch;
+  memset(cell_sum,0,nc*sizeof(double));
+  for (size_t i = 0; i < nv; ++i) {
+    const double *restrict old = s->y+i*nc;
+    const double *restrict next = candidate+i*nc;
+    const double *restrict errors = v+i*nc;
+    const double atol = s->atol[i], rtol = s->rtol;
+    if (w->options.norm == 2) {
+      #pragma omp simd reduction(max:maximum) reduction(|:bad)
+      for (size_t c = 0; c < nc; ++c) {
+        double e = errors[c] == 0 ? 0 : fabs(errors[c])/(atol+rtol*fmax(fabs(old[c]),fabs(next[c])));
+        bad |= !isfinite(e) || !isfinite(next[c]);
+        maximum = fmax(maximum,e);
+      }
+    } else {
+      /* Each cell still accumulates species in the original order. SIMD is
+       * across independent cells, so this is not a reassociated reduction. */
+      #pragma omp simd reduction(|:bad)
+      for (size_t c = 0; c < nc; ++c) {
+        double e = errors[c] == 0 ? 0 : fabs(errors[c])/(atol+rtol*fmax(fabs(old[c]),fabs(next[c])));
+        bad |= !isfinite(e) || !isfinite(next[c]);
+        cell_sum[c] += e*e;
+      }
     }
-    sum += cell_sum;
-    if (w->options.norm == 1) maximum = fmax(maximum,sqrt(cell_sum/nv));
+  }
+  if (bad) return INFINITY;
+  for (size_t c = 0; c < nc; ++c) {
+    sum += cell_sum[c];
+    if (w->options.norm == 1) maximum = fmax(maximum,sqrt(cell_sum[c]/nv));
   }
   return w->options.norm == 0 ? sqrt(sum/(nv*nc)) : maximum;
 }
 
-static void rosenbrock_trial(ch_integrator *w, double h, ch_stats *stats) {
+static void rosenbrock_trial(ch_integrator *w, double h, ch_stats *stats, int evaluate_initial_force) {
   ch_state *s = w->state;
   const ch_rosenbrock_parameters *p = &w->table;
   size_t n = s->model->nv*s->cells;
-  ch_force(s,s->y,s->forcing); ++stats->function_calls;
+  if (evaluate_initial_force) { ch_force(s,s->y,s->forcing); ++stats->function_calls; }
   for (int stage = 0; stage < p->stages; ++stage) {
     double *k = s->stages+(size_t)stage*n;
     int offset = stage*(stage-1)/2;
@@ -158,7 +178,7 @@ int ch_integrator_step(ch_integrator *w, double dt, ch_stats *stats, ch_integrat
   double hmax = o->h_max > 0 ? fmin(dt,o->h_max) : dt;
   double h = fmin(hmax,o->warm_start && w->next_h > 0 ? w->next_h : o->h_start);
   double time = 0, factor_h = 0, previous_error = 1, previous_h = h;
-  int age = o->jacobian_steps, have_factor = 0, rejected = 0, status = CH_OK;
+  int age = o->jacobian_steps, have_factor = 0, have_force = 0, rejected = 0, status = CH_OK;
   double gamma = o->method == 102 ? 1.0-1.0/sqrt(2.0) : w->table.gamma[0];
   double order = o->method == 102 ? 2.0 : w->table.estimator_order;
   while (time < dt) {
@@ -175,19 +195,30 @@ int ch_integrator_step(ch_integrator *w, double dt, ch_stats *stats, ch_integrat
       memcpy(s->jacobian,w->raw_jacobian,nj*sizeof(double));
       ch_alpha_minus_jacobian(s,1.0/(gamma*h),s->jacobian);
       status = ch_factor_state(s); ++stats->decompositions;
+      if (status && status != CH_SINGULAR) break;
       have_factor = status == CH_OK; factor_h = h;
     } else ++extra->factor_reuses;
     ++stats->internal_steps;
     int trial_ok = have_factor;
     if (trial_ok) {
       if (o->method == 102) trial_ok = sdirk_trial(w,h,stats,extra);
-      else rosenbrock_trial(w,h,stats);
+      else { rosenbrock_trial(w,h,stats,!have_force); have_force = 1; }
     }
-    double error = trial_ok ? norm(w,s->error,s->new_y) : INFINITY;
     int negative = 0;
+    size_t clips = 0; double clipped_amount = 0, maximum_clip = 0;
     if (trial_ok) for (size_t i = 0; i < s->model->nv; ++i)
-      for (size_t c = 0; c < s->cells; ++c)
-        if (s->new_y[i*s->cells+c] < -o->positivity*s->atol[i]) negative = 1;
+      for (size_t c = 0; c < s->cells; ++c) {
+        size_t k = i*s->cells+c;
+        if (s->new_y[k] < -o->positivity*s->atol[i]) negative = 1;
+        else if (s->new_y[k] < 0) {
+          double correction = -s->new_y[k];
+          /* The actual candidate includes the projection. Charge its change to
+           * the embedded error before deciding whether to accept this trial. */
+          s->error[k] += correction; s->new_y[k] = 0;
+          ++clips; clipped_amount += correction; maximum_clip = fmax(maximum_clip,correction);
+        }
+      }
+    double error = trial_ok ? norm(w,s->error,s->new_y) : INFINITY;
     if (!isfinite(error)) ++extra->nonfinite_rejections;
     if (negative) ++extra->positivity_rejections;
     double safe_error = fmax(error,1e-12);
@@ -201,10 +232,10 @@ int ch_integrator_step(ch_integrator *w, double dt, ch_stats *stats, ch_integrat
     }
     factor = fmin(o->factor_max,fmax(o->factor_min,factor));
     if (isfinite(error) && error <= 1 && !negative) {
-      for (size_t k = 0; k < n; ++k) if (s->new_y[k] < 0) {
-        s->new_y[k] = 0; ++extra->clipped_values;
-      }
+      extra->clipped_values += clips; extra->clipped_amount += clipped_amount;
+      extra->maximum_clip = fmax(extra->maximum_clip,maximum_clip);
       double *swap = s->y; s->y = s->new_y; s->new_y = swap;
+      have_force = 0;
       ++stats->accepted; ++age;
       time = h >= dt-time ? dt : time+h;
       if (rejected) factor = fmin(1.0,factor);
