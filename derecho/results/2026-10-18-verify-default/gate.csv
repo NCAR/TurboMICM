@@ -1,0 +1,8 @@
+setting,arguments,elapsed_ms,internal_steps,gate,max_relative_difference
+default,"",511.183,562500,PASS,1.27e-13
+1 thread,"--threads 1",44684.923,281700,PASS,1.27e-13
+groups of 16,"--group-size 16",514.711,562500,PASS,1.27e-13
+groups of 64,"--group-size 64",768.804,141300,PASS,1.27e-13
+groups of 128,"--group-size 128",1402.014,71100,PASS,1.27e-13
+generic kernels,"--generic",1902.592,562500,PASS,1.4e-13
+static schedule,"--schedule static",519.194,562500,PASS,1.27e-13

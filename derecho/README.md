@@ -1,0 +1,447 @@
+# The Fable entry on Derecho
+
+The experiment's reference C port of MICM (`../fable`, the Fable entry, tuned on
+an Apple M5 with clang) built, verified, and tuned for NCAR's Derecho: CPU nodes
+of two AMD EPYC 7763 (Milan, Zen 3) processors, 128 cores with two hardware
+threads each, 8 NUMA domains, AVX2 and FMA, 512 KB of L2 per core and 32 MB of
+L3 per 8-core complex, with the GCC that MUSICA builds with there (gcc 14.3.0
+from ncarenv/25.10). The question: does the port stay 2x faster than MICM's
+fastest configuration on this machine, at a whole node and at one thread? It
+does: 3.2x at one thread and 2.8x on a whole node with each program at its
+best thread count (the final session, below).
+
+Everything here lives under `derecho/`, so the other branches' work on `fable/`
+and the run root is untouched. It was developed on branches `derecho/fable`
+(the port and tuning through the final session) and `derecho/fable-2` (the
+follow-up levers), both merged into `main` on 2026-10-18; `derecho/fable` is
+a copy of `fable/`, unchanged on `main` since the copy, with the Derecho
+changes on top.
+
+## Layout
+
+| Path | Contents |
+|---|---|
+| `fable/` | a copy of `../fable` at d7e9722 with Derecho defaults and tuning (below); its own DESIGN.md, DECISIONS.md, and RESULTS.md are the entry's |
+| `env.sh` | the modules (ncarenv/25.10, gcc/14.3.0), the PBS account, and OpenMP binding; `source derecho/env.sh` |
+| `tools/submit.sh` | `NAME NCPUS WALLTIME COMMAND...`: runs a command as a develop-queue (cpudev) job from `derecho/`, log in `logs/NAME.log` |
+| `tools/micm_reference.sh` | builds MICM's TS1 reference driver with g++ and writes the gate's reference final state for an input |
+| `tools/micm_configs.sh` | the bash and g++ port of `admin/micm_configs.sh`: MICM's 24 CPU configurations built, checked, and timed |
+| `tools/build_variant.sh` | `NAME [MAKE_VARIABLE=value ...]`: builds a variant of `fable/` in `work/variants/NAME` |
+| `tools/verify_port.sh` | build, the 680 ported test cases, and the gate at several run-time settings |
+| `tools/environment.sh` | records the node, CPU, kernel, compiler, and modules of a timing session |
+| `pbs/` | the timing sessions' scripts, one per session |
+| `results/<date>-<topic>/` | each session's `timings.csv`, `summary.md`, environment, and notes |
+| `micm/`, `work/`, `logs/` | not committed: MICM at e15898ce, inputs, builds, variants, job logs |
+
+## Building and running
+
+```
+source derecho/env.sh
+cd derecho/fable && make env && make cpu          # gcc 14, width 4, Derecho flags
+make test-cpu                                     # the 680 cases, from MICM's source tree in ../micm
+cd .. && tools/submit.sh name 128 01:00:00 COMMAND  # a whole dev node for COMMAND
+```
+
+`fable/Makefile`'s Derecho defaults: `CC=gcc`, `CXX=g++`,
+`OPTFLAGS=-O3 -DNDEBUG -march=znver3 -ffp-contract=fast`, `WIDTH=4`,
+`MICM=../micm`, `REFERENCE=../../reference`. The entry's rules allow only `CC`
+and `OPTFLAGS` as compiler choices, and these are them.
+
+## What Derecho needed
+
+- **FMA contraction.** The kernels are written for fused multiply-adds, which
+  clang contracts by default. GCC in `-std=c11` mode does not
+  (`-ffp-contract=off` is its standards-mode default), so `OPTFLAGS` adds
+  `-ffp-contract=fast`; `-march=znver3` enables AVX2 and FMA at all.
+- **Vector width 4.** The entry's default width of 2 matches NEON's two
+  doubles; AVX2 holds four, so `WIDTH=4`.
+- **POSIX in the benchmark driver.** `bench/ts1_bench.c` uses `getline` and
+  `ssize_t`, which glibc hides under `-std=c11`; the driver now defines
+  `_POSIX_C_SOURCE 200809L` first. (The entry built on macOS with GCC 15
+  because Apple's libc exposes them regardless.)
+- **Linking MICM's C++ reference.** ncarenv/25.10 leaves `LIBRARY_PATH` at
+  gcc 12.5.0's lib64 even with gcc/14.3.0 loaded, so g++ 14 links against the
+  older libstdc++ and fails (`_M_replace_cold`, `__cxa_call_terminate`);
+  `env.sh` unsets it.
+- **PBS.** The dev nodes advertise their 128 cores as `ncpus` (hardware
+  threads are not scheduled separately), so `ncpus=128` takes a whole node,
+  and the job may use all 256 hardware threads; a user may have 256 `ncpus`
+  running at once, two whole nodes. Jobs started within a minute throughout.
+  Output streams only with `-k oed`. The default memory limit is 10 GB, which
+  killed 24 parallel g++ compiles of MICM's reference (`MEM=200GB` in
+  `submit.sh`).
+- **MICM's threads and libgomp.** The reference driver threads with
+  `std::thread`. Built with `-fopenmp` (which the experiment's build never
+  used), it links libgomp, and libgomp pins the main thread to one core at
+  startup when `OMP_PROC_BIND` is set, as `env.sh` sets it for the port; every
+  `std::thread` inherits that mask. MICM then ran its 128 threads on one core
+  (247 s against 363 s on one thread; 2, 4, and 8 threads all took the same
+  time). MICM is built without `-fopenmp`.
+- **Conda.** `make env` uses conda from PATH or Derecho's system miniforge;
+  the conda module is not loaded.
+
+## The generated kernels on Zen 3
+
+The generator writes each lane of a block as a loop `for (c = 0; c < W; ++c)`
+over W doubles. GCC unrolls these before vectorizing and then rebuilds vectors
+with its SLP vectorizer, with poor results: at width 4 the TS1 kernels were
+151,000 instructions, with 4-double loads split into two halves and an insert,
+3,600 scalar operations, and 41,000 stack references in the 64-pivot LU
+panels. Emitting each lane loop as `_Pragma("omp simd")` (OpenMP is part of
+the entry's language) hands them to the loop vectorizer whole. Static counts of
+`ts1.o` (`tools/asm_stats.sh`), gcc 14.3.0, `-O3 -march=znver3
+-ffp-contract=fast`, every build within 4e-14 of MICM on the 100-cell input:
+
+| Build | Instructions | ymm FMA | xmm FMA | ymm mul/add/sub | Scalar | Stack refs | Shuffles | Text (KB) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| width 4, plain lane loops | 151,067 | 1,564 | 0 | 6,773 | 4,005 | 41,448 | 3,223 | 1,097 |
+| width 4, omp simd lanes (the default) | 75,348 | 9,597 | 0 | 7,632 | 1 | 6,338 | 0 | 496 |
+| width 2, omp simd | 76,818 | 1 | 9,597 | 0 (7,632 xmm) | 1 | 7,383 | 0 | 506 |
+| width 8, omp simd | 142,466 | 19,193 | 0 | 15,306 | 1 | 32,695 | 0 | 980 |
+| width 4, omp simd, no `-ffp-contract=fast` | 84,294 | 0 | 0 | 26,641 | 1 | 7,045 | 0 | 529 |
+| width 4, omp simd, plain `-O3` (SSE2) | 189,606 | 0 | 0 | 0 (53,322 xmm) | 1 | 40,682 | 0 | 1,180 |
+
+Width 4 does twice width 2's work per instruction at the same count; width 8
+doubles the code and spills five times as much (16 vector registers). GCC's
+Zen tuning (`avoid_fma_chains`) still writes 7,632 of the width-4 build's
+multiply-adds as separate multiplies and adds; session 2 measures
+`-mtune-ctrl=^avoid_fma_chains,^avoid_fma256_chains`.
+
+## Results
+
+All timings are from whole dev nodes (`ncpus=128`, nothing else on the node),
+`admin/time_entries.py` with rotating rounds, 10,000 cells of seed 2026, 100
+steps of 30 s, every run gated against MICM's own Derecho result for the input
+(`tools/micm_reference.sh`; MICM's result does not depend on its thread count
+or grouping, and differs from its Mac result by 5e-14). Threads: 128 is one
+OpenMP thread per core (`OMP_PLACES=cores`, `OMP_PROC_BIND=close`); MICM's
+`std::thread`s are unpinned. MICM's programs here are its default (standard
+ordering, in-place Mozart LU, one cell group per thread) and the two leading
+configurations of the Mac sweep: vector ordering of 8 or 4 with 32-cell groups.
+Run-to-run spread: the port's runs repeat within 1 % at both thread counts;
+MICM's 128-thread runs vary 3–10 % and its one-thread runs 1 %; an identical
+port binary run under two names differed by 3 % at one thread.
+
+### Session 1: width and flags (`results/2026-10-18-session-1-width-flags`)
+
+Node dec2443, 3 rounds. The Derecho defaults are width 4, `-O3 -DNDEBUG
+-march=znver3 -ffp-contract=fast`, omp simd lane loops, 64-byte aligned arrays,
+32-cell groups.
+
+| Program | 128 threads, median ms (range) | vs MICM vector8 | 1 thread, median ms (range) | vs MICM vector8 |
+|---|---:|---:|---:|---:|
+| MICM default | 3,399 (3,148–3,638) | 0.58x | 366,157 (363,028–367,767) | 0.39x |
+| MICM vector8, 32-cell groups | 1,968 (1,872–1,986) | 1.00x | 141,656 (141,496–142,548) | 1.00x |
+| MICM vector4, 32-cell groups | 2,237 (2,180–2,267) | 0.88x | 162,960 (162,561–162,993) | 0.87x |
+| **port, defaults (width 4)** | **589 (587–592)** | **3.34x** | **45,176 (45,130–45,365)** | **3.14x** |
+| port, width 2 | 808 (807–811) | 2.43x | 65,629 (65,597–65,943) | 2.16x |
+| port, width 8 | 730 (729–731) | 2.70x | 54,882 (53,897–55,124) | 2.58x |
+| port, width 4, no `-ffp-contract=fast` | 624 (620–625) | 3.15x | 47,753 (47,687–47,842) | 2.97x |
+| port, width 4, plain `-O3` (generic x86-64) | 1,118 (1,114–1,121) | 1.76x | 93,567 (92,743–96,188) | 1.51x |
+
+Width 4 is 1.37x width 2 at 128 threads and 1.45x at one; width 8 spills.
+FMA contraction is worth 6 %, and `-march=znver3` over generic x86-64 1.9x
+(the generic build has no FMA and 128-bit vectors).
+
+### Session 2: code generation (`results/2026-10-18-session-2-codegen`)
+
+Node dec0335, 3 rounds, the same MICM programs (MICM default 3,582 and
+366,280 ms; vector8 1,870 and 141,722 ms; vector4 2,208 and 163,413 ms).
+
+| Port build | 128 threads, median ms (range) | vs MICM vector8 | 1 thread, median ms (range) | vs MICM vector8 |
+|---|---:|---:|---:|---:|
+| defaults | 596 (594–598) | 3.14x | 45,262 (45,208–45,475) | 3.13x |
+| plain lane loops (`--no-lane-pragma`) | 1,078 (1,073–1,079) | 1.74x | 93,083 (92,545–93,532) | 1.52x |
+| `-mtune-ctrl=^avoid_fma_chains,^avoid_fma256_chains` (byte-identical code) | 593 (589–598) | 3.15x | 46,770 (45,509–47,385) | 3.03x |
+| LU panels of 16 pivots | 588 (584–590) | 3.18x | 44,494 (44,255–44,501) | 3.19x |
+| LU panels of 32 pivots | 595 (592–598) | 3.14x | 44,968 (44,321–45,217) | 3.15x |
+| malloc instead of aligned_alloc (`TMC_ALIGN=0`) | 616 (614–621) | 3.03x | 47,920 (47,842–48,562) | 2.96x |
+
+The omp simd lane loops are the Derecho result: without them the port is
+1.74x and 1.52x MICM's fastest, below the target; with them 3.1x. Aligned
+arrays are worth 4–6 %. The panel size changes 1–2 %, inside the spread of
+the identical-binary repeat. GCC's FMA-chain tuning does not touch this code.
+
+### Session 3: grouping, schedule, and hardware threads (`results/2026-10-18-session-3-grouping`)
+
+Node dec1360, 3 rounds, the session-1 build (`w4`), run-time options only. At a
+whole node the 10,000 cells make 313 groups of 32 for 128 threads, 2.4 per
+thread, and the slowest thread does three; groups of 16 (625, 4.9 per thread)
+balance better. One group per thread (79 cells, MICM's default grouping) does
+not pay: a 79-cell group's working set is 2.4 MB. The static schedule, which
+keeps each group on the thread that first touched its memory, gains nothing.
+At 256 threads (both hardware threads of every core) MICM gains 25–30 %, the
+compute-bound port loses 20 %.
+
+| Program | 128 threads, median ms (range) | vs MICM vector8 g32 | 256 threads, median ms (range) | vs MICM vector8 g32 |
+|---|---:|---:|---:|---:|
+| MICM default | 3,642 (3,605–3,644) | 0.54x | 2,535 (2,534–2,574) | 0.62x |
+| MICM vector8, 32-cell groups | 1,976 (1,974–1,988) | 1.00x | 1,568 (1,567–1,569) | 1.00x |
+| MICM vector4, 32-cell groups | 2,299 (2,258–2,355) | 0.86x | 1,728 (1,722–1,762) | 0.91x |
+| port, groups of 16 | **515 (514–518)** | **3.83x** | 618 (616–638) | 2.54x |
+| port, groups of 32 (the entry's default) | 592 (591–596) | 3.33x | 775 (774–786) | 2.02x |
+| port, groups of 64 | 754 (754–765) | 2.62x | 1,490 (1,274–1,534) | 1.05x |
+| port, groups of 79 (one per thread at 128) | 618 (614–628) | 3.19x | 2,033 (1,991–2,091) | 0.77x |
+| port, groups of 128 | 1,439 (1,403–1,489) | 1.37x | 7,158 (6,632–7,798) | 0.22x |
+| port, groups of 16, static schedule | 523 (521–548) | 3.78x | 665 (664–671) | 2.36x |
+| port, groups of 32, static schedule | 640 (640–652) | 3.09x | 814 (813–815) | 1.93x |
+| port, groups of 79, static schedule | 593 (589–598) | 3.33x | 2,806 (2,724–2,818) | 0.56x |
+
+The benchmark's default grouping on Derecho therefore adapts to the thread
+count: groups of 32 cells, halved while there would be fewer than four groups
+per thread (`bench/ts1_bench.c`), which is 16 at 128 threads and 8 at 256 for
+10,000 cells, and 32 at one thread, where (part B, below) 32 stays best.
+
+At one thread (part B, node dec1360, 3 rounds): groups of 32 take 45,252 ms
+(44,395–45,279), 64 take 46,141 (45,829–46,208), and 128 take 46,447
+(46,253–46,943); MICM's default 366,801, vector8 g32 140,675, vector4 g32
+162,498. The port with groups of 32 is 3.11x MICM's vector8 there.
+
+### MICM's 24 configurations at 128 threads (`results/2026-10-18-micm-configurations`)
+
+`tools/micm_configs.sh` on node dec1596: the 24 configurations of
+`micm_bench` (matrix layout standard or vector 1, 2, 4, 8, 128; LU in place or
+as separate factors; Mozart or Doolittle), each with one cell group per thread
+and with 32-cell groups, 3 rounds, g++ 14.3.0 with the port's flags. Every one
+of the 144 runs passed the gate (`configs-t128.md` has the full tables; Mozart
+configurations with standard or vector1 ordering reproduce MICM's default
+result exactly, the others differ by 1e-13 at most). The fastest, median ms:
+
+| MICM configuration | Grouping | Median ms (range) | vs MICM default |
+|---|---|---:|---:|
+| vector8, in-place Mozart | one group per thread | **1,803 (1,659–1,929)** | 1.96x |
+| vector8, in-place Mozart | 32 cells | 1,864 (1,841–1,985) | 1.89x |
+| vector8, in-place Doolittle | 32 cells | 1,865 (1,723–1,961) | 1.89x |
+| vector8, in-place Doolittle | one per thread | 1,954 (1,895–2,051) | 1.81x |
+| vector8, separate Mozart | 32 cells | 2,080 (2,047–2,102) | 1.70x |
+| vector4, in-place Mozart | one per thread | 2,198 (2,180–2,208) | 1.61x |
+| standard, in-place Mozart (the default) | one per thread | 3,528 (3,188–3,608) | 1.00x |
+
+As on the Mac, vector8 with in-place Mozart LU is MICM's fastest; on Derecho
+its one-group-per-thread grouping (78 cells per thread, balanced) edges the
+32-cell grouping. Against it the port's groups of 16 (515 ms on dec1360, in
+another session) are 3.5x, and its groups of 32 (592 ms) 3.0x.
+
+### Verification of the Derecho build
+
+`tools/verify_port.sh` on the committed defaults (width 4, omp simd lanes,
+aligned arrays, fast norm, adaptive grouping), gcc 14.3.0, no warnings:
+
+- **The 680 cases** (`results/2026-10-18-verify-default/tests.txt`): 673
+  PASS, 0 FAIL, 7 N/A, every id of `reference/micm_cases.txt` exactly once;
+  the same seven N/A as on the Mac (C++-only cases). The entry's two extra
+  checks pass: generated against generic kernels on the 100-cell input,
+  3.2e-15; the gate on that input, 4.0e-14.
+- **The gate on the ranking input** (seed 2026, against MICM's Derecho result):
+  PASS at every setting, largest relative difference 1.27e-13 (generic
+  kernels 1.4e-13): the default (groups of 16 at 128 threads, 511 ms), one
+  thread (44,685 ms), groups of 16, 64, and 128, the generic kernels, and the
+  static schedule.
+- **A held-out input** (seed 7, never used in tuning;
+  `results/2026-10-18-verify-heldout-seed7`): the suite again 673/0/7, and the
+  gate PASS at the default, one thread, groups of 16 and 64, and the generic
+  kernels, largest relative difference 9.3e-14; 43,630 ms at one thread and
+  502 ms with groups of 16 at 128 threads.
+
+### MICM's leading configurations at 256 threads (`results/2026-10-18-micm-configurations/timing-t256`)
+
+`pbs/micm_t256.sh` on node dec1360, 3 rounds: both hardware threads of every
+core. MICM gains 20–30 % from them (the port loses, session 3), so MICM's
+fastest on a whole node is at 256 threads:
+
+| MICM configuration | Grouping | 256 threads, median ms (range) | 128 threads (sweep) |
+|---|---|---:|---:|
+| vector8, in-place Mozart | one group per thread | **1,403 (1,401–1,407)** | 1,803 |
+| vector8, in-place Doolittle | one per thread | 1,448 (1,443–1,457) | 1,954 |
+| vector4, in-place Mozart | one per thread | 1,526 (1,525–1,535) | 2,198 |
+| vector8, in-place Mozart | 32 cells | 1,574 (1,572–1,593) | 1,864 |
+| standard, in-place Mozart (the default) | one per thread | 2,532 (2,527–2,598) | 3,528 |
+
+### Session 4: the one-thread knobs (`results/2026-10-18-session-4-one-thread-knobs`)
+
+Node dec2446, 3 rounds. A `perf` profile of one thread (node dec2433, 1,000
+cells; `results/2026-10-18-profile-w4`) put the time at LU 19 %, Jacobian
+assembly 17 %, forward and backward solves 26 %, forcing gather 10 %, the
+library's error norm 6 %, with 1.17 instructions per cycle and 35 % of L1
+data accesses missing: a block's LU matrix is 73 KB against a 32 KB L1, so the
+kernels stream from L2. The knobs tried against that profile:
+
+| Port build | 128 threads, median ms | 1 thread, median ms (range) | vs MICM vector8 g32 (141,139 ms) |
+|---|---:|---:|---:|
+| before the fast norm (session-1 build) | 595 | 45,086 (44,769–45,214) | 3.13x |
+| **fast norm** (per-lane partial sums; now the default) | 588 | 44,139 (43,926–44,183) | 3.20x |
+| fast norm, solve rows split from 8 terms (`--split-min 8`) | 590 | 43,825 (43,806–43,889) | 3.22x |
+| fast norm, split from 6 terms | 593 | 43,924 (43,837–44,184) | 3.21x |
+| fast norm, 8 gathers side by side (`--interleave 8`) | 588 | 44,477 (44,316–44,546) | 3.17x |
+| fast norm, 2 gathers side by side | 592 | 44,476 (44,151–45,050) | 3.17x |
+| fast norm, two blocks per solve iteration (`--solve-pairs`) | 602 | 44,139 (44,032–44,244) | 3.20x |
+| fast norm, groups of 16 cells | | 43,291 (43,281–43,423) | 3.26x |
+
+The error norm's serial chain of 6,688 dependent adds per internal step was
+worth 2 %; groups of 16 are worth another 2 % at one thread, unlike on the M5,
+where 16 cost 30 %; the split threshold, interleave, and paired solves are
+within the noise and stay at the entry's values. The paired solves, which
+give the core two independent chains, change nothing, consistent with the
+profile: the solves wait on L2, not on the chains.
+
+### The final session (`results/2026-10-18-final-session`)
+
+Node dec0810, 04:10 to 05:41, five rotating rounds at 128, 256, and 1 threads;
+all 90 runs passed the gate. The port's build is the committed default (width
+4, omp simd lanes, aligned arrays, fast norm, groups of 32 halved while there
+are fewer than four per thread); `fable-derecho-g16` is the same binary with
+`--group-size 16`, `fable-derecho-p16` the same sources generated with
+`--panel 16`.
+
+| Program | 128 threads, median ms (range) | 256 threads, median ms (range) | 1 thread, median ms (range) |
+|---|---:|---:|---:|
+| MICM default | 3,349 (3,006–3,618) | 2,501 (2,496–2,535) | 364,720 (362,031–365,611) |
+| MICM vector8, in-place Mozart, one group per thread | **1,915** (1,824–1,968) | **1,391** (1,388–1,394) | 240,972 (238,733–241,182) |
+| MICM vector8, in-place Mozart, 32-cell groups | 1,963 (1,854–2,004) | 1,577 (1,552–1,585) | **141,011** (140,142–141,912) |
+| **fable-derecho** (the defaults) | **504** (501–507) | 537 (530–538) | 44,259 (44,058–44,476) |
+| fable-derecho-g16 | 503 (502–506) | 613 (606–617) | **43,159** (43,103–43,704) |
+| fable-derecho-p16 | 504 (502–506) | **514** (510–514) | 43,574 (43,315–44,623) |
+
+Against MICM's fastest at each thread count the port is 3.80x at 128 threads,
+2.59x at 256 (2.71x with 16-pivot panels), and 3.19x at one thread (3.27x with
+groups of 16). On a whole node with each program at its best thread count, 504
+ms at 128 threads against 1,391 ms at 256, the port is 2.76x. The goal, 2x over
+the fastest MICM configuration on Derecho, is met.
+
+## Follow-up: the four levers (branch `derecho/fable-2`)
+
+After the final session the SSE asked for the first four levers of the
+assessment, each measured on a whole node against a control in the same
+rounds. All passed the 680 cases (673/0/7) and the gates; where a change is
+meant to be bit-identical, it was checked bit for bit.
+
+### Finer groups (`results/2026-10-18-grouping-fine`)
+
+Node dec0889, the final build, 5 rounds at 128 threads and 3 at one. Groups
+of 8 cells beat 16 by 7 % at 128 threads (1,250 groups, 9.8 per thread) and
+cost nothing at one thread, so **8 cells is the committed default**
+(`GROUP_SIZE`); the halving rule stays for larger thread counts. The 16-pivot
+LU panels, equal at 128 and one thread and 4 % faster at 256 in the final
+session, are the default too (`PANEL`).
+
+| Grouping | 128 threads, median ms (range) | vs 16 | 1 thread, median ms (range) | vs 16 |
+|---|---:|---:|---:|---:|
+| MICM vector8, one group per thread | 1,955 (1,904–2,001) | | | |
+| 8 cells | **479** (478–480) | 1.07x | 43,701 (42,438–44,140) | 1.02x |
+| 12 cells | 500 (498–502) | 1.03x | | |
+| 16 cells | 513 (512–516) | 1.00x | 44,454 (43,922–44,478) | 1.00x |
+| 8 cells, static schedule | 497 (495–504) | 1.03x | | |
+
+### The fused norm and the copy-free solve (`results/2026-10-18-lever3`)
+
+Node dec2334, 3 rounds. Two library changes, both in fast mode only: the new
+solution, the error estimate, and the normalized error in one pass over the
+stage vectors (`combine_solution_error_norm`), and the first stage's solve
+reading the forcing straight from its own array (`lu_solve_from`, a second
+forward-substitution family in the generated kernels) instead of the library
+copying it into K first. The control is the final build with 16-pivot panels
+run with groups of 16; `lever3` is the same with the two changes (default
+groups of 16 then), `lever3-g8` with groups of 8.
+
+| Build | 128 threads, median ms (range) | vs control | 1 thread, median ms (range) | vs control |
+|---|---:|---:|---:|---:|
+| control (final build, panels of 16, groups of 16) | 508 (505–509) | 1.00x | 43,803 (43,253–44,392) | 1.00x |
+| fused norm and copy-free solve | 497 (492–498) | 1.02x | 42,272 (41,824–43,252) | 1.04x |
+| the same with groups of 8 | **473** (472–475) | 1.07x | **41,298** (40,927–41,801) | 1.06x |
+
+### The Jacobian assembled inside the LU (`results/2026-10-18-lever4`)
+
+Node dec0921, 3 rounds. New generated kernels `jacobian_lu` and
+`forcing_jacobian_lu` form each LU element's sum of partials (alpha last on
+the diagonal) at the point where the elimination first reads it, so the
+assembled matrix, 73 KB per block, is never stored and reloaded; the partials
+of up to 8 blocks sit in one thread-local buffer, so the blocks of a chunk
+still run in lock step through each panel. The result is bit for bit that of
+assembly followed by the LU (`bench/lu_compare.c` compares the two paths on
+random states: 0 of 73,376 values differ over 8 blocks), after one lesson:
+where an assembled value is a lone yielded product, or a fill element starts
+from zero, GCC had two unrounded products in one statement and contracted
+the pair the other way round than in the stored assembly; both emitters now
+round a first yielded term with C11's `fma(a, b, 0.0)`, which fixes the
+compiler's choice. `lever3b` is the same build with `--no-assemble-in-lu`
+(groups of 8, panels of 16, the fused norm and copy-free solve), `final` the
+final session's build at its defaults.
+
+| Build | 128 threads, median ms (range) | vs stored assembly | 1 thread, median ms (range) | vs stored assembly |
+|---|---:|---:|---:|---:|
+| the final session's build (groups of 16 at 128 threads, 32 at one) | 495 (495–498) | 0.95x | 43,773 (43,769–44,141) | 0.94x |
+| the same with groups of 8 | 470 (469–470) | 1.00x | 40,790 (40,211–41,512) | 1.01x |
+| levers 1–3, assembly stored (`--no-assemble-in-lu`) | 468 (466–471) | 1.00x | 41,006 (40,810–41,336) | 1.00x |
+| **levers 1–4, the Jacobian assembled inside the LU (the branch's default)** | **439** (439–441) | **1.07x** | **39,046** (38,454–39,503) | **1.05x** |
+
+### The four levers together
+
+| | 128 threads | 1 thread |
+|---|---:|---:|
+| the final session's build, its defaults | 495 ms | 43,773 ms |
+| the follow-up build, its defaults | 439 ms | 39,046 ms |
+| gain | 1.13x | 1.12x |
+| against MICM's fastest at that thread count, final session (1,915 and 141,011 ms, another node) | about 4.4x | about 3.6x |
+| against MICM's fastest on a node (1,391 ms at 256 threads, another node) | about 3.2x | |
+
+The MICM ratios in the last two rows cross nodes and so carry the few
+percent of node-to-node spread; a ranking session on one node would settle
+them. The follow-up build passes the held-out seed-7 verification as well
+(`results/2026-10-18-verify-heldout-seed7-fable2`): 673/0/7, every id once,
+and the gate at every setting with a largest relative difference of 9.3e-14
+(444 ms at 128 threads, 37.8 s at one, on that input). The generated TS1 kernels are now 719 KB of code (the assembling LU
+family beside the plain one), and compile in about 100 s on a dev node.
+
+## Next: the LU storage order (not started)
+
+The one lever of the assessment left untried, and the only one with a
+double-digit estimate (10–20 %, at low to medium confidence): lay the LU
+elements out in the order the generated kernels touch them. Today an element's
+index is its position in the CSR numbering of the LU pattern
+(`lu_elements` in `tools/mechanism.py`, sorted by row, then column), and the
+kernels address a block's 2,293 elements by literal offset. The forward and
+backward substitutions already stream in that order (row i's L entries, then
+its U entries, are consecutive), but the elimination does not: at each pivot
+it walks the pivot's column, one element per row, 350 bytes apart on average,
+and the trailing update of a panel reads the panel's rows and columns both;
+the Jacobian partials it consumes are written reaction by reaction and read
+element by element. The one-thread profile is the motive: 1.17 instructions
+per cycle, 35 % of L1 data accesses missing, and a 73 KB block matrix against
+a 32 KB L1, with interleaved solves changing nothing, so the kernels wait on
+L2 rather than on their dependency chains. Elements numbered by first touch
+in the elimination (panel by panel, pivot by pivot) would turn the LU's loads
+into sequential streams for the L2 prefetcher, with every fetched line used
+whole; the price is that the substitutions then read each row's entries from
+scattered positions, so one layout cannot serve all three kernels, and the
+gain is a trade to measure, not a sum.
+
+The numbering is the generator's choice alone: with generated kernels the
+library never reads the LU array (`src/rosenbrock.c` only passes it between
+`jacobian_lu`, `lu_solve`, and `lu_solve_from`; `mz_diag` is used on the
+generic path), so a permutation of the element indices changes no arithmetic
+and the final state must stay bit for bit that of the follow-up build. The
+study, in order:
+
+1. `perf` at one thread (1,000 cells, as in `pbs/profile.sh`) with the L1 and
+   L2 miss counters split by kernel, so the share of the misses in the
+   elimination against the substitutions is known before any code changes;
+   if the substitutions carry most of them, the layout is not the fix and
+   the lever is closed.
+2. A generator option, say `--lu-order csr|elimination|solve`, that permutes
+   the element numbering before emission and otherwise leaves every emitter
+   as it is (the emitters already go through one index map).
+3. Builds for each order through `tools/build_variant.sh`, run against the
+   follow-up build as control in the same rounds of one whole-node session
+   (`pbs/final_session.sh`, 128 threads and one), `compare_final.py` on the
+   final CSVs with a tolerance of zero, and the static counts
+   (`tools/asm_stats.sh`) to confirm the code itself is unchanged in size.
+4. If the elimination order wins at the LU but loses at the substitutions,
+   try the panel's rows stored as contiguous slabs (the 16 pivot rows of a
+   panel together, then the rows below in CSR order), which gives the
+   trailing update sequential sources without moving the row entries the
+   substitutions read.
+
+The same question applies to the partials buffer that `jacobian_lu` fills
+(up to 8 blocks of partials in one thread-local buffer, written reaction by
+reaction): writing it in the order the LU reads it is a second permutation of
+the same kind.

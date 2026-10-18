@@ -1,0 +1,7 @@
+== build
+compiler: 
+variables: 
+cflags: -std=c11 -Wall -Wextra -Wpedantic -O3 -DNDEBUG -march=znver3 -ffp-contract=fast -fopenmp -Iinclude -DTMC_WIDTH=4 -DTMC_DEFAULT_GROUP_SIZE=32 -DTMC_FAST_NORM=1
+build seconds: 97 (library, generated kernels, and benchmark; nothing rebuilt that was up to date)
+generated/ts1.c lines: 44029
+ts1.o text bytes: 508117

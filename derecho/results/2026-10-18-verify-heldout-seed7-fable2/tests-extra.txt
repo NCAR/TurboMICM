@@ -1,0 +1,4 @@
+673 PASS, 0 FAIL, 7 N/A
+extra checks: 2 PASS, 0 FAIL, 0 N/A
+ts1:GeneratedKernels.MatchGeneric PASS largest relative difference 3.20e-15
+ts1:GeneratedKernels.ReferenceGate PASS largest relative difference 3.96e-14

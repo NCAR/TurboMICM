@@ -1,0 +1,17 @@
+date: 2026-10-18T03:41:41
+host: dec2446
+platform: Linux-6.4.0-150600.23.53-default-x86_64-with-glibc2.38
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: 
+uptime: 03:41:41  up 45 days 16:05,  0 users,  load average: 3.89, 6.25, 4.62
+input: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/cells_2026.csv
+reference: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-reference/micm_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 1; rounds: 3
+program micm-v8-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-in-place-mozart --group-size 32
+program w4-prenorm: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4-prenorm/bin/ts1_bench_cpu
+program w4n: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4n/bin/ts1_bench_cpu
+program split8: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/split8/bin/ts1_bench_cpu
+program split6: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/split6/bin/ts1_bench_cpu
+program inter8: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/inter8/bin/ts1_bench_cpu
+program inter2: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/inter2/bin/ts1_bench_cpu
+program pairs: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/pairs/bin/ts1_bench_cpu
+program w4n-g16: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4n/bin/ts1_bench_cpu --group-size 16

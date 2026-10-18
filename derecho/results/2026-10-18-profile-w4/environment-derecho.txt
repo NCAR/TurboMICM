@@ -1,0 +1,22 @@
+date: 2026-10-18T01:39:57-06:00
+host: dec2433  job: 7858358.desched1  cpus allowed: 64-71,192-199
+kernel: 6.4.0-150600.23.53-default
+CPU(s): 256
+Model name: AMD EPYC 7763 64-Core Processor
+Thread(s) per core: 2
+Core(s) per socket: 64
+Socket(s): 2
+Frequency boost: enabled
+CPU(s) scaling MHz: 100%
+CPU max MHz: 2450.0000
+CPU min MHz: 1500.0000
+L1d cache: 4 MiB (128 instances)
+L1i cache: 4 MiB (128 instances)
+L2 cache: 64 MiB (128 instances)
+L3 cache: 512 MiB (16 instances)
+NUMA node(s): 8
+transparent hugepages: [always] madvise never
+compiler: /glade/u/apps/common/25.10/spack/opt/spack/gcc/14.3.0/nw2m/bin/gcc gcc (Spack GCC) 14.3.0
+modules: ncarenv/25.10 gcc/14.3.0 
+OMP_PROC_BIND=close  OMP_PLACES=cores  OMP_NUM_THREADS=8
+load: 7.41 3.65 2.81 33/4252 3384973

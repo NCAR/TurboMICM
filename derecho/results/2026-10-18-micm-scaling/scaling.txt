@@ -1,0 +1,5 @@
+== /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-in-place-mozart, 10 steps
+t1                           threads   1  elapsed_ms  36475.629  user_s    41.81  sys_s     0.17  minor_faults      16995  invol_ctx       12
+t2                           threads   2  elapsed_ms  29451.113  user_s    66.61  sys_s     0.25  minor_faults      23833  invol_ctx      144
+t4                           threads   4  elapsed_ms  29627.431  user_s    67.03  sys_s     0.24  minor_faults      40044  invol_ctx     4223
+t8                           threads   8  elapsed_ms  29745.322  user_s    67.44  sys_s     0.25  minor_faults      44901  invol_ctx     8387
