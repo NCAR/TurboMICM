@@ -8,8 +8,11 @@ all times are measured inside C and exclude input, setup and CSV output.
 ## Controlled comparisons
 
 - **Baseline:** original three-stage engine at default tolerances, then changing
-  only rtol/atol to chemically meaningful local weights. This distinguishes a
-  tolerance problem from an integrator-family problem.
+  only atol from 1e-3 to 1e-18 while retaining rtol=1e-6. A subsequent run
+  changes only rtol to 1e-4. This isolates the tolerance problem from the
+  integrator-family problem. The absolute-only isolation reaches at least
+  6.019 overall / 4.980 species digits on every scenario; it is in
+  `scans/tolerance-isolation.csv`.
 - **Family and order:** ROS2, ROS3, ROS4, RODAS3, RODAS4, and order-2/order-3
   linearly implicit Euler extrapolation, at rtol 1e-3, 1e-4, 1e-5 with atol 1e-18.
   Within a tolerance column, all other experimental options are identical.

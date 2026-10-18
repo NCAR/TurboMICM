@@ -30,6 +30,25 @@ local tooling environment/cache and generated result CSVs remain ignored.
   driver binary is fixed at daec954 (digest prefix 812ca613609a). New RODAS3.1
   and H211b code is independently tested in the probe but intentionally not
   linked into that driver until the sequential scan process completes.
-- Next: rebuild benchmark; scan RODAS3.1/H211b, select points, generate/check
+- Subsequently completed: rebuild benchmark; scan RODAS3.1/H211b, select points, generate/check
   independent 48-hour reference conditions, repeat final timings, run both
   compiler gates and 10,000-cell checks, finalize documentation and audit.
+
+## Tier 3 completed validation
+
+- Five operating points pass all six disclosed scenarios with clang (five
+  interleaved repetitions each) and GCC (one full matrix), plus three independent
+  48-hour cases and all-point 10000-cell gate checks.
+- Fresh Tier 1 gates: 675 PASS / five unchanged N/A / zero FAIL with both
+  compilers. Full 10000-cell MICM comparison is bit-identical for clang and
+  max relative 1.43e-13 for GCC. Supplied 100-cell fixture also passes both.
+- Sanitizer checks of every new method, reuse, analytic order and scenario I/O
+  pass. Clang -O3 -DNDEBUG is restored; linkage is libSystem + libomp only.
+- Final C timings are medians of five deterministic interleaved repetitions.
+  Original C++ MICM baselines at qualified levels have three repetitions.
+  RESULTS.md and the overall/species work–precision figures are generated from
+  these current records; PNG layouts were inspected.
+- The recommendation reaches minimum 3.705 overall / 2.734 species digits on
+  the disclosed data, and 3.923 / 3.194 on the added 48-hour conditions.
+  Research sources, controlled changes, negative findings and limits are
+  explicit. The requirement-by-requirement current audit is in AUDIT.md.

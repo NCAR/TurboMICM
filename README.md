@@ -1,6 +1,6 @@
 # Portable chemical kinetics in C
 
-ISO C11 chemistry library with Rosenbrock and backward Euler integration,
+ISO C11 chemistry library with Rosenbrock, backward Euler and Euler extrapolation,
 analytic sparse Jacobians, differential-algebraic constraints, external models,
 and dense/sparse matrix utilities. Runtime dependencies are the C standard
 library, libm and OpenMP. Python is used only for configuration generation and
@@ -154,3 +154,9 @@ measures grouping/scheduling. Its accuracy score uses only the disclosed
 `tools/micm_scan.py` measures the independently compiled original C++ baseline.
 All generated large CSVs stay in ignored `results/` directories; concise
 accuracy/work/time records stay in versioned `scans/`.
+
+The report and work–precision figures are reproducible with
+`tools/report_results.py` and `tools/plot_scans.py`. Use `.conda/bin/python` for
+both. Run timing studies into a fresh `--output` CSV when retaining the committed
+reference records; the scan tools append every run instead of discarding history.
+`tools/scale_scan.py --points` checks all five declared points at 10000 cells.

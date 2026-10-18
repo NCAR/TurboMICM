@@ -1,41 +1,64 @@
 #!/usr/bin/env python3
-"""Generate static scientific work–precision plots from recorded C trials."""
+"""Export scientific work–precision figures from C run records (never Python time)."""
 import os
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 os.environ['MPLCONFIGDIR']=str(ROOT/'.cache/matplotlib')
 import csv
 import json
+from collections import defaultdict
+from statistics import median
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from scan import NAMES
 
-NAMES=['tier1-30s','diurnal-30min','diurnal-10min','diurnal-5min','polluted-10min','clean-10min']
+METHODS=['ros2','ros3','ros4','rodas3','rodas4','extrap2','extrap3','rodas31','micm3','MICM-three-stage']
+LABELS=['ROS2','ROS3','ROS4','RODAS3','RODAS4','Euler extrap. 2','Euler extrap. 3','RODAS3.1','C MICM3','C++ MICM3']
+SUITES={'family','family-corrected','loose','mid','rodas31','baseline','tolerance-isolation','micm-baseline'}
 
 def main():
     rows=[]
     for path in sorted((ROOT/'scans').glob('*.csv')):
         if path.stem in ('smoke','baseline') or path.stem.startswith('diagnostic'): continue
         for row in csv.DictReader(path.open()):
-            if row.get('message','').startswith('Provisional:'): continue
-            if row['returncode']=='0' and row.get('overall_digits') and float(row['overall_digits'])>=0 and row['scenario'] in NAMES:
-                row['config']=json.loads(row['configuration']);rows.append(row)
-    fig,axes=plt.subplots(2,3,figsize=(14,8),constrained_layout=True)
-    colors=dict(zip(['ros2','ros3','ros4','rodas3','rodas4','extrap2','extrap3','micm3'],plt.get_cmap('tab10').colors))
-    for ax,name in zip(axes.flat,NAMES):
-        for method,color in colors.items():
-            series=[r for r in rows if r['scenario']==name and r['config']['method']==method and r['suite'] in ('family','family-corrected','loose','mid','baseline')]
-            series.sort(key=lambda r:float(r['overall_digits']))
-            if series: ax.plot([float(r['overall_digits']) for r in series],[float(r['elapsed_ms']) for r in series],'.-',color=color,label=method)
-        points=[r for r in rows if r['scenario']==name and r['suite']=='operating-points']
-        if points: ax.scatter([float(r['overall_digits']) for r in points],[float(r['elapsed_ms']) for r in points],marker='*',s=90,c='black',label='declared points',zorder=5)
-        ax.set_title(name);ax.set_yscale('log');ax.grid(alpha=.25)
-        ax.set_xlabel('Overall significant digits');ax.set_ylabel('C elapsed time (ms, log scale)')
-        ax.axvline(2,color='gray',ls=':',lw=1);ax.axvline(3,color='gray',ls=':',lw=1)
-    handles,labels=axes[0,0].get_legend_handles_labels()
-    fig.legend(handles,labels,loc='outside lower center',ncol=9,frameon=False)
+            if row.get('message','').startswith('Provisional:') or row.get('compiler')=='gcc-15': continue
+            if row.get('returncode')!='0' or not row.get('overall_digits') or row.get('scenario') not in NAMES: continue
+            row['config']=json.loads(row['configuration']);rows.append(row)
+    colors=dict(zip(METHODS,plt.get_cmap('tab10').colors))
     out=ROOT/'plots';out.mkdir(exist_ok=True)
-    fig.savefig(out/'work_precision.png',dpi=160)
-    fig.savefig(out/'work_precision.pdf')
-    print(out/'work_precision.png')
+    for metric,suffix,axis,levels in [('overall_digits','','Overall significant digits',[2,3]),
+                                     ('worst_digits','_species','Worst-species significant digits',[1,2])]:
+        fig,axes=plt.subplots(2,3,figsize=(15,8.7),constrained_layout=True)
+        for ax,name in zip(axes.flat,NAMES):
+            for method,label in zip(METHODS,LABELS):
+                groups=defaultdict(list)
+                for r in rows:
+                    if r['scenario']==name and r['config']['method']==method and r['suite'] in SUITES:
+                        if float(r[metric])<0: continue
+                        groups[r['configuration']].append(r)
+                series=[]
+                for records in groups.values():
+                    series.append((float(records[0][metric]),median(float(r['elapsed_ms']) for r in records)))
+                series.sort()
+                if series:
+                    ax.plot([x for x,y in series],[y for x,y in series],'.--' if method=='MICM-three-stage' else '.-',
+                            color=colors[method],label=label,lw=1.4,ms=5)
+            points=defaultdict(list)
+            for r in rows:
+                if r['scenario']==name and r['suite']=='operating-points' and r['compiler']=='clang':
+                    points[r['point']].append(r)
+            if points:
+                pairs=[(float(rs[0][metric]),median(float(r['elapsed_ms']) for r in rs)) for rs in points.values()]
+                ax.scatter([x for x,y in pairs],[y for x,y in pairs],marker='*',s=90,c='black',
+                           label='declared points (median 5)',zorder=5)
+            ax.set_title(name);ax.set_yscale('log');ax.grid(alpha=.25)
+            ax.set_xlabel(axis);ax.set_ylabel('C/C++ elapsed time (ms, log scale)')
+            for level in levels: ax.axvline(level,color='gray',ls=':',lw=1)
+        handles,labels=axes[0,0].get_legend_handles_labels()
+        fig.legend(handles,labels,loc='outside lower center',ncol=6,frameon=False,fontsize=9)
+        fig.savefig(out/f'work_precision{suffix}.png',dpi=160)
+        fig.savefig(out/f'work_precision{suffix}.pdf')
+        plt.close(fig)
+    print('Overall and worst-species work–precision PNG/PDF figures generated')
 if __name__=='__main__': main()

@@ -26,7 +26,7 @@ NOTICE; MICM source e15898ce and its parameter tables remain the baseline.
    order effects cautiously. Only the abstract was accessible; no claims about
    its detailed algorithm are made. Our fixed 1,2,3-substep Richardson tableau
    is derived directly and is not an implementation of SEULEX.
-4. E. Hairer, *Numerical solution of ordinary differential equations*,
+4. E. Hairer and C. Lubich, *Numerical solution of ordinary differential equations*,
    [overview](https://www.unige.ch/~hairer/preprints/pcam-ode.pdf).
    Used the description of linearly implicit Euler as one Newton iteration,
    L-stability, and stiff order reduction to frame the experiments.

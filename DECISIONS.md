@@ -96,3 +96,25 @@
   comparison. The cached and uncached C paths have bit-identical trajectories;
   caching saves exactly one function call per rejection. This does not reuse a
   forcing value after an accepted step or after a rate-change boundary.
+- Select five operating points from the measured curves. Four use RODAS3.1 and
+  one uses six-stage RODAS4 for extra precision. All use current Jacobians,
+  I control and exact retry-forcing reuse. Approximate Jacobian reuse and the
+  tested PI/H211b settings did not offer a compelling improvement at the chosen
+  accuracy margins. Retain them as documented research options.
+- Recommend rtol=3e-4, atol=1e-18 rather than the fastest level-3 absolute floor
+  of 1e-16. The former gives about fivefold margin against the chosen overall
+  and species error budgets, and remains accurate in the independent 48-hour
+  tests. Low-cost points remain available for the level-2 ranking.
+- Use 32-cell groups with guided minimum chunk 1 in the declared points. The
+  10000-cell study shows small scheduling differences and favors groups of 32;
+  no affinity API or hardware-specific code is used. Defaults of the original
+  Tier 1 benchmark remain unchanged.
+- Separate full Tier 1 roundoff validation on all 10000 cells from Tier 3
+  scaling accuracy on the disclosed first 1000 cells. The latter still checks
+  finite/nonnegative output for every cell; it does not establish full 10000-cell
+  reference accuracy. No undisclosed input or alternative solution was read.
+- Stop after the controlled family, tolerance, norm, controller, reuse,
+  grouping/scheduling and independent-condition studies. No claim of a global
+  optimum over untested BDF, splitting or precision variants is made. All
+  required artifacts and the chosen operating points have direct current-state
+  validation, and the build is restored to the default clang release settings.
