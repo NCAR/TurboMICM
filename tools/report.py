@@ -142,7 +142,7 @@ def plot_scaling(rows):
         ax.bar(x, med, width, label=LABELS[point], color=COLORS[point], yerr=err, capsize=2, error_kw={'linewidth':.7})
     ax.set_xticks(range(6), NAMES); ax.set_ylabel('Integration time (seconds)'); ax.grid(axis='y', alpha=.18)
     ax.set_title('10,000 cells · Clang · 10 threads\nMedian of five; error bars span minimum to maximum')
-    ax.legend(ncol=5, frameon=False, loc='outside lower center' if False else 'upper left')
+    ax.legend(ncol=5, frameon=False, loc='upper left')
     for ext in ['png', 'svg']: fig.savefig(OUT / ('timing_10000.' + ext), dpi=170)
     plt.close(fig)
 
@@ -150,6 +150,16 @@ def plot_scaling(rows):
 def species_report(rows):
     """All-species RMS and maximum errors, using the first final 1,000-cell run."""
     output = []
+    records = {r['scenario']: r for r in rows if r['config']=='recommended' and r['repeat']=='0'}
+    if not all((ROOT/r['run_log']).with_name('ts1_final.csv' if scenario=='tier1-30s' else 'ts1_snapshots.csv').exists() for scenario,r in records.items()):
+        with (OUT/'species_accuracy.csv').open(newline='') as stream:
+            cached = list(csv.DictReader(stream))
+        assert {r['scenario'] for r in cached} == set(NAMES)
+        for row in cached:
+            assert row['output_sha256'] == records[row['scenario']]['output_sha256']
+            for key in ['rms_relative','digits','max_relative']: row[key] = float(row[key])
+            row['values'] = int(row['values'])
+        return cached
     for scenario in NAMES:
         record = next(r for r in rows if r['config'] == 'recommended' and r['scenario'] == scenario and r['repeat'] == '0')
         run = ROOT / record['run_log']
@@ -171,7 +181,7 @@ def species_report(rows):
             for j, name in enumerate(header[offset:]):
                 if count[j]:
                     rms = math.sqrt(sums[j]/count[j]); digits = min(16., -math.log10(rms)) if rms else 16.
-                    output.append(dict(scenario=scenario, species=name, values=count[j], rms_relative=rms, digits=digits, max_relative=maximum[j]))
+                    output.append(dict(scenario=scenario, species=name, values=count[j], rms_relative=rms, digits=digits, max_relative=maximum[j], output_sha256=record['output_sha256']))
     savecsv(OUT/'species_accuracy.csv', output)
     return output
 
@@ -186,6 +196,9 @@ def main():
     small, large = summary(one,1000), summary(ten,10000)
     savecsv(OUT/'operating_summary.csv', small+large)
     indexed = {(r['cells'],r['config'],r['scenario']):r for r in small+large}
+    for scenario in NAMES:
+        for field in ['overall_digits','worst_digits']:
+            assert indexed[1000,'c-micm3-matched',scenario][field] == indexed[1000,'micm-micm3-matched',scenario][field]
     totals = {(cells,point):sum(indexed[cells,point,s]['median_ms'] for s in NAMES) for cells,points in [(1000,list(LABELS)),(10000,IDS)] for point in points}
     species = species_report(one)
     plot_curves(read('precision_final1000'),small); plot_family(read('tolerance_final64')); plot_scaling(large)
@@ -238,11 +251,19 @@ levels are in [OPERATING_POINTS.md](OPERATING_POINTS.md).
 
 '''
     text += table(['Point','Overall, 1k','Species, 1k','Overall, 10k prefix','Species, 10k prefix','Sum seconds, 1k','Sum seconds, 10k'],public_rows)+'\n\n'
+    text += '### Per-scenario accuracy at 1,000 cells\n\n'
+    text += 'Each entry is overall / worst-species digits. C++ MICM3 has the same rounded scores as the C compatibility baseline.\n\n'
+    accuracy_points = IDS+['c-micm3-matched']
+    text += table(['Scenario']+[LABELS[p] for p in accuracy_points], [[scenario]+[f'{float(indexed[1000,p,scenario]["overall_digits"]):.3f} / {float(indexed[1000,p,scenario]["worst_digits"]):.3f}' for p in accuracy_points] for scenario in NAMES])+'\n\n'
     for cells in [1000,10000]:
         text += f'### {cells:,} cells: per-scenario median milliseconds\n\n'
         points = list(LABELS) if cells == 1000 else IDS
         text += table(['Scenario']+[LABELS[p] for p in points], [[s]+[f'{indexed[cells,p,s]["median_ms"]:.1f}' for p in points] for s in NAMES])+'\n\n'
     text += '![10,000-cell timing medians and ranges](results/timing_10000.png)\n\n'
+    counters = ['internal_steps','function_calls','jacobian_updates','decompositions','solves']
+    text += '### Work on the six 1,000-cell scenarios\n\n'
+    text += 'Totals count group operations in one repetition of each scenario, with 32-cell groups and an eight-cell tail. Rate evaluations are a separate per-cell counter in the CSV. Extrapolation spends more factorizations per trial but accepts larger steps.\n\n'
+    text += table(['Point','Trials','Forcing','Jacobians','LU','Solves'], [[LABELS[p]]+[f'{sum(int(indexed[1000,p,s][c]) for s in NAMES):,}' for c in counters] for p in IDS+['c-micm3-matched']])+'\n\n'
     text += '''## MICM comparison and work–precision
 
 The unchanged MICM3 defaults remain available. On the disclosed long runs their
@@ -337,6 +358,8 @@ retaining every timing/log and the first state of each configuration/scenario.
 `results/operating_summary.csv` contains medians, ranges, accuracy and work;
 `scans/` retains every configuration and raw measured row, including failures.
 `tools/report.py` regenerates this report, operating points, and PNG/SVG figures.
+It recomputes species diagnostics when raw outputs exist; otherwise it uses the
+retained diagnostics after checking their output hashes against the final scan.
 The historical Tier 1 measurements are preserved separately in
 [results/tier1_results.md](results/tier1_results.md); their workload includes a
 warm-up and differs from the new scenario timer.
@@ -354,7 +377,9 @@ dynamic scheduling and the OpenMP default chunk. These are runtime parameters.
 **Recommended: fourth-order Euler extrapolation, rtol=0.002.** It gives measured
 margin above three overall digits and two digits for every scored species,
 including the additional 48-hour cases. The accurate point costs less but has
-less margin; the strict point provides additional margin at greater cost.
+less margin; the strict point provides additional margin at greater cost. The
+fast point only narrowly clears the two-digit species criterion; balanced
+provides more measured margin within that cheaper tier.
 
 '''
     op+=table(['Point','Method','rtol','Expected level','Minimum overall/species digits, disclosed 1k'],[[LABELS[p['id']],p['method']+(' order 4' if p['method']=='extrap' else ''),str(p['options']['rtol']),str(p['level']),'/'.join(f'{v:.3f}' for v in limits(one,p['id']))] for p in POINTS])+'\n\n'

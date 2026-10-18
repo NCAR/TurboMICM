@@ -43,7 +43,7 @@ accuracy, so the family screen alone is not used to declare a speed winner.
 | `rate_cache64.csv`, `rate_cache.json` | Constant-rate caching on/off for RODAS3 and extrapolation; identical states and solver counts |
 | `blocking1000.csv`, `blocking.json` | External-step blocks 1/4/16/64 and static/dynamic/guided scheduling; identical states/counts |
 | `final_gcc1000.csv`, `final_stress_gcc.csv`, `final_stress_clang.csv` | Final-source cross-compiler qualification of all five points |
-| `precision_final1000.csv` | Full tolerance curves with final rate cache and scheduling settings |
+| `precision_final1000.csv` | Full tolerance curves with final rate cache and scheduling settings, including matched-driver MICM3 |
 | `operating_clang1000.csv`, `operating_clang10000.csv` | Final serialized five-repeat performance/accuracy runs; see RESULTS.md |
 
 The initial 64-cell inputs contain the first 64 supplied cells and exactly their

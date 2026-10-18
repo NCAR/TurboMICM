@@ -26,7 +26,7 @@ def main():
     for filename, command in jobs:
         print('Running', ' '.join(command).replace(str(ROOT), '.'), flush=True)
         run = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
-        transcript = (run.stdout + run.stderr).replace(str(ROOT), '.')
+        transcript = '\n'.join(line.rstrip() for line in (run.stdout + run.stderr).replace(str(ROOT), '.').splitlines()) + '\n'
         (dest / filename).write_text(transcript)
         if run.returncode:
             print(transcript[-8000:])

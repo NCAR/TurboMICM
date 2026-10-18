@@ -81,3 +81,22 @@ and order-four extrapolation at 0.004/0.002/0.001, all atol 1e-18. Generic const
 rate caching and four-step dynamic scheduling preserve bit-identical states and
 solver counts in controlled scans. Full compiler validation, serialized five-run
 1,000/10,000-cell timings, plots and final reports follow this checkpoint.
+
+## Checkpoint 5: implementation frozen and final gates passed
+
+Integration sources are frozen at commit 07135fb. Both final compiler builds
+passed all 680 original cases, all nine TS1 roundoff checks, 44 prototype
+comparisons, convergence/stiffness tests, rate dependency tests and scenario
+I/O/cache/blocking checks. Final-source GCC qualification passed every declared
+point on all six disclosed and three stress scenarios; Clang passed all stress
+scenarios. The full final-driver tolerance sweep and serialized five-repeat
+operating measurements are being retained under their final scan names.
+Reports explicitly distinguish full 1,000-cell accuracy from reference-prefix
+accuracy in the 10,000-cell scaling workload.
+
+The 84-run final-driver tolerance sweep and all 210 repeated 1,000-cell runs
+are complete. Every declared point meets its level in every repetition. The
+recommended point's six median times sum to 4.249 s, versus 10.101 s for matched
+C MICM3 and 31.916 s for matched C++ MICM3: 2.38x and 7.51x, respectively. Its
+minimum disclosed accuracy remains 3.448 overall / 2.550 worst-species digits.
+The 150-run 10,000-cell measurement series is in progress with unchanged binaries.
