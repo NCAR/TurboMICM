@@ -60,3 +60,34 @@
   `OMP_SCHEDULE` can select a different OpenMP runtime schedule, and
   `OMP_NUM_THREADS` or `--threads` controls the thread limit. Positive group
   sizes are configurable at build time or runtime; partial groups are unpadded.
+
+## Tier 3
+
+- Preserve the Tier 1 solver and its default path exactly; experiments use a
+  separate `ck_integrator` interface and runtime method names. Refactor only CSV
+  helpers shared by the two drivers, with a direct Tier 1 regression comparison.
+- Begin with Rosenbrock order/stage sweeps and linearly implicit Euler
+  extrapolation. This tests the literature's favorable low-accuracy Rosenbrock
+  results against another generic stiff family without importing solver code.
+- Use a per-cell maximum of RMS local error by default, an explicit absolute
+  tolerance far below the scoring threshold, and negativity-aware rejection.
+  These are generic choices, independent of TS1 species names or reference data.
+- Cache Jacobians only within an external chemistry interval. Photolysis changes
+  at its boundary invalidate both Jacobian and LU; warm starts retain only the
+  proposed step. Reuse of ordinary Rosenbrock Jacobians is measured as an
+  approximation rather than described as a formally high-order W-method.
+- Use exact equality of h for LU reuse. A step-size deadband allows holding h,
+  making reuse mathematically consistent with the stored Jacobian and step.
+- Separate reading, snapshot storage and CSV output from measured step intervals.
+  Count all attempts, including failed initial attempts, in the new engine.
+  The legacy statistics retain MICM's convention, which omits some initial
+  rejections; comparisons must acknowledge this distinction.
+- Prototype in standard-library Python. Share the coefficient tables as data,
+  but independently implement nonlinear chemistry, Jacobian, dense factor/solve,
+  stage recurrences, error control and extrapolation. Test invariant conservation
+  independently in C. No speed claims come from Python.
+- Initial scan orchestration accidentally used a shared output directory for
+  two concurrent scans. Those initial rows are preserved as diagnostic history;
+  affected results are superseded by isolated runs. The scan tool now assigns
+  a directory per output CSV. Development timings may overlap builds; final
+  operating-point timings are repeated with no other task processes running.

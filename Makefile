@@ -88,3 +88,12 @@ build/configuration.txt: FORCE
 	@mkdir -p build
 	@printf '%s\n' '$(CC)' '$(OPTFLAGS)' '$(CPPFLAGS)' '$(OMPFLAGS)' '$(OMPLIBS)' '$(GROUP_SIZE)' > build/configuration.new
 	@if cmp -s build/configuration.new $@; then rm build/configuration.new; else mv build/configuration.new $@; fi
+
+bin/integrator_probe: tests/integrator_probe.c build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+.PHONY: test-methods
+test-methods: bin/integrator_probe bin/ts1_scenario
+	$(PYTHON) prototypes/check.py
+	$(PYTHON) tools/test_scenario.py

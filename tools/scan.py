@@ -66,10 +66,10 @@ def main():
     p.add_argument('--option',action='append',default=[])
     a=p.parse_args()
     configs = [(a.method,dict(v.split('=',1) for v in a.option))] if a.method else configurations(a.suite)
-    work=ROOT/'results'/'scan-work'
+    work=ROOT/'results'/('scan-'+a.output.stem)
     work.mkdir(parents=True,exist_ok=True)
     a.output.parent.mkdir(parents=True,exist_ok=True)
-    compiler=subprocess.check_output(['make','-s','-f','Makefile','--eval','print-cc:;@echo $(CC)','print-cc'],cwd=ROOT,text=True).strip()
+    compiler=(ROOT/'build/configuration.txt').read_text().splitlines()[0]
     exists=a.output.exists()
     with a.output.open('a',newline='') as file:
         writer=csv.DictWriter(file,FIELDS,extrasaction='ignore')

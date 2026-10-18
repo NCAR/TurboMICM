@@ -170,3 +170,93 @@ precompute contiguous bases. Iteration, fill/copy, reduction and prepared array
 callbacks validate shape/order/writability at runtime. `chem_verify.h` provides
 central/one-sided finite differences, negative-Jacobian comparisons and missing
 sparsity detection.
+
+## Tier 3 scenario execution and experimental integration
+
+`make bench` additionally builds `bin/ts1_scenario`. Its command is:
+
+```
+bin/ts1_scenario [--threads N] [--method NAME] [--option KEY=VALUE ...] SCENARIO
+```
+
+The default `micm3` uses the unchanged Tier 1 three-stage solver and its default
+tolerances. `micm2`, `micm4`, `micm43`, and `micm6` select its other retained tables.
+`ros2`, `ros3`, `ros4`, `rodas3`, and `rodas4` use those tables in a separate
+adaptive ODE engine; `extrap2` and `extrap3` use second- and third-order
+Richardson extrapolation of linearly implicit Euler. These new methods default
+to rtol=1e-4 and atol=1e-18 mol/m3. New methods reject algebraic mechanisms
+explicitly; the retained MICM interface remains available for DAEs.
+
+The scenario driver reads all cells, resolves paths relative to the scenario
+file, linearly interpolates the supplied photolysis factor at the start of each
+external step, multiplies original custom parameters whose names begin with j,
+and recalculates rates. Rates remain fixed during each chemistry step. There
+is no warm-up. It times the step loop, including photolysis and rate updates,
+OpenMP execution and checking the returned state. CSV reads, allocation,
+snapshot copies and output are outside timed intervals. Intervals end at each
+snapshot, so copying/writing cannot contaminate time. Counters sum over groups,
+not cells. Multiply a group's count by its actual cell count when comparing
+lane work; partial groups have no padded cells.
+
+The experimental options are parameters, never compiler optimizations:
+
+| Option | Default | Valid values and meaning |
+|---|---:|---|
+| `rtol` | 1e-4 (MICM: 1e-6) | finite >=0; relative local weight |
+| `atol` | 1e-18 (MICM: 1e-3) | finite >0 mol/m3; same for each species in driver |
+| `group_size` | build `GROUP_SIZE`, normally 32 | positive integer; `CK_GROUP_SIZE` also sets default |
+| `start` | 0.01 | finite >0 seconds; first internal step, bounded by DT |
+| `warm_start` | 1 | 0 or 1; retain proposed internal step between calls |
+| `controller` | 0 | 0: I; 1: PI |
+| `norm` | 1 | 0: group RMS; 1: maximum cell RMS; 2: component maximum |
+| `positivity` | 1 | 0 or 1; include negative candidate in rejection norm |
+| `jacobian_steps` | 1 | positive integer; maximum accepted steps per Jacobian |
+| `deadband` | 0 | [0,1); hold step if |factor-1| <= this value |
+| `safety` | 0.9 | (0,1]; multiply controller factor |
+| `growth` | 6 | finite >=1; maximum step growth factor |
+| `shrink` | 0.1 | (0,1); minimum controller factor (failures also cap at 0.5) |
+| `max_steps` | 100000 | positive integer; attempts per external step |
+
+`--threads N` is a positive integer, default OpenMP's available threads (all
+cores unless its environment limits them). Default groups shrink to occupy the
+available threads on small inputs. Explicit groups may be any positive size,
+and groups larger than the cell count become one actual group. `OMP_SCHEDULE`
+selects the OpenMP runtime schedule; static is the default. No valid parameter
+selection bypasses error/status checks; a particularly strict or inefficient
+combination can return an explicit integration failure instead of a result.
+Only rtol, atol and group_size affect `micm*` methods; experimental options are
+for the new engine. Their mere presence does not change the default MICM path.
+
+The I controller multiplies h by safety E^(-1/q), with q the embedded error's
+order. PI uses safety E^(-0.7/q) E_previous^(0.4/q), after an accepted step and
+outside rejection recovery. Both clamp the factor to [shrink,growth]. A rejected
+step retries a stale Jacobian once at the same h with a current Jacobian, then
+reduces h. Rejections count even before the first acceptance. Nonfinite
+candidates are rejected and retried, never converted into a successful state.
+
+Each integrator has its own stored, unfactored sparse Jacobian. A retry does not
+need to reevaluate it unless it is stale. Age-limited reuse across accepted
+steps is optional. LU is reused only when h and the stored Jacobian are exactly
+unchanged. The deadband makes this more likely. All caches are invalidated at
+external-step boundaries, where photolysis can jump; only the proposed step
+length persists. A stale Jacobian in ROS3/ROS4 is an approximation and does not
+retain their formal exact-Jacobian order in general. No W-method order claim is
+made. Reuse settings must earn their place through measured work–precision
+curves and robustness tests.
+
+For extrapolation, compute n=1,2 (and 3) linearly implicit Euler substeps over h
+with one Jacobian frozen at the macro-step start. Each sequence factors
+(1/(h/n) I - J) once and reuses its factors for all n solves. The Richardson
+tableau eliminates successive powers of 1/n. Its last two columns estimate the
+local error; q=2 or 3 controls h. This is a fixed-order experiment, not SEULEX's
+variable-order/stability-monitored algorithm.
+
+`include/chem_integrator.h` exposes defaults, creation, advance and destruction.
+A context borrows one state and must be freed before that state. It is never
+shared by concurrent solves. Add a method by extending the validated method
+IDs and the trial-step dispatcher in `src/integrator.c`, then supply a separate
+prototype, a C/prototype agreement test, counters, and scenario scans. The
+prototype gate uses an independent dense Python implementation of forcing,
+Jacobian, LU, stages, extrapolation and adaptation on a nonlinear reversible
+dimer mechanism, plus exact operation-count comparisons. All arithmetic in the
+C library remains double precision and ISO C11 with libm/OpenMP only.

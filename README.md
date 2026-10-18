@@ -100,3 +100,30 @@ for the tutorials. No C++ translation is needed at build or runtime. Generated
 C contains immutable descriptors and is compiled by Make with `CC`/`OPTFLAGS`.
 Numerical formulas and test data derived from MICM retain Apache-2.0 attribution
 in [NOTICE](NOTICE) and [LICENSE](LICENSE).
+
+## Tier 3 numerical research
+
+`make bench` also builds the scenario driver. For example:
+
+```sh
+bin/ts1_scenario --method ros4 --option rtol=1e-4 --option atol=1e-18 ../scenarios/diurnal-10min/scenario.txt
+.conda/bin/python ../scenarios/score.py ts1_snapshots.csv ../scenarios/diurnal-10min/reference_snapshots.csv --level 3
+make test-methods
+```
+
+The default method is `micm3`, retaining MICM's original parameters and
+ tolerances. New methods are additions selected at runtime. See
+[DESIGN.md](DESIGN.md) for method names, all options and how to add one;
+[ACCURACY.md](ACCURACY.md) for the scientific error budget;
+[REFERENCES.md](REFERENCES.md) for the literature used. C/prototype agreement
+and scenario parser checks are in `make test-methods`; the original Tier 1 gate
+remains `make test-cpu`. `bin/micm_scenario`, if built from the supplied read-only
+source, enables an additional independent scenario-driver parity check.
+
+Research tooling runs only under `.conda/bin/python`. `tools/scan.py` invokes
+the C driver for timing/counters and the supplied scorer for accuracy; it writes
+one CSV row per attempted configuration/scenario. Example:
+
+```sh
+.conda/bin/python tools/scan.py --suite family --output scans/family.csv
+```

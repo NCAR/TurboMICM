@@ -13,3 +13,5 @@ results/
 
 *.log
 ts1_snapshots.csv
+
+.cache/
