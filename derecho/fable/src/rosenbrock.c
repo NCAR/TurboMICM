@@ -190,13 +190,61 @@ static void combine_solution_and_error(tmc_dense *ynew, tmc_dense *yerror, const
 
 /* MICM's normalized error: the root mean square over all cells and variables
  * of error / (atol + rtol max(|y|, |ynew|)), accumulated variable by variable
- * and cell by cell, padded lanes excluded, floored at 1e-10. */
+ * and cell by cell, padded lanes excluded, floored at 1e-10.
+ *
+ * With TMC_FAST_NORM (the Makefile sets it in fast kernel mode; a Derecho
+ * tuning) the squared terms go into TMC_WIDTH partial sums, one per lane, with
+ * one vector add per block instead of a chain of TMC_WIDTH dependent scalar
+ * adds, and the lanes' sums are added in lane order at the end: a reassociated
+ * sum, within the gate like the fast kernels' split sums. Exact mode keeps
+ * MICM's order. */
+#ifndef TMC_FAST_NORM
+#define TMC_FAST_NORM 0
+#endif
 double tmc_rosenbrock_normalized_error(const tmc_state *st, const tmc_dense *y, const tmc_dense *ynew, const tmc_dense *errors)
 {
   const int L = st->L, n_vars = st->n_vars, n_cells = st->n_cells;
   const double rtol = st->relative_tolerance;
   const int n_blocks = st->n_blocks;
   double acc = 0.0;
+#if TMC_FAST_NORM
+  double acc_lane[TMC_WIDTH];
+  for (int lane = 0; lane < TMC_WIDTH; ++lane)
+    acc_lane[lane] = 0.0;
+  for (int v = 0; v < n_vars; ++v)
+  {
+    const double atol = st->absolute_tolerance[v];
+    for (int block = 0; block < n_blocks; ++block)
+    {
+      const size_t base = ((size_t)block * n_vars + v) * L;
+      const int lanes = block == n_blocks - 1 ? n_cells - block * L : L;
+      const double *restrict yv = y->data + base, *restrict ynv = ynew->data + base, *restrict ev = errors->data + base;
+      if (lanes == TMC_WIDTH)
+      {
+#pragma omp simd
+        for (int lane = 0; lane < TMC_WIDTH; ++lane)
+        {
+          double a = fabs(yv[lane]), b = fabs(ynv[lane]);
+          double ymax = a > b ? a : b;
+          double e = ev[lane] / (atol + rtol * ymax);
+          acc_lane[lane] += e * e;
+        }
+      }
+      else
+      {
+        for (int lane = 0; lane < lanes; ++lane)
+        {
+          double a = fabs(yv[lane]), b = fabs(ynv[lane]);
+          double ymax = a > b ? a : b;
+          double e = ev[lane] / (atol + rtol * ymax);
+          acc_lane[lane % TMC_WIDTH] += e * e;
+        }
+      }
+    }
+  }
+  for (int lane = 0; lane < TMC_WIDTH; ++lane)
+    acc += acc_lane[lane];
+#else
   for (int v = 0; v < n_vars; ++v)
   {
     const double atol = st->absolute_tolerance[v];
@@ -232,6 +280,7 @@ double tmc_rosenbrock_normalized_error(const tmc_state *st, const tmc_dense *y, 
       }
     }
   }
+#endif
   size_t N = (size_t)n_cells * (size_t)n_vars;
   if (N == 0)
     N = 1;

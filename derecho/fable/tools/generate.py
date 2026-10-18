@@ -20,6 +20,7 @@ PANEL = 64  # pivots per LU panel
 ROW_BUDGET = 64  # solve terms per block loop body
 ORDERING_ENUM = {"markowitz": "TMC_ORDERING_MARKOWITZ", "minimum-fill": "TMC_ORDERING_MINIMUM_FILL"}
 LANE_PRAGMA = True  # each lane loop an OpenMP simd loop (Derecho default; --no-lane-pragma for plain loops)
+SOLVE_PAIRS = False  # the solves take two blocks per loop iteration, statements interleaved (--solve-pairs)
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -529,29 +530,51 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast, ordering
     out("/* L U x = b: forward substitution with unit diagonal, then backward substitution */")
     funcs = []
 
-    def emit_row_sum(i, js, final):
-        """t = x_i - sum_j a_ij x_j, then `final` (a format with {t}) stores the result."""
+    def row_sum_lines(i, js, final, X_, A_, tn):
+        """The statements for t = x_i - sum_j a_ij x_j and `final` (a format with {t}),
+        on the block whose vectors X_ and A_ address, with temporaries named tn."""
+        lines = []
         if fast and len(js) >= SPLIT_MIN:
             P = INTERLEAVE
-            out("    " + " ".join(f"double t{k}[{W}];" for k in range(P)))
-            out(f"    {lane} t0[c] = {X(i)};")
+            lines.append("    " + " ".join(f"double {tn}{k}[{W}];" for k in range(P)))
+            lines.append(f"    {lane} {tn}0[c] = {X_(i)};")
             for k in range(1, P):
-                out(f"    {lane} t{k}[c] = 0.0;")
+                lines.append(f"    {lane} {tn}{k}[c] = 0.0;")
             for m, j in enumerate(js):
                 k = m % P
                 if k == 0:
-                    out(f"    {lane} t0[c] -= {A((i, j))} * {X(j)};")
+                    lines.append(f"    {lane} {tn}0[c] -= {A_((i, j))} * {X_(j)};")
                 else:
-                    out(f"    {lane} t{k}[c] += {A((i, j))} * {X(j)};")
+                    lines.append(f"    {lane} {tn}{k}[c] += {A_((i, j))} * {X_(j)};")
             for k in range(1, P):
-                out(f"    {lane} t0[c] -= t{k}[c];")
-            out("    " + lane + " " + final.format(t="t0[c]"))
+                lines.append(f"    {lane} {tn}0[c] -= {tn}{k}[c];")
+            lines.append("    " + lane + " " + final.format(t=f"{tn}0[c]"))
         else:
-            out(f"    double t[{W}];")
-            out(f"    {lane} t[c] = {X(i)};")
+            lines.append(f"    double {tn}[{W}];")
+            lines.append(f"    {lane} {tn}[c] = {X_(i)};")
             for j in js:
-                out(f"    {lane} t[c] -= {A((i, j))} * {X(j)};")
-            out("    " + lane + " " + final.format(t="t[c]"))
+                lines.append(f"    {lane} {tn}[c] -= {A_((i, j))} * {X_(j)};")
+            lines.append("    " + lane + " " + final.format(t=f"{tn}[c]"))
+        return lines
+
+    def X2(v):
+        return f"x2[{v}*{W}+c]"
+
+    def A2(e):
+        return f"a2[{lu[e]}*{W}+c]"
+
+    def emit_row(i, js, final1, final2):
+        """One row on one block, or (--solve-pairs, final2 given) on two blocks with
+        the statements interleaved, so their chains run side by side."""
+        out("    {")
+        if final2 is not None:
+            for s1, s2 in zip(row_sum_lines(i, js, final1, X, A, "t"), row_sum_lines(i, js, final2, X2, A2, "u")):
+                out(s1)
+                out(s2)
+        else:
+            for s1 in row_sum_lines(i, js, final1, X, A, "t"):
+                out(s1)
+        out("    }")
 
     # Rows share a block loop until the body holds about ROW_BUDGET terms: short rows
     # would otherwise spend half their instructions on loop control, while a long
@@ -569,6 +592,19 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast, ordering
             groups.append(cur)
         return groups
 
+    # the block loops of a row group: with --solve-pairs, two blocks per iteration
+    # and then the odd block alone; otherwise every block alone
+    def block_loops(with_recip):
+        x_decl = f"double *restrict x = {block_ptr('x0', f'{n}*{W}', 'xb')}; const double *restrict a = {block_ptr('a0', f'{nnz}*{W}', 'ab')};"
+        r_decl = f" const double *restrict recip = {block_ptr('r0', f'{n}*{W}', 'rb')};" if with_recip else ""
+        if SOLVE_PAIRS:
+            x2_decl = f" double *restrict x2 = x + {n}*{W}; const double *restrict a2 = a + {nnz}*{W};"
+            r2_decl = f" const double *restrict recip2 = recip + {n}*{W};" if with_recip else ""
+            yield f"  for (int b = 0; b + 1 < nb; b += 2) {{ {x_decl}{r_decl}{x2_decl}{r2_decl}", True
+            yield f"  if (nb & 1) {{ const int b = nb - 1; {x_decl}{r_decl}", False
+        else:
+            yield f"  for (int b = 0; b < nb; ++b) {{ {x_decl}{r_decl}", False
+
     fw_groups = row_groups(range(n), lambda i: [j for j in rows[i] if j < i])
     bw_groups = row_groups(range(n - 1, -1, -1), lambda i: [j for j in rows[i] if j > i])
     per_fn = 8
@@ -582,15 +618,14 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast, ordering
         for grp in fw_groups[start:start + per_fn]:
             if not any(j < i for i in grp for j in rows[i]):
                 continue
-            out(f"  for (int b = 0; b < nb; ++b) {{ double *restrict x = {block_ptr('x0', f'{n}*{W}', 'xb')}; const double *restrict a = {block_ptr('a0', f'{nnz}*{W}', 'ab')};")
-            for i in grp:
-                js = [j for j in rows[i] if j < i]
-                if not js:
-                    continue
-                out("    {")
-                emit_row_sum(i, js, f"{X(i)} = {{t}};")
-                out("    }")
-            out("  }")
+            for header, pairs in block_loops(False):
+                out(header)
+                for i in grp:
+                    js = [j for j in rows[i] if j < i]
+                    if not js:
+                        continue
+                    emit_row(i, js, f"{X(i)} = {{t}};", f"{X2(i)} = {{t}};" if pairs else None)
+                out("  }")
         out("}")
         out()
     for start in range(0, len(bw_groups), per_fn):
@@ -600,19 +635,17 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast, ordering
         out("{")
         out("  (void)a0; (void)r0;")
         for grp in bw_groups[start:start + per_fn]:
-            recip_decl = f" const double *restrict recip = {block_ptr('r0', f'{n}*{W}', 'rb')};" if fast else ""
-            uses_a = (not fast) or any(j > i for i in grp for j in rows[i])
-            a_decl = f" const double *restrict a = {block_ptr('a0', f'{nnz}*{W}', 'ab')};" if uses_a else ""
-            out(f"  for (int b = 0; b < nb; ++b) {{ double *restrict x = {block_ptr('x0', f'{n}*{W}', 'xb')};{a_decl}{recip_decl}")
-            for i in grp:
-                js = [j for j in rows[i] if j > i]
-                out("    {")
-                if fast:
-                    emit_row_sum(i, js, f"{X(i)} = {{t}} * recip[{i}*{W}+c];")
-                else:
-                    emit_row_sum(i, js, f"{X(i)} = {{t}} / {A((i, i))};")
-                out("    }")
-            out("  }")
+            for header, pairs in block_loops(fast):
+                out(header)
+                if not ((not fast) or any(j > i for i in grp for j in rows[i])):
+                    out("    (void)a;" + (" (void)a2;" if pairs else ""))
+                for i in grp:
+                    js = [j for j in rows[i] if j > i]
+                    if fast:
+                        emit_row(i, js, f"{X(i)} = {{t}} * recip[{i}*{W}+c];", f"{X2(i)} = {{t}} * recip2[{i}*{W}+c];" if pairs else None)
+                    else:
+                        emit_row(i, js, f"{X(i)} = {{t}} / {A((i, i))};", f"{X2(i)} = {{t}} / {A2((i, i))};" if pairs else None)
+                out("  }")
         out("}")
         out()
     out(f"static void {name}_solve(double *restrict x, const double *restrict a, const double *restrict recip, int nb)")
@@ -635,7 +668,7 @@ def emit_kernels(final_out, name, c: mech.Compiled, width, chunk, fast, ordering
 
 
 def main():
-    global PANEL, ROW_BUDGET, INTERLEAVE, LANE_PRAGMA
+    global PANEL, ROW_BUDGET, INTERLEAVE, LANE_PRAGMA, SPLIT_MIN, SOLVE_PAIRS
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("config")
     ap.add_argument("output_stem")
@@ -646,6 +679,8 @@ def main():
     ap.add_argument("--panel", type=int, default=PANEL, help="pivots per LU panel")
     ap.add_argument("--row-budget", type=int, default=ROW_BUDGET, help="solve terms per block loop body")
     ap.add_argument("--interleave", type=int, default=INTERLEAVE, help="independent accumulations emitted side by side")
+    ap.add_argument("--split-min", type=int, default=SPLIT_MIN, help="fast mode splits solve rows with at least this many terms")
+    ap.add_argument("--solve-pairs", action="store_true", help="the solves take two blocks per loop iteration, statements interleaved")
     ap.add_argument("--ordering", choices=("markowitz", "minimum-fill"), default="markowitz",
                     help="species ordering: MICM's diagonal Markowitz, or greedy minimum fill (fewer LU elements)")
     ap.add_argument("--mode", choices=("fast", "exact"), default="fast",
@@ -658,6 +693,8 @@ def main():
     PANEL = max(1, args.panel)
     ROW_BUDGET = max(1, args.row_budget)
     INTERLEAVE = max(1, args.interleave)
+    SPLIT_MIN = max(2, args.split_min)
+    SOLVE_PAIRS = args.solve_pairs
     LANE_PRAGMA = args.lane_pragma
     m = mech.read(args.config)
     c = mech.compile_mechanism(m, ordering=args.ordering)

@@ -1,0 +1,8 @@
+variant: fmachains
+variables: OPTFLAGS=-O3 -DNDEBUG -march=znver3 -ffp-contract=fast -mtune-ctrl=^avoid_fma_chains,^avoid_fma256_chains
+compiler: /glade/u/apps/common/25.10/spack/opt/spack/gcc/14.3.0/nw2m/bin/gcc (gcc (Spack GCC) 14.3.0)
+cflags: -std=c11 -Wall -Wextra -Wpedantic -O3 -DNDEBUG -march=znver3 -ffp-contract=fast -mtune-ctrl=^avoid_fma_chains,^avoid_fma256_chains -fopenmp -Iinclude -DTMC_WIDTH=4 -DTMC_DEFAULT_GROUP_SIZE=32
+build seconds: 0
+generated/ts1.c lines: 44029
+ts1.o text bytes: 508117
+built: 2026-10-18T01:52:12-06:00 on dec0335

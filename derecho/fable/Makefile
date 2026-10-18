@@ -34,11 +34,14 @@ WIDTH ?= 4
 GROUP_SIZE ?= 32
 KERNEL_CHUNK ?= 16
 KERNEL_MODE ?= fast
-# the TS1 kernels' species ordering: minimum fill, or MICM's Markowitz in exact mode
+# the TS1 kernels' species ordering: minimum fill, or MICM's Markowitz in exact mode;
+# the library's error norm: per-lane partial sums in fast mode, MICM's order in exact mode
 ifeq ($(KERNEL_MODE),exact)
 TS1_ORDERING ?= markowitz
+FAST_NORM ?= 0
 else
 TS1_ORDERING ?= minimum-fill
+FAST_NORM ?= 1
 endif
 GEN_FLAGS ?=
 
@@ -60,7 +63,7 @@ OMP_CFLAGS := -fopenmp
 OMP_LIBS := -fopenmp
 endif
 
-CFLAGS := -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMP_CFLAGS) -Iinclude -DTMC_WIDTH=$(WIDTH) -DTMC_DEFAULT_GROUP_SIZE=$(GROUP_SIZE)
+CFLAGS := -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMP_CFLAGS) -Iinclude -DTMC_WIDTH=$(WIDTH) -DTMC_DEFAULT_GROUP_SIZE=$(GROUP_SIZE) -DTMC_FAST_NORM=$(FAST_NORM)
 LDLIBS := $(OMP_LIBS) -lm
 
 LIB_SOURCES := $(wildcard src/*.c)
