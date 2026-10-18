@@ -6,9 +6,10 @@
  *
  * Prints elapsed_ms and the solver statistics summed over the timed steps,
  * and writes the final state to ts1_final.csv. Cells are solved in groups of
- * G (default TMC_DEFAULT_GROUP_SIZE), each group a state with its own step
- * size; an OpenMP loop hands groups to threads with the chosen schedule
- * (default dynamic, one group at a time). --generic runs the library's
+ * G (default TMC_DEFAULT_GROUP_SIZE, halved while there would be fewer than
+ * four groups per thread), each group a state with its own step size; an
+ * OpenMP loop hands groups to threads with the chosen schedule (default
+ * dynamic, one group at a time). --generic runs the library's
  * generic kernels instead of the generated TS1 kernels. */
 #define _POSIX_C_SOURCE 200809L /* getline and ssize_t: POSIX, hidden by glibc in -std=c11 mode */
 #include "ts1.h"
@@ -99,6 +100,7 @@ typedef struct
 int main(int argc, char **argv)
 {
   int threads = 0, group_size = TMC_DEFAULT_GROUP_SIZE, chunk = 1;
+  bool group_size_given = false;
   bool generic = false;
   omp_sched_t schedule = omp_sched_dynamic;
   int i = 1;
@@ -107,7 +109,10 @@ int main(int argc, char **argv)
     if (strcmp(argv[i], "--threads") == 0 && i + 1 < argc)
       threads = atoi(argv[++i]);
     else if (strcmp(argv[i], "--group-size") == 0 && i + 1 < argc)
+    {
       group_size = atoi(argv[++i]);
+      group_size_given = true;
+    }
     else if (strcmp(argv[i], "--chunk") == 0 && i + 1 < argc)
       chunk = atoi(argv[++i]);
     else if (strcmp(argv[i], "--generic") == 0)
@@ -141,6 +146,13 @@ int main(int argc, char **argv)
   if (threads > 0)
     omp_set_num_threads(threads);
   omp_set_schedule(schedule, chunk);
+  /* The default grouping (a Derecho tuning): groups of TMC_DEFAULT_GROUP_SIZE
+   * cells, halved while there would be fewer than four groups per thread, so
+   * that a node's 128 threads stay balanced: 10,000 cells make groups of 32
+   * at 78 threads or fewer, 16 at 128, and 8 at 256. --group-size sets it. */
+  if (!group_size_given)
+    while (group_size > 4 && (n_cells + group_size - 1) / group_size < 4 * omp_get_max_threads())
+      group_size /= 2;
 
   /* The solver: TS1 from the generated configuration tables */
   tmc_system system = ts1_system();

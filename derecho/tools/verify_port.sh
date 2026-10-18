@@ -45,8 +45,8 @@ EOF
 echo "== tests"
 make test-cpu "$@" > "$out/tests.txt" 2> "$out/tests-extra.txt" || true
 {
-  echo "PASS $(grep -c ' PASS' "$out/tests.txt")  FAIL $(grep -c ' FAIL' "$out/tests.txt")  N/A $(grep -c ' N/A' "$out/tests.txt")  lines $(wc -l < "$out/tests.txt")"
-  if diff <(awk '{print $1}' "$repo/reference/micm_cases.txt" | sort) <(awk '{print $1}' "$out/tests.txt" | sort) > /dev/null; then
+  echo "PASS $(grep -c ' PASS' "$out/tests.txt")  FAIL $(grep -c ' FAIL' "$out/tests.txt")  N/A $(grep -c ' N/A' "$out/tests.txt")  case lines $(grep -cE '^[^ ]+ (PASS|FAIL|N/A)' "$out/tests.txt")"
+  if diff <(awk '{print $1}' "$repo/reference/micm_cases.txt" | sort) <(grep -E '^[^ ]+ (PASS|FAIL|N/A)' "$out/tests.txt" | awk '{print $1}' | sort) > /dev/null; then
     echo "ids: every id of reference/micm_cases.txt exactly once"
   else
     echo "ids: MISMATCH with reference/micm_cases.txt"
