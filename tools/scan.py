@@ -24,12 +24,17 @@ COUNTERS = ['internal_steps', 'accepted', 'rejected', 'function_calls', 'jacobia
 FIELDS = ['timestamp', 'id', 'scenario', 'repeat', 'compiler', 'source_sha256',
           'binary_sha256', 'method', 'options', 'threads', 'status', 'elapsed_ms',
           *COUNTERS, 'overall_digits', 'worst_species', 'worst_digits', 'gate',
-          'score_json', 'stderr', 'output_sha256', 'accuracy_scope']
+          'score_json', 'stderr', 'output_sha256', 'accuracy_scope', 'cells']
 
 
 def run(config, scenario, repeat, args):
     name = scenario.name if scenario.is_dir() else scenario.parent.name
     scenario = (scenario/'scenario.txt' if scenario.is_dir() else scenario).resolve()
+    settings = dict(line.split('#')[0].strip().split('=',1) for line in scenario.read_text().splitlines()
+                    if '=' in line.split('#')[0])
+    settings = {key.strip():value.strip() for key,value in settings.items()}
+    with (scenario.parent/settings['cells']).open() as file:
+        cells = sum(bool(line.strip()) for line in file)-1
     directory = ROOT/'runs'/'scans'/config['id']/name/str(repeat)
     directory.mkdir(parents=True, exist_ok=True)
     binary = ROOT/'bin'/config.get('binary', 'ts1_scenario')
@@ -48,7 +53,7 @@ def run(config, scenario, repeat, args):
                repeat=repeat, compiler=args.compiler, source_sha256=args.source,
                binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(), method=config['method'],
                options=json.dumps(options, sort_keys=True), threads=args.threads,
-               status=result.returncode, stderr=result.stderr.strip())
+               status=result.returncode, stderr=result.stderr.strip(), cells=cells)
     row.update({k:v for k,v in re.findall(r'(\w+)=([^\s]+)',result.stdout)
                 if k in COUNTERS+['elapsed_ms']})
     if result.returncode == 0:

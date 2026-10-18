@@ -1,0 +1,233 @@
+{
+  "winter-night-48h": {
+    "scenario": "# 96 cells (seed 807, NOx x1); 96 steps of 1800 s; diurnal photolysis, 60 N, day 10, from 21 h local time\ncells = cells.csv\ndt = 1800\nsteps = 96\nphotolysis = photolysis.csv\nsnapshot_every = 12\n",
+    "hashes": {
+      "cells.csv": "1a1cff9b58298d967239ebd1e5ced4388f53a76db9cbad0136755ad6fd380411",
+      "photolysis.csv": "6fe533f6fdc47d3c929bb7de04cd6391971e425368a546c7c110d5c756a927dc",
+      "reference_final.csv": "1cb68cf92d76af085618fe9ee7b294b26b2d5bf79ad701a02303345dc7412b44",
+      "reference_snapshots.csv": "ff3b2f4682e431d7675af29d04155a7478e93655476f3483e0bc29053e1a1557"
+    },
+    "convergence": {
+      "9": {
+        "overall_digits": 10.412,
+        "worst_species": [
+          [
+            "PHENO",
+            9.611
+          ],
+          [
+            "HO2NO2",
+            9.718
+          ],
+          [
+            "CLO",
+            9.728
+          ],
+          [
+            "BR",
+            9.89
+          ],
+          [
+            "N2O5",
+            9.926
+          ]
+        ],
+        "values_counted": 118440,
+        "species_counted": 178,
+        "rows": 768,
+        "nonfinite": 0,
+        "below_floor": 0,
+        "gate": "PASS",
+        "level": 8.0,
+        "level_result": "PASS"
+      },
+      "10": {
+        "overall_digits": 10.412,
+        "worst_species": [
+          [
+            "PHENO",
+            9.611
+          ],
+          [
+            "HO2NO2",
+            9.718
+          ],
+          [
+            "CLO",
+            9.728
+          ],
+          [
+            "BR",
+            9.89
+          ],
+          [
+            "N2O5",
+            9.926
+          ]
+        ],
+        "values_counted": 118440,
+        "species_counted": 178,
+        "rows": 768,
+        "nonfinite": 0,
+        "below_floor": 0,
+        "gate": "PASS",
+        "level": 8.0,
+        "level_result": "PASS"
+      }
+    }
+  },
+  "summer-polluted-48h": {
+    "scenario": "# 96 cells (seed 808, NOx x20); 288 steps of 600 s; diurnal photolysis, 65 N, day 172, from 12 h local time\ncells = cells.csv\ndt = 600\nsteps = 288\nphotolysis = photolysis.csv\nsnapshot_every = 36\n",
+    "hashes": {
+      "cells.csv": "97cf7f6ff828784c75f7c21c5394da015d1d68d480be1f35b48cec26557a2b40",
+      "photolysis.csv": "4a4fea14f38f757a2c844bd97037d9fe799a79263b8e0177936b0b10e3eb9ec0",
+      "reference_final.csv": "b8c5458da819ae03ea615c13685cd9b3e57e817c6e734e7268dddeb66939bdbd",
+      "reference_snapshots.csv": "700cf48ab017de4d149dd4f6a8967de18fd1c5e02c4fffaff6e995700b1c829b"
+    },
+    "convergence": {
+      "9": {
+        "overall_digits": 10.317,
+        "worst_species": [
+          [
+            "MCO3",
+            9.55
+          ],
+          [
+            "MDIALO2",
+            9.571
+          ],
+          [
+            "PHENO",
+            9.59
+          ],
+          [
+            "DICARBO2",
+            9.596
+          ],
+          [
+            "MACRO2",
+            9.689
+          ]
+        ],
+        "values_counted": 103064,
+        "species_counted": 178,
+        "rows": 768,
+        "nonfinite": 0,
+        "below_floor": 0,
+        "gate": "PASS",
+        "level": 8.0,
+        "level_result": "PASS"
+      },
+      "10": {
+        "overall_digits": 10.317,
+        "worst_species": [
+          [
+            "MCO3",
+            9.55
+          ],
+          [
+            "MDIALO2",
+            9.571
+          ],
+          [
+            "PHENO",
+            9.59
+          ],
+          [
+            "DICARBO2",
+            9.596
+          ],
+          [
+            "MACRO2",
+            9.689
+          ]
+        ],
+        "values_counted": 103064,
+        "species_counted": 178,
+        "rows": 768,
+        "nonfinite": 0,
+        "below_floor": 0,
+        "gate": "PASS",
+        "level": 8.0,
+        "level_result": "PASS"
+      }
+    }
+  },
+  "tropical-clean-48h": {
+    "scenario": "# 96 cells (seed 809, NOx x0.03); 576 steps of 300 s; diurnal photolysis, -10 N, day 355, from 4 h local time\ncells = cells.csv\ndt = 300\nsteps = 576\nphotolysis = photolysis.csv\nsnapshot_every = 72\n",
+    "hashes": {
+      "cells.csv": "d7328c60ee734710b6e607e34e3aab092d2b28cb97b045ee97cad74e3ad083f3",
+      "photolysis.csv": "76340e7d20e64592c9c69d432ba06c96090b81dec8b92152558b5aae0b7be766",
+      "reference_final.csv": "01f9ae03ecb3d80a7f3bdf124fa4408ebf48e2cd75f16f595ff0a962a3cc4788",
+      "reference_snapshots.csv": "b1c75341c133410cf61b987944f69520fdf040a11b08540d12028112bee90e58"
+    },
+    "convergence": {
+      "9": {
+        "overall_digits": 10.193,
+        "worst_species": [
+          [
+            "TERP2O2",
+            9.494
+          ],
+          [
+            "TERPO2",
+            9.499
+          ],
+          [
+            "HO2NO2",
+            9.517
+          ],
+          [
+            "ISOPNO3",
+            9.54
+          ],
+          [
+            "BRCL",
+            9.558
+          ]
+        ],
+        "values_counted": 113310,
+        "species_counted": 181,
+        "rows": 768,
+        "nonfinite": 0,
+        "below_floor": 0,
+        "gate": "PASS",
+        "level": 8.0,
+        "level_result": "PASS"
+      },
+      "10": {
+        "overall_digits": 10.193,
+        "worst_species": [
+          [
+            "TERP2O2",
+            9.494
+          ],
+          [
+            "TERPO2",
+            9.499
+          ],
+          [
+            "HO2NO2",
+            9.517
+          ],
+          [
+            "ISOPNO3",
+            9.54
+          ],
+          [
+            "BRCL",
+            9.558
+          ]
+        ],
+        "values_counted": 113310,
+        "species_counted": 181,
+        "rows": 768,
+        "nonfinite": 0,
+        "below_floor": 0,
+        "gate": "PASS",
+        "level": 8.0,
+        "level_result": "PASS"
+      }
+    }
+  }
+}

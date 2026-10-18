@@ -73,17 +73,19 @@ static int read_scenario(const char *path, scenario *s) {
     free(line);
     if (!ok) break;
   }
-  if (ferror(f)) ok = 0;
+  if (ferror(f) || !feof(f)) ok = 0;
   fclose(f);
   return ok && (seen&15) == 15 && s->cells && s->photolysis && isfinite(s->dt*s->steps);
 }
 static size_t count_cells(const char *path) {
   FILE *f = fopen(path,"r");
   if (!f) return 0;
-  char *line = line_read(f); free(line);
+  char *line = line_read(f);
+  if (!line) { fclose(f); return 0; }
+  free(line);
   size_t n = 0;
   while ((line = line_read(f))) { if (*line) ++n; free(line); }
-  if (ferror(f)) n = 0;
+  if (ferror(f) || !feof(f)) n = 0;
   fclose(f); return n;
 }
 static int read_sunlight(const char *path, sunlight **points, size_t *count) {
@@ -103,7 +105,7 @@ static int read_sunlight(const char *path, sunlight **points, size_t *count) {
     }
     free(line);
   }
-  if (ferror(f)) ok = 0;
+  if (ferror(f) || !feof(f)) ok = 0;
   fclose(f); return ok && *count;
 }
 static double sun_factor(const sunlight *p, size_t n, double time) {

@@ -36,12 +36,12 @@ EXAMPLE_OBJECTS = build/example_no_user.o build/example_user.o build/example_rob
 all: cpu
 env:
 	@if test -x .conda/bin/python; then \
-	  CONDA_PKGS_DIRS='$(CURDIR)/.conda-pkgs' $(CONDA) env update --prefix '$(CURDIR)/.conda' --file environment.yml; \
+	  CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS='$(CURDIR)/.conda-pkgs' $(CONDA) env update --prefix '$(CURDIR)/.conda' --file environment.yml; \
 	else \
-	  CONDA_PKGS_DIRS='$(CURDIR)/.conda-pkgs' $(CONDA) env create --yes --prefix '$(CURDIR)/.conda' --file environment.yml; \
+	  CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS='$(CURDIR)/.conda-pkgs' $(CONDA) env create --yes --prefix '$(CURDIR)/.conda' --file environment.yml; \
 	fi
 .conda/bin/python:
-	CONDA_PKGS_DIRS='$(CURDIR)/.conda-pkgs' $(CONDA) env create --yes --prefix '$(CURDIR)/.conda' --file environment.yml
+	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS='$(CURDIR)/.conda-pkgs' $(CONDA) env create --yes --prefix '$(CURDIR)/.conda' --file environment.yml
 
 build/flags: FORCE
 	@mkdir -p build
@@ -93,7 +93,7 @@ bin/tutorial_cpu: tools/tutorials.c $(EXAMPLE_OBJECTS) $(OBJECTS) include/chem.h
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) tools/tutorials.c $(EXAMPLE_OBJECTS) $(OBJECTS) $(LDLIBS) -o $@
 
-test-cpu: cpu bin/test_native_cpu bin/tutorial_cpu
+test-cpu: cpu bin/test_native_cpu bin/tutorial_cpu test-methods
 	@bin/test_native_cpu extensions
 	$(PYTHON) tests/run_cases.py
 

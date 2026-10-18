@@ -52,8 +52,12 @@ ch_integrator *ch_integrator_create(ch_state *s, const ch_integrator_options *o)
     return NULL;
   ch_integrator *w = calloc(1,sizeof(*w));
   if (!w) return NULL;
-  w->raw_jacobian = ch_allocate(s->model->sparse->nnz*s->cells,sizeof(double));
-  if (!w->raw_jacobian) { free(w); return NULL; }
+  /* Fresh-J runs can assemble directly into the factor workspace. Only
+   * lagging needs a preserved, unfactored copy for changes in h. */
+  if (o->jacobian_steps > 1) {
+    w->raw_jacobian = ch_allocate(s->model->sparse->nnz*s->cells,sizeof(double));
+    if (!w->raw_jacobian) { free(w); return NULL; }
+  }
   w->state = s; w->options = *o; w->table = table(o->method);
   return w;
 }
@@ -188,11 +192,12 @@ int ch_integrator_step(ch_integrator *w, double dt, ch_stats *stats, ch_integrat
     if (h <= 0 || time+h == time) { status = CH_SMALL_STEP; break; }
     int fresh = age >= o->jacobian_steps;
     if (fresh) {
-      ch_jacobian(s,s->y,w->raw_jacobian); ++stats->jacobian_updates;
+      ch_jacobian(s,s->y,w->raw_jacobian ? w->raw_jacobian : s->jacobian);
+      ++stats->jacobian_updates;
       age = 0; have_factor = 0;
     } else ++extra->jacobian_reuses;
     if (!have_factor || factor_h != h) {
-      memcpy(s->jacobian,w->raw_jacobian,nj*sizeof(double));
+      if (w->raw_jacobian) memcpy(s->jacobian,w->raw_jacobian,nj*sizeof(double));
       ch_alpha_minus_jacobian(s,1.0/(gamma*h),s->jacobian);
       status = ch_factor_state(s); ++stats->decompositions;
       if (status && status != CH_SINGULAR) break;

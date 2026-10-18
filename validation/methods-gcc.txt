@@ -1,0 +1,3 @@
+PASS: 147 C/prototype comparisons with identical counters; seven stiff analytical cases; invalid options
+Observed orders: [(2, 2, 1.8743065675689146), (3, 3, 2.9742611750674226), (4, 4, 3.932516522266501), (43, 3, 2.982349291852172), (6, 4, 4.005321532930031), (102, 2, 2.0043463541991904), (431, 3, 2.989657413376079)]
+PASS: overflowing trials, failed nonlinear iterations, exhausted steps, invalid states, DAE exclusion

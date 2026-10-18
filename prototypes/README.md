@@ -14,8 +14,8 @@ make test-methods CC=clang
 
 `tests/test_integrator.py` supplies an independently written nonlinear
 three-species mechanism with two distinct cells and changing rate parameters.
-Each of seven methods is tested with five policy configurations and three
-external intervals: 105 comparisons. Concentrations agree to accumulated
+Each of seven methods is tested with seven policy configurations and three
+external intervals: 147 comparisons. Concentrations agree to accumulated
 double-precision roundoff and every operation counter agrees exactly.
 
 The five retained Tier 1 mathematical tableaux are shared data in this test

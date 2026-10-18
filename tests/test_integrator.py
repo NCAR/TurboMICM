@@ -49,12 +49,14 @@ def model():
 def equivalence():
     rows = []
     for method in (2,3,4,43,6,102,431):
-        for variant in ('exact','pi','reuse','filter','maxnorm'):
+        for variant in ('exact','pi','reuse','filter','maxnorm','rms','capped-restart'):
             o = Options(method=method)
             if variant == 'pi': o.controller = 1
             if variant == 'reuse': o.jacobian_steps,o.lu_band = 3,2.
             if variant == 'filter': o.controller,o.filter_b,o.filter_k = 2,2.,2.
             if variant == 'maxnorm': o.norm = 2
+            if variant == 'rms': o.norm = 0
+            if variant == 'capped-restart': o.warm_start,o.h_max = 0,.07
             oc = OptionsC(**asdict(o))
             with model() as m, State(m,2) as s:
                 s.y[:] = [[1,.7],[.02,.03],[.01,.1]]
@@ -157,13 +159,52 @@ def orders():
     return rows
 
 
+def failures():
+    # Overflowing chemistry must reject trials without storing NaN/Inf in y.
+    for method in (2,3,4,43,6,102,431):
+        with Model(['A','B']) as m:
+            rate = rate_default(0); rate.p[0] = 1e308
+            m.reaction(['A','A'],{'B':2},rate); m.finalize()
+            with State(m) as s:
+                s.conditions(); s.set('A',10); s.update(); before = s.y.copy()
+                o = integrator_default(method); o.max_steps = 3; o.h_start = 1
+                work = integrator_create(s.handle,C.byref(o)); assert work
+                st,ex = Stats(),Extra()
+                try:
+                    status = integrator_step(work,1,C.byref(st),C.byref(ex))
+                    assert status != 0 and st.final_time == 0
+                    near(s.y,before,rtol=0)
+                    assert st.accepted == 0
+                finally:
+                    integrator_free(work)
+    with model() as m, State(m) as s:
+        s.conditions(); s.y[:] = [[1],[.5],[.1]]; s.update(); s.tolerance(rtol=1e-10,atol=1e-14)
+        o = integrator_default(102); o.newton_iterations = 1; o.max_steps = 3; o.h_start = 1
+        work = integrator_create(s.handle,C.byref(o)); assert work
+        st,ex = Stats(),Extra()
+        try:
+            assert integrator_step(work,1,C.byref(st),C.byref(ex)) == -7
+            assert ex.nonlinear_failures > 0 and st.rejected > 0 and np.all(np.isfinite(s.y))
+            s.y[0,0] = -1
+            assert integrator_step(work,1,C.byref(st),C.byref(ex)) == -1
+        finally:
+            integrator_free(work)
+    with Model(['A','B']) as m:
+        m.linear('B',{'A':1,'B':1},1); m.finalize()
+        with State(m) as s:
+            o = integrator_default(43)
+            assert not integrator_create(s.handle,C.byref(o))
+
+
 if __name__ == '__main__':
     rows = equivalence()
     analytical()
     order_results = orders()
+    failures()
     if len(sys.argv) == 2:
         with open(sys.argv[1],'w',newline='') as file:
             writer = csv.DictWriter(file,fieldnames=list(rows[0]),lineterminator='\n')
             writer.writeheader(); writer.writerows(rows)
     print(f'PASS: {len(rows)} C/prototype comparisons with identical counters; seven stiff analytical cases; invalid options')
     print('Observed orders:',order_results)
+    print('PASS: overflowing trials, failed nonlinear iterations, exhausted steps, invalid states, DAE exclusion')
