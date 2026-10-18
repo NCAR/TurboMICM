@@ -67,3 +67,29 @@ species dominating pooled RMS, but is not a guarantee for every individual cell.
 Disclosed scenarios alone cannot prove performance or accuracy on undisclosed
 conditions. Operating-point margins, additional independent conditions, and
 convergence sweeps are documented in RESULTS.md before a point is recommended.
+
+## Measured operating-point margins
+
+The final disclosed-case minima are:
+
+| Point | Overall digits | Worst-species digits | Overall RMS error | Worst-species RMS error |
+|---|---:|---:|---:|---:|
+| L2 | 2.541 | 1.445 | 0.288% | 3.59% |
+| L2_margin | 2.799 | 1.689 | 0.159% | 2.05% |
+| L3 | 3.341 | 2.322 | 0.0456% | 0.476% |
+| recommended | 3.705 | 2.734 | 0.0197% | 0.185% |
+| L4 | 4.657 | 3.614 | 0.00220% | 0.0243% |
+
+Thus the recommendation has about five times less overall and species RMS
+error than its chosen 0.1% / 1% budget. The fastest L3 point also meets that
+budget, with less margin from its looser absolute tolerance. The L2 points
+serve the ranking's lower-cost accuracy level; their species budget is looser
+than the practical worst-species 1% emphasis of Sandu et al., which is another
+reason not to recommend them as the atmospheric-model default.
+
+All five points also pass their declared levels on three independent 48-hour
+runs. For the recommendation those extra cases have at least 3.923 digits
+overall and 3.194 for every scored species. The references agree to roughly
+ten digits overall under a separate tolerance refinement. This strengthens the
+case for the chosen margin; it does not turn the sampled error metric into a
+uniform bound on all cells, times or future atmospheric conditions.

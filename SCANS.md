@@ -49,25 +49,90 @@ Final declared points are run repeatedly without other task processes competing
 for CPU; their times and score minima appear in RESULTS.md. The supplied
 high-accuracy references, scorer and read-only mechanism are never modified.
 
-## Early findings
+## Family results
 
-The default absolute tolerance is unsuitable for several day/night scenarios.
-Replacing it makes the original method robust but does not remove its repeated
-startup cost. Carrying a step proposal across chemistry calls reduces this
-cost, while invalidating matrices when the photolysis changes preserves the
-scenario's piecewise-constant forcing contract.
+At rtol=1e-3 and atol=1e-18, the minimum accuracy across all six disclosed
+scenarios and the sum of their C development times are:
 
-Second-order Rosenbrock is substantially more expensive at tight accuracy in
-these TS1 runs. The family comparison tests whether the extra stages of ROS3,
-ROS4 or stiffly accurate RODAS can buy larger accepted steps. Negativity-aware
-rejection can materially affect this answer; accuracy and operation counts
-must be compared together rather than judging by stage count alone.
+| Method | Minimum overall digits | Minimum species digits | Sum of C times (ms) |
+|---|---:|---:|---:|
+| ROS2 | 2.737 | 1.749 | 23207 |
+| ROS3 | 3.543 | 2.346 | 12771 |
+| ROS4 | 3.855 | 2.721 | 16582 |
+| RODAS3 | 2.892 | 2.052 | 4928 |
+| RODAS4 | 3.000 | 2.184 | 7669 |
+| Euler extrapolation 2 | 2.988 | 1.982 | 11109 |
+| Euler extrapolation 3 | 3.225 | 2.137 | 9976 |
+| RODAS3.1 | 2.799 | 1.689 | 3630 |
 
-The follow-up literature pass added RODAS3.1's mathematical coefficient set and
-H211b control (including its b/k parameters). These are tested with the same
-mechanism-generic recurrences and independent prototype. Aggressive b=1
-controller settings show sensitivity to evaluation-order roundoff in the small
-case; `prototypes/roundoff_sensitivity.csv` records the observed differences.
-Damped b=4 control passes strict roundoff/count agreement. This is a reason to
-measure robustness and accuracy, not assume that a controller with fewer
-function evaluations is automatically preferable.
+The initial seven-family scan used uncached retry forcing; RODAS3.1 was added
+later with the exact forcing cache. Thus the table is a development overview,
+not a matched-clock ranking. The within-family tolerance curves, operation
+counts, and final repeated operating-point timings are the stronger evidence.
+
+Second order was expensive for the required accuracy. Euler extrapolation was
+functional and passed its independent order/prototype checks, but its multiple
+factorizations per macro step made it uncompetitive here. RODAS3 was inexpensive
+near two to three digits; its optimized RODAS3.1 coefficients improved the
+measured curve further. Higher-order RODAS4 was useful for the precision point.
+Equal local tolerances do not imply equal global accuracy, which is why the
+final choices follow the measured curves and both species/overall constraints.
+
+## Control, tolerance and reuse findings
+
+- Warm step proposals were the largest clear control improvement. On the
+  RODAS3 rtol=3e-4 comparison, cold starts required 313504 attempts across
+  the six scenarios versus 175758 with warm starts. The first chemistry call
+  still starts cautiously, and every rate-change boundary invalidates matrices.
+- Maximum cell RMS avoids diluting a difficult cell when adding more cells.
+  Group RMS was cheaper but reduced worst-species accuracy; a component
+  maximum overspent work, reaching 4.80 digits overall at the same weights.
+- Jacobian age 4 with deadband 0.2 reduced factorizations from 175758 to
+  156360, but minimum species accuracy fell from 2.564 to 2.236 digits. The
+  modest time saving did not justify consuming that margin in the recommendation.
+- Exact retry-forcing reuse preserves the trajectory and saves one evaluation
+  per rejection. Unlike stale Jacobians, it introduces no approximation.
+- PI and damped H211b often produced more accuracy than requested. Follow-up
+  tolerance scans did not place them ahead of the selected I-controller curve.
+  Aggressive H211b b=1 increased rejections and exposed roundoff sensitivity;
+  it is available for research but absent from the declared points. The gains
+  reported for other atmospheric systems in the literature did not transfer
+  automatically to this setup.
+- RODAS3.1 at rtol=3e-4, atol=1e-16 reached 3.341 overall / 2.322 worst-species
+  digits. Reducing atol to 1e-18 raised these minima to 3.705 / 2.734. This
+  provides a measured speed/accuracy tradeoff without changing any reactions.
+
+## Scaling and independent checks
+
+At 10000 cells, RODAS3.1 rtol=3e-4/atol=1e-18 took 11222 ms with groups
+of 32 and guided scheduling, compared with 11338 ms for groups of 16 and
+11931 ms for groups of 64 under the same scheduling policy. Static/dynamic
+differences were small. We select groups of 32 with guided minimum chunk 1
+as an explicit runtime operating-point choice, not a hardware-specific kernel.
+These nine development runs are in `scans/scale.csv`. Their scorer accuracy
+covers the disclosed first 1000 cells only; the finite/nonnegative gate covers
+all 10000 cells. This is not a claim of full 10000-cell reference accuracy.
+
+Three independent 128-cell, 48-hour cases test high-latitude summer, polar
+winter and equatorial conditions, including NOx multipliers 0.02 and 50.
+Reference convergence is 10.076–10.349 overall digits, with at least 8.992
+digits for every scored species. All five points pass their declared levels
+on these cases. Generation settings and reference work/convergence are
+preserved in `scans/stress_conditions.json`, `stress-reference-work.csv` and
+`stress-reference-convergence.csv`; the point checks are in `stress.csv`.
+
+## Final selection and stopping criterion
+
+The five points in OPERATING_POINTS.md cover two accuracy budgets, extra margin
+for each, and a precision option. The recommendation uses exact current
+Jacobians, the strict absolute floor and the simple I controller. The final
+timings use five sequential repetitions in a deterministic shuffled order,
+with no other CPU-heavy task processes running. RESULTS.md reports their
+medians rather than extrapolating from Python or from operation counts.
+
+After the coefficient improvement, the controller/reuse/growth/safety scans
+gave no compelling further improvement at the chosen accuracy margins. We stop
+with these verified configurations rather than claiming a global optimum over
+all possible integrators. BDF/NDF, multirate splitting and reduced precision
+remain untested future directions. No performance or accuracy claim is made
+for them.

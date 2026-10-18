@@ -127,3 +127,30 @@ one CSV row per attempted configuration/scenario. Example:
 ```sh
 .conda/bin/python tools/scan.py --suite family --output scans/family.csv
 ```
+
+The five evaluated configurations and the model recommendation are in
+[OPERATING_POINTS.md](OPERATING_POINTS.md), backed by
+[operating_points.json](operating_points.json). The candidate methods include
+RODAS3.1, PI/H211b control and Euler extrapolation; the selected points use
+current Jacobians and exact retry-forcing reuse. [SCANS.md](SCANS.md) summarizes
+the controlled experiments and links the raw CSV records. Scientific prototype
+and controller-roundoff details are in [prototypes/README.md](prototypes/README.md).
+
+To repeat the declared accuracy checks on the independent 48-hour cases:
+
+```sh
+# First build the supplied reference driver using the command in scenarios/README.md.
+.conda/bin/python tools/stress.py --references --point recommended
+.conda/bin/python tools/stress.py --point L2
+.conda/bin/python tools/stress.py --point L2_margin
+.conda/bin/python tools/stress.py --point L3
+.conda/bin/python tools/stress.py --point L4
+```
+
+`tools/scale_scan.py` generates the 10000-cell version of diurnal-10min and
+measures grouping/scheduling. Its accuracy score uses only the disclosed
+1000-cell prefix; its finite/nonnegative gate checks all 10000 cells.
+`tools/operating_points.py --repeat 5` reproduces the final C timing protocol.
+`tools/micm_scan.py` measures the independently compiled original C++ baseline.
+All generated large CSVs stay in ignored `results/` directories; concise
+accuracy/work/time records stay in versioned `scans/`.
