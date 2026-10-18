@@ -186,5 +186,69 @@ count: groups of 32 cells, halved while there would be fewer than four groups
 per thread (`bench/ts1_bench.c`), which is 16 at 128 threads and 8 at 256 for
 10,000 cells, and 32 at one thread, where (part B, below) 32 stays best.
 
-(Session 3 part B, session 4, the MICM sweep, the verification, and the final
-session follow as they complete.)
+At one thread (part B, node dec1360, 3 rounds): groups of 32 take 45,252 ms
+(44,395–45,279), 64 take 46,141 (45,829–46,208), and 128 take 46,447
+(46,253–46,943); MICM's default 366,801, vector8 g32 140,675, vector4 g32
+162,498. The port with groups of 32 is 3.11x MICM's vector8 there.
+
+### MICM's 24 configurations at 128 threads (`results/2026-10-18-micm-configurations`)
+
+`tools/micm_configs.sh` on node dec1596: the 24 configurations of
+`micm_bench` (matrix layout standard or vector 1, 2, 4, 8, 128; LU in place or
+as separate factors; Mozart or Doolittle), each with one cell group per thread
+and with 32-cell groups, 3 rounds, g++ 14.3.0 with the port's flags. Every one
+of the 144 runs passed the gate (`configs-t128.md` has the full tables; Mozart
+configurations with standard or vector1 ordering reproduce MICM's default
+result exactly, the others differ by 1e-13 at most). The fastest, median ms:
+
+| MICM configuration | Grouping | Median ms (range) | vs MICM default |
+|---|---|---:|---:|
+| vector8, in-place Mozart | one group per thread | **1,803 (1,659–1,929)** | 1.96x |
+| vector8, in-place Mozart | 32 cells | 1,864 (1,841–1,985) | 1.89x |
+| vector8, in-place Doolittle | 32 cells | 1,865 (1,723–1,961) | 1.89x |
+| vector8, in-place Doolittle | one per thread | 1,954 (1,895–2,051) | 1.81x |
+| vector8, separate Mozart | 32 cells | 2,080 (2,047–2,102) | 1.70x |
+| vector4, in-place Mozart | one per thread | 2,198 (2,180–2,208) | 1.61x |
+| standard, in-place Mozart (the default) | one per thread | 3,528 (3,188–3,608) | 1.00x |
+
+As on the Mac, vector8 with in-place Mozart LU is MICM's fastest; on Derecho
+its one-group-per-thread grouping (78 cells per thread, balanced) edges the
+32-cell grouping. Against it the port's groups of 16 (515 ms on dec1360, in
+another session) are 3.5x, and its groups of 32 (592 ms) 3.0x.
+
+### Verification of the Derecho build
+
+`tools/verify_port.sh` on the committed defaults (width 4, omp simd lanes,
+aligned arrays, fast norm, adaptive grouping), gcc 14.3.0, no warnings:
+
+- **The 680 cases** (`results/2026-10-18-verify-default/tests.txt`): 673
+  PASS, 0 FAIL, 7 N/A, every id of `reference/micm_cases.txt` exactly once;
+  the same seven N/A as on the Mac (C++-only cases). The entry's two extra
+  checks pass: generated against generic kernels on the 100-cell input,
+  3.2e-15; the gate on that input, 4.0e-14.
+- **The gate on the ranking input** (seed 2026, against MICM's Derecho result):
+  PASS at every setting, largest relative difference 1.27e-13 (generic
+  kernels 1.4e-13): the default (groups of 16 at 128 threads, 511 ms), one
+  thread (44,685 ms), groups of 16, 64, and 128, the generic kernels, and the
+  static schedule.
+- **A held-out input** (seed 7, never used in tuning;
+  `results/2026-10-18-verify-heldout-seed7`): the suite again 673/0/7, and the
+  gate PASS at the default, one thread, groups of 16 and 64, and the generic
+  kernels, largest relative difference 9.3e-14; 43,630 ms at one thread and
+  502 ms with groups of 16 at 128 threads.
+
+### MICM's leading configurations at 256 threads (`results/2026-10-18-micm-configurations/timing-t256`)
+
+`pbs/micm_t256.sh` on node dec1360, 3 rounds: both hardware threads of every
+core. MICM gains 20–30 % from them (the port loses, session 3), so MICM's
+fastest on a whole node is at 256 threads:
+
+| MICM configuration | Grouping | 256 threads, median ms (range) | 128 threads (sweep) |
+|---|---|---:|---:|
+| vector8, in-place Mozart | one group per thread | **1,403 (1,401–1,407)** | 1,803 |
+| vector8, in-place Doolittle | one per thread | 1,448 (1,443–1,457) | 1,954 |
+| vector4, in-place Mozart | one per thread | 1,526 (1,525–1,535) | 2,198 |
+| vector8, in-place Mozart | 32 cells | 1,574 (1,572–1,593) | 1,864 |
+| standard, in-place Mozart (the default) | one per thread | 2,532 (2,527–2,598) | 3,528 |
+
+(Session 4 and the final session follow as they complete.)
