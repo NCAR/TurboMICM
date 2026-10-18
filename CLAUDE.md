@@ -26,6 +26,10 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - **This repo:**
   - `main`: `prompt.v3` (v1 and v2 for history), `prompts/`, `reference/`, `admin/`
     (scripts and `runs.md`, the run log), and `results/<date>-<topic>/`;
+  - `derecho/` on `main`: the Fable entry tuned for NCAR's Derecho (gcc 14, AMD
+    EPYC 7763), with its job scripts, results, and README; merged 2026-10-18 from
+    `derecho/fable` and `derecho/fable-2`. Wiki: Fable-on-Derecho. New Derecho
+    work goes on a branch off `main` under `derecho/`, never in `fable/`;
   - `runs/<model>/<effort>[-<n>]`: each finished run's repo, fetched unchanged;
   - `transcripts`: an orphan branch of gzipped, redacted session transcripts.
 - **Keep the two copies identical:** `prompt.v3`, `prompts/`, `reference/`, and the
