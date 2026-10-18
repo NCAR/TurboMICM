@@ -1,19 +1,19 @@
-date: 2026-10-18T01:40:28
-host: dec1664
+date: 2026-10-18T02:56:53
+host: dec1360
 platform: Linux-6.4.0-150600.23.53-default-x86_64-with-glibc2.38
 sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: 
-uptime: 01:40:28  up 45 days 14:03,  0 users,  load average: 25.81, 82.62, 107.96
+uptime: 02:56:53  up 45 days 15:20,  0 users,  load average: 51.02, 80.47, 57.88
 input: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/cells_2026.csv
 reference: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-reference/micm_final.csv
 cells, steps, dt: 10000, 100, 30; threads: 128,256; rounds: 3
-program micm-default: work/micm-configs/bin/micm-standard-in-place-mozart
-program micm-v8-g32: work/micm-configs/bin/micm-vector8-in-place-mozart --group-size 32
-program micm-v4-g32: work/micm-configs/bin/micm-vector4-in-place-mozart --group-size 32
-program g16: work/variants/w4/bin/ts1_bench_cpu --group-size 16
-program g32: work/variants/w4/bin/ts1_bench_cpu --group-size 32
-program g64: work/variants/w4/bin/ts1_bench_cpu --group-size 64
-program g79: work/variants/w4/bin/ts1_bench_cpu --group-size 79
-program g128: work/variants/w4/bin/ts1_bench_cpu --group-size 128
-program g16-static: work/variants/w4/bin/ts1_bench_cpu --group-size 16 --schedule static
-program g32-static: work/variants/w4/bin/ts1_bench_cpu --group-size 32 --schedule static
-program g79-static: work/variants/w4/bin/ts1_bench_cpu --group-size 79 --schedule static
+program micm-default: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-in-place-mozart
+program micm-v8-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-in-place-mozart --group-size 32
+program micm-v4-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector4-in-place-mozart --group-size 32
+program g16: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4/bin/ts1_bench_cpu --group-size 16
+program g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4/bin/ts1_bench_cpu --group-size 32
+program g64: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4/bin/ts1_bench_cpu --group-size 64
+program g79: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4/bin/ts1_bench_cpu --group-size 79
+program g128: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4/bin/ts1_bench_cpu --group-size 128
+program g16-static: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4/bin/ts1_bench_cpu --group-size 16 --schedule static
+program g32-static: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4/bin/ts1_bench_cpu --group-size 32 --schedule static
+program g79-static: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/w4/bin/ts1_bench_cpu --group-size 79 --schedule static

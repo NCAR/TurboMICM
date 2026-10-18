@@ -103,4 +103,58 @@ multiply-adds as separate multiplies and adds; session 2 measures
 
 ## Results
 
-(in progress; see `results/`)
+All timings are from whole dev nodes (`ncpus=128`, nothing else on the node),
+`admin/time_entries.py` with rotating rounds, 10,000 cells of seed 2026, 100
+steps of 30 s, every run gated against MICM's own Derecho result for the input
+(`tools/micm_reference.sh`; MICM's result does not depend on its thread count
+or grouping, and differs from its Mac result by 5e-14). Threads: 128 is one
+OpenMP thread per core (`OMP_PLACES=cores`, `OMP_PROC_BIND=close`); MICM's
+`std::thread`s are unpinned. MICM's programs here are its default (standard
+ordering, in-place Mozart LU, one cell group per thread) and the two leading
+configurations of the Mac sweep: vector ordering of 8 or 4 with 32-cell groups.
+Run-to-run spread: the port's runs repeat within 1 % at both thread counts;
+MICM's 128-thread runs vary 3–10 % and its one-thread runs 1 %; an identical
+port binary run under two names differed by 3 % at one thread.
+
+### Session 1: width and flags (`results/2026-10-18-session-1-width-flags`)
+
+Node dec2443, 3 rounds. The Derecho defaults are width 4, `-O3 -DNDEBUG
+-march=znver3 -ffp-contract=fast`, omp simd lane loops, 64-byte aligned arrays,
+32-cell groups.
+
+| Program | 128 threads, median ms (range) | vs MICM vector8 | 1 thread, median ms (range) | vs MICM vector8 |
+|---|---:|---:|---:|---:|
+| MICM default | 3,399 (3,148–3,638) | 0.58x | 366,157 (363,028–367,767) | 0.39x |
+| MICM vector8, 32-cell groups | 1,968 (1,872–1,986) | 1.00x | 141,656 (141,496–142,548) | 1.00x |
+| MICM vector4, 32-cell groups | 2,237 (2,180–2,267) | 0.88x | 162,960 (162,561–162,993) | 0.87x |
+| **port, defaults (width 4)** | **589 (587–592)** | **3.34x** | **45,176 (45,130–45,365)** | **3.14x** |
+| port, width 2 | 808 (807–811) | 2.43x | 65,629 (65,597–65,943) | 2.16x |
+| port, width 8 | 730 (729–731) | 2.70x | 54,882 (53,897–55,124) | 2.58x |
+| port, width 4, no `-ffp-contract=fast` | 624 (620–625) | 3.15x | 47,753 (47,687–47,842) | 2.97x |
+| port, width 4, plain `-O3` (generic x86-64) | 1,118 (1,114–1,121) | 1.76x | 93,567 (92,743–96,188) | 1.51x |
+
+Width 4 is 1.37x width 2 at 128 threads and 1.45x at one; width 8 spills.
+FMA contraction is worth 6 %, and `-march=znver3` over generic x86-64 1.9x
+(the generic build has no FMA and 128-bit vectors).
+
+### Session 2: code generation (`results/2026-10-18-session-2-codegen`)
+
+Node dec0335, 3 rounds, the same MICM programs (MICM default 3,582 and
+366,280 ms; vector8 1,870 and 141,722 ms; vector4 2,208 and 163,413 ms).
+
+| Port build | 128 threads, median ms (range) | vs MICM vector8 | 1 thread, median ms (range) | vs MICM vector8 |
+|---|---:|---:|---:|---:|
+| defaults | 596 (594–598) | 3.14x | 45,262 (45,208–45,475) | 3.13x |
+| plain lane loops (`--no-lane-pragma`) | 1,078 (1,073–1,079) | 1.74x | 93,083 (92,545–93,532) | 1.52x |
+| `-mtune-ctrl=^avoid_fma_chains,^avoid_fma256_chains` (byte-identical code) | 593 (589–598) | 3.15x | 46,770 (45,509–47,385) | 3.03x |
+| LU panels of 16 pivots | 588 (584–590) | 3.18x | 44,494 (44,255–44,501) | 3.19x |
+| LU panels of 32 pivots | 595 (592–598) | 3.14x | 44,968 (44,321–45,217) | 3.15x |
+| malloc instead of aligned_alloc (`TMC_ALIGN=0`) | 616 (614–621) | 3.03x | 47,920 (47,842–48,562) | 2.96x |
+
+The omp simd lane loops are the Derecho result: without them the port is
+1.74x and 1.52x MICM's fastest, below the target; with them 3.1x. Aligned
+arrays are worth 4–6 %. The panel size changes 1–2 %, inside the spread of
+the identical-binary repeat. GCC's FMA-chain tuning does not touch this code.
+
+(Sessions 3 and 4, the MICM sweep, the verification, and the final session
+follow below as they complete.)

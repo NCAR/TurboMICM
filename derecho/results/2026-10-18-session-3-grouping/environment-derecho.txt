@@ -1,5 +1,5 @@
-date: 2026-10-18T01:40:28-06:00
-host: dec1664  job: 7858357.desched1  cpus allowed: 0-255
+date: 2026-10-18T02:56:52-06:00
+host: dec1360  job: 7858413.desched1  cpus allowed: 0-255
 kernel: 6.4.0-150600.23.53-default
 CPU(s): 256
 Model name: AMD EPYC 7763 64-Core Processor
@@ -19,4 +19,4 @@ transparent hugepages: [always] madvise never
 compiler: /glade/u/apps/common/25.10/spack/opt/spack/gcc/14.3.0/nw2m/bin/gcc gcc (Spack GCC) 14.3.0
 modules: ncarenv/25.10 gcc/14.3.0 
 OMP_PROC_BIND=close  OMP_PLACES=cores  OMP_NUM_THREADS=128
-load: 25.81 82.62 107.96 1/3718 2333361
+load: 51.02 80.47 57.88 1/3912 2046776
