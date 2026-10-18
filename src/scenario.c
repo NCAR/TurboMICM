@@ -209,6 +209,7 @@ int main(int argc,char **argv)
       else if (!strcmp(key,"deadband") && v>=0 && v<1) options.deadband=v;
       else if (!strcmp(key,"warm_start") && (v==0 || v==1)) options.warm_start=(int)v;
       else if (!strcmp(key,"positivity") && (v==0 || v==1)) options.positivity=(int)v;
+      else if (!strcmp(key,"reuse_rhs") && (v==0 || v==1)) options.reuse_rhs=(int)v;
       else if (!strcmp(key,"controller") && (v==0 || v==1)) options.controller=(int)v;
       else if (!strcmp(key,"norm") && (v==0 || v==1 || v==2)) options.norm=(int)v;
       else goto usage;
@@ -323,8 +324,8 @@ report:
     printf("cells=%zu groups=%zu group_size=%zu threads=%zu method=%s status=%s\n",cells,ngroups,width,threads,method,exit_code ? "FAIL":"PASS");
   }
 done:
-  if (groups) for (size_t g=0;g<ngroups;++g) ck_state_free(groups[g].state);
   if (integrators) for (size_t g=0;g<ngroups;++g) ck_integrator_free(integrators[g]);
+  if (groups) for (size_t g=0;g<ngroups;++g) ck_state_free(groups[g].state);
   if (base) for (size_t g=0;g<ngroups;++g) free(base[g]);
   free(groups); free(integrators); free(base); free(snapshots); free(snapsteps);
   free(sc.cells); free(sc.photo); free(sc.points); ck_model_free(model);

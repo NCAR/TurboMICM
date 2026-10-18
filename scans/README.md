@@ -34,3 +34,10 @@ Available suites are `baseline`, `family`, `loose`, `controller`, and `reuse`.
 Every run invokes the compiled C executable for time/counters and the supplied
 Python scorer only after C execution has ended. Python never runs in a timed
 integration. `tools/plot_scans.py` plots the resulting work–precision curves.
+
+Initial `family.csv` and `smoke.csv` used uncached forcing on retries
+(`reuse_rhs=0`). Later code adds `reuse_rhs=1` as the default; the initial rows
+are normalized to include the explicit zero when the running scan finishes.
+This is an exact-work reuse change, with identical trajectories and a saving
+of one forcing call per rejected attempt. Controller scans include the
+uncached setting for a controlled comparison.

@@ -1,0 +1,50 @@
+{
+  "stress-summer": [
+    "--seed",
+    "951",
+    "--dt",
+    "1800",
+    "--steps",
+    "96",
+    "--lat",
+    "60",
+    "--doy",
+    "172",
+    "--nox-scale",
+    "0.02",
+    "--snapshot-every",
+    "24"
+  ],
+  "stress-winter": [
+    "--seed",
+    "952",
+    "--dt",
+    "900",
+    "--steps",
+    "192",
+    "--lat",
+    "60",
+    "--doy",
+    "355",
+    "--nox-scale",
+    "50",
+    "--snapshot-every",
+    "48"
+  ],
+  "stress-equator": [
+    "--seed",
+    "953",
+    "--dt",
+    "1200",
+    "--steps",
+    "144",
+    "--lat",
+    "0",
+    "--doy",
+    "260",
+    "--nox-scale",
+    "5",
+    "--snapshot-every",
+    "36"
+  ]
+}

@@ -16,6 +16,7 @@ typedef struct
   double start, safety, growth, shrink, deadband;
   int warm_start;             /* Carry proposed step across advance calls */
   int positivity;             /* Include negative candidate values in error norm */
+  int reuse_rhs;              /* Reuse f(y) when retrying the same initial state */
 } ck_integrator_options;
 ck_integrator_options ck_integrator_defaults(void);
 ck_status ck_integrator_create(ck_state *state, const ck_integrator_options *options,

@@ -112,7 +112,7 @@ make test-methods
 ```
 
 The default method is `micm3`, retaining MICM's original parameters and
- tolerances. New methods are additions selected at runtime. See
+tolerances. New methods are additions selected at runtime. See
 [DESIGN.md](DESIGN.md) for method names, all options and how to add one;
 [ACCURACY.md](ACCURACY.md) for the scientific error budget;
 [REFERENCES.md](REFERENCES.md) for the literature used. C/prototype agreement

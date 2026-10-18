@@ -91,3 +91,8 @@
   affected results are superseded by isolated runs. The scan tool now assigns
   a directory per output CSV. Development timings may overlap builds; final
   operating-point timings are repeated with no other task processes running.
+- After the initial family scan, remove redundant forcing evaluations on rejected
+  attempts at unchanged y. A runtime `reuse_rhs` option permits an isolated cost
+  comparison. The cached and uncached C paths have bit-identical trajectories;
+  caching saves exactly one function call per rejection. This does not reuse a
+  forcing value after an accepted step or after a rate-change boundary.

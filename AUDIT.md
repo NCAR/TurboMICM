@@ -1,6 +1,6 @@
-# Completion audit
+# Retained Tier 1 completion audit
 
-This audit follows PROMPT.md's requirements. Numerical results are recorded in
+This section records the inherited Tier 1 audit; Tier 3 is audited separately below. Numerical results are recorded in
 RESULTS.md; implementation and extension details are in DESIGN.md.
 
 | Requirement | Evidence |

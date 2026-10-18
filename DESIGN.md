@@ -210,6 +210,7 @@ The experimental options are parameters, never compiler optimizations:
 | `controller` | 0 | 0: I; 1: PI |
 | `norm` | 1 | 0: group RMS; 1: maximum cell RMS; 2: component maximum |
 | `positivity` | 1 | 0 or 1; include negative candidate in rejection norm |
+| `reuse_rhs` | 1 | 0 or 1; reuse initial forcing on retries at unchanged y |
 | `jacobian_steps` | 1 | positive integer; maximum accepted steps per Jacobian |
 | `deadband` | 0 | [0,1); hold step if |factor-1| <= this value |
 | `safety` | 0.9 | (0,1]; multiply controller factor |

@@ -31,13 +31,20 @@ def configurations(suite):
     if suite == 'loose':
         return [(m, {'rtol': t, 'atol': 1e-18}) for m,t in itertools.product(
             ['ros3','ros4','rodas3','rodas4'], [0.003,0.01,0.03])]
+    if suite == 'mid':
+        return [(m, {'rtol': t, 'atol': 1e-18}) for m,t in itertools.product(
+            ['rodas3','rodas4'], [7e-4,5e-4,3e-4])]
+    if suite == 'absolute':
+        return [('rodas3', {'rtol': 3e-4, 'atol': t}) for t in [1e-14,1e-16,1e-18,1e-20]]
+    if suite == 'group':
+        return [('rodas3', {'rtol': 3e-4, 'atol': 1e-18, 'group_size': w}) for w in [4,8,16,32,64,128]]
     if suite == 'controller':
-        return [('ros3', dict(rtol=1e-3, atol=1e-18, **o)) for o in [
+        return [('rodas3', dict(rtol=3e-4, atol=1e-18, **o)) for o in [
             {}, {'controller': 1}, {'norm': 0}, {'norm': 2}, {'warm_start': 0},
             {'start': 1e-4}, {'start': 1}, {'positivity': 0},
-            {'safety': .7}, {'safety': .95}, {'growth': 2}, {'growth': 3}]]
+            {'safety': .7}, {'safety': .95}, {'growth': 2}, {'growth': 3}, {'reuse_rhs': 0}]]
     if suite == 'reuse':
-        return [('ros3', dict(rtol=1e-3, atol=1e-18, jacobian_steps=j, deadband=d))
+        return [('rodas3', dict(rtol=3e-4, atol=1e-18, jacobian_steps=j, deadband=d))
                 for j,d in [(1,0),(2,0),(4,0),(8,0),(2,0.2),(4,0.2),(8,0.2),(4,0.5)]]
     raise ValueError(suite)
 
@@ -53,9 +60,12 @@ def run(method, options, name, threads, work):
         scored = subprocess.run([sys.executable, str(SCENARIOS/'score.py'),
             str(work/f'ts1_{filename}.csv'), str(SCENARIOS/name/f'reference_{filename}.csv'), '--json'],
             capture_output=True, text=True)
-        score = json.loads(scored.stdout)
-        data.update(overall_digits=score['overall_digits'], worst_species=score['worst_species'][0][0],
-            worst_digits=score['worst_species'][0][1], gate=score['gate'])
+        try:
+            score = json.loads(scored.stdout)
+            data.update(overall_digits=score['overall_digits'], worst_species=score['worst_species'][0][0],
+                worst_digits=score['worst_species'][0][1], gate=score['gate'])
+        except (ValueError, KeyError, IndexError):
+            data.update(gate='FAIL', message='Scoring failed: '+scored.stdout.strip()+' '+scored.stderr.strip())
     else: data['gate']='FAIL'
     return data
 

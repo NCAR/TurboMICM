@@ -17,7 +17,7 @@ ck_integrator_options ck_integrator_defaults(void)
 {
   return (ck_integrator_options){.method = 4, .controller = 0, .norm = 1,
       .jacobian_steps = 1, .max_steps = 100000, .start = 0.01, .safety = 0.9,
-      .growth = 6, .shrink = 0.1, .deadband = 0, .warm_start = 1, .positivity = 1};
+      .growth = 6, .shrink = 0.1, .deadband = 0, .warm_start = 1, .positivity = 1, .reuse_rhs = 1};
 }
 void ck_integrator_free(ck_integrator *v)
 {
@@ -32,9 +32,15 @@ ck_status ck_integrator_create(ck_state *s, const ck_integrator_options *o, ck_i
   *out = NULL;
   if (!s || !o || s->model->nconstraints || !o->jacobian_steps || !o->max_steps ||
       o->controller < 0 || o->controller > 1 || o->norm < 0 || o->norm > 2 ||
+      (o->warm_start != 0 && o->warm_start != 1) ||
+      (o->positivity != 0 && o->positivity != 1) ||
+      (o->reuse_rhs != 0 && o->reuse_rhs != 1) ||
+      !(s->relative_tolerance >= 0) || !isfinite(s->relative_tolerance) ||
       !(o->start > 0) || !isfinite(o->start) || !(o->safety > 0 && o->safety <= 1) ||
       !(o->growth >= 1) || !isfinite(o->growth) || !(o->shrink > 0 && o->shrink < 1) ||
       !(o->deadband >= 0 && o->deadband < 1)) return CK_INVALID;
+  for (size_t j = 0; j < s->model->n; ++j)
+    if (!(s->absolute_tolerance[j] > 0) || !isfinite(s->absolute_tolerance[j])) return CK_INVALID;
   ck_integrator *v = ck_allocate(1, sizeof *v);
   if (!v) return CK_MEMORY;
   v->state = s;
@@ -168,14 +174,18 @@ ck_status ck_integrator_advance(ck_integrator *v, double dt, ck_stats *st)
   double h = fmin(dt, v->o.warm_start && v->proposed > 0 ? v->proposed : v->o.start);
   double time = 0, previous = 1, factored_h = 0;
   size_t age = v->o.jacobian_steps;
-  int rejected = 0, fresh = 0;
+  int rejected = 0, fresh = 0, rhs_valid = 0;
   while (time < dt)
   {
     if (st->internal_steps >= v->o.max_steps) return CK_MAX_STEPS;
     h = fmin(h, dt-time);
     if (!(h > 0) || time + h == time) return CK_STEP_SMALL;
-    ck_forcing(s, s->y, w->initial);
-    ++st->function_calls;
+    if (!rhs_valid || !v->o.reuse_rhs)
+    {
+      ck_forcing(s, s->y, w->initial);
+      ++st->function_calls;
+      rhs_valid = 1;
+    }
     if (age >= v->o.jacobian_steps)
     {
       ck_jacobian(s, s->y, v->jacobian);
@@ -197,6 +207,7 @@ ck_status ck_integrator_advance(ck_integrator *v, double dt, ck_stats *st)
       ++st->accepted;
       time = h >= dt-time ? dt : time+h;
       double *swap = s->y; s->y = w->next; w->next = swap;
+      rhs_valid = 0;
       if (v->o.positivity) ck_post_solve_clamp(s);
       ++age; fresh = 0;
       if (rejected) factor_h = fmin(1, factor_h);

@@ -75,10 +75,11 @@ def integrate(method,ctl,jage,deadband,kind,warm,p):
     y=INITIAL[:];proposed=0.;counts=[0]*7;outputs=[]
     for call in range(2):
         time=0.;h=min(.2,proposed if warm and proposed>0 else .01)
-        previous=1.;factored_h=0.;age=jage;rejected=False;fresh=False;accepted=0
+        previous=1.;factored_h=0.;age=jage;rejected=False;fresh=False;accepted=0;rhs_valid=False
         while time<.2:
             h=min(h,.2-time)
-            f=forcing(y);counts[3]+=1
+            if not rhs_valid:
+                f=forcing(y);counts[3]+=1;rhs_valid=True
             if age>=jage:
                 jac=jacobian(y);counts[4]+=1;age=0;fresh=True;factored_h=0.
             if method in (12,13):
@@ -122,6 +123,7 @@ def integrate(method,ctl,jage,deadband,kind,warm,p):
                 counts[1]+=1;accepted+=1
                 time=.2 if h>=.2-time else time+h
                 y=[max(0.,v) for v in z]
+                rhs_valid=False
                 age+=1;fresh=False
                 if rejected: fac=min(1.,fac)
                 previous=max(e,1e-12);rejected=False
@@ -136,7 +138,7 @@ def integrate(method,ctl,jage,deadband,kind,warm,p):
     return outputs,counts
 
 def main():
-    total=0
+    total=0;worst_error=0.
     for method,(ctl,jage,deadband,kind,warm) in itertools.product([2,3,4,43,6,12,13],
         [(0,1,0.,1,1),(1,1,0.,1,1),(0,4,.2,1,1),(0,1,0.,0,0),(0,2,.5,2,1)]):
         text=subprocess.check_output([str(ROOT/'bin/integrator_probe'),*map(str,[method,ctl,jage,deadband,kind,warm])],text=True)
@@ -148,7 +150,18 @@ def main():
         expected,counts=integrate(method,ctl,jage,deadband,kind,warm,p)
         assert counts==p['counts'],(method,ctl,jage,kind,counts,p['counts'])
         error=max(abs(a-b) for x,z in zip(expected,ys) for a,b in zip(x,z))
+        worst_error=max(worst_error,error)
         assert error<3e-13,(method,ctl,jage,kind,error)
+        uncached=subprocess.check_output([str(ROOT/'bin/integrator_probe'),
+            *map(str,[method,ctl,jage,deadband,kind,warm,0])],text=True)
+        lines=uncached.splitlines()
+        uncached_y=[list(map(float,line.split()[1:])) for line in lines if line.startswith('y ')]
+        uncached_counts=[int(x) for line in lines if line.startswith('counts ') for x in line.split()[1:]]
+        assert uncached_y==ys, 'Forcing reuse changed the C trajectory'
+        counts[3]+=counts[2]
+        assert counts==uncached_counts, 'Forcing reuse must save exactly one call per rejection'
         total+=1
     print(f'{total} C/prototype comparisons PASS: seven methods, exact operation counts, solutions within 3e-13')
+    print(f'Maximum C/prototype absolute difference: {worst_error:.3g}')
+    print(f'{total} forcing-cache checks PASS: identical trajectories, one evaluation saved per rejection')
 if __name__=='__main__': main()
