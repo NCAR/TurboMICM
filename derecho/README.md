@@ -251,4 +251,31 @@ fastest on a whole node is at 256 threads:
 | vector8, in-place Mozart | 32 cells | 1,574 (1,572–1,593) | 1,864 |
 | standard, in-place Mozart (the default) | one per thread | 2,532 (2,527–2,598) | 3,528 |
 
-(Session 4 and the final session follow as they complete.)
+### Session 4: the one-thread knobs (`results/2026-10-18-session-4-one-thread-knobs`)
+
+Node dec2446, 3 rounds. A `perf` profile of one thread (node dec2433, 1,000
+cells; `results/2026-10-18-profile-w4`) put the time at LU 19 %, Jacobian
+assembly 17 %, forward and backward solves 26 %, forcing gather 10 %, the
+library's error norm 6 %, with 1.17 instructions per cycle and 35 % of L1
+data accesses missing: a block's LU matrix is 73 KB against a 32 KB L1, so the
+kernels stream from L2. The knobs tried against that profile:
+
+| Port build | 128 threads, median ms | 1 thread, median ms (range) | vs MICM vector8 g32 (141,139 ms) |
+|---|---:|---:|---:|
+| before the fast norm (session-1 build) | 595 | 45,086 (44,769–45,214) | 3.13x |
+| **fast norm** (per-lane partial sums; now the default) | 588 | 44,139 (43,926–44,183) | 3.20x |
+| fast norm, solve rows split from 8 terms (`--split-min 8`) | 590 | 43,825 (43,806–43,889) | 3.22x |
+| fast norm, split from 6 terms | 593 | 43,924 (43,837–44,184) | 3.21x |
+| fast norm, 8 gathers side by side (`--interleave 8`) | 588 | 44,477 (44,316–44,546) | 3.17x |
+| fast norm, 2 gathers side by side | 592 | 44,476 (44,151–45,050) | 3.17x |
+| fast norm, two blocks per solve iteration (`--solve-pairs`) | 602 | 44,139 (44,032–44,244) | 3.20x |
+| fast norm, groups of 16 cells | | 43,291 (43,281–43,423) | 3.26x |
+
+The error norm's serial chain of 6,688 dependent adds per internal step was
+worth 2 %; groups of 16 are worth another 2 % at one thread, unlike on the M5,
+where 16 cost 30 %; the split threshold, interleave, and paired solves are
+within the noise and stay at the entry's values. The paired solves, which
+give the core two independent chains, change nothing, consistent with the
+profile: the solves wait on L2, not on the chains.
+
+(The final session follows as it completes.)

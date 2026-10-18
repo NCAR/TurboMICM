@@ -1,0 +1,14 @@
+date: 2026-10-18T04:10:42
+host: dec0810
+platform: Linux-6.4.0-150600.23.53-default-x86_64-with-glibc2.38
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: 
+uptime: 04:10:42  up 45 days 17:17,  0 users,  load average: 0.74, 10.11, 56.04
+input: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/cells_2026.csv
+reference: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-reference/micm_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 128,256,1; rounds: 5
+program micm-default: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-in-place-mozart
+program micm-v8: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-in-place-mozart
+program micm-v8-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-in-place-mozart --group-size 32
+program fable-derecho: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/final/bin/ts1_bench_cpu
+program fable-derecho-g16: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/final/bin/ts1_bench_cpu --group-size 16
+program fable-derecho-p16: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/final-p16/bin/ts1_bench_cpu
