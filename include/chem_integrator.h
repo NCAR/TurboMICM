@@ -8,15 +8,16 @@
 typedef struct ck_integrator ck_integrator;
 typedef struct
 {
-  int method;            /* 2,3,4,43,6: Rosenbrock; 12,13: Euler extrapolation */
-  int controller;        /* 0: I, 1: PI */
+  int method;            /* 2,3,4,43,6,31: Rosenbrock; 12,13: Euler extrapolation */
+  int controller;        /* 0: I, 1: PI, 2: H211b */
   int norm;              /* 0: group RMS, 1: max of per-cell RMS, 2: max */
   size_t jacobian_steps; /* Maximum accepted steps per Jacobian, >=1 */
   size_t max_steps;
   double start, safety, growth, shrink, deadband;
-  int warm_start; /* Carry proposed step across advance calls */
-  int positivity; /* Include negative candidate values in error norm */
-  int reuse_rhs;  /* Reuse f(y) when retrying the same initial state */
+  double controller_k, controller_b; /* H211b: k=0 uses method error order; b>0 */
+  int warm_start;                    /* Carry proposed step across advance calls */
+  int positivity;                    /* Include negative candidate values in error norm */
+  int reuse_rhs;                     /* Reuse f(y) when retrying the same initial state */
 } ck_integrator_options;
 ck_integrator_options ck_integrator_defaults(void);
 ck_status ck_integrator_create(ck_state *state, const ck_integrator_options *options,

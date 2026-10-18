@@ -1,4 +1,5 @@
-/* Numerical parameter tables translated from MICM (Apache-2.0). */
+/* Original tables translated from MICM (Apache-2.0). RODAS3.1's mathematical
+   coefficients are from the KPP documentation; see REFERENCES.md. */
 #include "chem.h"
 #include <float.h>
 #include <math.h>
@@ -103,6 +104,28 @@ ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *p)
     p->gamma[1] = -0.1769193891319233E+01;
     p->gamma[2] = 0.7592633437920482;
     p->gamma[3] = -0.1049021087100450;
+    return CK_OK;
+  }
+  case 31:
+  {
+    p->stages = 4;
+    p->a[1] = p->a[3] = 0.646601929740551;
+    p->a[2] = p->a[4] = 0.409567801987914;
+    p->a[5] = 1;
+    p->c[0] = 4.198495621784201;
+    p->c[1] = 3.711590161613010;
+    p->c[2] = -1.787771994729384;
+    p->c[3] = 4.458898153216104;
+    p->c[4] = -2.024095448516552;
+    p->c[5] = -2.626700600119396;
+    p->new_function[0] = p->new_function[2] = p->new_function[3] = 1;
+    p->m[0] = p->a[1];
+    p->m[1] = p->a[2];
+    p->m[2] = p->m[3] = p->e[3] = 1;
+    p->order = 3;
+    p->alpha[2] = p->alpha[3] = 1;
+    p->gamma[0] = 0.515;
+    p->gamma[1] = 1.628546001287715;
     return CK_OK;
   }
   case 43:

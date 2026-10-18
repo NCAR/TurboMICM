@@ -207,13 +207,13 @@ The experimental options are parameters, never compiler optimizations:
 | `group_size` | build `GROUP_SIZE`, normally 32 | positive integer; `CK_GROUP_SIZE` also sets default |
 | `start` | 0.01 | finite >0 seconds; first internal step, bounded by DT |
 | `warm_start` | 1 | 0 or 1; retain proposed internal step between calls |
-| `controller` | 0 | 0: I; 1: PI |
+| `controller` | 0 | 0: I; 1: PI; 2: H211b |
 | `norm` | 1 | 0: group RMS; 1: maximum cell RMS; 2: component maximum |
 | `positivity` | 1 | 0 or 1; include negative candidate in rejection norm |
 | `reuse_rhs` | 1 | 0 or 1; reuse initial forcing on retries at unchanged y |
 | `jacobian_steps` | 1 | positive integer; maximum accepted steps per Jacobian |
 | `deadband` | 0 | [0,1); hold step if |factor-1| <= this value |
-| `safety` | 0.9 | (0,1]; multiply controller factor |
+| `safety` | 0.9 | finite >0; multiply controller factor |
 | `growth` | 6 | finite >=1; maximum step growth factor |
 | `shrink` | 0.1 | (0,1); minimum controller factor (failures also cap at 0.5) |
 | `max_steps` | 100000 | positive integer; attempts per external step |
@@ -261,3 +261,20 @@ prototype gate uses an independent dense Python implementation of forcing,
 Jacobian, LU, stages, extrapolation and adaptation on a nonlinear reversible
 dimer mechanism, plus exact operation-count comparisons. All arithmetic in the
 C library remains double precision and ISO C11 with libm/OpenMP only.
+
+`rodas31` selects RODAS3.1's four-stage, third-order stiffly accurate formula
+from the current KPP mathematical documentation (REFERENCES.md). It shares the
+generic engine, not an imported implementation. Method ID 31 identifies its
+coefficient table. Original MICM tables and defaults are unchanged.
+
+`controller=2` selects H211b. Its factor is
+`safety * E^(-1/(b*k)) * E_previous^(-1/(b*k)) * (h/h_previous)^(-1/b)`.
+`controller_b` defaults to 4 and accepts any finite positive value;
+`controller_k` defaults to 0 (use the method's embedded error order), and accepts
+any finite nonnegative value. Positive k overrides that exponent. History is
+reset at external-step boundaries and the I controller is used for startup and
+rejection recovery. The same acceptance test, growth/shrink clamps, endpoint
+bounds, and positivity checks apply to every controller. These are adaptive
+controller parameters, not changes to the integration order conditions.
+`safety` now accepts any finite positive value; values above one are tested as
+suggested by Dreger et al., with acceptance still requiring E <= 1.

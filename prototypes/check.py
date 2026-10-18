@@ -75,7 +75,7 @@ def integrate(method,ctl,jage,deadband,kind,warm,p):
     y=INITIAL[:];proposed=0.;counts=[0]*7;outputs=[]
     for call in range(2):
         time=0.;h=min(.2,proposed if warm and proposed>0 else .01)
-        previous=1.;factored_h=0.;age=jage;rejected=False;fresh=False;accepted=0;rhs_valid=False
+        previous=1.;previous_h=0.;factored_h=0.;age=jage;rejected=False;fresh=False;accepted=0;rhs_valid=False
         while time<.2:
             h=min(h,.2-time)
             if not rhs_valid:
@@ -117,7 +117,9 @@ def integrate(method,ctl,jage,deadband,kind,warm,p):
             factored_h=h
             e=norm(y,z,err,kind);counts[0]+=1
             fac=.9*e**(-1/order)
-            if ctl and not rejected and accepted: fac=.9*e**(-.7/order)*previous**(.4/order)
+            if ctl==1 and not rejected and accepted: fac=.9*e**(-.7/order)*previous**(.4/order)
+            if ctl==2 and not rejected and accepted:
+                fac=.9*e**(-1/(4*order))*previous**(-1/(4*order))*(h/previous_h)**(-1/4)
             fac=min(6.,max(.1,fac))
             if e<=1:
                 counts[1]+=1;accepted+=1
@@ -126,7 +128,7 @@ def integrate(method,ctl,jage,deadband,kind,warm,p):
                 rhs_valid=False
                 age+=1;fresh=False
                 if rejected: fac=min(1.,fac)
-                previous=max(e,1e-12);rejected=False
+                previous=max(e,1e-12);previous_h=h;rejected=False
                 if abs(fac-1)<=deadband: fac=1.
                 proposed=h*fac;h=proposed
             else:
@@ -139,8 +141,8 @@ def integrate(method,ctl,jage,deadband,kind,warm,p):
 
 def main():
     total=0;worst_error=0.
-    for method,(ctl,jage,deadband,kind,warm) in itertools.product([2,3,4,43,6,12,13],
-        [(0,1,0.,1,1),(1,1,0.,1,1),(0,4,.2,1,1),(0,1,0.,0,0),(0,2,.5,2,1)]):
+    for method,(ctl,jage,deadband,kind,warm) in itertools.product([2,3,4,43,6,12,13,31],
+        [(0,1,0.,1,1),(1,1,0.,1,1),(2,1,0.,1,1),(0,4,.2,1,1),(0,1,0.,0,0),(0,2,.5,2,1)]):
         text=subprocess.check_output([str(ROOT/'bin/integrator_probe'),*map(str,[method,ctl,jage,deadband,kind,warm])],text=True)
         p={};ys=[]
         for line in text.splitlines():
@@ -161,7 +163,7 @@ def main():
         counts[3]+=counts[2]
         assert counts==uncached_counts, 'Forcing reuse must save exactly one call per rejection'
         total+=1
-    print(f'{total} C/prototype comparisons PASS: seven methods, exact operation counts, solutions within 3e-13')
+    print(f'{total} C/prototype comparisons PASS: eight methods, exact operation counts, solutions within 3e-13')
     print(f'Maximum C/prototype absolute difference: {worst_error:.3g}')
     print(f'{total} forcing-cache checks PASS: identical trajectories, one evaluation saved per rejection')
 if __name__=='__main__': main()

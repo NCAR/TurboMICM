@@ -33,6 +33,15 @@ def configurations(suite):
     if suite == 'loose':
         return [(m, {'rtol': t, 'atol': 1e-18}) for m,t in itertools.product(
             ['ros3','ros4','rodas3','rodas4'], [0.003,0.01,0.03])]
+    if suite == 'rodas31':
+        return [('rodas31', {'rtol': t, 'atol': 1e-18}) for t in [1e-2,3e-3,1e-3,5e-4,3e-4,1e-4]]
+    if suite == 'h211b':
+        return [('rodas3', dict(rtol=3e-4,atol=1e-18,**o)) for o in [
+            {}, {'controller':1}, {'controller':2},
+            {'controller':2,'controller_b':2}, {'controller':2,'controller_b':1},
+            {'controller':2,'controller_b':1,'controller_k':2},
+            {'controller':2,'controller_b':1,'controller_k':1.7},
+            {'safety':1.1}, {'safety':1.3}, {'safety':1.5}, {'growth':12}, {'growth':30}]]
     if suite == 'mid':
         return [(m, {'rtol': t, 'atol': 1e-18}) for m,t in itertools.product(
             ['rodas3','rodas4'], [7e-4,5e-4,3e-4])]

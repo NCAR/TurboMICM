@@ -22,6 +22,7 @@ ck_integrator_options ck_integrator_defaults(void)
                                  .max_steps = 100000,
                                  .start = 0.01,
                                  .safety = 0.9,
+                                 .controller_b = 4,
                                  .growth = 6,
                                  .shrink = 0.1,
                                  .deadband = 0,
@@ -44,11 +45,13 @@ ck_status ck_integrator_create(ck_state *s, const ck_integrator_options *o, ck_i
     return CK_INVALID;
   *out = NULL;
   if (!s || !o || s->model->nconstraints || !o->jacobian_steps || !o->max_steps || o->controller < 0 ||
-      o->controller > 1 || o->norm < 0 || o->norm > 2 || (o->warm_start != 0 && o->warm_start != 1) ||
+      o->controller > 2 || o->norm < 0 || o->norm > 2 || (o->warm_start != 0 && o->warm_start != 1) ||
       (o->positivity != 0 && o->positivity != 1) || (o->reuse_rhs != 0 && o->reuse_rhs != 1) ||
       !(s->relative_tolerance >= 0) || !isfinite(s->relative_tolerance) || !(o->start > 0) ||
-      !isfinite(o->start) || !(o->safety > 0 && o->safety <= 1) || !(o->growth >= 1) ||
-      !isfinite(o->growth) || !(o->shrink > 0 && o->shrink < 1) || !(o->deadband >= 0 && o->deadband < 1))
+      !isfinite(o->start) || !(o->safety > 0) || !isfinite(o->safety) || !(o->growth >= 1) ||
+      !(o->controller_k >= 0) || !isfinite(o->controller_k) || !(o->controller_b > 0) ||
+      !isfinite(o->controller_b) || !isfinite(o->growth) || !(o->shrink > 0 && o->shrink < 1) ||
+      !(o->deadband >= 0 && o->deadband < 1))
     return CK_INVALID;
   for (size_t j = 0; j < s->model->n; ++j)
     if (!(s->absolute_tolerance[j] > 0) || !isfinite(s->absolute_tolerance[j]))
@@ -209,7 +212,7 @@ ck_status ck_integrator_advance(ck_integrator *v, double dt, ck_stats *st)
   if (status || dt == 0)
     return status;
   double h = fmin(dt, v->o.warm_start && v->proposed > 0 ? v->proposed : v->o.start);
-  double time = 0, previous = 1, factored_h = 0;
+  double time = 0, previous = 1, previous_h = 0, factored_h = 0;
   size_t age = v->o.jacobian_steps;
   int rejected = 0, fresh = 0, rhs_valid = 0;
   while (time < dt)
@@ -242,8 +245,15 @@ ck_status ck_integrator_advance(ck_integrator *v, double dt, ck_stats *st)
     ++st->internal_steps;
     double order = (v->o.method == 12 || v->o.method == 13) ? v->o.method - 10 : v->p.order;
     double factor_h = v->o.safety * pow(e, -1 / order);
-    if (v->o.controller && !rejected && st->accepted)
+    if (v->o.controller == 1 && !rejected && st->accepted)
       factor_h = v->o.safety * pow(e, -0.7 / order) * pow(previous, 0.4 / order);
+    if (v->o.controller == 2 && !rejected && st->accepted)
+    {
+      double k = v->o.controller_k > 0 ? v->o.controller_k : order;
+      double b = v->o.controller_b;
+      factor_h =
+          v->o.safety * pow(e, -1 / (b * k)) * pow(previous, -1 / (b * k)) * pow(h / previous_h, -1 / b);
+    }
     factor_h = fmin(v->o.growth, fmax(v->o.shrink, factor_h));
     if (e <= 1)
     {
@@ -260,6 +270,7 @@ ck_status ck_integrator_advance(ck_integrator *v, double dt, ck_stats *st)
       if (rejected)
         factor_h = fmin(1, factor_h);
       previous = fmax(e, 1e-12);
+      previous_h = h;
       rejected = 0;
       /* Holding h also permits exact LU reuse when J has not expired. */
       if (fabs(factor_h - 1) <= v->o.deadband)

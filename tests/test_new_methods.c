@@ -50,8 +50,8 @@ int main(void)
     ck_model *m = NULL;
     if (ck_model_create_with_order(&mech, 0, &m))
       return 1;
-    const int methods[] = {2, 3, 4, 43, 6, 12, 13}, orders[] = {2, 3, 4, 3, 4, 2, 3};
-    for (size_t k = 0; k < 7; ++k)
+    const int methods[] = {2, 3, 4, 43, 6, 12, 13, 31}, orders[] = {2, 3, 4, 3, 4, 2, 3, 3};
+    for (size_t k = 0; k < sizeof methods / sizeof methods[0]; ++k)
     {
       double error[2];
       for (size_t trial = 0; trial < 2; ++trial)

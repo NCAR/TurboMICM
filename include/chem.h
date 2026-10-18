@@ -286,7 +286,7 @@ typedef struct ck_rosenbrock_parameters
   size_t constraint_init_max_iterations, constraint_init_max_backtracks;
   double constraint_init_tolerance, constraint_init_backtrack_factor, constraint_init_sufficient_decrease;
 } ck_rosenbrock_parameters;
-/* methods: 2, 3, 4, 43 (four-stage DAE), 6 (six-stage DAE). */
+/* methods: 2, 3, 4, 43 (four-stage DAE), 6 (six-stage DAE), 31 (RODAS3.1 ODE). */
 ck_status ck_rosenbrock_parameters_init(int method, ck_rosenbrock_parameters *parameters);
 typedef struct
 {

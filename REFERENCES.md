@@ -45,3 +45,21 @@ NOTICE; MICM source e15898ce and its parameter tables remain the baseline.
    -0.7/q and previous error exponent 0.4/q, with an I-controller safety net
    after rejection. Our multiplicative safety 0.9 and clamps are explicitly
    configurable choices, not coefficients copied from an implementation.
+7. KPP 3.5 numerical methods documentation,
+   [RODAS3.1 coefficient table](https://kpp.readthedocs.io/en/latest/num_methods/rosenbrock-methods.html#rodas-3-1),
+   accessed 2026-10-18. Implemented the published mathematical coefficients as
+   the additional `rodas31` method. The documentation attributes them to Long,
+   Sturm, Shah and Yantosca (2026, submitted); that manuscript was not used.
+   No KPP implementation code was read or copied. Independent linear and
+   nonlinear analytic convergence tests verify order three with these numbers.
+8. R. Dreger, T. Kirfel, A. Pozzer, S. Rosanka, R. Sander and D. Taraborrelli
+   (2025), *Optimized step size control within the Rosenbrock solvers for stiff
+   chemical ordinary differential equation systems in KPP version 2.2.3_rs4*,
+   Geoscientific Model Development 18, 4273–4291,
+   [paper](https://gmd.copernicus.org/articles/18/4273/2025/).
+   Used equation (6)'s H211b controller, independent sweeps of controller
+   parameters, and the observation that embedded errors can overestimate actual
+   integration errors. We retain the acceptance test; only the proposed next
+   step changes. No pseudocode or implementation was copied. Tests include
+   configurable b and k; the paper motivates exploring b=1 and k near 2 for
+   a third-order method rather than assuming an error exponent is universal.

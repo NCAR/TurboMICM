@@ -272,6 +272,8 @@ static int method_id(const char *name, int *legacy)
     return 4;
   if (!strcmp(name, "rodas3"))
     return 43;
+  if (!strcmp(name, "rodas31"))
+    return 31;
   if (!strcmp(name, "rodas4"))
     return 6;
   if (!strcmp(name, "extrap2"))
@@ -333,7 +335,7 @@ int main(int argc, char **argv)
       }
       else if (!strcmp(key, "start") && v > 0)
         options.start = v;
-      else if (!strcmp(key, "safety") && v > 0 && v <= 1)
+      else if (!strcmp(key, "safety") && v > 0)
         options.safety = v;
       else if (!strcmp(key, "growth") && v >= 1)
         options.growth = v;
@@ -347,8 +349,12 @@ int main(int argc, char **argv)
         options.positivity = (int)v;
       else if (!strcmp(key, "reuse_rhs") && (v == 0 || v == 1))
         options.reuse_rhs = (int)v;
-      else if (!strcmp(key, "controller") && (v == 0 || v == 1))
+      else if (!strcmp(key, "controller") && (v == 0 || v == 1 || v == 2))
         options.controller = (int)v;
+      else if (!strcmp(key, "controller_k") && v >= 0)
+        options.controller_k = v;
+      else if (!strcmp(key, "controller_b") && v > 0)
+        options.controller_b = v;
       else if (!strcmp(key, "norm") && (v == 0 || v == 1 || v == 2))
         options.norm = (int)v;
       else
