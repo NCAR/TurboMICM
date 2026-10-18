@@ -1,0 +1,19 @@
+# MICM's three-stage Rosenbrock (rosenbrock3, its default method), 32-cell groups
+micm3-r1e-2-a1e-15=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 1e-2 --atol 1e-15
+micm3-r5e-3-a1e-15=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 5e-3 --atol 1e-15
+micm3-r3e-3-a1e-15=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 3e-3 --atol 1e-15
+micm3-r2e-3-a1e-15=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 2e-3 --atol 1e-15
+micm3-r1e-3-a1e-15=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 1e-3 --atol 1e-15
+micm3-r5e-4-a1e-15=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 5e-4 --atol 1e-15
+micm3-r3e-4-a1e-15=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 3e-4 --atol 1e-15
+micm3-r2e-4-a1e-15=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 2e-4 --atol 1e-15
+micm3-r1e-4-a1e-15=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 1e-4 --atol 1e-15
+micm3-r1e-2-a1e-18=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 1e-2 --atol 1e-18
+micm3-r5e-3-a1e-18=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 5e-3 --atol 1e-18
+micm3-r3e-3-a1e-18=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 3e-3 --atol 1e-18
+micm3-r2e-3-a1e-18=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 2e-3 --atol 1e-18
+micm3-r1e-3-a1e-18=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 1e-3 --atol 1e-18
+micm3-r5e-4-a1e-18=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 5e-4 --atol 1e-18
+micm3-r3e-4-a1e-18=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 3e-4 --atol 1e-18
+micm3-r2e-4-a1e-18=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 2e-4 --atol 1e-18
+micm3-r1e-4-a1e-18=$HOME/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 1e-4 --atol 1e-18

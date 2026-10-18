@@ -10,6 +10,7 @@ its Tier 1 commit `001fb64`), was verified the same way as sol-xhigh (see
 | `points.txt` | the declared operating points, copied from the entry's OPERATING_POINTS.md |
 | `report.md` | the verification report: build, MICM's test cases, the Tier 1 TS1 gate, the points on the disclosed scenarios, and the build audit |
 | `points.json` | one row per point and disclosed scenario: exit status, elapsed_ms, digits, worst species, gate, levels 2 and 3 |
+| `heldout-report.md`, `heldout-points.json` | the same for the five held-out scenarios, added when they were published after the last run ([`tier3/heldout`](../../tier3/heldout/README.md)) |
 
 ## Builds, tests, and the Tier 1 gate
 

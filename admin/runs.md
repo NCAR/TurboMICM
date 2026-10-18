@@ -312,7 +312,7 @@ Launch changes
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45–03:34 | `63d246f` | done, verified |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 04:23–06:03 | `c122d12` | done, verified |
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 06:20–08:18 | `db44838` | done, verified |
-| astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 08:39– | | running |
+| astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 08:39–11:14 | `3cab602` | done, verified |
 
 ## Tier 3: sol-xhigh
 
@@ -497,6 +497,75 @@ Launch changes
 - Launched after astra-xhigh was collected, archived, and verified. The machine
   was on AC power, with load averages near 3 from the verification that had
   just ended (2.96 over 1 minute).
+- The whole run was one turn, from the goal at 08:39:57 to its end at 11:14:18
+  (2 h 34 min 21 s), with two context compactions, at 09:36 and 11:08. Every
+  turn context shows gpt-6-astra at max. The session marked its goal complete
+  and ended with DONE. Claude Code closed it with `/quit` at 11:26, after the
+  record had been idle for 10 minutes; Codex's one warning was its usual
+  startup notice about `-c` and `--search`.
+- Tokens: 795,268 total; input 535,558 (plus 19,467,136 cached); output 259,710
+  (176,408 reasoning). Codex's weekly limit went from 33 % used to 40 %.
+- Web: 6 web items, all in its first seven minutes: 2 searches (5 queries), 3
+  page openings, and 1 page read. It searched for Sandu et al. (1997), KPP's
+  Rosenbrock methods, tolerances in atmospheric chemistry (Verwer, 1999),
+  Alexander's (1977) DIRK methods, and Gustafsson's (1991) step-size control.
+  It read a CWI report (`ir.cwi.nl/pub/125/0125D.pdf`), KPP's documentation of
+  its Rosenbrock methods and its references page, TMAP8's page on an L-stable
+  DIRK method, and the 2025 GMD paper on step-size control in KPP's Rosenbrock
+  solvers; a PubMed Central page was refused by a CAPTCHA. REFERENCES.md cites
+  every page it read.
+- 6 commits after `0dc7f67`, from 08:50 to 11:14, ending `3cab602`, "Publish
+  final work-precision results and reproducibility evidence": 87 files
+  changed, 13,267 lines added and 232 removed. No remote; the working tree is
+  clean.
+- Compliance: no command reads outside its directory and the read-only inputs,
+  apart from its check for AGENTS.md in the parent folders; no install or
+  download command, no path into another run or the held-out folder, and no
+  credential in the branch. Late in the run it searched its own files for model
+  names and the home path, as a check for the blind review.
+- Timer: `tools/ts1_scenario.c` times each step whole: the photolysis update,
+  every rate constant (recomputed each step), and the integration. Setup,
+  reading the input, a per-step scan for non-finite values, snapshot copies,
+  and writing the output are outside it.
+- Self-reported, not yet verified: both compilers pass the 680 cases and the
+  Tier 1 gates; 960 research runs, 120 of them its final 10,000-cell timings;
+  four RODAS3 points at rtol 3e-3 and 32-cell groups, differing in absolute
+  tolerance and a cap on the internal step: economy for level 2, and fast3,
+  balanced (recommended), and conservative for level 3. Balanced reaches at
+  least 3.433 digits overall and 2.490 for every species on the six disclosed
+  scenarios and its own three 48-hour cases.
+- Other load during the session: Claude Code made read-only progress checks,
+  and at 10:02 deleted untracked output files from other finished runs'
+  directories (see "Disk space"). No builds, tests, or timing ran.
+- Collected as `tier3/astra/max`; transcript
+  `transcripts/tier3/astra-max.jsonl.gz`.
+- Verified, 11:27–11:30 and then on the held-out scenarios, with
+  `admin/verify_tier3.py` (`results/2026-10-18-tier3-astra-max-verification`):
+  both compilers build (gcc-15 without warnings; clang with one, that it could
+  not vectorize a loop marked `#pragma omp simd` in the error norm); 680 PASS,
+  0 FAIL, 0 N/A with each; the Tier 1 TS1 gate passes (2.96e-13 with clang,
+  2.75e-13 with gcc-15); the audit finds nothing outside the rules. All four
+  points pass the gate on all 11 scenarios, and the disclosed scores match the
+  agent's RESULTS.md to the third decimal. economy reaches level 2, and
+  balanced and conservative level 3, on all 11. **fast3, declared for level 3,
+  reaches it on 9 of 11**: it misses clean-48h-5min (2.46 overall, phenol 1.57)
+  and winter60-10min (2.94, isoprene 1.87), the first declared point to miss
+  its level on a held-out scenario.
+
+## Tier 3: after the runs
+
+- 2026-10-18, 11:14: astra-max, the last Tier 3 run, ended, so the held-out
+  scenarios were published: `tier3/heldout/` holds `make_heldout.sh` (SHA-256
+  `08016cac…195c`, as recorded above), the driver that made the data, the
+  reference log, and checksums of the files, and each entry's verification
+  folder has its held-out report.
+- 2026-10-18, 11:30: `admin/time_entries.py --scenario` was tested with
+  `admin/time_tier3.sh` on the six disclosed scenarios: astra-max's economy and
+  MICM at rtol 1e-2 and atol 1e-15, 2 rounds at 1,000 cells. Names, gates, and
+  scores were right, and the second round reused the first round's scores.
+- The SSE moved the rest of Tier 3 to another machine: the MICM baselines, the
+  timing session, the ranking, the blind review, and publishing. The steps,
+  and the decisions already made, are in `tier3/HANDOFF.md`.
 
 # Disk space
 

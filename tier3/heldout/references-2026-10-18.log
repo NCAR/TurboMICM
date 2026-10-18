@@ -1,0 +1,59 @@
+build: 03:45:19
+files: 03:45:39
+wrote summer-15min: 1000 cells (seed 201, NOx x1); 96 steps of 900 s; diurnal photolysis, 40 N, day 172, from 6 h local time
+wrote tropics-20min: 1000 cells (seed 202, NOx x1); 72 steps of 1200 s; diurnal photolysis, 10 N, day 80, from 6 h local time
+wrote winter60-10min: 1000 cells (seed 203, NOx x1); 144 steps of 600 s; diurnal photolysis, 60 N, day 355, from 6 h local time
+wrote polluted-48h-30min: 1000 cells (seed 204, NOx x5); 96 steps of 1800 s; diurnal photolysis, 30 N, day 200, from 6 h local time
+wrote clean-48h-5min: 1000 cells (seed 205, NOx x0.2); 576 steps of 300 s; diurnal photolysis, 50 N, day 260, from 6 h local time
+wrote summer-15min: 10000 cells (seed 201, NOx x1); 96 steps of 900 s; diurnal photolysis, 40 N, day 172, from 6 h local time
+wrote tropics-20min: 10000 cells (seed 202, NOx x1); 72 steps of 1200 s; diurnal photolysis, 10 N, day 80, from 6 h local time
+wrote winter60-10min: 10000 cells (seed 203, NOx x1); 144 steps of 600 s; diurnal photolysis, 60 N, day 355, from 6 h local time
+wrote polluted-48h-30min: 10000 cells (seed 204, NOx x5); 96 steps of 1800 s; diurnal photolysis, 30 N, day 200, from 6 h local time
+wrote clean-48h-5min: 10000 cells (seed 205, NOx x0.2); 576 steps of 300 s; diurnal photolysis, 50 N, day 260, from 6 h local time
+wrote tier1-30s: 10000 cells (seed 2026, NOx x1); 101 steps of 30 s; constant photolysis
+wrote diurnal-5min: 10000 cells (seed 101, NOx x1); 288 steps of 300 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+wrote diurnal-10min: 10000 cells (seed 101, NOx x1); 144 steps of 600 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+wrote diurnal-30min: 10000 cells (seed 101, NOx x1); 48 steps of 1800 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+wrote polluted-10min: 10000 cells (seed 102, NOx x10); 144 steps of 600 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+wrote clean-10min: 10000 cells (seed 103, NOx x0.1); 144 steps of 600 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+reference clean-48h-5min: 03:46:16
+# clean-48h-5min: 1000 cells (seed 205, NOx x0.2); 576 steps of 300 s; diurnal photolysis, 50 N, day 260, from 6 h local time
+# made with micm_scenario --threads 10
+default: elapsed_ms=12445.473 internal_steps=51840 accepted=51840 rejected=0 function_calls=103680 jacobian_updates=51840 decompositions=51840 solves=155520 
+tight: elapsed_ms=214352.283 internal_steps=480774 accepted=471402 rejected=0 function_calls=2875272 jacobian_updates=480774 decompositions=480774 solves=2884644 
+tighter: elapsed_ms=375296.722 internal_steps=854283 accepted=840176 rejected=0 function_calls=5111591 jacobian_updates=854283 decompositions=854283 solves=5125698 
+convergence (tight against tighter): overall 10.16 digits over 1156757 values (181 species, 8000 rows); worst species: PHENO 9.40, MALO2 9.48, NO 9.50, HO2NO2 9.50, HO2 9.51
+MICM default against tighter: overall 3.04 digits over 1156757 values (181 species, 8000 rows); worst species: HO2NO2 2.23, NO 2.29, HO2 2.30, BRO 2.43, MALO2 2.50
+reference polluted-48h-30min: 03:56:23
+# polluted-48h-30min: 1000 cells (seed 204, NOx x5); 96 steps of 1800 s; diurnal photolysis, 30 N, day 200, from 6 h local time
+# made with micm_scenario --threads 10
+default: elapsed_ms=2155.388 internal_steps=8640 accepted=8640 rejected=0 function_calls=17280 jacobian_updates=8640 decompositions=8640 solves=25920 
+tight: elapsed_ms=110962.481 internal_steps=251184 accepted=248211 rejected=0 function_calls=1504131 jacobian_updates=251184 decompositions=251184 solves=1507104 
+tighter: elapsed_ms=222544.407 internal_steps=499639 accepted=495817 rejected=0 function_calls=2994012 jacobian_updates=499639 decompositions=499639 solves=2997834 
+convergence (tight against tighter): overall 10.29 digits over 1012621 values (173 species, 8000 rows); worst species: PHENO 9.36, OCLO 9.59, C6H5O2 9.61, HO2NO2 9.66, MCO3 9.67
+MICM default against tighter: overall 1.43 digits over 1012621 values (173 species, 8000 rows); worst species: TERPROD2 0.25, TERP2OOH 0.32, ISOPOOH 0.61, SOAG1 0.71, ISOP 0.89
+reference summer-15min: 04:02:03
+# summer-15min: 1000 cells (seed 201, NOx x1); 96 steps of 900 s; diurnal photolysis, 40 N, day 172, from 6 h local time
+# made with micm_scenario --threads 10
+default: elapsed_ms=2133.379 internal_steps=8640 accepted=8640 rejected=0 function_calls=17280 jacobian_updates=8640 decompositions=8640 solves=25920 
+tight: elapsed_ms=71574.482 internal_steps=161970 accepted=159544 rejected=0 function_calls=969394 jacobian_updates=161970 decompositions=161970 solves=971820 
+tighter: elapsed_ms=137924.492 internal_steps=308435 accepted=304633 rejected=0 function_calls=1846808 jacobian_updates=308435 decompositions=308435 solves=1850610 
+convergence (tight against tighter): overall 10.16 digits over 587052 values (178 species, 4000 rows); worst species: OCLO 9.14, BRCL 9.26, CLO 9.43, HO2NO2 9.54, TERP2O2 9.57
+MICM default against tighter: overall 3.14 digits over 587052 values (178 species, 4000 rows); worst species: ISOP 1.92, ISOPNITA 2.20, ISOPO2VBS 2.21, ISOPAO2 2.22, ISOPNITB 2.23
+reference tropics-20min: 04:05:38
+# tropics-20min: 1000 cells (seed 202, NOx x1); 72 steps of 1200 s; diurnal photolysis, 10 N, day 80, from 6 h local time
+# made with micm_scenario --threads 10
+default: cells 0-99 failed: step 1: NaNDetected FAILED 
+tight: elapsed_ms=66029.633 internal_steps=148509 accepted=146856 rejected=0 function_calls=889401 jacobian_updates=148509 decompositions=148509 solves=891054 
+tighter: elapsed_ms=131623.348 internal_steps=293984 accepted=291484 rejected=0 function_calls=1761404 jacobian_updates=293984 decompositions=293984 solves=1763904 
+convergence (tight against tighter): overall 10.26 digits over 587346 values (180 species, 4000 rows); worst species: OCLO 8.98, CLO 9.43, TERP2O2 9.48, HO2NO2 9.51, BRCL 9.63
+MICM default against tighter: no result (the default run failed)
+reference winter60-10min: 04:08:59
+# winter60-10min: 1000 cells (seed 203, NOx x1); 144 steps of 600 s; diurnal photolysis, 60 N, day 355, from 6 h local time
+# made with micm_scenario --threads 10
+default: cells 0-99 failed: step 22: Step Size Too Small FAILED 
+tight: elapsed_ms=66427.096 internal_steps=150531 accepted=149115 rejected=0 function_calls=901770 jacobian_updates=150531 decompositions=150531 solves=903186 
+tighter: elapsed_ms=131659.808 internal_steps=296507 accepted=294352 rejected=0 function_calls=1776887 jacobian_updates=296507 decompositions=296507 solves=1779042 
+convergence (tight against tighter): overall 10.69 digits over 620177 values (180 species, 4000 rows); worst species: BR 9.74, HO2NO2 9.80, OCLO 9.87, N2O5 9.92, ISOP 10.13
+MICM default against tighter: no result (the default run failed)
+done: 04:12:21

@@ -23,20 +23,24 @@ against REFERENCE, a scenario's reference_snapshots.csv (scoring the run's
 ts1_snapshots.csv) or reference_final.csv (scoring its ts1_final.csv), and the
 gate is score.py's. A 10,000-cell scenario can be scored against the 1,000-cell
 reference of the same arguments: score.py scores only the reference's cells,
-which are the first 1,000.
+which are the first 1,000, and applies the gate to every cell. Scoring a
+10,000-cell output takes much longer than the run, so each program's first
+complete run is scored, and a later run only if its output's SHA-256 differs
+from that run's (--score-every-run scores them all).
 
 DIR/timings.csv gets one row per run: the program's own elapsed_ms and solver
 statistics, the whole process's wall time (which also counts reading the input,
 setup, and writing the output), the gate result, and, with --scenario, the
-overall digits and the worst species. DIR/summary.md gives the median and range
-of elapsed_ms for each program and thread count, and with --scenario the median
-digits; DIR/environment.txt records the machine and the commands. Needs only the
-Python standard library.
+overall digits, the worst species, and the output's SHA-256. DIR/summary.md
+gives the median and range of elapsed_ms for each program and thread count, and
+with --scenario the median digits; DIR/environment.txt records the machine and
+the commands. Needs only the Python standard library.
 """
 
 import argparse
 import csv
 import datetime
+import hashlib
 import json
 import platform
 import re
@@ -66,6 +70,8 @@ parser.add_argument("--rounds", type=int, default=5)
 parser.add_argument("--pause", type=float, default=5.0, help="seconds between runs (default: 5)")
 parser.add_argument("--compare", type=Path, default=ROOT / "reference" / "compare_final.py")
 parser.add_argument("--score", type=Path, default=ROOT / "tier3" / "scenarios" / "score.py")
+parser.add_argument("--score-every-run", action="store_true",
+                    help="with --scenario, score every run, not only each program's first and any whose output differs")
 args = parser.parse_args()
 if (args.input is None) == (args.scenario is None):
     parser.error("give exactly one of --input and --scenario")
@@ -113,9 +119,20 @@ args.out.mkdir(parents=True, exist_ok=True)
 (args.out / "environment.txt").write_text("\n".join(environment()) + "\n")
 table = args.out / "timings.csv"
 fields = ["round", "threads", "program", "elapsed_ms", *STATS, "process_s", "gate", "max_relative_difference", "started",
-          "digits", "worst_species"]
+          "digits", "worst_species", "output_sha256"]
 with open(table, "w", newline="") as file:
     csv.writer(file).writerow(fields)
+
+
+def sha256(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as file:
+        for block in iter(lambda: file.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+first_score = {}  # program -> (SHA-256, gate, digits, worst, run directory) of its first scored run
 
 for round_number in range(1, args.rounds + 1):
     shift = (round_number - 1) * len(programs) // args.rounds % len(programs)
@@ -135,28 +152,35 @@ for round_number in range(1, args.rounds + 1):
             (work / "output.txt").write_text(run.stdout + run.stderr)
             values = dict(re.findall(r"(\w+)=([0-9.]+)", run.stdout))
             final = work / "ts1_final.csv"
-            digits = worst = ""
+            digits = worst = sha = ""
             if args.scenario:
                 output = work / output_name
                 if run.returncode == 0 and output.exists():
-                    check = subprocess.run(
-                        [sys.executable, str(args.score), str(output), str(args.reference.resolve()), "--json"],
-                        capture_output=True,
-                        text=True,
-                    )
-                    (work / "score.txt").write_text(check.stdout + check.stderr)
-                    try:
-                        scored = json.loads(check.stdout.strip().splitlines()[-1])
-                    except (IndexError, ValueError):
-                        scored = {}
-                    gate = scored.get("gate", "FAIL")
-                    digits = scored.get("overall_digits", "")
-                    worst = " ".join(f"{name} {value}" for name, value in scored.get("worst_species", [])[:1])
+                    sha = sha256(output)
+                    known = first_score.get(name)
+                    if known and known[0] == sha and not args.score_every_run:
+                        gate, digits, worst = known[1:4]
+                        (work / "score.txt").write_text(f"output identical to {known[4]}'s (SHA-256 {sha}); its score is reused\n")
+                    else:
+                        check = subprocess.run(
+                            [sys.executable, str(args.score), str(output), str(args.reference.resolve()), "--json"],
+                            capture_output=True,
+                            text=True,
+                        )
+                        (work / "score.txt").write_text(check.stdout + check.stderr)
+                        try:
+                            scored = json.loads(check.stdout.strip().splitlines()[-1])
+                        except (IndexError, ValueError):
+                            scored = {}
+                        gate = scored.get("gate", "FAIL")
+                        digits = scored.get("overall_digits", "")
+                        worst = " ".join(f"{species} {value}" for species, value in scored.get("worst_species", [])[:1])
+                        first_score.setdefault(name, (sha, gate, digits, worst, work.name))
                 else:
                     gate = f"ERROR {run.returncode}"
                 largest = ""
-                for name in ("ts1_final.csv", "ts1_snapshots.csv"):
-                    (work / name).unlink(missing_ok=True)
+                for filename in ("ts1_final.csv", "ts1_snapshots.csv"):
+                    (work / filename).unlink(missing_ok=True)
             elif run.returncode == 0 and final.exists():
                 check = subprocess.run(
                     [sys.executable, str(args.compare), str(final), str(args.reference.resolve())],
@@ -171,7 +195,7 @@ for round_number in range(1, args.rounds + 1):
             else:
                 gate, largest = f"ERROR {run.returncode}", ""
             row = [round_number, threads, name, values.get("elapsed_ms", ""), *(values.get(s, "") for s in STATS)]
-            row += [f"{process_s:.3f}", gate, largest, started, digits, worst]
+            row += [f"{process_s:.3f}", gate, largest, started, digits, worst, sha]
             with open(table, "a", newline="") as file:
                 csv.writer(file).writerow(row)
             print(

@@ -11,9 +11,12 @@ enough for an atmospheric model.
 
 Status: designed and approved on 2026-10-15; tooling built; launched on 2026-10-18,
 one run at a time in the order of the Tier 1 runs (sol-xhigh, sol-max,
-astra-xhigh, astra-max; see `admin/runs.md`).
+astra-xhigh, astra-max; see `admin/runs.md`). All four ended and were verified
+that day; the rest moved to another machine, as `HANDOFF.md` describes.
 The prompt template is `prompt.v1`. This directory mirrors the committed files of
-the Tier 3 run root, `ODE/benchmarks/tier3`; keep the two identical.
+the Tier 3 run root, `ODE/benchmarks/tier3`; keep the two identical, except for
+this README, `HANDOFF.md`, `heldout/` (the held-out scenarios, published after
+the last run), and `review/` (the blind review's instructions).
 
 ## Plan
 
@@ -65,14 +68,16 @@ the Tier 3 run root, `ODE/benchmarks/tier3`; keep the two identical.
 | `scenarios/score.py` | significant digits overall and per species, and the gate | built |
 | `scenarios/README.md` | the scenario, output, and scoring formats, for the agents | written |
 
-Still to do, before the ranking (the agents need neither):
+Done after the launch (the agents needed neither):
 - the undisclosed scenarios, made the same way and kept outside the run root:
   five, approved by the SSE and fixed on 2026-10-18 at 01:50, before any result
   (the script's SHA-256 is in `admin/runs.md`); their files and references were
   made on 2026-10-18 between sol-xhigh and sol-max, converged to 10.16–10.69
-  digits overall;
-- test the scenario mode of `admin/time_entries.py` (written), then time MICM
-  on every scenario at tolerances that reach 2 and 3 digits, for context.
+  digits overall, and published in `heldout/` when the last run ended;
+- a test of the scenario mode of `admin/time_entries.py`, on 2026-10-18.
+
+Still to do, in `HANDOFF.md`: MICM's baselines at tolerances that reach 2 and 3
+digits, the timing session, the ranking, and the blind review.
 
 ## MICM's default on the scenarios
 

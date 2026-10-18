@@ -35,8 +35,8 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - **Keep the two copies identical:** `prompt.v3`, `prompts/`, `reference/`, and the
   prompt and setup scripts exist in both the run root and this repo. Check with
   `diff -r`. `tier3/` likewise mirrors the committed files of
-  `ODE/benchmarks/tier3` (`git ls-files benchmarks/tier3` in ODE); its README.md
-  is this repo's only.
+  `ODE/benchmarks/tier3` (`git ls-files benchmarks/tier3` in ODE); its README.md,
+  HANDOFF.md, `heldout/`, and `review/` are this repo's only.
 - **Contestants:**
   - Codex CLI: gpt-6.1-sol, gpt-6-astra, and gpt-6-luna. Luna replaced
     gpt-5.6-terra on 2026-10-15. Codex was 0.162.1 through astra-high and is
@@ -208,7 +208,13 @@ Tier-2-Results.
 - **Order:** the SSE started Tier 3 on 2026-10-18, ahead of Luna's Tier 1 reruns
   and Tier 2: one run at a time, in the order of the Tier 1 runs (sol-xhigh,
   sol-max, astra-xhigh, astra-max), each collected, archived, and gate-checked
-  before the next launches. Status is in `admin/runs.md`.
+  before the next launches. All four ended and were verified that day (details
+  in `admin/runs.md`).
+- **Handoff:** the SSE moved the rest of Tier 3 to another machine on
+  2026-10-18: the MICM baselines, the timing session, the ranking, the blind
+  review, and publishing. `tier3/HANDOFF.md` has the state, the decisions
+  already made, and the steps; regenerate results there rather than copying
+  them.
 - **Arms:**
   - Sol and Astra at xhigh and max, a 2 x 2 matrix, each started from a clone of
     the run's own Tier 1 repository (`<tier1_commit>` placeholder);
@@ -234,21 +240,22 @@ Tier-2-Results.
   - MICM's default fails on 3 of the 5 day–night scenarios (absolute tolerance
     1e-3 mol m-3); 1e-15 fixes it.
   - Undisclosed scenarios: five, approved by the SSE on 2026-10-18 and fixed in
-    `~/NSF-NCAR/.tier3-heldout/make_heldout.sh` (its own git repository, no
-    remote; SHA-256 `08016cac…195c` in `admin/runs.md`). Their files (1,000
-    and 10,000 cells), references, and the 10,000-cell disclosed set were made
-    on 2026-10-18 between sol-xhigh and sol-max, in that folder's `heldout/`,
-    `heldout-10000/`, and `disclosed-10000/`. Keep held-out names and per-scenario
-    results out of this repository and the wiki until the last run ends, then
-    publish the script.
-  - Remaining: a test of `admin/time_entries.py`'s scenario mode, and a MICM
-    baseline per scenario at tolerances that reach 2 and 3 digits.
+    `make_heldout.sh` (SHA-256 `08016cac…195c` in `admin/runs.md`), kept
+    outside the run root until the last run ended, then published in
+    `tier3/heldout/` with the driver that makes their files (1,000 and 10,000
+    cells), references, and the 10,000-cell disclosed set, in
+    `~/NSF-NCAR/.tier3-heldout/`.
+  - `admin/time_entries.py`'s scenario mode was tested on 2026-10-18. Remaining,
+    per `tier3/HANDOFF.md`: MICM's baselines (one tolerance setting per level,
+    reaching it on all 11 scenarios), the timing session, the ranking, and the
+    blind review.
 
 ## Open items
 
 - Rank with an undisclosed seed, and run the blind review.
 - Time the entries on an x86-64 Linux machine.
-- Tier 3: undisclosed scenarios, scenario timing, and a MICM baseline per scenario.
+- Tier 3: MICM's baselines, the timing session, the ranking, and the blind
+  review, on another machine (`tier3/HANDOFF.md`).
 - Verification worktrees of `runs/*` are built in a session scratchpad. If it is
   gone, `git worktree prune` and rebuild per "Verify an entry".
 - Time each new entry with all the others in one session (`admin/time_entries.py`,
