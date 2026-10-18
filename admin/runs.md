@@ -497,3 +497,18 @@ Launch changes
 - Launched after astra-xhigh was collected, archived, and verified. The machine
   was on AC power, with load averages near 3 from the verification that had
   just ended (2.96 over 1 minute).
+
+# Disk space
+
+- 2026-10-18, 10:02, while astra-max ran, on the SSE's go-ahead to clean up the
+  output of completed and recorded runs: Claude Code deleted 1,742 untracked CSV
+  files of 1 MiB or more, 19.7 GiB, from the run directories of five finished
+  Tier 1 runs (sol-high, sol-xhigh, sol-max, astra-high, astra-xhigh) and three
+  finished Tier 3 runs (sol-xhigh, sol-max, astra-xhigh). 14.8 GiB of it was
+  Tier 3 astra-xhigh's scan output, in `build/scan-runs/`. The files were solver
+  outputs (`ts1_final.csv`, `ts1_snapshots.csv`, and the like) and generated cell
+  inputs (`cells.csv`), none tracked by git. Every tracked file and log was kept,
+  and so were the agents' own reference and check files (`reference_*.csv`,
+  `check_*.csv`) from their stress and scaling tests. With Claude Code's scratch
+  verification outputs and gcc-15 builds also deleted, free space went from 19 to
+  45 GiB. Tier 1 astra-max's directory waits until Tier 3 astra-max ends.
