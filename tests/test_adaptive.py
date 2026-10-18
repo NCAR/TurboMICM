@@ -7,7 +7,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'prototypes'))
 from integrators import rosenbrock, bdf, COUNTERS
-from api import C, Model, State, lib, rate
+from api import C, Model, State, lib, rate, USER
 from adaptive_api import AdaptiveStats, counts
 
 
@@ -94,6 +94,24 @@ def main():
         assert state.get('Y') == before
         lib.chem_workspace_free(w); state.close()
     stiff.close(); m.close()
+    # A forcing discontinuity must invalidate BDF/controller/matrix history.
+    switched = Model(['X', 'Y'])
+    switched.reaction(['X'], [('Y', 1.)], rate(USER, A=1., label='k'))
+    switched.data.default_temperature = 300.; switched.finalize()
+    for method in [2, 3, 4, 5, 6, 10]:
+        state = State(switched); state.set('X', 1.); state.set('k', .7, custom=True); state.rates()
+        state.tolerances(relative=1e-6, absolute=1e-12)
+        p = lib.chem_adaptive_parameters(method); w = lib.chem_workspace_create(state.p); stats = AdaptiveStats()
+        assert lib.chem_adaptive_solve(C.byref(p), .4, state.p, w, C.byref(stats)) == 0
+        state.set('k', 2., custom=True); state.rates(); lib.chem_workspace_reset(w)
+        assert lib.chem_adaptive_solve(C.byref(p), .6, state.p, w, C.byref(stats)) == 0
+        expected = math.exp(-.7*.4-2.*.6)
+        assert abs(state.get('X')-expected) < 2e-5, (method, state.get('X'), expected)
+        assert abs(state.get('X')+state.get('Y')-1.) < 2e-11
+        other = State(switched)
+        assert lib.chem_adaptive_solve(C.byref(p), 1., other.p, w, C.byref(stats)) == 1
+        other.close(); lib.chem_workspace_free(w); state.close()
+    switched.close()
     dest = ROOT / 'build' / 'prototype-verification.csv'
     with dest.open('w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['method', 'max_order', 'variant', 'max_absolute_difference'] + COUNTERS, lineterminator='\n')

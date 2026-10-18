@@ -16,25 +16,36 @@ The reported references are the supplied tight six-stage MICM solutions, indepen
 
 ## Full disclosed validation
 
-These are the lowest observed scores across all six complete 1,000-cell scenarios and every supplied snapshot, from `scans/operating-points-clang.csv`. Repetitions have identical outputs and operation counts; timing varies.
+These are the lowest observed scores across all six complete 1,000-cell scenarios and every supplied snapshot for the selected 16-cell, dynamically scheduled groups. `scans/throughput-validation.csv` and the repeated final timing study record this configuration. Repetitions have identical outputs and operation counts; timing varies.
 
 | Point | Relative tolerance | Minimum overall digits | Overall RMS bound | Minimum species digits | Species RMS bound |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| fast | `1e-2` | 2.041 | 0.91% | 1.123 | 7.54% |
-| balanced | `5e-3` | 2.353 | 0.45% | 1.445 | 3.59% |
-| accurate | `5e-4` | 3.313 | 0.049% | 2.409 | 0.40% |
-| recommended | `3e-4` | 3.599 | 0.026% | 2.624 | 0.24% |
-| precise | `1e-4` | 4.289 | 0.0052% | 3.125 | 0.075% |
+| fast | `1e-2` | 2.041 | 0.91% | 1.064 | 8.64% |
+| balanced | `5e-3` | 2.290 | 0.52% | 1.386 | 4.12% |
+| accurate | `5e-4` | 3.273 | 0.054% | 2.341 | 0.46% |
+| recommended | `3e-4` | 3.571 | 0.027% | 2.554 | 0.28% |
+| precise | `1e-4` | 4.250 | 0.0057% | 3.069 | 0.086% |
 
 Bounds are rounded upward. The recommended point provides margin over level three, and the precise point is useful when trace-species sensitivities justify additional cost. The fast point only narrowly clears the disclosed level-two target; the balanced point supplies more margin. Hidden scenarios may change which point qualifies. The highest errors often involve ISOP or bromine chemistry, which is one reason to retain a per-species requirement and multiple operating points.
 
 The inherited default three-stage method is a compatibility baseline, not an accuracy oracle. At its large absolute floor it performs well on the short Tier 1 benchmark but fails or accumulates very large errors on several longer-step scenarios. Even a finite, nonnegative final state can be inaccurate. Its tighter-tolerance baseline succeeds and is included in the work–precision comparisons.
 
+For the recommended point, additional diagnostics over the same disclosed snapshots give the following accuracy for major oxidants and CO (`scans/throughput-validation-species.csv`). The last column is a maximum over individual counted values, not a species RMS. These results support the recommendation beyond the aggregate score.
+
+| Species | Minimum RMS digits across scenarios | Largest individual relative error, % |
+| --- | ---: | ---: |
+| O3 | 5.240 | 0.0015 |
+| OH | 4.366 | 0.0214 |
+| HO2 | 3.951 | 0.0566 |
+| NO | 3.948 | 0.0639 |
+| NO2 | 4.616 | 0.0557 |
+| CO | 5.849 | 0.0005 |
+
 ## Nonnegative output and conservation
 
-Every new trial must be finite and pass the error test. A concentration more negative than its allowed local scale forces a smaller retry. Smaller accepted negative concentrations are projected to zero. `largest_clip` records the largest single correction; it is **not** a cumulative conservation-error bound. The largest observed corrections in the disclosed runs are `2.409e-16`, `2.409e-16`, `3.768e-18`, `3.237e-18`, and `1.165e-18` mol m-3 for the five points in table order. At the recommended point, the largest individual correction is about 0.033% of the reporting threshold.
+Every new trial must be finite and pass the error test. A concentration more negative than its allowed local scale forces a smaller retry. Smaller accepted negative concentrations are projected to zero. `largest_clip` records the largest single correction; it is **not** a cumulative conservation-error bound. The largest observed corrections in the disclosed runs are `4.463e-16`, `1.990e-14`, `3.794e-18`, `3.138e-18`, and `1.254e-18` mol m-3 for the five points in table order. At the recommended point, the largest individual correction is about 0.032% of the reporting threshold.
 
-This policy guarantees nonnegative accepted endpoints when a run succeeds, but does not make the underlying Rosenbrock formulas positivity-preserving or guarantee exact elemental conservation after projection. The independent nonlinear small-case test verifies its stoichiometrically weighted invariant to accumulated roundoff, and the stiff transfer test checks its equilibrium within integration error. Full scenario reference agreement and refinement are the relevant checks of projection's effect on TS1. The official gate is checked on all saved values; the native runner also checks every outer endpoint.
+This policy guarantees nonnegative accepted endpoints when a run succeeds, but does not make the underlying Rosenbrock formulas positivity-preserving or guarantee exact elemental conservation after projection. Coarse points can project values near or above the reporting threshold at intermediate internal endpoints; those corrections must not be described as roundoff. The independent nonlinear small-case test verifies its stoichiometrically weighted invariant to accumulated roundoff, and the stiff transfer test checks its equilibrium within integration error. Full scenario reference agreement and refinement are the relevant checks of projection's effect on TS1. The official gate is checked on all saved values; the native runner also checks every outer endpoint.
 
 ## Limits of the conclusion
 

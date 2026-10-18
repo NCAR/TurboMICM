@@ -17,6 +17,7 @@ Tier 3 also builds `bin/ts1_scenario` from both `make cpu` and `make bench`. Run
 
 ```sh
 bin/ts1_scenario --method rodas3 --option rtol=3e-4 \
+  --option group=16 --option schedule=dynamic \
   ../scenarios/diurnal-10min/scenario.txt
 .conda/bin/python ../scenarios/score.py ts1_snapshots.csv \
   ../scenarios/diurnal-10min/reference_snapshots.csv --level 3
@@ -32,7 +33,7 @@ Additional validation and reproducible scans:
 make test-tier3 CC=clang
 make test-tier3 CC=gcc-15
 make bench CC=clang
-.conda/bin/python tools/scan.py scans/operating-points.json --study local-points --repeats 5
+.conda/bin/python tools/scan.py scans/operating-points-throughput.json --study local-points --repeats 5
 make micm-scenario
 .conda/bin/python tools/scan.py scans/micm-baselines.json --study local-reference \
   --backend micm --compiler clang++ --repeats 5

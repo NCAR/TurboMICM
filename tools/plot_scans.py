@@ -21,7 +21,7 @@ def read(name):
 
 
 def main():
-    rows = read('operating-points-clang.csv')
+    rows = read('final-clang-1000.csv')
     reference = read('micm-timings.csv')
     dest = ROOT / 'plots'; dest.mkdir(exist_ok=True)
     plt.rcParams.update({'font.size': 10, 'axes.spines.top': False, 'axes.spines.right': False,

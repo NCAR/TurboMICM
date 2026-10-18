@@ -50,7 +50,7 @@ The runtime sources include only standard C headers and `omp.h`. SIMD comes from
 
 # Tier 3 integration and scenario interface
 
-`include/chem_adaptive.h` exposes the opt-in integration API. A `ChemWorkspace` belongs to exactly one state and must be destroyed before that state. It owns an unfactored Jacobian, seven solution-history vectors, and scratch vectors. It preserves the proposed next step across calls. `chem_workspace_reset` discards multistep, matrix, and controller history after a forcing discontinuity, retaining only that step proposal. These solvers support ordinary chemical ODEs; constraint/DAE models continue to use the inherited API. Both generic reaction evaluation and generated kernels work without integrator changes.
+`include/chem_adaptive.h` exposes the opt-in integration API. A `ChemWorkspace` belongs to exactly one state and must be destroyed before that state. It owns an unfactored Jacobian, seven solution-history vectors, and scratch vectors. It preserves the proposed next step across calls. `chem_workspace_reset` discards multistep, matrix, and controller history after a forcing discontinuity, retaining only that step proposal. Call it whenever concentrations, conditions, rates, tolerances, or the method are changed externally; uninterrupted calls with the same ODE may keep the history. These solvers support ordinary chemical ODEs; constraint/DAE models continue to use the inherited API. Both generic reaction evaluation and generated kernels work without integrator changes.
 
 | Scenario method | Formula and implementation |
 | --- | --- |
