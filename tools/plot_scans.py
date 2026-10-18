@@ -17,13 +17,14 @@ def main():
     for path in sorted((ROOT/'scans').glob('*.csv')):
         if path.stem in ('smoke','baseline') or path.stem.startswith('diagnostic'): continue
         for row in csv.DictReader(path.open()):
+            if row.get('message','').startswith('Provisional:'): continue
             if row['returncode']=='0' and row.get('overall_digits') and row['scenario'] in NAMES:
                 row['config']=json.loads(row['configuration']);rows.append(row)
     fig,axes=plt.subplots(2,3,figsize=(14,8),constrained_layout=True)
     colors=dict(zip(['ros2','ros3','ros4','rodas3','rodas4','extrap2','extrap3','micm3'],plt.get_cmap('tab10').colors))
     for ax,name in zip(axes.flat,NAMES):
         for method,color in colors.items():
-            series=[r for r in rows if r['scenario']==name and r['config']['method']==method and r['suite'] in ('family','loose','baseline')]
+            series=[r for r in rows if r['scenario']==name and r['config']['method']==method and r['suite'] in ('family','family-corrected','loose','mid','baseline')]
             series.sort(key=lambda r:float(r['overall_digits']))
             if series: ax.plot([float(r['overall_digits']) for r in series],[float(r['elapsed_ms']) for r in series],'.-',color=color,label=method)
         points=[r for r in rows if r['scenario']==name and r['suite']=='operating-points']
