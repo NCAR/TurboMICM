@@ -23,8 +23,9 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--references',action='store_true')
     p.add_argument('--method',default='rodas3')
-    p.add_argument('--option',action='append',default=['rtol=0.0003','atol=1e-18'])
+    p.add_argument('--option',action='append')
     a=p.parse_args()
+    if not a.option: a.option=['rtol=0.0003','atol=1e-18']
     work=ROOT/'results/stress-work';work.mkdir(parents=True,exist_ok=True)
     output=ROOT/'scans/stress.csv';exists=output.exists()
     with output.open('a',newline='') as file:

@@ -10,3 +10,26 @@ benchmark, tutorial ports, extension interfaces and requested documents are
 complete. AUDIT.md records the requirement-by-requirement completion check;
 RESULTS.md records validation and timings. Build products, reference copies,
 local tooling environment/cache and generated result CSVs remain ignored.
+
+## Tier 3 research progress
+
+- Scenario driver and separate generic adaptive engine implemented; original
+  MICM defaults unchanged. Initial seven-family scan completed (126 runs).
+- Current additional formula: RODAS3.1, sourced as mathematical coefficients
+  from KPP documentation. I, PI and H211b controllers available. Exact forcing
+  caching removes one evaluation per rejection with identical C trajectories.
+- Independent Python prototype passes 48 strict roundoff/count comparisons for
+  eight methods; 64 forcing-cache checks pass. Sixteen aggressive H211b b=1
+  sensitivity cases are recorded separately, with different adaptive grids in
+  some cases. Analytic linear and nonlinear order tests pass for all methods.
+- Tier 1 clang: 675 PASS, five retained N/A, and supplied TS1 gate bit-identical.
+  GCC and final fresh gates remain to run after research scans stop using the
+  held clang benchmark binary.
+- Phase-two scan process runs suites mid, controller, reuse, absolute, group,
+  loose, corrected baseline, corrected initial family rows sequentially. Its
+  driver binary is fixed at daec954 (digest prefix 812ca613609a). New RODAS3.1
+  and H211b code is independently tested in the probe but intentionally not
+  linked into that driver until the sequential scan process completes.
+- Next: rebuild benchmark; scan RODAS3.1/H211b, select points, generate/check
+  independent 48-hour reference conditions, repeat final timings, run both
+  compiler gates and 10,000-cell checks, finalize documentation and audit.

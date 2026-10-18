@@ -41,15 +41,15 @@ NOTICE; MICM source e15898ce and its parameter tables remain the baseline.
 6. G. Söderlind (2002), *Automatic control and adaptive time-stepping*,
    Numerical Algorithms 31, 281–310,
    [author's paper](https://citeseerx.ist.psu.edu/document?doi=f5fd153e99b16dd4b5348bcbde0f2121b7096db8&repid=rep1&type=pdf).
-   Used equation (4.21)'s PI.3.4 control structure: current error exponent
+   Used the indexed excerpt of equation (4.21)'s PI.3.4 control structure: current error exponent
    -0.7/q and previous error exponent 0.4/q, with an I-controller safety net
    after rejection. Our multiplicative safety 0.9 and clamps are explicitly
    configurable choices, not coefficients copied from an implementation.
 7. KPP 3.5 numerical methods documentation,
    [RODAS3.1 coefficient table](https://kpp.readthedocs.io/en/latest/num_methods/rosenbrock-methods.html#rodas-3-1),
    accessed 2026-10-18. Implemented the published mathematical coefficients as
-   the additional `rodas31` method. The documentation attributes them to Long,
-   Sturm, Shah and Yantosca (2026, submitted); that manuscript was not used.
+   the additional `rodas31` method. The documentation attributes them to Long et al. (2026, submitted); that
+   manuscript was not used.
    No KPP implementation code was read or copied. Independent linear and
    nonlinear analytic convergence tests verify order three with these numbers.
 8. R. Dreger, T. Kirfel, A. Pozzer, S. Rosanka, R. Sander and D. Taraborrelli
@@ -63,3 +63,9 @@ NOTICE; MICM source e15898ce and its parameter tables remain the baseline.
    step changes. No pseudocode or implementation was copied. Tests include
    configurable b and k; the paper motivates exploring b=1 and k near 2 for
    a third-order method rather than assuming an error exponent is universal.
+9. A. Sandu et al. (1997), *Benchmarking stiff ODE solvers for atmospheric
+   chemistry problems I: implicit vs explicit*, Atmospheric Environment 31,
+   3151–3166, [primary repository abstract](https://authors.library.caltech.edu/records/wbx07-tym26).
+   Used the abstract's motivation for sparse implicit solvers around two digits
+   of accuracy. Detailed method comparisons rely on part II above, not on an
+   inaccessible full text of part I.

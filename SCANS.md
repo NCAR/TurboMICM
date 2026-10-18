@@ -62,3 +62,12 @@ these TS1 runs. The family comparison tests whether the extra stages of ROS3,
 ROS4 or stiffly accurate RODAS can buy larger accepted steps. Negativity-aware
 rejection can materially affect this answer; accuracy and operation counts
 must be compared together rather than judging by stage count alone.
+
+The follow-up literature pass added RODAS3.1's mathematical coefficient set and
+H211b control (including its b/k parameters). These are tested with the same
+mechanism-generic recurrences and independent prototype. Aggressive b=1
+controller settings show sensitivity to evaluation-order roundoff in the small
+case; `prototypes/roundoff_sensitivity.csv` records the observed differences.
+Damped b=4 control passes strict roundoff/count agreement. This is a reason to
+measure robustness and accuracy, not assume that a controller with fewer
+function evaluations is automatically preferable.
