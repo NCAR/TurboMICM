@@ -311,7 +311,7 @@ Launch changes
 |---|---|---|---|---|---|---|---|
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45–03:34 | `63d246f` | done, verified |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 04:23–06:03 | `c122d12` | done, verified |
-| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | | | | queued |
+| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 06:20– | | running |
 | astra-max | gpt-6-astra | max | `0dc7f67` | | | | queued |
 
 ## Tier 3: sol-xhigh
@@ -421,3 +421,15 @@ Launch changes
   level 2 on all 11, and accurate, recommended, and precise reach level 3 on all
   11. The disclosed scores match the agent's OPERATING_POINTS.md to the third
   decimal.
+
+## Tier 3: astra-xhigh
+
+- Session start: 2026-10-18 06:20:30, launched by Claude Code with
+  `admin/launch_codex_run.sh --tier3 astra-xhigh gpt-6-astra xhigh`; the goal was
+  sent at 06:20:34. The session record shows gpt-6-astra at xhigh, base
+  instructions from gpt-6-astra, Codex 0.163.0, and no model switch; the `codex`
+  command line carries `--search`.
+- Codex session `01a14ef4-db46-7743-8cf5-57c66c1aa74c`.
+- Launched after sol-max was collected, archived, and verified. The machine was
+  on AC power, with load averages falling from the verification (3.44 over 1
+  minute).
