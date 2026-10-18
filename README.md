@@ -15,6 +15,16 @@ from agents that are still running.
 | `transcripts/astra-xhigh.jsonl.gz` | astra-xhigh | Codex CLI 0.163.0 | `01a142b6-b159-7d52-801a-7ac70fa3fed4` | 9.9 MB |
 | `transcripts/astra-max.jsonl.gz` | astra-max | Codex CLI 0.163.0 | `01a14386-84c0-70a3-867a-6cf69b22b824` | 7.1 MB |
 
+## Tier 3 runs
+
+Each Tier 3 run starts from a clone of the same model's Tier 1 repository and
+runs with web search on (`codex --search`). The files and redaction are as for
+the contest runs below.
+
+| File | Run | Harness | Session id | Original size |
+|---|---|---|---|---:|
+| `transcripts/tier3/sol-xhigh.jsonl.gz` | Tier 3 sol-xhigh | Codex CLI 0.163.0 | `01a14df8-cf84-7851-b9c3-3c76c4eef53e` | 8.2 MB |
+
 ## Fable's reference entry (not a contest run)
 
 The Claude Code session in which Claude Fable 5.1 built its own solution to
