@@ -382,5 +382,8 @@ final session's build at its defaults.
 
 The MICM ratios in the last two rows cross nodes and so carry the few
 percent of node-to-node spread; a ranking session on one node would settle
-them. The generated TS1 kernels are now 719 KB of code (the assembling LU
+them. The follow-up build passes the held-out seed-7 verification as well
+(`results/2026-10-18-verify-heldout-seed7-fable2`): 673/0/7, every id once,
+and the gate at every setting with a largest relative difference of 9.3e-14
+(444 ms at 128 threads, 37.8 s at one, on that input). The generated TS1 kernels are now 719 KB of code (the assembling LU
 family beside the plain one), and compile in about 100 s on a dev node.
