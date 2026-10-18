@@ -283,6 +283,16 @@ Undisclosed scenarios
   48-hour runs, with steps of 5 to 30 minutes and initial NOx from x0.1 to x10, as
   in the disclosed set. The script will be published here once the runs end; its
   scenario files and reference solutions are made between runs, never during one.
+- 2026-10-18, 03:45–04:12, between sol-xhigh and sol-max: the held-out files
+  (1,000 cells, and 10,000 for timing) and their references were made outside the
+  run root, as for the disclosed set (`tier3/admin/make_references.sh`, MICM's
+  scenario driver built afresh, 10 threads). The references converge to 10.16 to
+  10.69 digits overall, with no species below 8.98. MICM's default three-stage
+  Rosenbrock fails on two of the five (a NaN in step 1; step size too small) and
+  reaches 1.43 to 3.14 digits on the other three. The 10,000-cell versions of the
+  disclosed scenarios were made at the same time. Results on the held-out
+  scenarios stay out of this repository and the wiki, by name, until the last
+  run ends.
 
 Launch changes
 - 2026-10-18: `admin/launch_codex_run.sh` gained `--tier3`. In that mode it checks
@@ -299,7 +309,7 @@ Launch changes
 
 | Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|---|
-| sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45–03:34 | `63d246f` | done; verification under way |
+| sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45–03:34 | `63d246f` | done, verified |
 | sol-max | gpt-6.1-sol | max | `001fb64` | | | | queued |
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | | | | queued |
 | astra-max | gpt-6-astra | max | `0dc7f67` | | | | queued |
@@ -349,6 +359,16 @@ Launch changes
   builds, tests, or timing ran.
 - Collected as `tier3/sol/xhigh`; transcript `transcripts/tier3/sol-xhigh.jsonl.gz`
   on the `transcripts` branch.
+- Verified, 04:17–04:22, with `admin/verify_tier3.py`
+  (`results/2026-10-18-tier3-sol-xhigh-verification`): both compilers build
+  without warnings; 675 PASS, 0 FAIL, 5 N/A with each; the Tier 1 TS1 gate
+  passes (largest relative difference 0 with clang, 1.43e-13 with gcc-15); the
+  audit finds nothing outside the rules. All five points pass the gate on the 6
+  disclosed and 5 held-out scenarios. L2 and L2_margin reach level 2 on all 11,
+  and L3, recommended, and L4 reach level 3 on all 11. The disclosed scores match
+  the agent's RESULTS.md to the third decimal. A first pass at 04:12 found two
+  bugs in the verification script, since fixed: it counted the case list's 4
+  comment lines as missing ids, and its audit scanned the conda package cache.
 - The session record's world state lists the SSE's approved Codex command
   prefixes, which name other projects; the Tier 1 transcripts carry the same
   list. It holds no credential values.

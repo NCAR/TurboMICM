@@ -68,8 +68,9 @@ the Tier 3 run root, `ODE/benchmarks/tier3`; keep the two identical.
 Still to do, before the ranking (the agents need neither):
 - the undisclosed scenarios, made the same way and kept outside the run root:
   five, approved by the SSE and fixed on 2026-10-18 at 01:50, before any result
-  (the script's SHA-256 is in `admin/runs.md`); their files and references are
-  made between runs;
+  (the script's SHA-256 is in `admin/runs.md`); their files and references were
+  made on 2026-10-18 between sol-xhigh and sol-max, converged to 10.16–10.69
+  digits overall;
 - test the scenario mode of `admin/time_entries.py` (written), then time MICM
   on every scenario at tolerances that reach 2 and 3 digits, for context.
 

@@ -146,7 +146,7 @@ if "build" in stages:
 # tests
 if "tests" in stages:
     cases = [line.split()[0] for line in (TIER3_ROOT / "reference" / "micm_cases.txt").read_text().splitlines()
-             if line.strip()]
+             if line.strip() and not line.startswith("#")]
     case_set = set(cases)
     report.append("## MICM's test cases\n")
     report.append("| Compiler | make test-cpu | PASS | FAIL | N/A | Ids missing | Ids repeated | Unknown ids |")
@@ -294,9 +294,10 @@ if "audit" in stages:
             libs = subprocess.run(["otool", "-L", str(program)], capture_output=True, text=True).stdout.split("\n")[1:]
             report.append(f"- `bin/{program.name}` links: " + ", ".join(l.split()[0] for l in libs if l.strip()))
     report.append("")
-    envs = {p.parent for p in tree(cc).rglob("conda-meta")}
+    # conda environments (conda-meta/) and the extracted packages of a package cache (info/index.json)
+    conda = {p.parent for p in tree(cc).rglob("conda-meta")} | {p.parent.parent for p in tree(cc).rglob("info/index.json")}
     sources = [p for p in tree(cc).rglob("*") if p.suffix in (".c", ".h") and p.is_file()
-               and not any(env in p.parents for env in envs)]
+               and not any(root in p.parents for root in conda)]
     banned = re.compile(r"__attribute__|__builtin_|\basm\b|__asm|vector_size|ext_vector_type|long\s+double|"
                         r"#\s*include\s*<(arm_|immintrin|xmmintrin|emmintrin|x86intrin|Accelerate|dispatch|mach/)|"
                         r"#\s*pragma\s+(clang|GCC)|omp\s+target|__APPLE__|__aarch64__|__x86_64__|__ARM_NEON|"
@@ -307,7 +308,7 @@ if "audit" in stages:
             if banned.search(line):
                 matches.append(f"{source.relative_to(tree(cc))}:{number}: {line.strip()[:140]}")
     (logs / "banned.txt").write_text("\n".join(matches) + "\n")
-    report.append(f"C sources scanned: {len(sources)} (tracked and generated); lines matching a banned construct: "
+    report.append(f"C sources scanned: {len(sources)} (tracked and generated, outside conda); lines matching a banned construct: "
                   f"{len(matches)} (all in `logs/banned.txt`)\n")
     for match in matches[:30]:
         report.append(f"    {match}")
