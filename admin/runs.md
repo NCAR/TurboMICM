@@ -310,7 +310,7 @@ Launch changes
 | Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|---|
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45–03:34 | `63d246f` | done, verified |
-| sol-max | gpt-6.1-sol | max | `001fb64` | | | | queued |
+| sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 04:23– | | running |
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | | | | queued |
 | astra-max | gpt-6-astra | max | `0dc7f67` | | | | queued |
 
@@ -372,3 +372,15 @@ Launch changes
 - The session record's world state lists the SSE's approved Codex command
   prefixes, which name other projects; the Tier 1 transcripts carry the same
   list. It holds no credential values.
+
+## Tier 3: sol-max
+
+- Session start: 2026-10-18 04:23:36, launched by Claude Code with
+  `admin/launch_codex_run.sh --tier3 sol-max gpt-6.1-sol max`; the goal was sent
+  at 04:23:40. The session record shows gpt-6.1-sol at max, base instructions
+  from gpt-6.1-sol, Codex 0.163.0, and no model switch; the `codex` command line
+  carries `--search`.
+- Codex session `01a14e89-d573-77d2-8286-e1d020bdb20d`.
+- Launched after sol-xhigh was collected, archived, and verified, and after the
+  held-out scenarios were made. The machine was idle, on AC power, with load
+  averages falling from that work (2.05 over 1 minute).
