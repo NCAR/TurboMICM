@@ -1,0 +1,13 @@
+[
+  {"name":"ros3-rtol1e-2", "method":"ros3", "options":{"rtol":0.01}},
+  {"name":"ros3-rtol1e-3", "method":"ros3", "options":{"rtol":0.001}},
+  {"name":"rodas3-rtol1e-2", "method":"rodas3", "options":{"rtol":0.01}},
+  {"name":"rodas3-rtol1e-3", "method":"rodas3", "options":{"rtol":0.001}},
+  {"name":"rodas4-rtol1e-2", "method":"rodas4", "options":{"rtol":0.01}},
+  {"name":"rodas4-rtol1e-3", "method":"rodas4", "options":{"rtol":0.001}},
+  {"name":"rodas3-atol1e-16", "method":"rodas3", "options":{"rtol":0.001,"atol":1e-16}},
+  {"name":"rodas3-atol1e-17", "method":"rodas3", "options":{"rtol":0.001,"atol":1e-17}},
+  {"name":"bdf5-age20", "method":"bdf", "options":{"jacobian_age":20}},
+  {"name":"bdf5-rtol1e-3", "method":"bdf", "options":{"jacobian_age":20,"rtol":0.001}},
+  {"name":"bdf5-rtol1e-2", "method":"bdf", "options":{"jacobian_age":20,"rtol":0.01}}
+]

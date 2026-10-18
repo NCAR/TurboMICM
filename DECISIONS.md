@@ -1,5 +1,9 @@
 # Decisions
 
+- Tier 3 retains the inherited numerical API and its exact default path. New integrators use a separate workspace and entry point so changes to startup, positivity checks, error norms, or reuse do not alter the Tier 1 gate. The scenario driver defaults to the inherited three-stage method, including its known failures on some long-step inputs.
+- Scenario paths are resolved relative to the scenario file. There is no warm-up; photolysis is constant within each outer interval. Output and snapshot serialization are outside the measured intervals. The scenario runner may cache time-independent rates because conditions are fixed; its timed update applies the prescribed factor to every photolysis rate.
+- Research will first compare the inherited Rosenbrock families under common revised control, then a separately implemented BDF family, and then isolate controller, norm, startup, and reuse choices. Failed configurations remain in the scan logs. No species or reactions will be removed or selected manually.
+
 - The public library uses C11 and double precision. It has no runtime dependency on the reference implementation, Python, or a configuration parser.
 - Configuration parsing and optional specialization run in the private prefix environment at build time. Both generated and manually built mechanisms use the same public mechanism and solver interfaces.
 - The reference case identifiers are retained verbatim. C++ ownership and exception tests will exercise C allocation, copying, validation, and error returns where meaningful; any inapplicable language-only case will have an explicit reason.

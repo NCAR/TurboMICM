@@ -1,0 +1,13 @@
+[
+  {"name":"micm3-default", "method":"micm3"},
+  {"name":"micm6-default", "method":"micm6"},
+  {"name":"ros2-common", "method":"ros2"},
+  {"name":"ros3-common", "method":"ros3"},
+  {"name":"ros4-common", "method":"ros4"},
+  {"name":"rodas3-common", "method":"rodas3"},
+  {"name":"rodas4-common", "method":"rodas4"},
+  {"name":"bdf1-common", "method":"bdf", "options":{"order":1}},
+  {"name":"bdf2-common", "method":"bdf", "options":{"order":2}},
+  {"name":"bdf3-common", "method":"bdf", "options":{"order":3}},
+  {"name":"bdf5-common", "method":"bdf", "options":{"order":5}}
+]

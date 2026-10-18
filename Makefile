@@ -36,22 +36,24 @@ CPPFLAGS := -Iinclude -Igenerated -DCHEM_GROUP_SIZE=$(GROUP_SIZE)
 GENFLAGS := --kernel-chunk $(KERNEL_CHUNK)
 LDLIBS := $(OMPLIBS) -lm
 BUILD := build/$(notdir $(CC))
-SOURCES := $(filter-out src/bench.c,$(wildcard src/*.c))
+SOURCES := $(filter-out src/bench.c src/scenario.c,$(wildcard src/*.c))
 OBJECTS := $(patsubst src/%.c,$(BUILD)/%.o,$(SOURCES))
 GENERATED_OBJECTS := $(BUILD)/ts1.o $(BUILD)/example_no_user.o $(BUILD)/example_user.o $(BUILD)/example_robertson.o $(BUILD)/validation.o
 
-.PHONY: all env cpu test-cpu bench micm-ref clean
+.PHONY: all env cpu test-cpu test-tier3 bench micm-ref clean
 all: cpu
 env: .conda/conda-meta/history
 	mkdir -p $(TMPDIR)
 .conda/conda-meta/history: environment.yml
 	mkdir -p $(TMPDIR)
-	CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes >&2
-cpu: bin/libchem.a bin/libchem.$(SHARED_EXT) bin/ts1_bench_cpu bin/tutorials
+	if [ -f $@ ]; then CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env update --prefix $(CURDIR)/.conda --file environment.yml >&2; else CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes >&2; fi
+cpu: bin/libchem.a bin/libchem.$(SHARED_EXT) bin/ts1_bench_cpu bin/ts1_scenario bin/tutorials
 bench: cpu
 test-cpu: cpu
 	$(PYTHON) tests/run.py
-$(BUILD)/%.o: src/%.c $(wildcard include/*.h) src/internal.h $(BUILD)/flags
+test-tier3: cpu
+	$(PYTHON) tests/test_adaptive.py
+$(BUILD)/%.o: src/%.c $(wildcard include/*.h) $(wildcard src/*.h) $(BUILD)/flags
 	@mkdir -p $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $< -o $@
 $(BUILD)/ts1.o: generated/ts1.c include/chem.h $(BUILD)/flags
@@ -90,6 +92,11 @@ $(BUILD)/libchem.$(SHARED_EXT): $(OBJECTS) $(GENERATED_OBJECTS)
 	$(CC) $(OPTFLAGS) $(SHARED_FLAG) $(OBJECTS) $(GENERATED_OBJECTS) $(LDLIBS) -o $@
 $(BUILD)/ts1_bench_cpu: $(BUILD)/bench.o $(BUILD)/libchem.a
 	$(CC) $(OPTFLAGS) $(BUILD)/bench.o $(BUILD)/libchem.a $(LDLIBS) -o $@
+$(BUILD)/ts1_scenario: $(BUILD)/scenario.o $(BUILD)/libchem.a
+	$(CC) $(OPTFLAGS) $(BUILD)/scenario.o $(BUILD)/libchem.a $(LDLIBS) -o $@
+bin/ts1_scenario: $(BUILD)/ts1_scenario force
+	@mkdir -p bin
+	cp $< $@
 $(BUILD)/tutorials: tests/tutorials.c $(BUILD)/libchem.a include/chem.h include/chem_array.h $(BUILD)/flags
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(BUILD)/libchem.a $(LDLIBS) -o $@
 bin/tutorials: $(BUILD)/tutorials force

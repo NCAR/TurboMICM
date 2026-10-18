@@ -6,6 +6,7 @@ generated/
 __pycache__/
 *.pyc
 ts1_final.csv
+ts1_snapshots.csv
 reference-build/
 results/
 env-build.log
