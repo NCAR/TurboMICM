@@ -59,8 +59,11 @@ Completed full 1,000-cell work–precision screening, grouping/error-weight scan
 MICM C++ baselines, and converged references for three new 48-hour scenarios.
 The reference pairs agree to 10.23–10.49 digits overall. GCC passes all 680
 original cases, all nine original TS1 roundoff checks, all prototype/order/
-projection/stiffness/I/O tests, and the five candidate operating points on every
-disclosed and stress scenario. Detailed CSVs and sanitized validation transcripts
+projection/stiffness/I/O tests, and the positivity/finite gate for five candidate operating points on every
+disclosed and stress scenario. The rtol=0.006 extrapolation candidate missed
+level three on the tropical 48-hour case (2.838 digits); the recommendation
+passed. This failed accuracy result is retained and motivates a tighter
+fast three-digit candidate. Detailed CSVs and sanitized validation transcripts
 are retained. The candidate recommendation is extrapolation order four,
 rtol=0.002, atol=1e-18, fresh Jacobians, groups of 32.
 
@@ -70,3 +73,11 @@ retained with an explicit warning, not asserted as each row's actual binary.
 The scan harness now hashes the executable per run; a stable-build repetition
 of that sweep remains to be performed. Final Clang gates, repeated isolated
 timings, 10,000-cell scaling, plots/reports, and completion audit remain.
+
+## Checkpoint 4: final driver and numerical selection
+
+The final five numerical configurations are frozen: RODAS3 at rtol 0.01/0.003
+and order-four extrapolation at 0.004/0.002/0.001, all atol 1e-18. Generic constant
+rate caching and four-step dynamic scheduling preserve bit-identical states and
+solver counts in controlled scans. Full compiler validation, serialized five-run
+1,000/10,000-cell timings, plots and final reports follow this checkpoint.

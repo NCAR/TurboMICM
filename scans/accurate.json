@@ -1,0 +1,13 @@
+[
+  {
+    "id": "accurate",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.004,
+      "atol": 1e-18,
+      "group-size": 32,
+      "order": 4
+    },
+    "level": 3
+  }
+]

@@ -26,9 +26,9 @@ snapshot_every = 2
 ''')
 
 
-def run(label, binary, options):
+def run(label, binary, options, scenario_name='scenario.txt'):
     dest = work/label; dest.mkdir(exist_ok=True)
-    result = subprocess.run([str(root/'bin'/binary), *options, str(work/'scenario.txt')],
+    result = subprocess.run([str(root/'bin'/binary), *options, str(work/scenario_name)],
                             cwd=dest, text=True, capture_output=True, check=True)
     (dest/'run.txt').write_text(result.stdout+result.stderr)
     return dest
@@ -63,8 +63,18 @@ for method in ['ros2','ros3','ros4','rodas3','rodas4','extrap','sdirk']:
     options=['--threads','2','--method',method,'--option','group-size=2']
     native=run(method+'-generated','ts1_scenario',options)
     generic=run(method+'-generic','ts1_scenario',options+['--option','generic=1'])
+    uncached=run(method+'-uncached','ts1_scenario',options+['--option','rate-cache=0'])
+    blocked=run(method+'-blocked','ts1_scenario',options+['--option','step-block=99','--option','schedule=dynamic'])
     for filename in ['ts1_final.csv','ts1_snapshots.csv']:
         checks.append((method+' '+filename,compare(native,generic,filename)))
+        assert (native/filename).read_bytes()==(uncached/filename).read_bytes(), (method,filename,'rate cache mismatch')
+        checks.append((method+' cached/uncached '+filename,0.))
+        assert (native/filename).read_bytes()==(blocked/filename).read_bytes(), (method,filename,'blocking mismatch')
+        checks.append((method+' blocked/dynamic '+filename,0.))
+    (work/'scenario-final.txt').write_text((work/'scenario.txt').read_text().replace('snapshot_every = 2\n',''))
+    final_only=run(method+'-final-only','ts1_scenario',options+['--option','step-block=3','--option','schedule=guided'], 'scenario-final.txt')
+    assert not (final_only/'ts1_snapshots.csv').exists()
+    assert (native/'ts1_final.csv').read_bytes()==(final_only/'ts1_final.csv').read_bytes()
 with (root/'results/scenario_io.csv').open('w',newline='') as f:
     writer=csv.writer(f); writer.writerow(['check','max_relative_difference']); writer.writerows(checks)
-print('Scenario forcing/snapshots agree with MICM; all seven method names agree with generic kernels')
+print('Scenario forcing/snapshots agree with MICM; seven methods agree with generic kernels and bit-identical cached/uncached rates')

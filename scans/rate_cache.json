@@ -1,0 +1,44 @@
+[
+  {
+    "id": "rodas3-cache0",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "rate-cache": 0,
+      "step-block": 1
+    }
+  },
+  {
+    "id": "rodas3-cache1",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 1
+    }
+  },
+  {
+    "id": "extrap-cache0",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 0,
+      "step-block": 1,
+      "order": 4
+    }
+  },
+  {
+    "id": "extrap-cache1",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 1,
+      "order": 4
+    }
+  }
+]

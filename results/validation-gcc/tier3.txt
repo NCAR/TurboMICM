@@ -1,0 +1,24 @@
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude prototypes/edgecases.c build/libchem.a -fopenmp -lm -o bin/test_adaptive
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude prototypes/rate_updates.c build/libchem.a -fopenmp -lm -o bin/test_rate_updates
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude prototypes/probe.c build/libchem.a -fopenmp -lm -o bin/adaptive_probe
+./.conda/bin/python prototypes/independent.py
+44 prototype comparisons pass; maximum difference 1.37e-14
+./.conda/bin/python prototypes/convergence.py
+10 methods: analytic convergence orders, conservation, and 7-cell grouping pass
+bin/test_adaptive
+method=0 reactant=5.419106760873973e-75 product=1 clipped_mass=0
+method=1 reactant=0 product=1 clipped_mass=1.6966508395873403e-20
+method=2 reactant=0 product=1.0000000000000004 clipped_mass=3.795533968040613e-21
+method=3 reactant=0 product=1.0000000000000013 clipped_mass=1.3139086579510301e-19
+method=4 reactant=5.2623961664031343e-63 product=1.0000000000000007 clipped_mass=0
+method=5 reactant=0 product=0.99999999999999634 clipped_mass=4.890536035268248e-21
+method=6 reactant=0 product=0.99999999999999667 clipped_mass=2.639333888857088e-22
+method=7 reactant=0 product=1.0000165054262482 clipped_mass=4.9516284140923238e-05
+method=8 reactant=0 product=0.99999999999999833 clipped_mass=2.3091249805134078e-21
+method=9 reactant=0 product=0.99999999999999989 clipped_mass=2.1187832479475287e-20
+method=10 reactant=0 product=1.0000165054262482 clipped_mass=4.9516284140923238e-05
+11 methods: zero duration, invalid inputs, backend errors, and 1e8 stiffness interval pass
+bin/test_rate_updates
+Rate dependencies: all custom masks, third bodies, surface slots, callbacks and invalid indices pass
+./.conda/bin/python tools/test_scenario.py
+Scenario forcing/snapshots agree with MICM; seven methods agree with generic kernels and bit-identical cached/uncached rates

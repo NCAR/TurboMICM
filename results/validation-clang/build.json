@@ -1,0 +1,13 @@
+{
+  "compiler": "clang\n-O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include -Iinclude\n-L/opt/homebrew/opt/libomp/lib -lomp -lm\n",
+  "compiler_version": "Apple clang version 21.0.0 (clang-2100.0.123.102)",
+  "binaries": {
+    "ts1_scenario": "906e5c17d75aac5f59f352d52418c978b0ac535f6845db5e8a2b44d1d638822b",
+    "ts1_bench_cpu": "966eae6d0e5406945ac47e7b57c8fa11942361758942c0576cc23bbe07876d06",
+    "adaptive_probe": "efa8a1a468e5fc893e9727a6c596ffb64b29d3b005e935c92405942b4156d5fc",
+    "test_cpu": "e5297026136172c4319e6a80875e3c44849f45650585dbb360c51f9784d3efa1",
+    "test_rate_updates": "0bf0c806dc52b6640e819be92db35e95e747909ad738ab429d2e457b3fac4cad"
+  },
+  "original_case_count": 680,
+  "original_case_list_identical": true
+}

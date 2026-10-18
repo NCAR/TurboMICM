@@ -1,0 +1,132 @@
+[
+  {
+    "id": "fast",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.01,
+      "atol": 1e-18,
+      "group-size": 32,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
+    },
+    "level": 2
+  },
+  {
+    "id": "balanced",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "group-size": 32,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
+    },
+    "level": 2
+  },
+  {
+    "id": "accurate",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.004,
+      "atol": 1e-18,
+      "group-size": 32,
+      "order": 4,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
+    },
+    "level": 3
+  },
+  {
+    "id": "recommended",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "group-size": 32,
+      "order": 4,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
+    },
+    "level": 3
+  },
+  {
+    "id": "strict",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "group-size": 32,
+      "order": 4,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
+    },
+    "level": 3
+  },
+  {
+    "id": "c-micm3-matched",
+    "method": "micm",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "max-steps": 100000,
+      "group-size": 32,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0
+    },
+    "level": 3
+  },
+  {
+    "id": "micm-micm3-matched",
+    "method": "rosenbrock3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "max-steps": 100000,
+      "group-size": 32
+    },
+    "level": 3,
+    "backend": "micm"
+  }
+]

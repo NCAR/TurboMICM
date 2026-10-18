@@ -1,0 +1,13 @@
+{
+  "compiler": "gcc-15\n-O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude\n-fopenmp -lm\n",
+  "compiler_version": "gcc-15 (Homebrew GCC 15.2.0) 15.2.0",
+  "binaries": {
+    "ts1_scenario": "d89cfcb74badbabc8e4b166c15b9b37a38f48cdf852f42bf4845f5d35929a7d4",
+    "ts1_bench_cpu": "c3318ea10b7f979aefe04f58653813c0b0846154d7af906c44af629ce13f5e1d",
+    "adaptive_probe": "acabb6a108c1a1f9b69b81232758e2af6a7fdae1af5c552af7ec08751c07808f",
+    "test_cpu": "ed1caec2148e25848e4b50152810e5d93eb6f279e347a0cdb14b3759c84c43b8",
+    "test_rate_updates": "37a0a7a4b97d51269226dd84b3a42ba85eba9db933131d61343c3ed28243eb8e"
+  },
+  "original_case_count": 680,
+  "original_case_list_identical": true
+}

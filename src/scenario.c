@@ -117,11 +117,19 @@ static int snapshot(FILE *f,chem_state *states,size_t groups,size_t step)
 }
 
 static int option(const char *arg,chem_adaptive_parameters *p,chem_ros_parameters *ros,
-    double *rtol,double *atol,size_t *group,int *generic)
+    double *rtol,double *atol,size_t *group,int *generic,int *rate_cache,
+    size_t *step_block,omp_sched_t *schedule,size_t *chunk)
 {
     const char *eq=strchr(arg,'='); if (!eq || eq==arg || (size_t)(eq-arg)>=64) return 0;
     char key[64]; memcpy(key,arg,(size_t)(eq-arg)); key[eq-arg]=0;
     double v; size_t n;
+    if (!strcmp(key,"schedule")) {
+        if (!strcmp(eq+1,"static")) *schedule=omp_sched_static;
+        else if (!strcmp(eq+1,"dynamic")) *schedule=omp_sched_dynamic;
+        else if (!strcmp(eq+1,"guided")) *schedule=omp_sched_guided;
+        else return 0;
+        return 1;
+    }
     if (!strcmp(key,"rtol")) return real_value(eq+1,rtol) && *rtol>0;
     if (!strcmp(key,"atol")) return real_value(eq+1,atol) && *atol>0;
     if (!strcmp(key,"h-start")) { if (!real_value(eq+1,&v) || v<0) return 0; p->h_start=v; ros->h_start=v; return 1; }
@@ -136,20 +144,24 @@ static int option(const char *arg,chem_adaptive_parameters *p,chem_ros_parameter
     else if (!strcmp(key,"newton-iterations") && n) p->newton_iterations=n;
     else if (!strcmp(key,"order") && n>=2 && n<=4) p->extrap_order=n;
     else if (!strcmp(key,"group-size") && n) *group=n;
+    else if (!strcmp(key,"step-block") && n) *step_block=n;
+    else if (!strcmp(key,"chunk") && n<=INT_MAX) *chunk=n;
     else if (!strcmp(key,"norm") && n<=2) p->error_norm=(int)n;
     else if (!strcmp(key,"controller") && n<=1) p->controller=(int)n;
     else if (!strcmp(key,"clip-stages") && n<=1) p->clip_stages=(int)n;
     else if (!strcmp(key,"warm-start") && n<=1) p->warm_start=(int)n;
     else if (!strcmp(key,"adaptive-order") && n<=1) p->adaptive_order=(int)n;
     else if (!strcmp(key,"generic") && n<=1) *generic=(int)n;
+    else if (!strcmp(key,"rate-cache") && n<=1) *rate_cache=(int)n;
     else return 0;
     return 1;
 }
 
 int main(int argc,char **argv)
 {
-    size_t threads=(size_t)omp_get_num_procs(),group=32;
-    const char *method="micm",*path=NULL; int adaptive=0,generic=0;
+    size_t threads=(size_t)omp_get_num_procs(),group=32,step_block=4,chunk=0;
+    omp_sched_t schedule=omp_sched_dynamic;
+    const char *method="micm",*path=NULL; int adaptive=0,generic=0,rate_cache=1;
     chem_adaptive_parameters p=chem_adaptive_defaults();
     chem_ros_parameters ros=chem_ros_parameters_default(CHEM_ROS3);
     double rtol=0,atol=0;
@@ -173,7 +185,8 @@ int main(int argc,char **argv)
         if (!strcmp(argv[i],"--threads")) {
             if (++i==argc || !integer(argv[i],&threads,0) || threads>INT_MAX) goto usage;
         } else if (!strcmp(argv[i],"--option")) {
-            if (++i==argc || !option(argv[i],&p,&ros,&rtol,&atol,&group,&generic)) goto usage;
+            if (++i==argc || !option(argv[i],&p,&ros,&rtol,&atol,&group,&generic,&rate_cache,
+                                    &step_block,&schedule,&chunk)) goto usage;
         } else if (argv[i][0]=='-' || path) goto usage;
         else path=argv[i];
     }
@@ -181,14 +194,25 @@ int main(int argc,char **argv)
     scenario a={0}; chem_model model={0}; chem_state *states=NULL;
     chem_result *results=NULL; chem_adaptive_workspace *work=NULL; double **base=NULL;
     FILE *snap=NULL; size_t groups=0; int ok=0;
+    size_t *rate_indices=NULL,n_rate_indices=0; unsigned char *changed=NULL;
+    size_t *group_completed=NULL; double *photo_factors=NULL;
     if (!load_scenario(path,&a)) { fprintf(stderr,"Invalid scenario: %s\n",path); goto done; }
     chem_status rc=chem_model_create(&model,&ts1_mechanism,CHEM_LU_MOZART);
     if (rc!=CHEM_OK) { fprintf(stderr,"Model: %s\n",chem_status_string(rc)); goto done; }
     if (generic) { model.forcing=chem_forcing; model.jacobian=chem_jacobian; }
+    rate_indices=malloc((model.n_reactions+1)*sizeof(size_t));
+    changed=calloc(model.n_custom+1,sizeof(unsigned char));
+    if (!rate_indices || !changed) goto done;
+    for (size_t j=0;j<model.n_custom;++j) changed[j]=model.custom_names[j][0]=='j';
+    n_rate_indices=chem_rate_update_indices(&model,changed,rate_indices);
+    if (n_rate_indices==CHEM_NONE) goto done;
     groups=a.cells/group+(a.cells%group!=0);
     states=calloc(groups,sizeof(*states)); results=calloc(groups,sizeof(*results));
     work=calloc(groups,sizeof(*work)); base=calloc(groups,sizeof(*base));
-    if (!states || !results || !work || !base) goto done;
+    group_completed=calloc(groups,sizeof(*group_completed));
+    if (a.steps>SIZE_MAX/sizeof(double)) goto done;
+    photo_factors=malloc(a.steps*sizeof(double));
+    if (!states || !results || !work || !base || !group_completed || !photo_factors) goto done;
     for (size_t g=0;g<groups;++g) {
         size_t n=a.cells-g*group; if (n>group) n=group;
         if (chem_state_create(states+g,&model,n)!=CHEM_OK) goto done;
@@ -205,32 +229,49 @@ int main(int argc,char **argv)
         if (!snap || !snapshot(snap,states,groups,0)) goto done;
     }
     omp_set_num_threads((int)threads);
-    double elapsed=0; size_t completed=0;
-    for (size_t step=0;step<a.steps;++step) {
+    omp_set_schedule(schedule,(int)chunk);
+    double elapsed=0; size_t completed=0; uint64_t rate_updates=0;
+    for (size_t first=0;first<a.steps;) {
+        size_t end=a.steps-first<step_block ? a.steps : first+step_block;
+        if (a.snapshot_every) {
+            size_t until_snapshot=a.snapshot_every-first%a.snapshot_every;
+            if (until_snapshot<end-first) end=first+until_snapshot;
+        }
         double start=omp_get_wtime();
-        double f=photo_factor(&a,step*a.dt);
-        #pragma omp parallel for schedule(static)
+        for (size_t step=first;step<end;++step) photo_factors[step]=photo_factor(&a,step*a.dt);
+        #pragma omp parallel for schedule(runtime)
         for (size_t g=0;g<groups;++g) {
             chem_state *s=states+g;
-            for (size_t j=0;j<model.n_custom;++j) if (model.custom_names[j][0]=='j')
-                for (size_t c=0;c<s->cells;++c) s->custom[j*s->cells+c]=base[g][j*s->cells+c]*f;
-            chem_calculate_rates(s);
-            chem_result r=adaptive ? chem_adaptive_solve(s,a.dt,&p,work+g) : chem_ros_solve(s,a.dt,&ros,NULL,NULL);
-            if (!adaptive) chem_state_clamp(s);
-            chem_stats_add(&results[g].stats,&r.stats); results[g].status=r.status;
-            for (size_t i=0;i<model.n_species*s->cells;++i) if (!isfinite(s->y[i]) || s->y[i]<-1e-20)
-                results[g].status=CHEM_NAN;
+            for (size_t step=first;step<end;++step) {
+                double f=photo_factors[step];
+                for (size_t j=0;j<model.n_custom;++j) if (model.custom_names[j][0]=='j')
+                    for (size_t c=0;c<s->cells;++c) s->custom[j*s->cells+c]=base[g][j*s->cells+c]*f;
+                /* The first complete rate update is timed. Subsequent calls may
+                 * retain rates whose conditions/custom inputs have not changed. */
+                if (rate_cache && step) chem_calculate_selected_rates(s,n_rate_indices,rate_indices);
+                else chem_calculate_rates(s);
+                chem_result r=adaptive ? chem_adaptive_solve(s,a.dt,&p,work+g) : chem_ros_solve(s,a.dt,&ros,NULL,NULL);
+                if (!adaptive) chem_state_clamp(s);
+                chem_stats_add(&results[g].stats,&r.stats); results[g].status=r.status;
+                for (size_t i=0;i<model.n_species*s->cells;++i) if (!isfinite(s->y[i]) || s->y[i]<-1e-20)
+                    results[g].status=CHEM_NAN;
+                if (results[g].status!=CHEM_OK) break;
+                group_completed[g]=step+1;
+            }
         }
         elapsed+=(omp_get_wtime()-start)*1000;
-        int failed=0;
-        for (size_t g=0;g<groups;++g) if (results[g].status!=CHEM_OK) {
-            if (!failed) fprintf(stderr,"Step %zu group %zu: %s\n",step+1,g,chem_status_string(results[g].status));
-            failed=1;
+        int failed=0; completed=end;
+        for (size_t g=0;g<groups;++g) {
+            if (group_completed[g]<completed) completed=group_completed[g];
+            if (results[g].status!=CHEM_OK) {
+                if (!failed) fprintf(stderr,"Step %zu group %zu: %s\n",group_completed[g]+1,g,chem_status_string(results[g].status));
+                failed=1;
+            }
         }
         if (failed) break;
-        completed=step+1;
         if (snap && (completed%a.snapshot_every==0 || completed==a.steps))
             if (!snapshot(snap,states,groups,completed)) goto done;
+        first=end;
     }
     chem_stats stats={0};
     uint64_t jr=0,fr=0,pr=0,nr=0,cv=0,ni=0,nj=0,eo[3]={0}; double mass=0;
@@ -240,6 +281,9 @@ int main(int argc,char **argv)
         nr+=work[g].nonfinite_rejections; cv+=work[g].clipped_values; mass+=work[g].clipped_mass;
         ni+=work[g].nonlinear_iterations; nj+=work[g].nonlinear_rejections;
         for (size_t j=0;j<3;++j) eo[j]+=work[g].extrap_orders[j];
+        uint64_t attempted=(uint64_t)group_completed[g]+(results[g].status!=CHEM_OK);
+        uint64_t updates=rate_cache && attempted ? model.n_reactions+(attempted-1)*n_rate_indices : attempted*model.n_reactions;
+        rate_updates+=updates*states[g].cells;
     }
     printf("elapsed_ms=%.6f\n",elapsed);
     printf("internal_steps=%" PRIu64 " accepted=%" PRIu64 " rejected=%" PRIu64 " function_calls=%" PRIu64
@@ -250,6 +294,7 @@ int main(int argc,char **argv)
         jr,fr,pr,nr,cv,mass,completed);
     printf("nonlinear_iterations=%" PRIu64 " nonlinear_rejections=%" PRIu64 "\n",ni,nj);
     printf("extrap_order2=%" PRIu64 " extrap_order3=%" PRIu64 " extrap_order4=%" PRIu64 "\n",eo[0],eo[1],eo[2]);
+    printf("rate_updates=%" PRIu64 " rate_cache=%d\n",rate_updates,rate_cache);
     if (completed==a.steps) ok=write_final(states,groups);
 done:
     if (snap && fclose(snap)) ok=0;
@@ -259,6 +304,8 @@ done:
         if (base) free(base[g]);
     }
     free(states); free(results); free(work); free(base); chem_model_destroy(&model); destroy_scenario(&a);
+    free(rate_indices); free(changed);
+    free(group_completed); free(photo_factors);
     return ok ? 0 : 1;
 usage:
     fprintf(stderr,"Usage: %s [--threads N] [--method micm|micm2|micm4|micm4dae|micm6|ros2|ros3|ros4|rodas3|rodas4|extrap|sdirk] [--option KEY=VALUE ...] SCENARIO\n",argv[0]);

@@ -62,7 +62,7 @@ make micm-ref
 .conda/bin/python tools/check_ts1.py --output build/ts1-checks
 ```
 
-`make micm-ref` is the only target that includes the supplied reference headers;
+`make micm-ref` builds the original gate oracle from the supplied reference headers;
 it builds the C++ reference with the same `OPTFLAGS`. The check script tests the
 C executable against the supplied 100-cell reference using nine thread/group, scheduling
 and evaluator combinations. To generate another reference, run
@@ -129,7 +129,9 @@ photolysis parameter at each external step, and freezes rates within that step.
 There is no warm-up. It prints `elapsed_ms` and work counters and writes
 `ts1_final.csv` and, when requested, `ts1_snapshots.csv` in the current directory.
 Only rate updates, integration and validation are timed; CSV input/output and
-setup are excluded. Use separate working directories to retain multiple runs.
+setup are excluded. Rate caching, four-step blocks and dynamic group scheduling
+are enabled by default; all remain runtime options. Caching recalculates every
+affected photolysis rate, and blocking preserves every external forcing boundary. Use separate working directories to retain multiple runs.
 
 ## Reproduce the research
 
@@ -152,3 +154,22 @@ used only for development and analysis. The C library and both C benchmarks
 never invoke Python. `make env` creates or updates only the local environment
 and uses the local package cache. The optional `micm-scenario` target compiles
 the supplied read-only C++ oracle; it is not part of the C library.
+
+For the final compiler gates and larger timing domain:
+
+```sh
+.conda/bin/python tools/validate.py --compiler gcc-15
+.conda/bin/python tools/validate.py --compiler clang
+.conda/bin/python tools/scaling.py
+.conda/bin/python tools/scan.py scans/operating_points.json \
+    --scan local-10000 --scenario-root build/scaling --threads 10 --repeats 5 \
+    --discard-repeats --reuse-identical-scores
+.conda/bin/python tools/report.py
+```
+
+The 10,000-cell timing inputs have independently supplied references only for
+their first 1,000 cells. The scorer checks finite/nonnegative values on all
+10,000 cells, but the accuracy claim covers the reference prefix. The report
+script reads the retained final scan names and regenerates tables and plots.
+Run builds and timing scans sequentially; changing compilers during a scan would
+invalidate its performance comparison.

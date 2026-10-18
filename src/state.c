@@ -164,27 +164,56 @@ void chem_state_clamp(chem_state *s)
         }
 }
 
-void chem_calculate_rates(chem_state *s)
+static void calculate_reaction_rates(chem_state *s,size_t r)
 {
     const chem_model *m=s->model;
     size_t cells=s->cells;
-    for (size_t r=0; r<m->n_reactions; ++r) {
-        const chem_rate *rate=&m->rates[r];
-        const chem_reaction *rx=&m->mechanism->reactions[r];
-        for (size_t c=0; c<cells; ++c) {
-            double custom[2]={0,0};
-            if (rate->type==CHEM_USER || rate->type==CHEM_SURFACE) custom[0]=s->custom[m->custom_offset[r]*cells+c];
-            if (rate->type==CHEM_SURFACE) custom[1]=s->custom[(m->custom_offset[r]+1)*cells+c];
-            double k=chem_rate_calculate(rate,&s->conditions[c],custom);
-            for (size_t j=0; j<rx->n_reactants; ++j) {
-                const chem_species *sp=&m->mechanism->species[rx->reactants[j]];
-                if (sp->type!=CHEM_SPECIES_VARIABLE) k*=chem_species_evaluate(sp,&s->conditions[c]);
-            }
-            s->rates[r*cells+c]=k;
+    const chem_rate *rate=&m->rates[r];
+    const chem_reaction *rx=&m->mechanism->reactions[r];
+    for (size_t c=0; c<cells; ++c) {
+        double custom[2]={0,0};
+        if (rate->type==CHEM_USER || rate->type==CHEM_SURFACE) custom[0]=s->custom[m->custom_offset[r]*cells+c];
+        if (rate->type==CHEM_SURFACE) custom[1]=s->custom[(m->custom_offset[r]+1)*cells+c];
+        double k=chem_rate_calculate(rate,&s->conditions[c],custom);
+        for (size_t j=0; j<rx->n_reactants; ++j) {
+            const chem_species *sp=&m->mechanism->species[rx->reactants[j]];
+            if (sp->type!=CHEM_SPECIES_VARIABLE) k*=chem_species_evaluate(sp,&s->conditions[c]);
         }
+        s->rates[r*cells+c]=k;
     }
+}
+
+void chem_calculate_rates(chem_state *s)
+{
+    for (size_t r=0;r<s->model->n_reactions;++r) calculate_reaction_rates(s,r);
     chem_update_constraint_parameters(s);
     chem_external_update(s);
+}
+
+size_t chem_rate_update_indices(const chem_model *m,const unsigned char *changed,size_t *indices)
+{
+    if (!m || (m->n_custom && !changed) || (m->n_reactions && !indices)) return CHEM_NONE;
+    int unknown=m->composition!=NULL || m->mechanism->n_constraints!=0;
+    for (size_t i=0;i<m->mechanism->n_species;++i) if (m->mechanism->species[i].parameter) unknown=1;
+    for (size_t r=0;r<m->n_reactions;++r) if (m->rates[r].type==CHEM_LAMBDA) unknown=1;
+    size_t count=0;
+    for (size_t r=0;r<m->n_reactions;++r) {
+        int update=unknown; size_t offset=m->custom_offset[r];
+        if (m->rates[r].type==CHEM_USER) update|=changed[offset]!=0;
+        if (m->rates[r].type==CHEM_SURFACE) update|=changed[offset]!=0 || changed[offset+1]!=0;
+        if (update) indices[count++]=r;
+    }
+    return count;
+}
+
+chem_status chem_calculate_selected_rates(chem_state *s,size_t count,const size_t *indices)
+{
+    if (!s || !s->model || (count && !indices)) return CHEM_INVALID;
+    for (size_t i=0;i<count;++i) if (indices[i]>=s->model->n_reactions) return CHEM_INVALID;
+    for (size_t i=0;i<count;++i) calculate_reaction_rates(s,indices[i]);
+    chem_update_constraint_parameters(s);
+    chem_external_update(s);
+    return CHEM_OK;
 }
 
 void chem_stats_add(chem_stats *a, const chem_stats *b)

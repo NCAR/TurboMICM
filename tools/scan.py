@@ -17,13 +17,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCENARIOS = ROOT.parent / "scenarios"
 FIELDS = ["scan", "config", "method", "options", "scenario", "cells", "repeat", "threads",
-          "utc", "binary_sha256", "compiler",
+          "utc", "binary_sha256", "compiler", "output_sha256", "score_reused",
           "status", "overall_digits", "worst_species", "worst_digits", "gate", "level", "level_result", "elapsed_ms",
           "internal_steps", "accepted", "rejected", "function_calls", "jacobian_updates",
           "decompositions", "solves", "jacobian_reuses", "factor_reuses",
           "positivity_rejections", "nonfinite_rejections", "clipped_values", "clipped_mass",
           "nonlinear_iterations", "nonlinear_rejections",
           "extrap_order2", "extrap_order3", "extrap_order4",
+          "rate_updates", "rate_cache",
           "completed_steps", "score_json", "run_log"]
 
 
@@ -60,9 +61,11 @@ def main():
     parser.add_argument("--timeout", type=float, default=1800)
     parser.add_argument("--scenario-root", type=Path, default=SCENARIOS)
     parser.add_argument("--discard-repeats", action="store_true", help="Remove state CSVs after scoring repetitions after the first")
+    parser.add_argument("--reuse-identical-scores", action="store_true", help="Reuse the scorer result only for bit-identical output and the same reference/level")
     a = parser.parse_args()
     configs = json.loads(a.configs.read_text())
     compiler = (ROOT / "build" / "compiler.conf").read_text().strip().replace("\n", " | ")
+    score_cache = {}
     output = ROOT / "scans" / f"{a.scan}.csv"
     if output.exists():
         raise SystemExit(f"Refusing to overwrite {output}")
@@ -106,18 +109,26 @@ def main():
                                 key,value=line.split('=',1); settings[key.strip()]=value.strip()
                         snapshots = int(settings.get("snapshot_every",0)) > 0
                         suffix = "snapshots.csv" if snapshots else "final.csv"
+                        state_file=work/("ts1_"+suffix)
+                        with state_file.open('rb') as state:
+                            output_hash=hashlib.file_digest(state,'sha256').hexdigest()
+                        cache_key=(str(scenario),suffix,config.get('level'),output_hash)
+                        cached=score_cache.get(cache_key) if a.reuse_identical_scores else None
                         score = subprocess.run([sys.executable, str(SCENARIOS / "score.py"),
                                                 str(work / ("ts1_" + suffix)),
                                                 str(scenario / ("reference_" + suffix)), "--json"] +
                                                (["--level", str(config["level"])] if "level" in config else []),
-                                               capture_output=True, text=True, check=False)
-                        (work / "score.json").write_text(score.stdout + score.stderr)
+                                               capture_output=True, text=True, check=False) if cached is None else None
+                        score_text=score.stdout if score is not None else cached
+                        row.update(output_sha256=output_hash,score_reused=int(cached is not None))
+                        (work / "score.json").write_text(score_text + (score.stderr if score is not None else ''))
                         try:
-                            report = json.loads(score.stdout)
+                            report = json.loads(score_text)
                             worst = report["worst_species"][0]
                             row.update(overall_digits=report["overall_digits"], worst_species=worst[0],
-                                       worst_digits=worst[1], gate=report["gate"], score_json=score.stdout.strip())
+                                       worst_digits=worst[1], gate=report["gate"], score_json=score_text.strip())
                             row.update(level=report.get("level", ""), level_result=report.get("level_result", ""))
+                            score_cache[cache_key]=score_text
                         except (ValueError, KeyError, IndexError):
                             row["status"] = "score-failed"
                     writer.writerow(row); out.flush()

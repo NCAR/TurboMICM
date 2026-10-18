@@ -1,4 +1,4 @@
-"""Prepare three deterministic 48-hour holdouts and converged MICM references.
+"""Prepare three deterministic 48-hour stress cases and converged MICM references.
 
 Inputs/references stay in build/stress. The experiment recipe, hashes, C timing,
 operation counts, and supplied-scorer convergence results are retained in git.

@@ -1,30 +1,34 @@
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/bench.c -o build/bench.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/linear.c -o build/linear.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/rates.c -o build/rates.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c generated/ts1.c -o build/ts1.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/model.c -o build/model.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/state.c -o build/state.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/parameters.c -o build/parameters.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/rosenbrock.c -o build/rosenbrock.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/backward_euler.c -o build/backward_euler.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/constraints.c -o build/constraints.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/verify.c -o build/verify.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/array.c -o build/array.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/sparse.c -o build/sparse.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/factor.c -o build/factor.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/version.c -o build/version.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/system.c -o build/system.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/process.c -o build/process.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/solver.c -o build/solver.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/external.c -o build/external.o
 gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/adaptive.c -o build/adaptive.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -Iexamples -c examples/tutorials.c -o build/tutorials.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c src/scenario.c -o build/scenario.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c generated/chapman.c -o build/chapman.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c generated/robertson.c -o build/config_robertson.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c generated/rates.c -o build/config_rates.o
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -c generated/user_rates.c -o build/config_user_rates.o
 ar rcs build/libchem.a build/rates.o build/linear.o build/model.o build/state.o build/parameters.o build/rosenbrock.o build/backward_euler.o build/constraints.o build/verify.o build/array.o build/sparse.o build/factor.o build/version.o build/system.o build/process.o build/solver.o build/external.o build/adaptive.o
-gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude build/bench.o build/ts1.o build/libchem.a -fopenmp -lm -o bin/ts1_bench_cpu
-gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -Itests -Igenerated -Iexamples tests/main.c tests/test_aerosol.c tests/test_analytical_chain.c tests/test_analytical_special.c tests/test_array.c tests/test_builder.c tests/test_chapman.c tests/test_constraint_initialization.c tests/test_constraint_set.c tests/test_constraints.c tests/test_dae_integration.c tests/test_external_constraints.c tests/test_factor.c tests/test_flow_tube.c tests/test_grouped.c tests/test_process_set.c tests/test_process.c tests/test_rates.c tests/test_small_integration.c tests/test_solver_core.c tests/test_sparse.c tests/test_state.c tests/test_system.c tests/test_tutorials.c tests/test_verify.c tests/test_version.c build/tutorials.o build/chapman.o build/config_robertson.o build/config_rates.o build/config_user_rates.o build/libchem.a -fopenmp -lm -o bin/test_cpu
-gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude build/scenario.o build/ts1.o build/libchem.a -fopenmp -lm -o bin/ts1_scenario
 gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -Iexamples examples/main.c build/tutorials.o build/libchem.a -fopenmp -lm -o bin/tutorial
-gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude prototypes/edgecases.c build/libchem.a -fopenmp -lm -o bin/test_adaptive
-gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude prototypes/probe.c build/libchem.a -fopenmp -lm -o bin/adaptive_probe
-./.conda/bin/python prototypes/independent.py
-44 prototype comparisons pass; maximum difference 1.37e-14
-./.conda/bin/python prototypes/convergence.py
-10 methods: analytic convergence orders, conservation, and 7-cell grouping pass
-bin/test_adaptive
-method=0 reactant=5.419106760873973e-75 product=1 clipped_mass=0
-method=1 reactant=0 product=1 clipped_mass=1.6966508395873403e-20
-method=2 reactant=0 product=1.0000000000000004 clipped_mass=3.795533968040613e-21
-method=3 reactant=0 product=1.0000000000000013 clipped_mass=1.3139086579510301e-19
-method=4 reactant=5.2623961664031343e-63 product=1.0000000000000007 clipped_mass=0
-method=5 reactant=0 product=0.99999999999999634 clipped_mass=4.890536035268248e-21
-method=6 reactant=0 product=0.99999999999999667 clipped_mass=2.639333888857088e-22
-method=7 reactant=0 product=1.0000165054262482 clipped_mass=4.9516284140923238e-05
-method=8 reactant=0 product=0.99999999999999833 clipped_mass=2.3091249805134078e-21
-method=9 reactant=0 product=0.99999999999999989 clipped_mass=2.1187832479475287e-20
-method=10 reactant=0 product=1.0000165054262482 clipped_mass=4.9516284140923238e-05
-11 methods: zero duration, invalid inputs, backend errors, and 1e8 stiffness interval pass
-./.conda/bin/python tools/test_scenario.py
-Scenario forcing/snapshots agree with MICM; all seven method names agree with generic kernels
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -Itests -Igenerated -Iexamples tests/main.c tests/test_aerosol.c tests/test_analytical_chain.c tests/test_analytical_special.c tests/test_array.c tests/test_builder.c tests/test_chapman.c tests/test_constraint_initialization.c tests/test_constraint_set.c tests/test_constraints.c tests/test_dae_integration.c tests/test_external_constraints.c tests/test_factor.c tests/test_flow_tube.c tests/test_grouped.c tests/test_process_set.c tests/test_process.c tests/test_rates.c tests/test_small_integration.c tests/test_solver_core.c tests/test_sparse.c tests/test_state.c tests/test_system.c tests/test_tutorials.c tests/test_verify.c tests/test_version.c build/tutorials.o build/chapman.o build/config_robertson.o build/config_rates.o build/config_user_rates.o build/libchem.a -fopenmp -lm -o bin/test_cpu
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude build/bench.o build/ts1.o build/libchem.a -fopenmp -lm -o bin/ts1_bench_cpu
+gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude build/scenario.o build/ts1.o build/libchem.a -fopenmp -lm -o bin/ts1_scenario
 bin/test_cpu 
 constraint_set:ConstraintSet.Construction PASS reference assertions
 constraint_set:ConstraintSet.ReplaceStateRowsMapsToAlgebraicSpecies PASS reference assertions
@@ -687,8 +691,7 @@ dae_algebraic_error_insensitivity:DAEAlgebraicError.AlgebraicVariableDoesNotOver
 regression:RosenbrockRegression.FlowTube PASS reference assertions
 regression:BackwardEulerRegression.FlowTube PASS reference assertions
 regression_test_rosenbrock_p_force:RegressionRosenbrock.RateConstants PASS reference assertions
-regression_test_rosenbrock_p_force:RegressionRosenbrock.VectorRateConstants PASS reference assertio680 cases selected; 0 failed
-ns
+regression_test_rosenbrock_p_force:RegressionRosenbrock.VectorRateConstants PASS reference assertions
 regression_test_rosenbrock_p_force:RegressionRosenbrock.Forcing PASS reference assertions
 regression_test_rosenbrock_p_force:RegressionRosenbrock.VectorForcing PASS reference assertions
 regression_test_rosenbrock_dforce_dy:RegressionRosenbrock.Jacobian PASS reference assertions
@@ -707,3 +710,4 @@ rate_constants_user_defined_example_by_hand PASS reference assertions
 solver_configuration PASS reference assertions
 vectorized_matrix_solver PASS reference assertions
 openmp_tutorial PASS reference assertions
+680 cases selected; 0 failed

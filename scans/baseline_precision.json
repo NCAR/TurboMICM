@@ -1,0 +1,44 @@
+[
+  {
+    "id": "c-micm3-r0.01",
+    "method": "micm",
+    "options": {
+      "rtol": 0.01,
+      "atol": 1e-18,
+      "max-steps": 100000,
+      "group-size": 32
+    }
+  },
+  {
+    "id": "c-micm3-r0.003",
+    "method": "micm",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "max-steps": 100000,
+      "group-size": 32
+    }
+  },
+  {
+    "id": "micm-micm3-r0.01",
+    "method": "rosenbrock3",
+    "options": {
+      "rtol": 0.01,
+      "atol": 1e-18,
+      "max-steps": 100000,
+      "group-size": 32
+    },
+    "backend": "micm"
+  },
+  {
+    "id": "micm-micm3-r0.003",
+    "method": "rosenbrock3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "max-steps": 100000,
+      "group-size": 32
+    },
+    "backend": "micm"
+  }
+]

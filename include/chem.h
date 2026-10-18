@@ -192,6 +192,14 @@ double *chem_state_species_column(chem_state *, const char *);
 const double *chem_state_species_column_const(const chem_state *, const char *);
 void chem_state_clamp(chem_state *);
 void chem_calculate_rates(chem_state *state);
+/* With frozen conditions and unchanged unmarked custom parameters, build the
+ * affected reaction list in caller storage of length model->n_reactions.
+ * changed has model->n_custom entries. Unknown callback dependencies select
+ * every reaction. Returns the count, or CHEM_NONE for invalid arguments.
+ * Before selected updates, initialize all rates with chem_calculate_rates.
+ * Rebuild the list after changing the model or the set of variable inputs. */
+size_t chem_rate_update_indices(const chem_model *, const unsigned char *changed, size_t *indices);
+chem_status chem_calculate_selected_rates(chem_state *, size_t count, const size_t *indices);
 /* Add all kinetic process contributions, including external models. Algebraic
  * rows keep their incoming values. Constraint contributions are separate. */
 void chem_state_forcing(const chem_state *,const double *y,double *forcing);

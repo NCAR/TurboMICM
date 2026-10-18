@@ -312,6 +312,10 @@ or impossible requested precision returns an explicit solver failure.
 | `atol` | `1e-18` | Finite positive uniform absolute tolerance, mol m-3; original path retains species defaults (`1e-3` for TS1) |
 | `group-size` | `32` | Any positive cell count; final group may be shorter |
 | `generic` | `0` | `0/1`, generated/table-driven chemistry kernels |
+| `rate-cache` | `1` | `0/1`, retain rate constants whose inputs are unchanged |
+| `step-block` | `4` | Positive external steps per group visit, capped at each snapshot |
+| `schedule` | `dynamic` | `static`, `dynamic`, or `guided` OpenMP group assignment |
+| `chunk` | `0` | Zero selects OpenMP policy default; positive through `INT_MAX` groups |
 | `max-steps` | `100000` | Positive attempt limit per group and external step; original path retains `1000` |
 | `h-start` | `0` | Nonnegative seconds; zero selects `dt*1e-4` (original path: `dt*1e-6`) |
 | `h-max` | `0` | Nonnegative seconds; zero selects the external interval |
@@ -330,31 +334,57 @@ or impossible requested precision returns an explicit solver failure.
 | `--threads` | OpenMP processor count | Positive integer through `INT_MAX`; default uses all cores |
 
 The compatibility methods use `rtol`, `atol`, `h-start`, `h-max`, `max-steps`,
-`group-size`, and `generic`; options for the adaptive driver do not change their
-original driver. `order` and nonlinear iteration parameters affect only the
-methods described above. Scenario groups use static OpenMP scheduling; the
-original Tier 1 benchmark retains its additional scheduling/chunk controls.
+`group-size`, `generic`, and all four scenario scheduling/rate-cache options;
+options for the adaptive numerical driver do not change their original driver. `order` and nonlinear iteration parameters affect only the
+methods described above. The original Tier 1 benchmark retains its original
+static scheduling default and separate command-line scheduling/chunk controls.
 
 ## Scenario contract and accounting
 
 `src/scenario.c` parses the documented key/value format, resolves paths relative
 to the scenario file, interpolates the photolysis table, and counts CSV rows.
 It preserves each cell's input custom parameters and updates all labels starting
-with `j` from those original values. It recalculates rates at every external
-step; no warm-up is performed. It validates returned states before snapshots.
+with `j` from those original values. It updates affected rates at every external
+step; no warm-up is performed. It validates returned states at every external
+step, including those without snapshots.
 The timed intervals include interpolation, parameter/rate updates, integration,
 validation and OpenMP overhead. Input, setup and CSV serialization are untimed.
 Both output formats use 17 significant digits and original cell order. Snapshots
 include the final step even when not divisible by the snapshot interval.
+
+The first complete rate calculation remains inside the timer. With `rate-cache=1`,
+subsequent calls use a generic reaction dependency list: USER rates depend on
+one custom slot and SURFACE rates on both slots. Conditions and unmarked custom
+inputs are frozen by this scenario contract. Unknown lambda/species callbacks,
+external composition or constraints conservatively select every rate. The API
+requires full initialization before selected updates and a rebuilt list if the
+model or varying inputs change. Every reaction remains in every forcing and
+Jacobian evaluation. `rate-cache=0` recalculates all rate constants every step.
+Unit tests cover every custom mask on unrelated mechanisms, both surface slots,
+third bodies, unknown callbacks and invalid indices.
+
+Step blocking advances each independent cell group for up to `step-block` external
+steps before visiting another group. Each external boundary still updates forcing
+and resets the integrator caches as specified above. Blocks stop at snapshot
+boundaries, and photolysis interpolation remains timed. This reorders independent
+trajectories without changing their arithmetic; it does not imply that a coupled
+transport model can skip its own synchronization boundaries. Dynamic/guided/static
+scheduling and blocking produce bit-identical states and operation counts in the
+controlled scans and scenario tests.
 
 Standard counters count group operations, as in Tier 1, not per-cell FLOPs.
 Compare counts only with group sizes stated. `internal_steps` counts attempted
 macro steps, including rejected ones; substeps are reflected in forcing and
 linear-solve counts. Additional counters report Jacobian/factor reuses,
 positivity/nonfinite rejections, projected values, summed projection magnitude,
-Newton iterations/failures and the selected extrapolation orders. Projection
+Newton iterations/failures and the selected extrapolation orders. `rate_updates`
+counts individual cell/reaction rate evaluations (unlike the group counters);
+`rate_cache` records whether dependency caching was enabled. Projection
 magnitude sums concentrations over all affected species and cells; it is not an
 elemental mass or a reaction-rate modification.
+The compatibility path retains MICM's rejection-counter convention, which
+excludes rejections before the first accepted step of a call. Factorization and
+function/solve counts are more direct measures of work across those drivers.
 
 ## Adding and verifying a method
 

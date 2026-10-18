@@ -137,3 +137,56 @@ RESULTS.md; reference single samples are not presented as medians of repeated ru
   Freeze the Jacobian during a macro step; extrapolate to zero substep size with
   the Neville recurrence. The preceding diagonal supplies an embedded estimate.
   It is an experimental method, not claimed to be uniformly stiffly accurate.
+
+## Final selection and validation policy
+
+- Freeze the five operating-point candidates after the family, order, tolerance,
+  controller, reuse, projection, norm, floor, and layout scans. The final fast
+  three-digit point uses extrapolation order four at rtol=0.004. The earlier
+  rtol=0.006 candidate failed level three in a tropical 48-hour test (2.838
+  digits), so it is not declared. Keep that failed measurement in the scans.
+- Recommend rtol=0.002 with fresh Jacobians and maximum cell RMS. This retains
+  more accuracy margin than the fastest qualifying point. A separate rtol=0.001
+  configuration provides another margin/cost choice; two RODAS3 configurations
+  cover the two-digit tier. No species-specific tuning is introduced.
+- The three additional 48-hour cases informed selection. Call them stress cases,
+  not an untouched validation set. The experimenter's withheld cases remain
+  unavailable. Generate the 10,000-cell versions only after selecting the points.
+- For 10,000-cell runs, the available accuracy reference covers the original
+  1,000-cell prefix. The scorer's finite/nonnegative gate examines every output
+  row, but no claim of independently referenced accuracy is made for the other
+  9,000 cells. The runner also checks every external step on every cell.
+- Final performance runs are serialized, with five repetitions and the median
+  reported. No other build or benchmark from this work runs concurrently.
+  Background system load is not controlled. Earlier screening timings and
+  correctness-only GCC timings are not used as the final performance claims.
+- Identical repeated output may reuse a scorer result only after SHA-256 equality
+  and matching reference/level. Record that reuse and the output hash in the CSV.
+  Remove repeated state CSVs only after scoring; preserve the first state files,
+  every run log, every score JSON, all operation counts and all elapsed times.
+- Distinguish implementation verification from conservation properties. A
+  conservative transfer's small projection-induced excess is explicitly
+  accounted for by the clipping counter and checked against the solution
+  accuracy budget. Do not weaken the accounting invariant or call clipping
+  exactly conservative.
+
+## Final driver settings
+
+Retain constant rate coefficients using a mechanism-generic custom-parameter
+dependency list. Initialize all rates in the timed first step, and conservatively
+recalculate everything for unknown callbacks/constraints/external composition.
+The scenario explicitly freezes all conditions and non-photolysis inputs, so
+this cache has an exact validity contract. Unit tests use unrelated mechanisms
+and all custom masks; TS1 cached/uncached outputs and solver counts are identical.
+
+Use dynamic scheduling and four external steps per group visit. This was the
+fastest summed result in the 12-configuration scheduling scan, while all outputs
+and solver work counts were identical. Snapshot boundaries cap blocks; every
+external step retains its forcing update and validity check. Expose all controls
+at runtime and keep the original Tier 1 executable's defaults unchanged.
+
+Use MICM3 rtol=0.001, atol=1e-18 as the matched level-three baseline: tested
+rtol=0.003 and 0.01 fail the across-scenario level-three criterion. Apply the
+same new driver settings to the C compatibility baseline; the supplied C++
+runner remains unchanged. Report both implementations to distinguish numerical
+improvements from library/driver performance.

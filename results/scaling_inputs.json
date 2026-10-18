@@ -1,0 +1,68 @@
+[
+  {
+    "scenario": "tier1-30s",
+    "cells": 10000,
+    "accuracy_reference_cells": 1000,
+    "seed": 2026,
+    "dt": 30,
+    "steps": 101,
+    "nox": 1,
+    "snapshot_every": 0,
+    "cells_sha256": "43febf31a0a1f8e0acfe02d93ac96d95ecc024df9572547dd1000926a85ad8b5"
+  },
+  {
+    "scenario": "diurnal-30min",
+    "cells": 10000,
+    "accuracy_reference_cells": 1000,
+    "seed": 101,
+    "dt": 1800,
+    "steps": 48,
+    "nox": 1,
+    "snapshot_every": 12,
+    "cells_sha256": "d73e9c0789445fa63d33b106f4c33c86948b0c587eb3de0d8c4cd9914d7860b2"
+  },
+  {
+    "scenario": "diurnal-10min",
+    "cells": 10000,
+    "accuracy_reference_cells": 1000,
+    "seed": 101,
+    "dt": 600,
+    "steps": 144,
+    "nox": 1,
+    "snapshot_every": 36,
+    "cells_sha256": "d73e9c0789445fa63d33b106f4c33c86948b0c587eb3de0d8c4cd9914d7860b2"
+  },
+  {
+    "scenario": "diurnal-5min",
+    "cells": 10000,
+    "accuracy_reference_cells": 1000,
+    "seed": 101,
+    "dt": 300,
+    "steps": 288,
+    "nox": 1,
+    "snapshot_every": 72,
+    "cells_sha256": "d73e9c0789445fa63d33b106f4c33c86948b0c587eb3de0d8c4cd9914d7860b2"
+  },
+  {
+    "scenario": "polluted-10min",
+    "cells": 10000,
+    "accuracy_reference_cells": 1000,
+    "seed": 102,
+    "dt": 600,
+    "steps": 144,
+    "nox": 10,
+    "snapshot_every": 36,
+    "cells_sha256": "26a273cf34b30d1aa226d13e00c6ad27a2e20295c14ada9bfe7309b0a8420334"
+  },
+  {
+    "scenario": "clean-10min",
+    "cells": 10000,
+    "accuracy_reference_cells": 1000,
+    "seed": 103,
+    "dt": 600,
+    "steps": 144,
+    "nox": 0.1,
+    "snapshot_every": 36,
+    "cells_sha256": "ce224c7a437e291f154d2fa2ee269aa3cf7d57a89b55daf856ce73945305078c"
+  }
+]

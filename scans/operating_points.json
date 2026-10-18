@@ -5,7 +5,17 @@
     "options": {
       "rtol": 0.01,
       "atol": 1e-18,
-      "group-size": 32
+      "group-size": 32,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
     },
     "level": 2
   },
@@ -15,7 +25,17 @@
     "options": {
       "rtol": 0.003,
       "atol": 1e-18,
-      "group-size": 32
+      "group-size": 32,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
     },
     "level": 2
   },
@@ -23,10 +43,20 @@
     "id": "accurate",
     "method": "extrap",
     "options": {
-      "rtol": 0.006,
+      "rtol": 0.004,
       "atol": 1e-18,
       "group-size": 32,
-      "order": 4
+      "order": 4,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
     },
     "level": 3
   },
@@ -37,7 +67,17 @@
       "rtol": 0.002,
       "atol": 1e-18,
       "group-size": 32,
-      "order": 4
+      "order": 4,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
     },
     "level": 3
   },
@@ -48,7 +88,17 @@
       "rtol": 0.001,
       "atol": 1e-18,
       "group-size": 32,
-      "order": 4
+      "order": 4,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic",
+      "chunk": 0,
+      "jacobian-age": 1,
+      "controller": 0,
+      "norm": 1,
+      "warm-start": 1,
+      "reuse-window": 0,
+      "clip-stages": 0
     },
     "level": 3
   }

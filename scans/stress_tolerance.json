@@ -1,0 +1,35 @@
+[
+  {
+    "id": "extrap4-r0.004",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.004,
+      "atol": 1e-18,
+      "group-size": 32
+    },
+    "level": 3
+  },
+  {
+    "id": "extrap4-r0.003",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "group-size": 32
+    },
+    "level": 3
+  },
+  {
+    "id": "extrap4-r0.0025",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.0025,
+      "atol": 1e-18,
+      "group-size": 32
+    },
+    "level": 3
+  }
+]

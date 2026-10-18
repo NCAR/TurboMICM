@@ -1,0 +1,146 @@
+[
+  {
+    "id": "block1-static",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 1,
+      "schedule": "static"
+    }
+  },
+  {
+    "id": "block1-dynamic",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 1,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "id": "block1-guided",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 1,
+      "schedule": "guided"
+    }
+  },
+  {
+    "id": "block4-static",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "static"
+    }
+  },
+  {
+    "id": "block4-dynamic",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "id": "block4-guided",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 4,
+      "schedule": "guided"
+    }
+  },
+  {
+    "id": "block16-static",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 16,
+      "schedule": "static"
+    }
+  },
+  {
+    "id": "block16-dynamic",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 16,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "id": "block16-guided",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 16,
+      "schedule": "guided"
+    }
+  },
+  {
+    "id": "block64-static",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 64,
+      "schedule": "static"
+    }
+  },
+  {
+    "id": "block64-dynamic",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 64,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "id": "block64-guided",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "rate-cache": 1,
+      "step-block": 64,
+      "schedule": "guided"
+    }
+  }
+]
