@@ -18,7 +18,7 @@ def main():
         if path.stem in ('smoke','baseline') or path.stem.startswith('diagnostic'): continue
         for row in csv.DictReader(path.open()):
             if row.get('message','').startswith('Provisional:'): continue
-            if row['returncode']=='0' and row.get('overall_digits') and row['scenario'] in NAMES:
+            if row['returncode']=='0' and row.get('overall_digits') and float(row['overall_digits'])>=0 and row['scenario'] in NAMES:
                 row['config']=json.loads(row['configuration']);rows.append(row)
     fig,axes=plt.subplots(2,3,figsize=(14,8),constrained_layout=True)
     colors=dict(zip(['ros2','ros3','ros4','rodas3','rodas4','extrap2','extrap3','micm3'],plt.get_cmap('tab10').colors))

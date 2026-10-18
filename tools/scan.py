@@ -28,7 +28,7 @@ def configurations(suite):
     if suite == 'baseline':
         return [('micm3', {}), ('micm3', {'rtol': 1e-4, 'atol': 1e-18})]
     if suite == 'family':
-        return [(m, {'rtol': t, 'atol': 1e-18}) for m, t in itertools.product(
+        return [(m, {'rtol': t, 'atol': 1e-18, 'reuse_rhs': 0}) for m, t in itertools.product(
             ['ros2', 'ros3', 'ros4', 'rodas3', 'rodas4', 'extrap2', 'extrap3'], [1e-3, 1e-4, 1e-5])]
     if suite == 'loose':
         return [(m, {'rtol': t, 'atol': 1e-18}) for m,t in itertools.product(

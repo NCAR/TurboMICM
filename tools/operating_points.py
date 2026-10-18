@@ -9,6 +9,7 @@ import csv
 import hashlib
 import itertools
 import json
+import random
 from pathlib import Path
 import subprocess
 from scan import ROOT, FIELDS, NAMES, run
@@ -32,16 +33,17 @@ def main():
     with a.output.open('a',newline='') as f:
         writer=csv.DictWriter(f,FIELDS+['point'],extrasaction='ignore')
         if not exists: writer.writeheader()
-        for point in points:
-            for name,repeat in itertools.product(a.scenario or NAMES,range(a.repeat)):
-                row=run(point['method'],point['options'],name,a.threads,work,point['level'])
-                row.update(suite='operating-points',point=point['id'],
-                    configuration=json.dumps({'method':point['method'],**point['options']},sort_keys=True,separators=(',',':')),
-                    scenario=name,repeat=repeat,compiler=stamp[0],threads=a.threads,
-                    binary_sha256=digest,optflags=stamp[1],revision=revision)
-                writer.writerow(row);f.flush()
-                good=row.get('level_result')=='PASS' and row.get('gate')=='PASS'
-                failed |= not good
-                print(point['id'],name,repeat,row.get('overall_digits','FAIL'),row.get('worst_digits',''),row.get('elapsed_ms',''),flush=True)
+        jobs=list(itertools.product(points,a.scenario or NAMES,range(a.repeat)))
+        random.Random(2026).shuffle(jobs)
+        for point,name,repeat in jobs:
+            row=run(point['method'],point['options'],name,a.threads,work,point['level'])
+            row.update(suite='operating-points',point=point['id'],
+                configuration=json.dumps({'method':point['method'],**point['options']},sort_keys=True,separators=(',',':')),
+                scenario=name,repeat=repeat,compiler=stamp[0],threads=a.threads,
+                binary_sha256=digest,optflags=stamp[1],revision=revision)
+            writer.writerow(row);f.flush()
+            good=row.get('level_result')=='PASS' and row.get('gate')=='PASS'
+            failed |= not good
+            print(point['id'],name,repeat,row.get('overall_digits','FAIL'),row.get('worst_digits',''),row.get('elapsed_ms',''),flush=True)
     if failed: raise SystemExit('At least one declared point missed its accuracy/gate target')
 if __name__=='__main__': main()
