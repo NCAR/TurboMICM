@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCENARIOS = ROOT.parent / "scenarios"
 FIELDS = ["scan", "config", "method", "options", "scenario", "cells", "repeat", "threads",
           "utc", "binary_sha256", "compiler",
-          "status", "overall_digits", "worst_species", "worst_digits", "gate", "elapsed_ms",
+          "status", "overall_digits", "worst_species", "worst_digits", "gate", "level", "level_result", "elapsed_ms",
           "internal_steps", "accepted", "rejected", "function_calls", "jacobian_updates",
           "decompositions", "solves", "jacobian_reuses", "factor_reuses",
           "positivity_rejections", "nonfinite_rejections", "clipped_values", "clipped_mass",
@@ -27,8 +27,8 @@ FIELDS = ["scan", "config", "method", "options", "scenario", "cells", "repeat", 
           "completed_steps", "score_json", "run_log"]
 
 
-def subset(name, cells):
-    source = SCENARIOS / name
+def subset(name, cells, scenario_root=SCENARIOS):
+    source = scenario_root / name
     if not cells:
         return source, sum(1 for _ in (source / "cells.csv").open()) - 1
     dest = ROOT / "build" / "scan-inputs" / f"{name}-{cells}"
@@ -58,6 +58,8 @@ def main():
     parser.add_argument("--scenarios", nargs="*", default=["tier1-30s", "diurnal-30min", "diurnal-10min",
                         "diurnal-5min", "polluted-10min", "clean-10min"])
     parser.add_argument("--timeout", type=float, default=1800)
+    parser.add_argument("--scenario-root", type=Path, default=SCENARIOS)
+    parser.add_argument("--discard-repeats", action="store_true", help="Remove state CSVs after scoring repetitions after the first")
     a = parser.parse_args()
     configs = json.loads(a.configs.read_text())
     compiler = (ROOT / "build" / "compiler.conf").read_text().strip().replace("\n", " | ")
@@ -68,7 +70,7 @@ def main():
         writer = csv.DictWriter(out, fieldnames=FIELDS); writer.writeheader(); out.flush()
         for config in configs:
             for name in a.scenarios:
-                scenario, cells = subset(name, a.cells)
+                scenario, cells = subset(name, a.cells, a.scenario_root.resolve())
                 for repeat in range(a.repeats):
                     work = ROOT / "build" / "scan-runs" / a.scan / config["id"] / name / str(repeat)
                     work.mkdir(parents=True, exist_ok=True)
@@ -93,13 +95,21 @@ def main():
                                options=json.dumps(config.get("options", {}), sort_keys=True),
                                scenario=name, cells=cells, repeat=repeat, threads=a.threads, status=status,
                                run_log=str((work / "run.txt").relative_to(ROOT)))
-                    row.update(utc=datetime.now(timezone.utc).isoformat(), binary_sha256=binary_hash, compiler=compiler)
+                    actual_compiler = ('clang++ -std=c++20 ' + (ROOT/'build/reference-compiler.conf').read_text().splitlines()[1]
+                                       if config.get('backend') == 'micm' else compiler)
+                    row.update(utc=datetime.now(timezone.utc).isoformat(), binary_sha256=binary_hash, compiler=actual_compiler)
                     if status == "ok":
-                        snapshots = "snapshot_every" in (scenario / "scenario.txt").read_text()
+                        settings = {}
+                        for line in (scenario / "scenario.txt").read_text().splitlines():
+                            line = line.split('#',1)[0]
+                            if '=' in line:
+                                key,value=line.split('=',1); settings[key.strip()]=value.strip()
+                        snapshots = int(settings.get("snapshot_every",0)) > 0
                         suffix = "snapshots.csv" if snapshots else "final.csv"
                         score = subprocess.run([sys.executable, str(SCENARIOS / "score.py"),
                                                 str(work / ("ts1_" + suffix)),
-                                                str(scenario / ("reference_" + suffix)), "--json"],
+                                                str(scenario / ("reference_" + suffix)), "--json"] +
+                                               (["--level", str(config["level"])] if "level" in config else []),
                                                capture_output=True, text=True, check=False)
                         (work / "score.json").write_text(score.stdout + score.stderr)
                         try:
@@ -107,10 +117,14 @@ def main():
                             worst = report["worst_species"][0]
                             row.update(overall_digits=report["overall_digits"], worst_species=worst[0],
                                        worst_digits=worst[1], gate=report["gate"], score_json=score.stdout.strip())
+                            row.update(level=report.get("level", ""), level_result=report.get("level_result", ""))
                         except (ValueError, KeyError, IndexError):
                             row["status"] = "score-failed"
                     writer.writerow(row); out.flush()
                     print({k: row.get(k) for k in ["status", "overall_digits", "worst_digits", "elapsed_ms"]}, flush=True)
+                    if a.discard_repeats and repeat:
+                        for filename in ["ts1_final.csv", "ts1_snapshots.csv"]:
+                            (work/filename).unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

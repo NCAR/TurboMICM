@@ -1,0 +1,17 @@
+check,max_relative_difference
+MICM ts1_final.csv,6.314832737594434e-16
+MICM ts1_snapshots.csv,6.314832737594434e-16
+ros2 ts1_final.csv,0.0
+ros2 ts1_snapshots.csv,0.0
+ros3 ts1_final.csv,0.0
+ros3 ts1_snapshots.csv,0.0
+ros4 ts1_final.csv,0.0
+ros4 ts1_snapshots.csv,0.0
+rodas3 ts1_final.csv,0.0
+rodas3 ts1_snapshots.csv,0.0
+rodas4 ts1_final.csv,0.0
+rodas4 ts1_snapshots.csv,0.0
+extrap ts1_final.csv,0.0
+extrap ts1_snapshots.csv,0.0
+sdirk ts1_final.csv,0.0
+sdirk ts1_snapshots.csv,0.0

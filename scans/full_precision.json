@@ -1,0 +1,87 @@
+[
+  {
+    "id": "rodas3-r0.01",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.01,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas3-r0.006",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.006,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas3-r0.003",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas3-r0.001",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas3-r0.0003",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "extrap4-r0.01",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.01,
+      "atol": 1e-18,
+      "order": 4
+    }
+  },
+  {
+    "id": "extrap4-r0.006",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.006,
+      "atol": 1e-18,
+      "order": 4
+    }
+  },
+  {
+    "id": "extrap4-r0.003",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "order": 4
+    }
+  },
+  {
+    "id": "extrap4-r0.002",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "order": 4
+    }
+  },
+  {
+    "id": "extrap4-r0.001",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "order": 4
+    }
+  }
+]

@@ -4,6 +4,14 @@ C11 CPU chemistry with generic mechanisms, Rosenbrock and backward Euler solvers
 algebraic constraints, external models, sparse LU, and grouped matrix utilities.
 All 680 supplied reference cases are ported; no cases are marked N/A.
 
+Tier 3 adds adaptive Rosenbrock, linearly implicit Euler extrapolation, and
+SDIRK integration, with scenario-based accuracy and cost experiments. The
+original integration paths and their roundoff compatibility remain available.
+See [OPERATING_POINTS.md](OPERATING_POINTS.md) for evaluated configurations,
+[ACCURACY.md](ACCURACY.md) for the accuracy policy, and [SCANS.md](SCANS.md) for
+the controlled experiments. [RESULTS.md](RESULTS.md) contains measurements and
+work–precision plots.
+
 ## Build and test
 
 ```sh
@@ -11,6 +19,8 @@ make env
 make test-cpu CC=clang
 make test-cpu CC=gcc-15
 make cpu CC=clang
+make bench CC=clang
+make test-tier3 CC=clang
 ```
 
 The runtime uses only the C standard library, libm, and OpenMP. Python is used
@@ -96,3 +106,49 @@ The retained TS1 configuration can be regenerated without compiling its source:
 DESIGN.md describes ownership, layouts, tuning parameters, and the extension
 points for replacing a controller, solver, linear backend, or rate type.
 RESULTS.md records validation and performance measurements.
+
+## Run a time-dependent TS1 scenario
+
+```sh
+make bench
+bin/ts1_scenario --method extrap --option order=4 --option rtol=0.002 \
+    --option atol=1e-18 ../scenarios/diurnal-30min/scenario.txt
+.conda/bin/python ../scenarios/score.py ts1_snapshots.csv \
+    ../scenarios/diurnal-30min/reference_snapshots.csv --level 3
+```
+
+`--threads N` limits OpenMP threads; the default uses all cores. `--option
+group-size=32` selects the cell grouping. Omitting `--method` selects the
+original MICM three-stage solver with its original tolerances. This default is
+provided for compatibility; it fails or is inaccurate on some long scenarios.
+All method names, options, formulas, cache rules, and counters are documented
+in [DESIGN.md](DESIGN.md).
+
+The runner reads the documented `key = value` scenario file, updates every
+photolysis parameter at each external step, and freezes rates within that step.
+There is no warm-up. It prints `elapsed_ms` and work counters and writes
+`ts1_final.csv` and, when requested, `ts1_snapshots.csv` in the current directory.
+Only rate updates, integration and validation are timed; CSV input/output and
+setup are excluded. Use separate working directories to retain multiple runs.
+
+## Reproduce the research
+
+```sh
+make env
+make bench test-tier3 micm-scenario CC=clang
+.conda/bin/python tools/scan.py scans/operating_points.json \
+    --scan local-operating-points --threads 10 --repeats 5
+.conda/bin/python tools/stress.py --scan local-stress-references
+.conda/bin/python tools/scan.py scans/operating_points.json \
+    --scan local-stress --scenario-root build/stress \
+    --scenarios summer48 winter48 tropical48 --threads 4
+```
+
+Scan names must be new: scripts refuse to overwrite recorded CSVs. Source
+configurations and every scored run are in `scans/`; raw outputs stay in
+`build/scan-runs/`. Small-case prototypes, order checks and stiff-decay tests are
+in `prototypes/`. Python dependencies are pinned in `environment.yml` and are
+used only for development and analysis. The C library and both C benchmarks
+never invoke Python. `make env` creates or updates only the local environment
+and uses the local package cache. The optional `micm-scenario` target compiles
+the supplied read-only C++ oracle; it is not part of the C library.

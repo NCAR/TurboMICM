@@ -52,3 +52,21 @@ initial forcing in extrapolation and redundant refreshes after same-state
 rejections. The earlier CSVs remain historical evidence with their original
 counts. Full disclosed-cell scans, final gates, stress cases, operating points,
 and research reports remain.
+
+## Tier 3 checkpoint 3
+
+Completed full 1,000-cell work–precision screening, grouping/error-weight scans,
+MICM C++ baselines, and converged references for three new 48-hour scenarios.
+The reference pairs agree to 10.23–10.49 digits overall. GCC passes all 680
+original cases, all nine original TS1 roundoff checks, all prototype/order/
+projection/stiffness/I/O tests, and the five candidate operating points on every
+disclosed and stress scenario. Detailed CSVs and sanitized validation transcripts
+are retained. The candidate recommendation is extrapolation order four,
+rtol=0.002, atol=1e-18, fresh Jacobians, groups of 32.
+
+One metadata defect was found in an early tolerance scan: its executable hash
+was sampled before a concurrent build finished. The historical start hash is
+retained with an explicit warning, not asserted as each row's actual binary.
+The scan harness now hashes the executable per run; a stable-build repetition
+of that sweep remains to be performed. Final Clang gates, repeated isolated
+timings, 10,000-cell scaling, plots/reports, and completion audit remain.

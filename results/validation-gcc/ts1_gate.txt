@@ -1,0 +1,36 @@
+default
+elapsed_ms=138.109000
+internal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800
+PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)
+t1-g1
+elapsed_ms=2081.034000
+internal_steps=90000 accepted=90000 rejected=0 function_calls=180000 jacobian_updates=90000 decompositions=90000 solves=270000
+PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)
+t4-g7
+elapsed_ms=179.681000
+internal_steps=13500 accepted=13500 rejected=0 function_calls=27000 jacobian_updates=13500 decompositions=13500 solves=40500
+PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)
+t1-g32
+elapsed_ms=434.416000
+internal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800
+PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)
+t3-g64
+elapsed_ms=259.745000
+internal_steps=1800 accepted=1800 rejected=0 function_calls=3600 jacobian_updates=1800 decompositions=1800 solves=5400
+PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)
+t4-g101
+elapsed_ms=393.614000
+internal_steps=900 accepted=900 rejected=0 function_calls=1800 jacobian_updates=900 decompositions=900 solves=2700
+PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)
+dynamic
+elapsed_ms=180.011000
+internal_steps=13500 accepted=13500 rejected=0 function_calls=27000 jacobian_updates=13500 decompositions=13500 solves=40500
+PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)
+guided
+elapsed_ms=278.354000
+internal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800
+PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)
+generic
+elapsed_ms=495.472000
+internal_steps=7200 accepted=7200 rejected=0 function_calls=14400 jacobian_updates=7200 decompositions=7200 solves=21600
+PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)

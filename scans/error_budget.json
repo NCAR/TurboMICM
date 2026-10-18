@@ -1,0 +1,88 @@
+[
+  {
+    "id": "atol1e-20",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-20
+    }
+  },
+  {
+    "id": "atol1e-18",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "atol1e-16",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-16
+    }
+  },
+  {
+    "id": "atol1e-15",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-15
+    }
+  },
+  {
+    "id": "norm0",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "norm": 0
+    }
+  },
+  {
+    "id": "norm1",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "norm": 1
+    }
+  },
+  {
+    "id": "norm2",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "norm": 2
+    }
+  },
+  {
+    "id": "jacobian-age1",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "jacobian-age": 1
+    }
+  },
+  {
+    "id": "jacobian-age2",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "jacobian-age": 2
+    }
+  }
+]

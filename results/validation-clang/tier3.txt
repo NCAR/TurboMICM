@@ -1,0 +1,20 @@
+./.conda/bin/python prototypes/independent.py
+clang -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include -Iinclude prototypes/edgecases.c build/libchem.a -L/opt/homebrew/opt/libomp/lib -lomp -lm -o bin/test_adaptive
+44 prototype comparisons pass; maximum difference 1.14e-14
+./.conda/bin/python prototypes/convergence.py
+10 methods: analytic convergence orders, conservation, and 7-cell grouping pass
+bin/test_adaptive
+method=0 reactant=5.4191068050258589e-75 product=1 clipped_mass=0
+method=1 reactant=0 product=1.0000000000000004 clipped_mass=1.6966508396028206e-20
+method=2 reactant=0 product=1.0000000000000004 clipped_mass=3.7955339680755875e-21
+method=3 reactant=0 product=1.0000000000000011 clipped_mass=1.313908657994541e-19
+method=4 reactant=5.2623961682512085e-63 product=1.0000000000000009 clipped_mass=0
+method=5 reactant=0 product=1 clipped_mass=4.8905360381902975e-21
+method=6 reactant=0 product=0.99999999999999711 clipped_mass=2.6393338735288852e-22
+method=7 reactant=0 product=1.0000165054291847 clipped_mass=4.9516284140923238e-05
+method=8 reactant=0 product=0.99999999999999822 clipped_mass=2.3091249804986252e-21
+method=9 reactant=0 product=1 clipped_mass=2.1187832479408839e-20
+method=10 reactant=0 product=1.0000165054291847 clipped_mass=4.9516284140923238e-05
+11 methods: zero duration, invalid inputs, backend errors, and 1e8 stiffness interval pass
+./.conda/bin/python tools/test_scenario.py
+Scenario forcing/snapshots agree with MICM; all seven method names agree with generic kernels

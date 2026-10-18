@@ -1,0 +1,35 @@
+[
+  {
+    "id": "c-default",
+    "method": "micm",
+    "options": {}
+  },
+  {
+    "id": "micm-default",
+    "backend": "micm",
+    "method": "rosenbrock3",
+    "options": {
+      "group-size": 32
+    }
+  },
+  {
+    "id": "micm-accurate",
+    "backend": "micm",
+    "method": "rosenbrock3",
+    "options": {
+      "group-size": 32,
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "max-steps": 100000
+    }
+  },
+  {
+    "id": "c-micm-accurate",
+    "method": "micm",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "max-steps": 100000
+    }
+  }
+]

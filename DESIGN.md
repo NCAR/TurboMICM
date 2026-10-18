@@ -172,3 +172,197 @@ constraint initialization, factor and solve entry points allow a new integrator
 to reuse chemistry and algebra without changing mechanism descriptions. The
 benchmark's integrator call is explicit in `src/bench.c`; experiments can replace
 that call while retaining CSV initialization, cell grouping and timing.
+
+# Tier 3 integrators and scenario interface
+
+`include/chem_adaptive.h` adds an autonomous ODE interface. Create one
+`chem_adaptive_workspace` per state, set the state's `rtol` and species `atol`,
+then call `chem_adaptive_solve(state, dt, parameters, workspace)`. Destroy the
+workspace before destroying the state/model. The workspace borrows the model
+and checks the cell count. It owns a saved sparse negative Jacobian and twelve
+species-vector slots. It does not allocate during integration. A workspace is
+not shared between threads. Existing Rosenbrock, backward Euler, constraints,
+and owned-solver APIs retain their original behavior.
+
+The new methods evaluate every reaction and evolve every variable species.
+There is no reaction reduction, species selection, trained approximation,
+mechanism-specific threshold, or TS1-specific integrator code. The new API is
+for autonomous differential equations: it explicitly rejects algebraic
+constraints. Temperature and reaction parameters must remain fixed within a
+call; the scenario runner enforces this and starts a new call at each forcing
+update. External kinetic callbacks must represent the same autonomous ODE.
+
+## Runtime selection
+
+```
+bin/ts1_scenario [--threads N] [--method NAME] [--option KEY=VALUE ...] SCENARIO
+```
+
+| Method | Formula and implementation |
+| --- | --- |
+| `micm` (default) | Original MICM-compatible three-stage Rosenbrock, original defaults |
+| `micm2`, `micm4`, `micm4dae`, `micm6` | Other retained MICM parameter sets, original driver |
+| `ros2`, `ros3`, `ros4`, `rodas3`, `rodas4` | Retained coefficient tables in the new adaptive driver; respectively 2/3/4/4/6 stages and order 2/3/4/3/4 |
+| `extrap` | Fixed-Jacobian linearly implicit Euler extrapolation, order 2–4; optionally chooses order during a trial |
+| `sdirk` | Stiffly accurate singly diagonally implicit Runge–Kutta, order 2 or 3, with simplified Newton iteration |
+
+The default method and its tolerances are intentionally unchanged even though
+its default absolute tolerance is unsuitable for several disclosed long runs.
+Use an explicit configuration from OPERATING_POINTS.md for atmospheric runs.
+The methods are library functions, not Python implementations behind a CLI.
+
+## Formula details
+
+The chemistry interface supplies `-J`. A factorization of `alpha I - J` is
+formed in the state's original sparse storage; the unmodified `-J` stays in
+separate workspace. All arithmetic is double precision, including error
+norms, factors, and triangular solves. There is no mixed-precision or floating
+point flag change.
+
+**Rosenbrock.** The coefficient tables and stage equations are exactly those
+already retained in `src/parameters.c`. The new path changes control and cache
+policy, not their coefficients. ROS2 permits approximate Jacobians without
+losing its formal second order [REFERENCES.md, source 3]. Reusing Jacobians in
+higher-order ROW formulas is only an experimental approximation; no retained
+order claim is made for that option. The declared operating points use fresh
+Jacobians. Stage clipping is a separately selectable experiment and is off by
+default. It is not required for output positivity.
+
+**Euler extrapolation.** For each row with `q = 1,...,p`, start at the same
+initial state and take `q` substeps of length `d = h/q`:
+
+```
+( I/d - J_saved ) delta = f(v)
+v <- v + delta
+```
+
+Each row needs one factorization and `q` solves. The initial forcing is shared
+by all rows and all retries at the same initial state. The remaining substeps
+have new forcing evaluations. Neville extrapolation in `1/q` eliminates the
+successive substep-size error terms. In the in-place table, descending `j`
+updates `T[j-1] = T[j] + (T[j]-T[j-1]) / (q/j-1)`. The returned diagonal has
+formal nonstiff order `p`; its difference from the preceding diagonal estimates
+local error with exponent `p`. A successful fixed order-four trial needs four
+factorizations, ten solves, and seven forcing evaluations (six if its initial
+forcing was already cached). It uses every reaction in every evaluation.
+
+`adaptive-order=1` returns the first acceptable diagonal of order at least two,
+up to the selected maximum. Otherwise it always constructs the selected order.
+This simple variable-order policy is an experiment, not an optimal-work order
+selector; its poorer work–precision performance is reported in SCANS.md.
+
+High nonstiff order is not a claim of uniform accuracy for arbitrarily stiff
+nonlinear equations. On the linear scalar equation, the stability function is
+a weighted sum of `(1-z/q)^(-q)`. Some extrapolated solutions become slightly
+negative for very stiff decay. Their projection and associated conservation
+change are explicitly measured; see ACCURACY.md and the stiff-decay test.
+
+**SDIRK.** The two-stage formula has diagonal `g=1-1/sqrt(2)` and last row
+`[1-g,g]`. Its embedded first-order weights are `[1,0]`. For three stages,
+`g=0.435866521508459...` solves `6g^3-18g^2+9g-1=0`. The rows are
+`[g,0,0]`, `[(1-g)/2,g,0]`, and
+`[-1.5g^2+4g-1/4, 1.5g^2-5g+5/4, g]`. The last row supplies the solution weights.
+The embedded weights are `[1-b,b,0]` with `b=(1/2-g)/((1-g)/2)`, giving order two.
+The method families and diagonal root are documented in REFERENCES.md, source 4.
+
+A stage with known base `b` solves `z=b+h*g*f(z)`. Simplified Newton solves
+`(I/(h*g)-J_saved) delta = f(z)+(b-z)/(h*g)` and updates `z`. The iteration stops
+when the maximum cell RMS correction in the integration tolerance scale is at
+most `newton-tol`. It fails after `newton-iterations` or after detected loss of
+contraction. Failure retries with a fresh Jacobian, then a smaller step. No
+partial Newton stage is accepted. The final stage is the returned solution.
+
+## Error, positivity, control, and caches
+
+Each component has scale `atol[i] + rtol*max(abs(y[i]),abs(candidate[i]))`.
+Before accepting a trial, divide the maximum of the embedded error magnitude
+and the magnitude of a negative candidate by this scale. The default norm is
+the largest per-cell RMS, so adding easy cells cannot dilute a difficult cell's
+error. Other norms are controlled experiments. Acceptance requires a finite
+norm at most one. Nonfinite candidates are rejected and never made finite by
+clipping. Accepted negative values are set to zero and their number and sum are
+recorded. This projection can change conservation; it is a bounded local
+numerical correction, not an exact conservation algorithm.
+
+The proportional controller proposes `h_new/h = safety * error^(-1/order)`,
+with bounded decrease/growth and no growth immediately following rejection.
+The PI option uses exponents `-0.7/order` for current error and `0.4/order` for
+previous accepted error. Rejection with a stale Jacobian first refreshes it at
+the same step size; rejection with a Jacobian already at the current state
+reduces the step. Nonfinite trials reduce the step by 0.1. Every attempt counts
+toward the step limit. Fatal backend errors propagate without being retried.
+
+Only the next proposed step length persists across calls. Jacobians, factors,
+initial forcing, and PI history are invalidated at a new call, including every
+photolysis discontinuity. Within a call, `jacobian-age` bounds the number of
+accepted steps sharing a Jacobian. `reuse-window` can retain an unchanged step
+when its proposed factor is close to one; ROS/SDIRK can then reuse a
+factorization if the Jacobian is also unchanged. Extrapolation factors each
+row separately. No factor is reused after changing its diagonal shift.
+
+## Parameters and valid domains
+
+All speed-related choices are runtime parameters; no CPU-specific tuning flags
+are used. Numbers outside these domains are rejected. A restrictive step limit
+or impossible requested precision returns an explicit solver failure.
+
+| Option | New-path default | Domain and effect |
+| --- | --- | --- |
+| `rtol` | `1e-4` | Finite positive relative local tolerance; MICM path default remains `1e-6` |
+| `atol` | `1e-18` | Finite positive uniform absolute tolerance, mol m-3; original path retains species defaults (`1e-3` for TS1) |
+| `group-size` | `32` | Any positive cell count; final group may be shorter |
+| `generic` | `0` | `0/1`, generated/table-driven chemistry kernels |
+| `max-steps` | `100000` | Positive attempt limit per group and external step; original path retains `1000` |
+| `h-start` | `0` | Nonnegative seconds; zero selects `dt*1e-4` (original path: `dt*1e-6`) |
+| `h-max` | `0` | Nonnegative seconds; zero selects the external interval |
+| `warm-start` | `1` | `0/1`, retain proposed next step across calls |
+| `safety` | `0.9` | Strictly between zero and one |
+| `growth` | `5` | Finite value at least one, maximum step growth factor |
+| `controller` | `0` | `0` proportional; `1` PI |
+| `norm` | `1` | `0` global RMS; `1` maximum cell RMS; `2` component maximum |
+| `jacobian-age` | `1` | Positive maximum accepted steps between updates |
+| `reuse-window` | `0` | `[0,1)`, retain step if proposed factor differs from one by at most this value |
+| `clip-stages` | `0` | `0/1`, optional ROS intermediate-stage projection |
+| `order` | `3` | `2..4` for extrapolation; `2..3` for SDIRK |
+| `adaptive-order` | `0` | `0/1`, extrapolation early acceptance at a lower order |
+| `newton-iterations` | `8` | Positive SDIRK iteration limit per stage |
+| `newton-tol` | `0.03` | `(0,1)`, SDIRK correction stopping tolerance |
+| `--threads` | OpenMP processor count | Positive integer through `INT_MAX`; default uses all cores |
+
+The compatibility methods use `rtol`, `atol`, `h-start`, `h-max`, `max-steps`,
+`group-size`, and `generic`; options for the adaptive driver do not change their
+original driver. `order` and nonlinear iteration parameters affect only the
+methods described above. Scenario groups use static OpenMP scheduling; the
+original Tier 1 benchmark retains its additional scheduling/chunk controls.
+
+## Scenario contract and accounting
+
+`src/scenario.c` parses the documented key/value format, resolves paths relative
+to the scenario file, interpolates the photolysis table, and counts CSV rows.
+It preserves each cell's input custom parameters and updates all labels starting
+with `j` from those original values. It recalculates rates at every external
+step; no warm-up is performed. It validates returned states before snapshots.
+The timed intervals include interpolation, parameter/rate updates, integration,
+validation and OpenMP overhead. Input, setup and CSV serialization are untimed.
+Both output formats use 17 significant digits and original cell order. Snapshots
+include the final step even when not divisible by the snapshot interval.
+
+Standard counters count group operations, as in Tier 1, not per-cell FLOPs.
+Compare counts only with group sizes stated. `internal_steps` counts attempted
+macro steps, including rejected ones; substeps are reflected in forcing and
+linear-solve counts. Additional counters report Jacobian/factor reuses,
+positivity/nonfinite rejections, projected values, summed projection magnitude,
+Newton iterations/failures and the selected extrapolation orders. Projection
+magnitude sums concentrations over all affected species and cells; it is not an
+elemental mass or a reaction-rate modification.
+
+## Adding and verifying a method
+
+Add a method enum and stage implementation to the adaptive API, using the
+state's kinetic kernels and linear-backend hooks. Preserve the separate original
+driver. Add a CLI name or option, an independent prototype, small-mechanism
+agreement with operation counts, and scenario configurations in `scans/`.
+`make test-tier3` runs prototype, analytic-order, conservation/projection,
+stiff-decay, error-path, scenario I/O and generic-kernel checks. `make test-cpu`
+continues to run the 680 original cases. Record new structural runs with
+`tools/scan.py`, then rescore final operating points on all disclosed cells.

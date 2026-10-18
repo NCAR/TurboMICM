@@ -1,0 +1,59 @@
+[
+  {
+    "name": "summer48",
+    "seed": 777,
+    "lat": 60,
+    "doy": 172,
+    "start": 0,
+    "dt": 1800,
+    "steps": 96,
+    "nox": 5,
+    "snapshot": 24,
+    "cells": 128,
+    "sha256": {
+      "scenario.txt": "3e0048d3f35b451818b0994f8a5b0374e49df0ddafba07577ad20bf9861074f8",
+      "cells.csv": "2c543a1097fe15cd07cc7597f40dd9a1d1c0275112eab321c0abc0f178d11466",
+      "photolysis.csv": "bfe595870b96bed80b3e3b4525b34f465b56eb83be7a8c7ae36804a8bb3509b3",
+      "reference_snapshots.csv": "b739f033494f8623595023e50fe3984bc83f1e12b30677d27b1f8c523ba98438",
+      "reference_final.csv": "b52e727829fee7c0d6e0f1f6569efd2328487d37f73b251ef4fa8958f276fbbc"
+    }
+  },
+  {
+    "name": "winter48",
+    "seed": 2027,
+    "lat": 55,
+    "doy": 355,
+    "start": 12,
+    "dt": 600,
+    "steps": 288,
+    "nox": 0.03,
+    "snapshot": 72,
+    "cells": 128,
+    "sha256": {
+      "scenario.txt": "022e9971ac9cbfc3a44604e3575437c398de6bc0b074c5726e4691abd48e4212",
+      "cells.csv": "2ae6b9359acff9dea61fe2941c7979e8a5acb5f231816836b088978f0af2a6d7",
+      "photolysis.csv": "d1ac235a5741901a00ba1b1af58a77fc9c76018ca9273c84d75d95eedfda5284",
+      "reference_snapshots.csv": "54247584b0670d84668924b8f092bc6380e08deae0b8b03f3e6e047d3631a493",
+      "reference_final.csv": "6f2061b795f60c41bf81250df22fba298e696f9808ecd87adc323796f7c2c84c"
+    }
+  },
+  {
+    "name": "tropical48",
+    "seed": 858,
+    "lat": -15,
+    "doy": 270,
+    "start": 18,
+    "dt": 900,
+    "steps": 192,
+    "nox": 20,
+    "snapshot": 48,
+    "cells": 128,
+    "sha256": {
+      "scenario.txt": "963271112b83895b4d33148788eddd5b223d3debfc441476ae16cc8e9d97a7a5",
+      "cells.csv": "c204ff7cfdff313b3ed8ce6ef91dd7034016b1bb92ba990940da9fa4639bc206",
+      "photolysis.csv": "305ca82a5c5f385100cd2a4fed1a42453f3b5f1704746467d72327e910e77454",
+      "reference_snapshots.csv": "b39d3e138a69d93af49d9331ffa402f712212540a973ff2584aa4df96284a8e6",
+      "reference_final.csv": "1161ca789c49c7d9187e4a7e22aa0a74799a61751675e8a2c7467397e3adb859"
+    }
+  }
+]

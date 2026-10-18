@@ -1,0 +1,62 @@
+[
+  {
+    "id": "group4",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "group-size": 4
+    }
+  },
+  {
+    "id": "group8",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "group-size": 8
+    }
+  },
+  {
+    "id": "group16",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "group-size": 16
+    }
+  },
+  {
+    "id": "group32",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "group-size": 32
+    }
+  },
+  {
+    "id": "group64",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "group-size": 64
+    }
+  },
+  {
+    "id": "group128",
+    "method": "extrap",
+    "options": {
+      "order": 4,
+      "rtol": 0.002,
+      "atol": 1e-18,
+      "group-size": 128
+    }
+  }
+]

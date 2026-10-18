@@ -206,7 +206,8 @@ chem_result chem_adaptive_solve(chem_state *s,double dt,
     const chem_adaptive_parameters *p,chem_adaptive_workspace *w)
 {
     chem_result r={CHEM_OK,{0}};
-    if (!s || !p || !w || w->model!=s->model || w->cells!=s->cells ||
+    if (!s || !p || !w || !s->model || !s->cells || !w->jacobian || !w->vectors ||
+        w->model!=s->model || w->cells!=s->cells ||
         !isfinite(dt) || dt<0 || s->model->mechanism->n_constraints ||
         p->method<CHEM_ADAPT_ROS || p->method>CHEM_ADAPT_SDIRK || p->ros<CHEM_ROS2 || p->ros>CHEM_RODA4 ||
         !p->max_steps || !p->jacobian_age || p->extrap_order<2 || p->extrap_order>4 ||

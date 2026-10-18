@@ -47,10 +47,19 @@ bin/adaptive_probe: prototypes/probe.c build/libchem.a
 	@mkdir -p bin
 	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
 
+bin/test_adaptive: prototypes/edgecases.c build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
+
 .PHONY: test-prototypes
 test-prototypes: bin/adaptive_probe
 	$(PYTHON) prototypes/independent.py
 	$(PYTHON) prototypes/convergence.py
+
+.PHONY: test-tier3
+test-tier3: bench bin/test_adaptive test-prototypes micm-scenario
+	bin/test_adaptive
+	$(PYTHON) tools/test_scenario.py
 
 test-cpu: cpu bin/test_cpu
 	bin/test_cpu $(TEST_FILTER)
