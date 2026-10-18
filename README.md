@@ -1,7 +1,7 @@
 # CPU chemical kinetics in C
 
-An ISO C11 chemistry library with MICM-compatible CPU solvers and seven added
-adaptive ODE formulas for atmospheric chemistry. The retained implementation
+An ISO C11 chemistry library with MICM-compatible CPU solvers and an adaptive
+ODE driver supporting seven formulas for atmospheric chemistry. The retained implementation
 includes matrix utilities, sparse LU, Rosenbrock methods, backward Euler, and
 algebraic constraints. Native code uses only the C library, libm, and OpenMP.
 Python prepares configurations, prototypes, tests and research reports; it never
@@ -104,6 +104,11 @@ from the final CSVs with:
 .conda/bin/python tools/report_results.py
 .conda/bin/python tools/plot_scans.py
 ```
+
+[validation/README.md](validation/README.md) indexes the test records;
+[validation/input-manifest.json](validation/input-manifest.json) records the
+input hashes and prefix checks. The final evidence audit is in
+[validation/COMPLETION.md](validation/COMPLETION.md).
 
 ## Run the retained Tier 1 benchmark
 

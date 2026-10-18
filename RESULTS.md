@@ -1,126 +1,97 @@
 # Results
 
-Validated on 2026-10-16 on the supplied Apple M5 machine (10 CPU cores, 16 GB
-memory, macOS 27.0.1). C compilers were Apple clang 21.0.0 and Homebrew GCC
-15.2.0 (`gcc-15`). Every C build used `OPTFLAGS='-O3 -DNDEBUG'`, with the
-Makefile's C11, warning, include, PIC, and OpenMP flags. The reference was built
-by `make micm-ref` with clang++, C++20, and the same `-O3 -DNDEBUG` flags.
+Tier 3 measurements on the supplied 10-core Apple M5, macOS 27.0.1. Native C uses clang 21 or GCC 15.2, ISO C11/OpenMP, and `OPTFLAGS="-O3 -DNDEBUG"`. MICM is compiled with clang++ and identical optimization flags. No target, fast-math, LTO, or profile flags are used.
 
-## CPU cases
+## Declared operating points
 
-| Build | PASS | FAIL | N/A |
-| --- | ---: | ---: | ---: |
-| `make test-cpu CC=clang` | 680 | 0 | 0 |
-| `make test-cpu CC=gcc-15` | 680 | 0 | 0 |
+All four points complete every disclosed scenario and all three independent 48-hour cases with nonnegative states and pass their indicated accuracy level. **Balanced is recommended** for its accuracy margin. Full commands are in [OPERATING_POINTS.md](OPERATING_POINTS.md).
 
-These are all 672 GoogleTest IDs and eight plain-program IDs in the supplied
-case list. The committed per-case records are
-[`validation/clang-cases.txt`](validation/clang-cases.txt) and
-[`validation/gcc-cases.txt`](validation/gcc-cases.txt). Their IDs were checked
-against the supplied list for missing entries and duplicates. Final builds had
-no compiler warnings.
-
-The runs include all three generated tutorial configurations compared with their
-hand-built equivalents, both sparse LU algorithms, all five Rosenbrock tables,
-backward Euler, differential/algebraic constraints, external processes, matrix
-and view policies, metadata, ownership/error handling, analytical and regression
-solutions, and native OpenMP execution. The native controller/linear-solver
-replacement check also passed with both compilers. The complete 3,601-row
-wall-loss trajectories pass the original absolute tolerance of 1e-10.
-
-All eight plain-program comparisons match their deterministic reference output.
-Timing values and concurrent startup ordering are handled as specified in
-[`DECISIONS.md`](DECISIONS.md); numerical output and printed solver counters are
-compared exactly. There are no N/A exceptions.
-
-## TS1 numerical gate
-
-All runs use the default three-stage Rosenbrock parameters and tolerances,
-one warm-up step, then 100 steps of 30 seconds. The supplied comparison script
-checks every column by name, using
-`abs(y - reference) <= 1e-30 + 1e-10 * abs(reference)`.
-
-| C compiler | Input | Checked values | Largest relative difference | Result |
-| --- | --- | ---: | ---: | --- |
-| clang | 100 cells, seed 1 | 21,100 | 3.23e-14 | PASS |
-| GCC | 100 cells, seed 1 | 21,100 | 3.66e-14 | PASS |
-| clang | 10,000 cells, seed 2026 | 2,110,000 | 2.96e-13 | PASS |
-| GCC | 10,000 cells, seed 2026 | 2,110,000 | 2.75e-13 | PASS |
-
-The 211 columns are temperature, pressure, and 209 evolving species. TS1 has
-210 declared species and 547 reactions; the remaining species is the
-parameterized third body. The small run uses the supplied MICM final state;
-the full run uses a newly executed reference built with the flags above.
-Every repeated native timing run also passed the full comparison. The largest
-relative difference in the full runs occurred for BCARY in cell 4179.
-
-Additional clang gate runs on the 100-cell input passed with group sizes
-1, 3, 7, 31, 32, 64, and 257 (the last capped at 100), thread counts 1, 2, 3,
-and 10, and static/dynamic/guided scheduling with different chunk sizes. The
-largest relative difference stayed 3.23e-14. The full 10,000-cell tuning sweep
-also passed for group sizes 16, 32, 64, 128, and 256. Group assignment does not
-change any group's arithmetic.
-
-The retained translator was rerun from the supplied TS1 source, and its output
-was byte-for-byte identical to the committed `configs/ts1.json`.
-
-## Timing
-
-Workload: **10,000 distinct cells, seed 2026, 100 timed steps, DT = 30 s**.
-Times are the programs' `elapsed_ms`, excluding initialization, the single
-warm-up solve, and output. Runs were executed sequentially, with no concurrent
-build or test job. The C implementation uses groups of 32 and dynamic scheduling;
-MICM uses its reference program's default of one group per worker. Both use
-all 10 cores unless explicitly restricted.
-
-| Program | Threads | Samples | Median elapsed_ms | Speedup over corresponding MICM run |
+| Point | Target level | Lowest overall digits, 9 cases | Lowest species digits | Geometric mean of six 10,000-cell median times (ms) |
 | --- | ---: | ---: | ---: | ---: |
-| C, clang | 10 | 5 | **8,236.661** | **3.25x** |
-| C, GCC | 10 | 3 | 9,556.184 | 2.80x |
-| MICM, clang++ | 10 | 3 | 26,803.373 | 1.00x |
-| C, clang | 1 | 1 | 45,282.753 | 3.23x |
-| MICM, clang++ | 1 | 1 | 146,247.295 | 1.00x |
+| economy | 2 | 2.266 | 1.271 | 4,475.6 |
+| fast3 | 3 | 3.086 | 2.057 | 6,119.0 |
+| balanced | 3 | 3.433 | 2.490 | 7,138.4 |
+| conservative | 3 | 3.867 | 3.065 | 9,932.2 |
 
-Raw all-core times in milliseconds:
+The geometric mean is a descriptive summary, not a claim about the experimenter’s undisclosed ranking aggregation. Accuracy uses full disclosed 1,000-cell cases and full 96-cell stress cases. The 10,000-cell runs are scored on the disclosed 1,000-cell prefix only; the C operating points’ full trajectories are checked for finite/nonnegative states by the native runner.
 
-- C/clang: 7,772.185; 8,436.673; 8,308.654; 8,236.661; 8,227.012.
-- C/GCC: 9,556.184; 9,585.853; 9,465.783.
-- MICM/clang++: 26,749.312; 27,120.543; 26,803.373.
+## Disclosed accuracy
 
-The single-core figures are single observations for comparison, not medians
-from repeated runs. These local measurements are separate from the experiment's
-idle-machine, undisclosed-seed ranking procedure. Linux/x86-64 was not available
-for execution; portability was checked through the source restrictions and the
-two supplied compilers on this host.
+Each entry is **overall / worst-species digits** from the supplied scorer.
 
-Each cell took nine internal steps per timed solve, with no rejections. Counters
-are summed over independent states, so their totals differ with group count:
+| Scenario | economy | fast3 | balanced | conservative |
+| --- | ---: | ---: | ---: | ---: |
+| tier1-30s | 5.357 / 4.667 | 5.463 / 4.813 | 5.463 / 4.813 | 5.463 / 4.813 |
+| diurnal-30min | 2.266 / 1.271 | 3.343 / 2.299 | 3.612 / 2.721 | 4.008 / 3.433 |
+| diurnal-10min | 2.590 / 1.446 | 3.170 / 2.157 | 3.466 / 2.607 | 3.975 / 3.395 |
+| diurnal-5min | 2.794 / 1.949 | 3.139 / 2.099 | 3.449 / 2.580 | 3.867 / 3.065 |
+| polluted-10min | 2.456 / 1.362 | 3.086 / 2.060 | 3.433 / 2.509 | 3.947 / 3.199 |
+| clean-10min | 2.622 / 1.562 | 3.224 / 2.259 | 3.553 / 2.667 | 4.125 / 3.349 |
 
-| Counter | C, 313 groups | MICM, 10 groups | MICM, one group |
+## Native timing at 10,000 cells
+
+Milliseconds, **median of five sequential runs**, ten requested threads. No build, native validation suite, or other solver benchmark from this repository was run concurrently. The C timer includes all steps and photolysis/rate updates, and excludes input, setup, diagnostics, snapshot copying and output. MICM uses its unchanged supplied timer, which also includes in-memory snapshot copying. These are local measurements; machine-wide idleness is not independently certified.
+
+| Scenario | MICM default 3-stage | economy | fast3 | balanced | conservative |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| tier1-30s | 27,279.4 | 2,167.2 | 2,363.9 | 2,345.3 | 2,335.6 |
+| diurnal-30min | failed 5/5 | 3,642.1 | 6,494.8 | 7,835.0 | 12,532.5 |
+| diurnal-10min | failed 5/5 | 4,975.3 | 7,340.3 | 8,513.1 | 13,092.4 |
+| diurnal-5min | 78,927.6 | 7,116.6 | 8,031.8 | 10,847.4 | 13,768.4 |
+| polluted-10min | failed 5/5 | 6,035.7 | 8,607.2 | 9,732.5 | 14,236.5 |
+| clean-10min | 39,189.8 | 4,764.6 | 6,737.3 | 8,011.6 | 12,779.7 |
+
+C uses groups of 32 cells with dynamic group scheduling. The MICM baseline uses its default one group per requested thread: 1,000 cells per group here, and 100 in the smaller comparison below. The implementations, grouping and adaptive policies therefore differ; this is a comparison against the supplied baseline, not an attribution of all time differences to the integration formula.
+
+The default baseline fails on some long scenarios and does not meet the two-digit target on the 5-minute diurnal case. Consequently, its timings are not an equal-accuracy speed comparison, and no speedup is assigned to failed runs. For a robust three-stage baseline, scan 05 uses rtol `1e-5`, atol `1e-18`, and 100,000 maximum steps.
+
+| 1,000-cell scenario | MICM default digits / worst | Tight MICM 3-stage ms | Tight overall / worst |
 | --- | ---: | ---: | ---: |
-| internal_steps | 281,700 | 9,000 | 900 |
-| accepted | 281,700 | 9,000 | 900 |
-| rejected | 0 | 0 | 0 |
-| function_calls | 563,400 | 18,000 | 1,800 |
-| jacobian_updates | 281,700 | 9,000 | 900 |
-| decompositions | 281,700 | 9,000 | 900 |
-| solves | 845,100 | 27,000 | 2,700 |
+| tier1-30s | 4.629 / 4.031 | 2,731.0 | 6.475 / 5.645 |
+| diurnal-30min | failed | 5,803.0 | 5.142 / 4.066 |
+| diurnal-10min | failed | 10,389.0 | 5.392 / 4.216 |
+| diurnal-5min | 1.215 / 0.214 | 16,274.5 | 5.518 / 4.48 |
+| polluted-10min | failed | 11,957.2 | 5.639 / 4.726 |
+| clean-10min | 2.959 / 2.162 | 9,885.4 | 5.268 / 4.134 |
 
-[`validation/benchmarks.json`](validation/benchmarks.json) retains the raw
-elapsed times, counters, and native gate results. Reproduction commands are in
-[`README.md`](README.md). Environment recreation/update was checked with
-`make env`; the final clang executable was rebuilt and matched the binary used
-for the recorded measurements byte for byte. Dynamic dependency inspection
-showed only the compiler's OpenMP runtime and the system C runtime for both C
-executables, with no Python, MICM, or MUSICA dependency.
+These tight-baseline times are single native observations and obtain more accuracy than the declared targets. Their purpose is to show a working MICM three-stage comparison alongside the default failures.
 
-Input SHA-256 checksums:
+## Independent 48-hour cases
 
-```text
-configs/ts1.json:
-73843ae0472aa6e69f44a75967e5059d1a592276c58c8c761e4f5ec755a1e65e
-tests/cases.txt:
-95615128d26687fbf371e99551062160d9d0c0aff4e5c8c36ca38e4dec840da4
-10,000-cell seed-2026 CSV generated by the supplied script:
-43febf31a0a1f8e0acfe02d93ac96d95ecc024df9572547dd1000926a85ad8b5
-```
+The new cases use 96 cells each: winter night at 60° N; summer at 65° N with NOx multiplied by 20; and tropical conditions at 10° S with NOx multiplied by 0.03. Seeds, forcing and reference hashes are in [validation/stress-references.json](validation/stress-references.json). Two tight six-stage references agree to 10.193–10.412 overall digits and at least 9.494 digits for every species.
+
+| Scenario | economy | fast3 | balanced | conservative |
+| --- | ---: | ---: | ---: | ---: |
+| winter-night-48h | 2.7 / 1.868 | 3.505 / 2.934 | 3.692 / 3.147 | 3.981 / 3.477 |
+| summer-polluted-48h | 2.842 / 2.003 | 3.41 / 2.544 | 3.72 / 2.872 | 4.232 / 3.441 |
+| tropical-clean-48h | 3.158 / 2.058 | 3.163 / 2.057 | 3.601 / 2.49 | 4.249 / 3.162 |
+
+## Projection and implementation checks
+
+| Point | Largest individual projection (mol m-3) | Largest trajectory-total projection per cell, averaged across cells (mol m-3) |
+| --- | ---: | ---: |
+| economy | 9.976e-18 | 5.957e-18 |
+| fast3 | 9.992e-20 | 1.001e-19 |
+| balanced | 9.993e-20 | 8.184e-20 |
+| conservative | 9.992e-20 | 7.729e-20 |
+
+Projection totals sum concentration increments over species and accepted steps; they are not elemental mass balances. All indirect effects remain included in the scored trajectories.
+
+Both compilers pass **all 680 named Tier 1 cases**, the native extension tests, 147 C/prototype comparisons with identical operation counts, seven stiff analytical cases, linear-chain order checks, failure/rejection tests, the projected SDIRK error regression, and the scenario I/O/forcing/thread contract. Every declared point also passes all nine accuracy cases with GCC.
+
+- clang, small Tier 1 gate: PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)
+- clang, large Tier 1 gate: PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)
+- gcc, small Tier 1 gate: PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.66e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)
+- gcc, large Tier 1 gate: PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.75e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)
+
+Authoritative records: [compiler gates](validation/tier3-gates.json), [clang cases](validation/tier3-clang-cases.txt), [GCC cases](validation/tier3-gcc-cases.txt), and [scans/](scans/). The legacy implementation, configuration and all named cases are retained. Historical Tier 1 measurements are archived in [validation/TIER1_RESULTS.md](validation/TIER1_RESULTS.md). Linux was not available for execution; portability is supported by source inspection and the two supplied compilers on this host.
+
+## Work–precision plots
+
+The x coordinate includes the species constraint: `min(overall digits, worst-species digits + 1)`. Vertical lines mark levels 2 and 3. Exploratory scans show individual observations; final points and the MICM default baseline show five-run medians and full timing ranges. Failed baseline cases are labeled without assigning a time. The six exploratory observations known to overlap reference compilation and the six superseded SDIRK observations are omitted from the plot and remain in the raw scan logs. Scan 11 supplies the corrected SDIRK points.
+
+![Exploratory work–precision](figures/work-precision-scans.png)
+
+![Operating-point work–precision](figures/work-precision-operating-points.png)
+
+Vector exports: [scan SVG](figures/work-precision-scans.svg), [operating-point SVG](figures/work-precision-operating-points.svg). Regenerate with `.conda/bin/python tools/plot_scans.py`.

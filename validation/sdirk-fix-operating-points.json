@@ -1,0 +1,23 @@
+{
+  "final-1000.csv": {
+    "runs": 24,
+    "identical_outputs_and_counts": true
+  },
+  "final-stress.csv": {
+    "runs": 12,
+    "identical_outputs_and_counts": true
+  },
+  "gcc-operating-points.csv": {
+    "runs": 24,
+    "identical_outputs_and_counts": true
+  },
+  "gcc-stress.csv": {
+    "runs": 12,
+    "identical_outputs_and_counts": true
+  },
+  "final-10000.csv": {
+    "runs": 120,
+    "identical_outputs_and_counts": true,
+    "identical_outputs_and_counts_across_five_repeats": true
+  }
+}

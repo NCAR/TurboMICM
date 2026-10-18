@@ -50,8 +50,9 @@ convergence exceeds 10 overall digits, comfortably beyond the targets here.
 All added C formulas agree with a dense Python prototype on nonlinear chemistry
 with differing cells and changed rates, with identical operation counts.
 Seven analytical stiff-chain tests check concentrations, linear conservation and
-nonnegativity; step-halving tests recover the expected second, third or fourth
-orders. The prototype implements its own dense LU and reuses factors explicitly.
+nonnegativity; step-halving on a nonstiff linear chain recovers the expected
+second, third or fourth orders. The prototype implements its own dense LU and
+reuses factors explicitly.
 These small-case checks establish implementation fidelity; scenario scoring
 establishes application accuracy.
 

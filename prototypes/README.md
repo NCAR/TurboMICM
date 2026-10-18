@@ -22,7 +22,7 @@ The five retained Tier 1 mathematical tableaux are shared data in this test
 (already tested by the Tier 1 suite). The new RODAS3.1 tableau is independently
 transcribed in Python; SDIRK's equations are implemented separately. Tests also
 check seven stiff irreversible-chain solutions, conservation, nonnegativity,
-formal convergence orders on a nonstiff chain, zero/invalid intervals and
+convergence orders on a nonstiff linear chain, zero/invalid intervals and
 invalid options. Native scenario contract tests cover real TS1 input/output,
 forcing interpolation, boundary values, snapshot timing and thread independence.
 A scalar stiff-decay regression also checks that projecting the SDIRK candidate

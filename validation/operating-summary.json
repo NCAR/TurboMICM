@@ -1,0 +1,66 @@
+{
+  "economy": {
+    "overall": 2.266,
+    "worst": 1.271,
+    "times": {
+      "tier1-30s": 2167.162,
+      "diurnal-30min": 3642.132,
+      "diurnal-10min": 4975.282,
+      "diurnal-5min": 7116.564,
+      "polluted-10min": 6035.683,
+      "clean-10min": 4764.638
+    },
+    "geometric_ms": 4475.572279897418,
+    "maximum_clip": 9.975528866212355e-18,
+    "largest_mean_projection": 5.9573738033305945e-18,
+    "level": 2
+  },
+  "fast3": {
+    "overall": 3.086,
+    "worst": 2.057,
+    "times": {
+      "tier1-30s": 2363.923,
+      "diurnal-30min": 6494.797,
+      "diurnal-10min": 7340.276,
+      "diurnal-5min": 8031.774,
+      "polluted-10min": 8607.238,
+      "clean-10min": 6737.28
+    },
+    "geometric_ms": 6118.972917448876,
+    "maximum_clip": 9.992323430257499e-20,
+    "largest_mean_projection": 1.0009576546161668e-19,
+    "level": 3
+  },
+  "balanced": {
+    "overall": 3.433,
+    "worst": 2.49,
+    "times": {
+      "tier1-30s": 2345.266,
+      "diurnal-30min": 7835.014,
+      "diurnal-10min": 8513.112,
+      "diurnal-5min": 10847.426,
+      "polluted-10min": 9732.498,
+      "clean-10min": 8011.55
+    },
+    "geometric_ms": 7138.352109589161,
+    "maximum_clip": 9.992582540003863e-20,
+    "largest_mean_projection": 8.184252054012165e-20,
+    "level": 3
+  },
+  "conservative": {
+    "overall": 3.867,
+    "worst": 3.065,
+    "times": {
+      "tier1-30s": 2335.589,
+      "diurnal-30min": 12532.513,
+      "diurnal-10min": 13092.363,
+      "diurnal-5min": 13768.439,
+      "polluted-10min": 14236.517,
+      "clean-10min": 12779.719
+    },
+    "geometric_ms": 9932.160537060287,
+    "maximum_clip": 9.992323430257499e-20,
+    "largest_mean_projection": 7.728814192268251e-20,
+    "level": 3
+  }
+}

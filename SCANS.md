@@ -8,6 +8,12 @@ operation counts, compiler label, source and binary hashes, and failure stderr
 are retained. Accuracy is never replaced with a home-grown approximation.
 Python prepares and scores experiments; it supplies no speed measurements.
 
+The completed record contains **960 native research runs**. It retains 21 failed
+legacy/default-baseline runs; no declared operating-point run failed. Final
+10,000-cell measurements comprise 120 C runs (four points, six cases, five
+repeats) and 30 supplied MICM baseline runs. Failed runs are never assigned a
+speedup or included in timing medians.
+
 The initial scans use all six disclosed 1,000-cell scenarios and ten threads.
 The standard adaptive controls are cell-wise maximum RMS, fresh Jacobians,
 integral control, warm step prediction, and groups of 32. A structural row
@@ -150,6 +156,11 @@ The RODAS3 operating-point formulas are unaffected. Earlier point measurements
 remain under `pre-sdirk-fix-*`; final accuracy and five-run timing series were
 refreshed against the corrected binary. The unchanged MICM baseline binary and
 its complete five-run series remain the same reference comparison.
+All 192 before/after operating-point output hashes and counter records match
+exactly, covering both compilers, the full accuracy cases and the large timing
+cases. Each of the 24 final large configurations also has identical output
+hashes and counters across its five repeats. The comparison record is
+[validation/sdirk-fix-operating-points.json](validation/sdirk-fix-operating-points.json).
 
 ## Scope of the conclusions
 
