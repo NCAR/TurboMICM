@@ -311,8 +311,8 @@ Launch changes
 |---|---|---|---|---|---|---|---|
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45–03:34 | `63d246f` | done, verified |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 04:23–06:03 | `c122d12` | done, verified |
-| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 06:20– | | running |
-| astra-max | gpt-6-astra | max | `0dc7f67` | | | | queued |
+| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 06:20–08:18 | `db44838` | done, verified |
+| astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 08:39– | | running |
 
 ## Tier 3: sol-xhigh
 
@@ -433,3 +433,67 @@ Launch changes
 - Launched after sol-max was collected, archived, and verified. The machine was
   on AC power, with load averages falling from the verification (3.44 over 1
   minute).
+- The whole run was one turn, from the goal at 06:20:34 to its end at 08:18:28
+  (1 h 57 min 54 s), with one context compaction, at 07:29. Both turn contexts
+  show gpt-6-astra at xhigh. The session marked its goal complete and ended with
+  DONE. Claude Code closed it with `/quit` at 08:29, after the record had been
+  idle for 10 minutes. Codex's one warning was its startup notice that `-c` and
+  `--search` run it without the shared background server, as for every launch.
+- Tokens: 684,296 total; input 467,979 (plus 18,585,984 cached); output 216,317
+  (133,384 reasoning). Codex's weekly limit went from 28 % used to 33 %.
+- Web: 7 web items: 3 searches (6 queries), 3 page openings (6 pages, one of
+  them refused by a CAPTCHA), and 1 page read. It searched for Sandu et al.
+  (1997), Rosenbrock W-methods with Jacobian reuse, Verwer and Blom's chemistry
+  integrators, Alexander's (1977) diagonally implicit Runge–Kutta methods, and
+  linearly implicit Euler extrapolation (Deuflhard; Hairer). It read Sandu et
+  al. (1997, part II), Verwer et al. (1999) on ROS2, Butcher's tutorial on
+  implicit Runge–Kutta methods, Hairer and Lubich's overview, and the abstract
+  of Hairer and Lubich (1988). REFERENCES.md cites every page it read, and part
+  I of Sandu et al. from a search result.
+- 6 commits after `fbd365c`, from 06:26 to 08:17, ending `db44838`, "Complete
+  operating-point evaluation, work-precision figures and final research
+  reports": 106 files changed, 20,069 lines added and 277 removed. No remote;
+  the working tree is clean.
+- Compliance: no command reads outside its directory and the read-only inputs,
+  apart from Codex's own check for AGENTS.md in the parent folders; no install or
+  download command, and no path into another run or the held-out folder.
+- Timer: `src/scenario.c` times each block of up to four steps (cut at
+  snapshots) whole: the photolysis update at the start of every step, the rate
+  constants (all of them in the first step, then only those that depend on
+  photolysis, since all other conditions stay constant), the integration, and a
+  per-step check for non-finite or negative values. Setup, reading the input,
+  and writing snapshots and output are outside it.
+- Self-reported, not yet verified: both compilers pass the Tier 1 gate; five
+  points, all with atol 1e-18, 32-cell groups, cached rate constants, four-step
+  blocks, and dynamic scheduling: two RODAS3 points (rtol 1e-2 and 3e-3) for
+  level 2, and three fourth-order linearly implicit Euler extrapolation points
+  (rtol 4e-3 to 1e-3) for level 3. The recommended extrapolation point (rtol
+  2e-3) reaches 3.45 digits overall and 2.55 for every species on the disclosed
+  scenarios, 2.38 times faster (summed medians on 1,000 cells) than its own C
+  three-stage Rosenbrock at rtol 1e-3 and atol 1e-18, the loosest setting it
+  found to reach level 3.
+- Other load during the session: Claude Code made two read-only progress checks.
+  No builds, tests, or timing ran.
+- Collected as `tier3/astra/xhigh`; transcript
+  `transcripts/tier3/astra-xhigh.jsonl.gz`.
+- Verified, 08:32–08:38, with `admin/verify_tier3.py`
+  (`results/2026-10-18-tier3-astra-xhigh-verification`): both compilers build
+  without warnings; 680 PASS, 0 FAIL, 0 N/A with each, as in Tier 1; the Tier 1
+  TS1 gate passes (largest relative difference 2.03e-13 with clang, 2.14e-13
+  with gcc-15); the audit finds nothing outside the rules. All five points pass
+  the gate on the 6 disclosed and 5 held-out scenarios. fast and balanced reach
+  level 2 on all 11, and accurate, recommended, and strict reach level 3 on all
+  11. The disclosed scores match the agent's OPERATING_POINTS.md to the third
+  decimal. fast's worst species reaches 1.035 digits, against a threshold of 1.
+
+## Tier 3: astra-max
+
+- Session start: 2026-10-18 08:39:53, launched by Claude Code with
+  `admin/launch_codex_run.sh --tier3 astra-max gpt-6-astra max`; the goal was
+  sent at 08:39:57. The session record shows gpt-6-astra at max, base
+  instructions from gpt-6-astra, Codex 0.163.0, and no model switch; the `codex`
+  command line carries `--search`.
+- Codex session `01a14f74-7739-7a31-b3f8-1042c4a35f62`.
+- Launched after astra-xhigh was collected, archived, and verified. The machine
+  was on AC power, with load averages near 3 from the verification that had
+  just ended (2.96 over 1 minute).
