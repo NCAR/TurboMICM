@@ -225,8 +225,8 @@ and groups larger than the cell count become one actual group. `OMP_SCHEDULE`
 selects the OpenMP runtime schedule; static is the default. No valid parameter
 selection bypasses error/status checks; a particularly strict or inefficient
 combination can return an explicit integration failure instead of a result.
-Only rtol, atol and group_size affect `micm*` methods; experimental options are
-for the new engine. Their mere presence does not change the default MICM path.
+Only rtol, atol and group_size are accepted for `micm*` methods; experimental
+options require a new-engine method. Defaults never change the MICM path.
 
 The I controller multiplies h by safety E^(-1/q), with q the embedded error's
 order. PI uses safety E^(-0.7/q) E_previous^(0.4/q), after an accepted step and

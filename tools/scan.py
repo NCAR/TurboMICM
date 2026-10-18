@@ -7,6 +7,7 @@ All timing comes from bin/ts1_scenario; accuracy comes from the supplied score.p
 import argparse
 import csv
 import itertools
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -20,7 +21,8 @@ NAMES = ['tier1-30s', 'diurnal-30min', 'diurnal-10min', 'diurnal-5min', 'pollute
 FIELDS = ['suite', 'configuration', 'scenario', 'repeat', 'compiler', 'threads', 'returncode',
           'overall_digits', 'worst_species', 'worst_digits', 'gate', 'elapsed_ms', 'internal_steps',
           'accepted', 'rejected', 'function_calls', 'jacobian_updates', 'decompositions', 'solves',
-          'nonlinear_iterations', 'cells', 'groups', 'message']
+          'nonlinear_iterations', 'cells', 'groups', 'message', 'level', 'level_result',
+          'binary_sha256', 'optflags', 'revision']
 
 def configurations(suite):
     if suite == 'baseline':
@@ -48,7 +50,7 @@ def configurations(suite):
                 for j,d in [(1,0),(2,0),(4,0),(8,0),(2,0.2),(4,0.2),(8,0.2),(4,0.5)]]
     raise ValueError(suite)
 
-def run(method, options, name, threads, work):
+def run(method, options, name, threads, work, level=3):
     command = [str(ROOT/'bin/ts1_scenario'), '--threads', str(threads), '--method', method]
     for key,value in options.items(): command += ['--option', f'{key}={value}']
     command += [str(SCENARIOS/name/'scenario.txt')]
@@ -58,12 +60,14 @@ def run(method, options, name, threads, work):
     if result.returncode == 0:
         filename = 'snapshots' if (SCENARIOS/name/'reference_snapshots.csv').exists() else 'final'
         scored = subprocess.run([sys.executable, str(SCENARIOS/'score.py'),
-            str(work/f'ts1_{filename}.csv'), str(SCENARIOS/name/f'reference_{filename}.csv'), '--json'],
+            str(work/f'ts1_{filename}.csv'), str(SCENARIOS/name/f'reference_{filename}.csv'),
+            '--json', '--level', str(level)],
             capture_output=True, text=True)
         try:
             score = json.loads(scored.stdout)
             data.update(overall_digits=score['overall_digits'], worst_species=score['worst_species'][0][0],
-                worst_digits=score['worst_species'][0][1], gate=score['gate'])
+                worst_digits=score['worst_species'][0][1], gate=score['gate'],
+                level=score['level'], level_result=score['level_result'])
         except (ValueError, KeyError, IndexError):
             data.update(gate='FAIL', message='Scoring failed: '+scored.stdout.strip()+' '+scored.stderr.strip())
     else: data['gate']='FAIL'
@@ -76,6 +80,7 @@ def main():
     p.add_argument('--scenario',action='append',choices=NAMES)
     p.add_argument('--threads',type=int,default=10)
     p.add_argument('--repeat',type=int,default=1)
+    p.add_argument('--level',type=float,default=3)
     p.add_argument('--method')
     p.add_argument('--resume',action='store_true')
     p.add_argument('--option',action='append',default=[])
@@ -84,7 +89,11 @@ def main():
     work=ROOT/'results'/('scan-'+a.output.stem)
     work.mkdir(parents=True,exist_ok=True)
     a.output.parent.mkdir(parents=True,exist_ok=True)
-    compiler=(ROOT/'build/configuration.txt').read_text().splitlines()[0]
+    stamp=(ROOT/'build/configuration.txt').read_text().splitlines()
+    compiler=stamp[0]
+    revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+    with (ROOT/'bin/ts1_scenario').open('rb') as binary:
+        digest=hashlib.file_digest(binary,'sha256').hexdigest()
     exists=a.output.exists()
     done=set()
     if a.resume and exists:
@@ -97,8 +106,9 @@ def main():
             config=json.dumps({'method':method,**options},sort_keys=True,separators=(',',':'))
             for name,repeat in itertools.product(a.scenario or NAMES,range(a.repeat)):
                 if (config,name,repeat) in done: continue
-                row=run(method,options,name,a.threads,work)
-                row.update(suite=a.suite,configuration=config,scenario=name,repeat=repeat,compiler=compiler,threads=a.threads)
+                row=run(method,options,name,a.threads,work,a.level)
+                row.update(suite=a.suite,configuration=config,scenario=name,repeat=repeat,compiler=compiler,
+                    threads=a.threads,binary_sha256=digest,optflags=stamp[1],revision=revision)
                 writer.writerow(row); file.flush()
                 print(config,name,row.get('overall_digits','FAIL'),row.get('worst_digits',''),row.get('elapsed_ms',''),flush=True)
 if __name__=='__main__': main()
