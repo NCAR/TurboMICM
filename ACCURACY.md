@@ -30,6 +30,12 @@ Every output value, including those below the scoring threshold, must also be
 finite and at least `-1e-20 mol m-3`. The runner checks finiteness/nonnegativity
 at every external step, including steps that are not snapshots.
 
+Every method and its reference use the same prescribed, frozen external-step
+photolysis values. The 5-, 10- and 30-minute cases therefore test integration
+under different forcing discretizations; these comparisons do not establish
+convergence with respect to the external time step or a continuously varying
+physical sunlight history.
+
 Local `rtol` is **not** the reported global accuracy. Errors can accumulate,
 stiff transients can reduce effective order, clipping can change invariants,
 and adaptive step sequences can cause nonmonotone work–precision curves.
@@ -53,8 +59,9 @@ species. This is four orders below the scoring threshold. At that threshold,
 the recommended `rtol=0.002` contributes `2e-17` to the error scale, so the
 absolute floor does not dominate the smallest officially scored concentrations.
 Below the threshold, species are still integrated with the same complete
-mechanism. Their errors are bounded locally by the absolute tolerance but are
-not guaranteed a particular relative accuracy by the official score.
+mechanism and absolute-plus-relative error weights. The local estimator and
+RMS norm do not provide a rigorous componentwise error bound, and the official
+score does not guarantee a particular relative accuracy for these values.
 
 The original TS1 default absolute tolerance is `1e-3 mol m-3`. It is retained
 for compatibility, but is far too loose to control many atmospheric
@@ -106,7 +113,11 @@ The recommended setting is fourth-order Euler extrapolation with fresh
 Jacobians, proportional control, maximum cell RMS, warm step-size starts,
 `rtol=0.002`, and `atol=1e-18`. The full disclosed sweep found minima of 3.448
 digits overall and 2.550 for the worst species, giving margin beyond the chosen
-criterion. OPERATING_POINTS.md and RESULTS.md report final repeated runs,
+criterion. Over the disclosed recorded values eligible for scoring, its largest
+individual relative error is 0.998% (N2O5 in the 10-minute diurnal case). This
+additional measurement supports the choice but is not a bound at unrecorded
+times or on new scenarios; full species diagnostics are retained in
+`results/species_accuracy.csv`. OPERATING_POINTS.md and RESULTS.md report final repeated runs,
 compiler checks, and the additional 48-hour results, including any operating
 point that does not qualify at its intended level on a stress case.
 

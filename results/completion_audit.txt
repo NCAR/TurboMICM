@@ -1,0 +1,82 @@
+Required deliverables PASS
+Original case list byte identity PASS
+Original mechanisms, tests and solver formulas unchanged PASS
+Integration sources unchanged since final validation PASS
+clang original 680-case suite PASS
+clang nine TS1 comparisons PASS
+clang 44 prototype comparisons PASS
+clang analytic convergence and grouping PASS
+clang generic rate dependencies PASS
+clang scenario I/O checks PASS
+clang warning-free checks PASS
+gcc original 680-case suite PASS
+gcc nine TS1 comparisons PASS
+gcc 44 prototype comparisons PASS
+gcc analytic convergence and grouping PASS
+gcc generic rate dependencies PASS
+gcc scenario I/O checks PASS
+gcc warning-free checks PASS
+Five declared operating points PASS
+Five command examples PASS
+Declared command fast PASS
+Declared command balanced PASS
+Declared command accurate PASS
+Declared command recommended PASS
+Declared command strict PASS
+operating_clang1000 complete accuracy/gate rows PASS
+operating_clang1000 five identical-output repetitions PASS
+operating_clang1000 validated executable provenance PASS
+operating_clang10000 complete accuracy/gate rows PASS
+operating_clang10000 five identical-output repetitions PASS
+operating_clang10000 validated executable provenance PASS
+final_gcc1000 complete accuracy/gate rows PASS
+final_stress_clang complete accuracy/gate rows PASS
+final_stress_gcc complete accuracy/gate rows PASS
+Report input hash operating_clang1000 PASS
+Report input hash operating_clang10000 PASS
+Report input hash final_gcc1000 PASS
+Report input hash final_stress_clang PASS
+Report input hash final_stress_gcc PASS
+Report input hash precision_final1000 PASS
+Report input hash tolerance_final64 PASS
+Documented scan family64.csv PASS
+Documented scan structure64.csv PASS
+Documented scan tolerance64.csv PASS
+Documented scan tolerance_final64.csv PASS
+Documented scan adaptive64.csv PASS
+Documented scan pi64.csv PASS
+Documented scan precision1000.csv PASS
+Documented scan layout256.csv PASS
+Documented scan error64.csv PASS
+Documented scan baselines1000.csv PASS
+Documented scan baseline_precision1000.csv PASS
+Documented scan operating_gcc1000.csv PASS
+Documented scan operating_gcc_final1000.csv PASS
+Documented scan accurate_gcc1000.csv PASS
+Documented scan stress_references.csv PASS
+Documented scan stress_tolerance_gcc.csv PASS
+Documented scan stress_gcc.csv PASS
+Documented scan stress_clang.csv PASS
+Documented scan rate_cache64.csv PASS
+Documented scan blocking1000.csv PASS
+Documented scan final_gcc1000.csv PASS
+Documented scan final_stress_gcc.csv PASS
+Documented scan final_stress_clang.csv PASS
+Documented scan precision_final1000.csv PASS
+Documented scan operating_clang1000.csv PASS
+Documented scan operating_clang10000.csv PASS
+Documented scan tolerance_final64.csv PASS
+Figure artifacts work_precision_1000 PASS
+Figure artifacts work_precision_families PASS
+Figure artifacts timing_10000 PASS
+Blind-review file content PASS
+Portable source construct scan PASS
+Whitespace check PASS
+tier1-30s scaling forcing/settings identity PASS
+diurnal-30min scaling forcing/settings identity PASS
+diurnal-10min scaling forcing/settings identity PASS
+diurnal-5min scaling forcing/settings identity PASS
+polluted-10min scaling forcing/settings identity PASS
+clean-10min scaling forcing/settings identity PASS
+Three rendered figures visually checked PASS
+Staged deliverables whitespace check PASS

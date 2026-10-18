@@ -17,6 +17,14 @@ destination=root/'build/scaling'
 cases=[('tier1-30s',2026,30,101,0,1),('diurnal-30min',101,1800,48,12,1),
        ('diurnal-10min',101,600,144,36,1),('diurnal-5min',101,300,288,72,1),
        ('polluted-10min',102,600,144,36,10),('clean-10min',103,600,144,36,.1)]
+def settings(path):
+    result={}
+    for line in path.read_text().splitlines():
+        line=line.split('#',1)[0]
+        if '=' in line:
+            key,value=line.split('=',1); result[key.strip()]=value.strip()
+    return result
+
 manifest=[]
 for name,seed,dt,steps,snapshot,nox in cases:
     directory=destination/name
@@ -29,6 +37,8 @@ for name,seed,dt,steps,snapshot,nox in cases:
     with (directory/'cells.csv').open() as actual,(source/name/'cells.csv').open() as expected:
         for line in expected:
             assert next(actual)==line,(name,'generated cells differ from supplied prefix')
+    assert (directory/'photolysis.csv').read_bytes()==(source/name/'photolysis.csv').read_bytes(),(name,'forcing differs')
+    assert settings(directory/'scenario.txt')==settings(source/name/'scenario.txt'),(name,'settings differ')
     for filename in ['reference_final.csv','reference_snapshots.csv']:
         original=source/name/filename
         if original.exists():

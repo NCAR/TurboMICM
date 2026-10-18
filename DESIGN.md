@@ -228,7 +228,10 @@ order claim is made for that option. The declared operating points use fresh
 Jacobians. Stage clipping is a separately selectable experiment and is off by
 default. It is not required for output positivity.
 
-**Euler extrapolation.** For each row with `q = 1,...,p`, start at the same
+**Euler extrapolation.** Richardson extrapolation and the linearly implicit
+Euler base are described by Hairer and Lubich (REFERENCES.md, source 5). The
+sequence and control policy below define this implementation. For each row
+with `q = 1,...,p`, start at the same
 initial state and take `q` substeps of length `d = h/q`:
 
 ```
@@ -252,7 +255,9 @@ This simple variable-order policy is an experiment, not an optimal-work order
 selector; its poorer work–precision performance is reported in SCANS.md.
 
 High nonstiff order is not a claim of uniform accuracy for arbitrarily stiff
-nonlinear equations. On the linear scalar equation, the stability function is
+nonlinear equations; stiffness can perturb the usual extrapolation error
+expansion (REFERENCES.md, source 6, abstract). On the linear scalar equation,
+the stability function is
 a weighted sum of `(1-z/q)^(-q)`. Some extrapolated solutions become slightly
 negative for very stiff decay. Their projection and associated conservation
 change are explicitly measured; see ACCURACY.md and the stiff-decay test.
@@ -358,7 +363,9 @@ one custom slot and SURFACE rates on both slots. Conditions and unmarked custom
 inputs are frozen by this scenario contract. Unknown lambda/species callbacks,
 external composition or constraints conservatively select every rate. The API
 requires full initialization before selected updates and a rebuilt list if the
-model or varying inputs change. Every reaction remains in every forcing and
+model or varying inputs change. A newly added rate type must also declare its
+dependencies here, or conservatively select all reactions. Every reaction remains
+in every forcing and
 Jacobian evaluation. `rate-cache=0` recalculates all rate constants every step.
 Unit tests cover every custom mask on unrelated mechanisms, both surface slots,
 third bodies, unknown callbacks and invalid indices.

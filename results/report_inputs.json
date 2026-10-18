@@ -1,0 +1,9 @@
+{
+  "operating_clang1000": "ace6e9e6c33ec1e420097b795a3400c7c6e3c5682c4bd3be8cc8f12264cf1a2c",
+  "operating_clang10000": "71f6c7d781c841535b199fffdf7ce131db35720793b9d1b94fd7fa8bfddadb29",
+  "final_gcc1000": "a5c4fa60301da31b03f17bdfeef239096be0c2f5f311362e5c1be185b6994dbb",
+  "final_stress_clang": "44f955cd7cee2132464c8d4fd6f0feae763d9ee7de4c5fab1bcebc3c319c95a8",
+  "final_stress_gcc": "bb21cdb02c739f1ef2065a402863d54e6821c06e7823b7730fe669c77dd7c61e",
+  "precision_final1000": "7ed4d7f607ca3f825d90ea22be3dc25f1e1ca3049aa39d5581ef648d997a51c3",
+  "tolerance_final64": "894ba640375e0e5504f13c5ecfbfb7853811f56b54395cfd6001aa588469cb4e"
+}

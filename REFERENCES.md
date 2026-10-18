@@ -34,6 +34,22 @@ tables have their existing MICM attribution.
    moment equations, with the last embedded weight fixed to zero. Newton
    iteration, stopping rules, and error/reuse experiments are local implementations.
 
+
+5. Ernst Hairer and Christian Lubich, *Numerical solution of ordinary
+   differential equations*, author-hosted overview, sections 3.3 and 4.5.
+   [Author PDF](https://www.unige.ch/~hairer/preprints/pcam-ode.pdf).
+   Used in the final documentation review to relate the implemented construction
+   to Richardson extrapolation and linearly implicit Euler. The substep sequence,
+   fixed-Jacobian policy, error estimator and controller are specified and tested
+   here; no external implementation was consulted or copied.
+6. Hairer and Lubich (1988), *Extrapolation at stiff differential equations*,
+   Numerische Mathematik 52, 377–400, DOI: 10.1007/BF01462235.
+   [Author repository abstract](https://archive-ouverte.unige.ch/unige:12472).
+   Only the public abstract was consulted; full text requires access. Its account
+   of stiffness-dependent perturbations in Euler extrapolation error expansions
+   supports the distinction between formal nonstiff order and measured stiff
+   accuracy. It is not used as a proof for this implementation.
+
 Read-only local sources: `../reference/README.md`, `../reference/micm_cases.txt`,
 `../reference/compare_final.py`, `../scenarios/README.md`,
 `../scenarios/score.py`, and the supplied scenario/reference CSV files. These

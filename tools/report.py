@@ -18,6 +18,8 @@ os.environ['XDG_CACHE_HOME'] = str(ROOT / 'build/cache')
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+plt.rcParams['svg.hashsalt'] = 'chemistry-benchmarks'
 
 NAMES = ['tier1-30s', 'diurnal-30min', 'diurnal-10min', 'diurnal-5min', 'polluted-10min', 'clean-10min']
 POINTS = json.loads((ROOT / 'scans/operating_points.json').read_text())
@@ -107,9 +109,11 @@ def plot_curves(rows, final):
         ax.set_title(scenario); ax.set_yscale('log'); ax.grid(axis='y', alpha=.18)
         ax.set_xlabel('min(overall, worst species + 1), digits'); ax.set_ylabel('Integration time (ms, log scale)')
     handles, labels = axes.flat[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='outside lower center', ncol=4, frameon=False)
+    handles += [Line2D([], [], marker='*', linestyle='', color=COLORS[p], markersize=9) for p in IDS]
+    labels += [LABELS[p] for p in IDS]
+    fig.legend(handles, labels, loc='outside lower center', ncol=5, frameon=False)
     fig.suptitle('1,000 cells · Clang · 10 threads · final driver\nTolerance curves: one run per point; stars: five-run medians of declared configurations', fontsize=13)
-    for ext in ['png', 'svg']: fig.savefig(OUT / ('work_precision_1000.' + ext), dpi=170)
+    for ext in ['png', 'svg']: fig.savefig(OUT / ('work_precision_1000.' + ext), dpi=170, **({'metadata': {'Date': None}} if ext == 'svg' else {}))
     plt.close(fig)
 
 
@@ -127,7 +131,7 @@ def plot_family(rows):
     handles, labels = axes.flat[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='outside lower center', ncol=6, frameon=False)
     fig.suptitle('Family screen · 64 cells · 4 threads · stable tolerance sweep\nHistorical driver: complete rate recalculation and one external step per group visit', fontsize=13)
-    for ext in ['png', 'svg']: fig.savefig(OUT / ('work_precision_families.' + ext), dpi=170)
+    for ext in ['png', 'svg']: fig.savefig(OUT / ('work_precision_families.' + ext), dpi=170, **({'metadata': {'Date': None}} if ext == 'svg' else {}))
     plt.close(fig)
 
 
@@ -143,7 +147,7 @@ def plot_scaling(rows):
     ax.set_xticks(range(6), NAMES); ax.set_ylabel('Integration time (seconds)'); ax.grid(axis='y', alpha=.18)
     ax.set_title('10,000 cells · Clang · 10 threads\nMedian of five; error bars span minimum to maximum')
     ax.legend(ncol=5, frameon=False, loc='upper left')
-    for ext in ['png', 'svg']: fig.savefig(OUT / ('timing_10000.' + ext), dpi=170)
+    for ext in ['png', 'svg']: fig.savefig(OUT / ('timing_10000.' + ext), dpi=170, **({'metadata': {'Date': None}} if ext == 'svg' else {}))
     plt.close(fig)
 
 
@@ -202,11 +206,15 @@ def main():
     totals = {(cells,point):sum(indexed[cells,point,s]['median_ms'] for s in NAMES) for cells,points in [(1000,list(LABELS)),(10000,IDS)] for point in points}
     species = species_report(one)
     plot_curves(read('precision_final1000'),small); plot_family(read('tolerance_final64')); plot_scaling(large)
+    for stem in ['work_precision_1000','work_precision_families','timing_10000']:
+        path=OUT/(stem+'.svg')
+        path.write_text('\n'.join(line.rstrip() for line in path.read_text().splitlines())+'\n')
     public_rows=[]; stress_rows=[]
     for point in IDS:
         lo = limits(one,point); hi = limits(ten,point); st = limits(stress_c+stress_g,point)
         public_rows.append([LABELS[point], f'{lo[0]:.3f}', f'{lo[1]:.3f}', f'{hi[0]:.3f}', f'{hi[1]:.3f}', f'{totals[1000,point]/1000:.3f}', f'{totals[10000,point]/1000:.3f}'])
-        stress_rows.append([LABELS[point],f'{st[0]:.3f}',f'{st[1]:.3f}', 'PASS'])
+        level = next(p['level'] for p in POINTS if p['id']==point)
+        stress_rows.append([LABELS[point],f'{st[0]:.3f}',f'{st[1]:.3f}', f'L{level}: PASS'])
     text = '''# Accuracy and performance
 
 Fourth-order linearly implicit Euler extrapolation at `rtol=0.002`, `atol=1e-18`
@@ -279,8 +287,9 @@ Looser tested MICM3 tolerances 0.003 and 0.01 do not pass that across-scenario
 criterion. This is the fastest qualifying MICM3 setting in the tested grid,
 not a proof that no intermediate tolerance would improve it. The C baseline
 uses the same rate cache and scheduling as the new solvers; the supplied C++
-runner is unchanged. Thus C-to-C speed ratios more directly isolate integration
-methods, while C++ ratios also include library and driver differences.
+runner is unchanged. Thus C-to-C speed ratios more directly isolate integrator
+and adaptive-control changes, while C++ ratios also include library and driver
+differences.
 
 '''
     for point in ['accurate','recommended']:
@@ -317,7 +326,7 @@ holdouts. The table reports minima across all three cases and both compilers.
     worst=max(species,key=lambda r:r['max_relative'])
     text += f'The recommended point has a largest individual scored relative error of {100*max_error:.3f}% ({worst["species"]}, {worst["scenario"]}), illustrating that an RMS criterion is not a pointwise bound. All-species RMS and maximum errors are retained in `results/species_accuracy.csv`.\n\n'
     key_species=['O3','OH','HO2','NO','NO2','H2O2']
-    text+=table(['Species','Minimum digits across six cases','Maximum individual relative error'],[[s,f'{min(r["digits"] for r in species if r["species"]==s):.3f}',f'{100*max(r["max_relative"] for r in species if r["species"]==s):.3f}%'] for s in key_species if any(r['species']==s for r in species)])+'\n\n'
+    text+=table(['Species','Minimum digits across six cases','Maximum individual relative error'],[[s,f'{min(r["digits"] for r in species if r["species"]==s):.3f}',f'{100*max(r["max_relative"] for r in species if r["species"]==s):.3g}%'] for s in key_species if any(r['species']==s for r in species)])+'\n\n'
     text+='''Projection is measured and charged to the local error norm, but does not exactly
 preserve elemental invariants. A deliberately stiff conservative test documents
 that effect; [ACCURACY.md](ACCURACY.md) states the budget and its limits. Reference
@@ -357,6 +366,8 @@ retaining every timing/log and the first state of each configuration/scenario.
 
 `results/operating_summary.csv` contains medians, ranges, accuracy and work;
 `scans/` retains every configuration and raw measured row, including failures.
+`results/disclosed_inputs.json` records hashes of the supplied inputs and
+references; the scaling and stress manifests record their generated inputs.
 `tools/report.py` regenerates this report, operating points, and PNG/SVG figures.
 It recomputes species diagnostics when raw outputs exist; otherwise it uses the
 retained diagnostics after checking their output hashes against the final scan.

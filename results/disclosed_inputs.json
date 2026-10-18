@@ -1,0 +1,43 @@
+{
+  "tier1-30s": {
+    "scenario.txt": "15394bd7e1b3697b1ea192e81a57fdcae0b70ccbe6ad4394a98bb082d3a4b1df",
+    "cells.csv": "e03bd7d9bf7e253f24213a902b805a51c6aa141db5bad2afd3010afb16a0949a",
+    "photolysis.csv": "f47104c1e5738cfcbdb4ddfc8f85a0190cc9ccbb4abedb2987cbeee2e607e204",
+    "reference_final.csv": "3007bc73f0c5f67451b725a280f1a1c4bcbb70d364116d2722f9ab11f0acb477"
+  },
+  "diurnal-30min": {
+    "scenario.txt": "5ea471ea9c92527ca34d30639e67e6e7a12fa8b9b8e69329eebfe59d8915d7a0",
+    "cells.csv": "4faefc73bd181e84f6e116831469ec619a916ef97742e7b8e65ad7718f9002b4",
+    "photolysis.csv": "d32e13f12296baf18774dbd1238b001476c380114c4ef69643636ccf573f6d3f",
+    "reference_final.csv": "ff9d3b919176f674a5e027e797ffb6837ffbadc173b1529816ea970ff582e039",
+    "reference_snapshots.csv": "6ab55b880baedaf31e425cba88497dfda3843699714f59865a99517af4db5f24"
+  },
+  "diurnal-10min": {
+    "scenario.txt": "4f46eee949acefd03eb028c4d9550c470a25889523019d111997cbaf385f64b3",
+    "cells.csv": "4faefc73bd181e84f6e116831469ec619a916ef97742e7b8e65ad7718f9002b4",
+    "photolysis.csv": "d32e13f12296baf18774dbd1238b001476c380114c4ef69643636ccf573f6d3f",
+    "reference_final.csv": "e328d0523c0210135d64de288f0e34565062aafe4b4c23057f37e95e73bd59e3",
+    "reference_snapshots.csv": "f28e46c44d105eee242a5a639001055545fd6a1b4cae0cc19cf2d1771a6f8cc3"
+  },
+  "diurnal-5min": {
+    "scenario.txt": "b99b9a6a5398ab254896892a0d7571b13f661a3f5589dbe82b5aa75f52c0b68f",
+    "cells.csv": "4faefc73bd181e84f6e116831469ec619a916ef97742e7b8e65ad7718f9002b4",
+    "photolysis.csv": "d32e13f12296baf18774dbd1238b001476c380114c4ef69643636ccf573f6d3f",
+    "reference_final.csv": "e3496329a15a24846c700247968703ed651add7c06a1e77316eebb048d77e389",
+    "reference_snapshots.csv": "c0c49702b40249495e925e92f3c46ca8e7f63ca8f1103120f7c38d474a58a3d9"
+  },
+  "polluted-10min": {
+    "scenario.txt": "963069835b80ac9ec6fde295754cb12f36fa26e1df8f38f7af3c62cd4924d2b2",
+    "cells.csv": "5b6bb9936e3fffd4d74c57e93495e55b53aef2027fd80407e71735a6917a91fd",
+    "photolysis.csv": "d32e13f12296baf18774dbd1238b001476c380114c4ef69643636ccf573f6d3f",
+    "reference_final.csv": "ec5afd14fcfa8f6ae66075695898a6ff4a096d9adb00bc27f9b24c56a17c3b2a",
+    "reference_snapshots.csv": "ecd4318ff9a264ec3a8d1802f89b21ac39840d2f0f5df9e901b31d15e5263736"
+  },
+  "clean-10min": {
+    "scenario.txt": "c3e4eb925617c1f3dc3fd5851013722e133b294303c8402155ccbfeb3cb6523a",
+    "cells.csv": "a257152943d540e32971de62a3b5f611412eddbfc66b1fbd26150a92529907cb",
+    "photolysis.csv": "d32e13f12296baf18774dbd1238b001476c380114c4ef69643636ccf573f6d3f",
+    "reference_final.csv": "1f499b8e894f3fa3f12d008f6f1a1621cbc031a1223a43939fca123dcddd1226",
+    "reference_snapshots.csv": "21465013a040831375a63edb9c42ec450d53bcdf170210cb501e7a95f3a81581"
+  }
+}

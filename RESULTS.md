@@ -1,132 +1,214 @@
-# Validation and performance
+# Accuracy and performance
 
-Measurements were made on the supplied Apple M5 host (10 CPU cores, 16 GB),
-macOS 27.0.1, using Apple Clang 21.0.0 and GCC 15.2.0. Every C object used
-`-O3 -DNDEBUG -std=c11` and the documented warning/include/OpenMP flags.
-MICM was built with `make micm-ref`, using clang++ and the same `-O3 -DNDEBUG`.
-No additional optimization, architecture, floating-point, LTO or profiling flags
-were used.
+Fourth-order linearly implicit Euler extrapolation at `rtol=0.002`, `atol=1e-18`
+is the recommended atmospheric-model configuration. It exceeds the target of
+three overall digits and two digits for every scored species on every disclosed
+case and on the additional 48-hour stress cases. RODAS3 provides cheaper
+configurations for the two-digit tier. All five declared points pass their
+intended level and finite/nonnegative gate in the final measurements.
 
-## CPU cases
+## Scope and measurement
 
-| Compiler | Cases passing | Failing | N/A |
-| --- | ---: | ---: | ---: |
-| Apple Clang 21 | 680 | 0 | 0 |
-| GCC 15.2 | 680 | 0 | 0 |
+Measurements use the supplied 10-core Apple M5 host, macOS 27.0.1, Apple Clang
+21.0.0 and GCC 15.2.0. All C objects use `-O3 -DNDEBUG -std=c11`, the documented
+warnings/includes, and OpenMP. The supplied C++ MICM runner uses clang++ with
+`-O3 -DNDEBUG -std=c++20`. No architecture, floating-point, LTO or profiling
+flags are added. All reported times come from the compiled executables' internal
+integration timers, including forcing/rate updates and validation, excluding
+setup and CSV I/O. There is no scenario warm-up.
 
-The registry contains exactly the 680 supplied IDs, in the original output
-order. Tests include all original solver parameter sets and matrix-layout
-variants, analytical trajectories, dense/sparse operations, rate families,
-constraint initialization, external models, finite differences, and concurrent
-states. Both flow-tube cases compare all 3,601 supplied rows at atol=1e-10
-(the original tests checked ten rows). Chapman regressions exercise both
-hand-built and automatically generated kernels against an independent legacy
-scalar oracle.
+Final Clang measurements use ten threads and five serialized repetitions for
+every configuration/scenario. No other benchmark or build from this task runs
+concurrently; unrelated machine load is uncontrolled. Medians are local evidence,
+not a promise of the evaluator's idle-machine timing. Each repetition has
+bit-identical output and work counts within its configuration/scenario. Reused
+scores require identical output SHA-256 and the same reference/level.
 
-All eight tutorial programs run through `bin/tutorial` and the test harness.
-Every deterministic output byte matches the captured MICM output, including
-printed concentrations and solver statistics. Only measured elapsed time and
-thread announcement order are handled as nondeterministic fields; DECISIONS.md
-describes their validation. Each of the three YAML/JSON configuration examples
-also matches an independently hand-built mechanism: rate constants, forcing,
-Jacobians and ten multi-cell integration intervals, using both LU algorithms
-and both generic and generated evaluators.
+The original six disclosed inputs contain 1,000 cells each. The 10,000-cell
+inputs reproduce their recipes and have a verified identical first 1,000 cells.
+**Accuracy at 10,000 cells is measured only on that reference prefix.** The
+finite/nonnegative gate covers all 10,000 cells, and the C runner checks every
+external step for every cell. The larger input changes the grouping of the final
+eight cells of the reference prefix, so prefix scores need not be identical.
+The remaining 9,000 trajectories have no independent accuracy reference here.
+No experimenter's withheld scenario was available.
 
-Both full builds are warning-free. Runtime dependency inspection of the Clang
-benchmark shows only libomp and the system C runtime. Source/build inspection
-found no nonstandard C APIs, long double, intrinsics, target-specific constructs,
-C++/Python runtime dependencies or forbidden compiler flags. Linux execution
-was not available; portability is supported by the ISO C11/OpenMP implementation
-and compiler checks on this host, rather than a claimed Linux test.
+## Declared points
 
-## TS1 numerical gate
+The following accuracies are minima across the six scenarios, independently for
+overall and worst species. Times sum the six per-scenario medians; this equal
+weight summary is not an official ranking aggregate. Full commands and expected
+levels are in [OPERATING_POINTS.md](OPERATING_POINTS.md).
 
-All comparisons use the supplied `compare_final.py`, with the unchanged gate
-`abs(y - reference) <= 1e-30 + 1e-10 * abs(reference)`. Each run includes one
-warm-up and 100 timed steps of 30 seconds. The comparison includes every cell,
-209 state species, temperature and pressure.
+| Point | Overall, 1k | Species, 1k | Overall, 10k prefix | Species, 10k prefix | Sum seconds, 1k | Sum seconds, 10k |
+| --- | --- | --- | --- | --- | --- | --- |
+| Fast | 2.041 | 1.035 | 2.041 | 1.035 | 1.702 | 15.972 |
+| Balanced | 2.645 | 1.646 | 2.645 | 1.647 | 2.376 | 23.053 |
+| Accurate | 3.201 | 2.390 | 3.201 | 2.390 | 3.648 | 35.796 |
+| Recommended | 3.448 | 2.550 | 3.448 | 2.550 | 4.249 | 40.364 |
+| Strict | 4.064 | 2.919 | 4.065 | 2.919 | 5.208 | 47.520 |
 
-- Supplied 100-cell seed 1: Clang and GCC pass default execution, threads/groups
-  (1,1), (4,7), (1,32), (3,64), (4,101), and generic evaluation (2,13).
-  Largest relative differences: 4.25e-14 (Clang), 5.30e-14 (GCC). The final
-  Clang rebuild also passes the dynamic and guided variants on this input.
-- Fresh 10,000-cell seed 2026 reference: all five Clang all-core runs pass all
-  2,110,000 values. Largest relative difference: 2.03e-13.
-- Fresh MICM ten-thread and one-thread results agree exactly for seed 2026.
+### Per-scenario accuracy at 1,000 cells
 
-- The Clang one-thread 10,000-cell run passes with the same 2.03e-13 maximum.
-- Fresh 137-cell seed 314159: Clang passes all nine settings, including groups
-  of 1/7/13/31/32/64/138, irregular tails, a group larger than the domain, generic
-  evaluation, and static/dynamic/guided scheduling. Maximum relative difference
-  is 7.58e-14. GCC passes the same nine settings with a maximum of 4.46e-14.
-- GCC also passes all 2,110,000 values in the 10,000-cell run, with a maximum
-  relative difference of 2.14e-13.
+Each entry is overall / worst-species digits. C++ MICM3 has the same rounded scores as the C compatibility baseline.
 
-TS1 translation is reproducible: running `tools/translate_ts1.py` on the supplied
-header reproduces `configs/ts1.json` byte for byte, with 210 declared species
-(209 variables and one air-density parameter) and 547 reactions.
+| Scenario | Fast | Balanced | Accurate | Recommended | Strict | C MICM3 |
+| --- | --- | --- | --- | --- | --- | --- |
+| tier1-30s | 5.029 / 4.310 | 5.486 / 4.836 | 6.085 / 5.497 | 6.334 / 5.814 | 6.663 / 6.066 | 6.348 / 5.619 |
+| diurnal-30min | 2.102 / 1.035 | 2.739 / 1.646 | 3.670 / 2.529 | 3.824 / 2.689 | 4.064 / 2.919 | 3.338 / 2.124 |
+| diurnal-10min | 2.527 / 1.393 | 2.728 / 1.681 | 3.213 / 2.390 | 4.196 / 3.015 | 4.562 / 3.334 | 3.924 / 2.693 |
+| diurnal-5min | 2.041 / 1.153 | 3.162 / 2.096 | 3.448 / 2.550 | 3.448 / 2.550 | 4.824 / 3.674 | 4.214 / 3.353 |
+| polluted-10min | 2.401 / 1.300 | 2.645 / 1.729 | 3.927 / 2.794 | 4.137 / 2.959 | 4.578 / 3.412 | 3.918 / 2.765 |
+| clean-10min | 2.537 / 1.525 | 2.765 / 1.792 | 3.201 / 2.501 | 4.243 / 3.084 | 4.553 / 3.403 | 3.887 / 2.744 |
 
-## Timings
+### 1,000 cells: per-scenario median milliseconds
 
-The input is generated by the supplied `make_cells_csv.py 10000 2026`.
-The measured interval excludes configuration/model construction, CSV reading,
-rate initialization, the warm-up and final CSV writing. Runs were sequential;
-no compilation or other benchmark was launched concurrently.
+| Scenario | Fast | Balanced | Accurate | Recommended | Strict | C MICM3 | C++ MICM3 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| tier1-30s | 154.4 | 164.3 | 358.4 | 377.0 | 396.9 | 819.1 | 2704.6 |
+| diurnal-30min | 213.9 | 336.6 | 447.5 | 543.8 | 729.9 | 818.4 | 2602.1 |
+| diurnal-10min | 286.7 | 419.6 | 587.8 | 716.5 | 885.7 | 1773.4 | 5640.1 |
+| diurnal-5min | 433.3 | 520.8 | 961.9 | 1026.7 | 1145.8 | 3116.2 | 9694.2 |
+| polluted-10min | 348.2 | 539.2 | 747.2 | 948.1 | 1221.4 | 1856.3 | 5844.0 |
+| clean-10min | 265.3 | 395.4 | 544.9 | 637.2 | 828.4 | 1718.0 | 5431.0 |
 
-| Implementation | Threads | Cell group | Runs | Elapsed ms |
-| --- | ---: | ---: | ---: | ---: |
-| MICM / clang++ | 1 | 10,000 | 1 | 143,929.029 |
-| MICM / clang++ | 10 | 1,000 | 1 | 28,084.099 |
-| C / Clang | 1 | 32 | 1 | 38,283.845 |
-| C / Clang | 10 (default) | 32 | 5 | **7,306.806 median** |
-| C / GCC 15 | 10 (default) | 32 | 1 | 7,785.417 |
+### 10,000 cells: per-scenario median milliseconds
 
-The five C times were 6,893.911, 7,146.751, 7,306.806, 7,520.881 and 7,473.683 ms.
-The median is 19.7 times faster than this one-thread MICM measurement, and 3.84
-times faster than the ten-thread MICM measurement. The one-thread C run is
-3.76 times faster than the one-thread MICM run. These are local measurements,
-not a prediction of the evaluator's idle-machine median or another architecture.
-The reference comparisons have one timed sample each; the supplied reference
-README separately reports a one-thread median of 137,383 ms for this seed.
+| Scenario | Fast | Balanced | Accurate | Recommended | Strict |
+| --- | --- | --- | --- | --- | --- |
+| tier1-30s | 1390.8 | 1541.3 | 3552.5 | 3639.3 | 3694.2 |
+| diurnal-30min | 1960.3 | 3212.0 | 4348.6 | 5181.2 | 6673.8 |
+| diurnal-10min | 2629.7 | 4041.4 | 5808.7 | 6899.9 | 8277.2 |
+| diurnal-5min | 4141.7 | 5124.5 | 9595.6 | 9877.2 | 10595.3 |
+| polluted-10min | 3348.6 | 5261.2 | 7240.8 | 8905.6 | 10871.3 |
+| clean-10min | 2500.5 | 3872.7 | 5249.6 | 5860.8 | 7408.3 |
 
-Default C timed statistics: 281,700 internal/accepted steps, zero rejected steps,
-563,400 forcing calls, 281,700 Jacobian updates and factorizations, and 845,100
-linear solves. MICM's one-thread statistics are 900 accepted/internal steps,
-1,800 forcing calls, 900 Jacobians/factorizations and 2,700 solves. The difference
-is the number of independently controlled groups (313 versus one); each group
-uses nine accepted internal steps per requested interval. No tolerance or solver
-formula was changed to obtain the timing.
+![10,000-cell timing medians and ranges](results/timing_10000.png)
 
-A 20-step pilot on the same 10,000 cells compared group sizes 16/32/64/128/256,
-with static and dynamic scheduling. Static times were 1,419/1,431/1,511/1,716/2,605
-ms; dynamic times were 1,404/1,457/1,494/1,703/2,581 ms. The small difference
-between 16 and 32 and between schedulers did not justify replacing the existing
-32-cell/static default. All choices remain runtime parameters.
+### Work on the six 1,000-cell scenarios
 
-## Reproduction
+Totals count group operations in one repetition of each scenario, with 32-cell groups and an eight-cell tail. Rate evaluations are a separate per-cell counter in the CSV. Extrapolation spends more factorizations per trial but accepts larger steps.
 
-```sh
-make env
-make test-cpu CC=clang
-make test-cpu CC=gcc-15
-make cpu CC=clang
-make micm-ref
-.conda/bin/python tools/check_ts1.py --output build/ts1-checks
-```
+| Point | Trials | Forcing | Jacobians | LU | Solves |
+| --- | --- | --- | --- | --- | --- |
+| Fast | 44,065 | 128,651 | 40,521 | 44,065 | 176,260 |
+| Balanced | 63,444 | 181,483 | 54,595 | 63,444 | 253,776 |
+| Accurate | 39,001 | 271,426 | 37,420 | 156,004 | 390,010 |
+| Recommended | 45,160 | 313,923 | 42,963 | 180,640 | 451,600 |
+| Strict | 54,755 | 379,446 | 50,916 | 219,020 | 547,550 |
+| C MICM3 | 366,077 | 714,451 | 366,077 | 366,077 | 1,098,231 |
 
-`tools/check_ts1.py` accepts another input/reference pair, cell count, and binary.
-It checks scalar, irregular-tail, oversized, static/dynamic/guided and generic
-variants. `tools/benchmark.py` runs sequential repetitions, saves stdout and final
-CSV files, optionally applies the supplied gate after each run, and records all
-measurements and their median in `summary.json`. For example:
+## MICM comparison and work–precision
 
-```sh
-.conda/bin/python tools/benchmark.py --input CELLS_CSV --output build/timings \
-  --expected MICM_FINAL_CSV --repeats 5
-```
+The unchanged MICM3 defaults remain available. On the disclosed long runs their
+`atol=1e-3` is too loose: the default fails on the 30-minute diurnal and polluted
+cases and misses level three on other cases. Those runs remain in
+`scans/baselines1000.csv`; their speed is not used as an accuracy-qualified baseline.
+The original C and supplied C++ MICM3 solvers agree in their measured accuracy
+when given matching explicit tolerances and group size.
 
-Compact machine-readable evidence is retained in `results/benchmarks.json` and
-`results/validation.json`. Full local run logs and CSVs are under ignored `build/`.
+The repeated matched baseline uses `rtol=0.001`, `atol=1e-18`, group size 32 and
+100,000 maximum attempts. It passes level three on all six disclosed scenarios.
+Looser tested MICM3 tolerances 0.003 and 0.01 do not pass that across-scenario
+criterion. This is the fastest qualifying MICM3 setting in the tested grid,
+not a proof that no intermediate tolerance would improve it. The C baseline
+uses the same rate cache and scheduling as the new solvers; the supplied C++
+runner is unchanged. Thus C-to-C speed ratios more directly isolate integrator
+and adaptive-control changes, while C++ ratios also include library and driver
+differences.
 
-Keep outputs inside this checkout. `make_cells_csv.py` writes a named CSV in its
-working directory; run it from a directory under `build/` when regenerating inputs.
+The **accurate** point is 2.77× faster than the C MICM3 baseline and 8.75× faster than C++ MICM3 by summed scenario medians.
+
+The **recommended** point is 2.38× faster than the C MICM3 baseline and 7.51× faster than C++ MICM3 by summed scenario medians.
+
+![Final full-domain work–precision curves](results/work_precision_1000.png)
+
+The horizontal criterion is `min(overall digits, worst-species digits + 1)`;
+reaching L is equivalent to the combined accuracy requirement. Curves follow
+local tolerances, so nonmonotone segments are meaningful. Curves use single
+runs with the final implementation; stars show the five-run declared-point
+medians. C++ MICM3 is shown at the matched qualifying tolerance.
+
+![Method-family work–precision screen](results/work_precision_families.png)
+
+The 64-cell plot is the stable-build repetition of the tolerance screen. It uses
+the historical driver before constant-rate caching and blocking; do not compare
+its absolute times with the final driver plot. It shows why SDIRK2/3 and lower
+extrapolation order were not selected. [SCANS.md](SCANS.md) describes controlled
+structural comparisons, unsuccessful variants and provenance limitations.
+
+## Stress tests and accuracy limits
+
+The additional summer/winter/tropical 48-hour cases use 128 cells and different
+seeds, forcing and pollution. Tight/tighter six-stage MICM references agree by
+at least 10.230 overall digits and 9.483 worst-species digits. They informed
+selection: the previously considered extrapolation `rtol=0.006` failed in the
+tropical case and was replaced by `0.004`. These are stress tests, not untouched
+holdouts. The table reports minima across all three cases and both compilers.
+
+| Point | Overall digits | Worst-species digits | Intended level |
+| --- | --- | --- | --- |
+| Fast | 2.177 | 1.186 | L2: PASS |
+| Balanced | 2.683 | 1.796 | L2: PASS |
+| Accurate | 3.753 | 2.693 | L3: PASS |
+| Recommended | 3.929 | 2.848 | L3: PASS |
+| Strict | 4.126 | 3.051 | L3: PASS |
+
+The recommended point has a largest individual scored relative error of 0.998% (N2O5, diurnal-10min), illustrating that an RMS criterion is not a pointwise bound. All-species RMS and maximum errors are retained in `results/species_accuracy.csv`.
+
+| Species | Minimum digits across six cases | Maximum individual relative error |
+| --- | --- | --- |
+| O3 | 5.763 | 0.000468% |
+| OH | 2.922 | 0.683% |
+| HO2 | 2.837 | 0.74% |
+| NO | 2.707 | 0.623% |
+| NO2 | 4.901 | 0.0177% |
+| H2O2 | 5.425 | 0.00182% |
+
+Projection is measured and charged to the local error norm, but does not exactly
+preserve elemental invariants. A deliberately stiff conservative test documents
+that effect; [ACCURACY.md](ACCURACY.md) states the budget and its limits. Reference
+values below `1e-14 mol m-3` are excluded from the relative score but remain in
+the chemistry and finite/nonnegative gate. The results do not bound unrecorded
+instantaneous peaks or establish accuracy for every possible mechanism.
+
+## Compatibility and verification
+
+Both compilers pass all 680 original tests, with exactly the supplied case list
+and no N/A entries, plus all nine original TS1 agreement variants at relative
+`1e-10`. Both pass 44 independent prototype comparisons with matching operation
+counts, ten fixed-order convergence checks, scalar/group equivalence, stiff
+and invalid-input tests, generic rate-dependency tests, and scenario I/O tests.
+The latter check photolysis interpolation/snapshots against MICM, generated versus
+generic kernels, and bit-identical cache/block/schedule variants. New methods
+are additions; the original solver formulas and mechanism remain unchanged.
+
+The prototype uses independent dense operations and chemistry, sharing only the
+explicitly disclosed ROS coefficient tables. Maximum C/prototype absolute
+solution differences are below 128 double epsilons. Transcripts, coefficient
+agreement results, orders and final executable hashes are in
+`results/validation-clang/` and `results/validation-gcc/`. Every selected point
+also passes its intended accuracy level with GCC on all disclosed and stress
+cases. Portability is checked with both compilers on this host; Linux execution
+was unavailable and is not claimed.
+
+## Reproduction and evidence
+
+`tools/validate.py --compiler clang` (or `gcc-15`) runs and records the compiler
+gates. `tools/scan.py scans/final_comparison.json --scan NEW_NAME --repeats 5`
+repeats the 1,000-cell comparison. Generate larger inputs with `tools/scaling.py`
+and use `--scenario-root build/scaling` with `scans/operating_points.json`.
+Always use `.conda/bin/python`, run scans sequentially, and do not rebuild during
+measurements. `--discard-repeats --reuse-identical-scores` saves disk space while
+retaining every timing/log and the first state of each configuration/scenario.
+
+`results/operating_summary.csv` contains medians, ranges, accuracy and work;
+`scans/` retains every configuration and raw measured row, including failures.
+`results/disclosed_inputs.json` records hashes of the supplied inputs and
+references; the scaling and stress manifests record their generated inputs.
+`tools/report.py` regenerates this report, operating points, and PNG/SVG figures.
+It recomputes species diagnostics when raw outputs exist; otherwise it uses the
+retained diagnostics after checking their output hashes against the final scan.
+The historical Tier 1 measurements are preserved separately in
+[results/tier1_results.md](results/tier1_results.md); their workload includes a
+warm-up and differs from the new scenario timer.

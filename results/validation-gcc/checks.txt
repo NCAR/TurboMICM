@@ -29,7 +29,7 @@ gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -Iexamp
 gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude -Itests -Igenerated -Iexamples tests/main.c tests/test_aerosol.c tests/test_analytical_chain.c tests/test_analytical_special.c tests/test_array.c tests/test_builder.c tests/test_chapman.c tests/test_constraint_initialization.c tests/test_constraint_set.c tests/test_constraints.c tests/test_dae_integration.c tests/test_external_constraints.c tests/test_factor.c tests/test_flow_tube.c tests/test_grouped.c tests/test_process_set.c tests/test_process.c tests/test_rates.c tests/test_small_integration.c tests/test_solver_core.c tests/test_sparse.c tests/test_state.c tests/test_system.c tests/test_tutorials.c tests/test_verify.c tests/test_version.c build/tutorials.o build/chapman.o build/config_robertson.o build/config_rates.o build/config_user_rates.o build/libchem.a -fopenmp -lm -o bin/test_cpu
 gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude build/bench.o build/ts1.o build/libchem.a -fopenmp -lm -o bin/ts1_bench_cpu
 gcc-15 -O3 -DNDEBUG -std=c11 -Wall -Wextra -Wpedantic -fopenmp -Iinclude build/scenario.o build/ts1.o build/libchem.a -fopenmp -lm -o bin/ts1_scenario
-bin/test_cpu 
+bin/test_cpu
 constraint_set:ConstraintSet.Construction PASS reference assertions
 constraint_set:ConstraintSet.ReplaceStateRowsMapsToAlgebraicSpecies PASS reference assertions
 constraint_set:ConstraintSet.NonZeroJacobianElements PASS reference assertions

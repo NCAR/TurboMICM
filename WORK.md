@@ -100,3 +100,22 @@ recommended point's six median times sum to 4.249 s, versus 10.101 s for matched
 C MICM3 and 31.916 s for matched C++ MICM3: 2.38x and 7.51x, respectively. Its
 minimum disclosed accuracy remains 3.448 overall / 2.550 worst-species digits.
 The 150-run 10,000-cell measurement series is in progress with unchanged binaries.
+
+## Completion
+
+All 210 final 1,000-cell and 150 final 10,000-cell repeated measurements are
+complete. Every declared point passes its intended level on the reference
+domain and its finite/nonnegative gate on every output cell. Repetitions have
+identical output hashes. Ten-thousand-cell accuracy remains explicitly limited
+to the independently referenced first 1,000 cells. Generated forcing tables and
+active scenario settings match the supplied cases, and input/reference hashes
+are retained.
+
+The final reports include all five concrete commands, full per-scenario
+accuracy and timing tables, work counters, stress results, per-species errors,
+and three visually checked PNG/SVG figures. Recommended extrapolation reaches
+3.448 overall / 2.550 worst-species digits in the disclosed set; its largest
+individual scored error is 0.998%. Its six 10,000-cell median times sum to
+40.364 seconds. The numerical source has not changed since the complete
+Clang/GCC validation. The deliverable/provenance/portability audit is retained
+in results/completion_audit.txt. No required work remains.
