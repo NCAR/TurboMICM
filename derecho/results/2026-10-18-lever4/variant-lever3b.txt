@@ -1,0 +1,8 @@
+variant: lever3b
+variables: GEN_FLAGS=--no-assemble-in-lu
+compiler: /glade/u/apps/common/25.10/spack/opt/spack/gcc/14.3.0/nw2m/bin/gcc (gcc (Spack GCC) 14.3.0)
+cflags: -std=c11 -Wall -Wextra -Wpedantic -O3 -DNDEBUG -march=znver3 -ffp-contract=fast -fopenmp -Iinclude -DTMC_WIDTH=4 -DTMC_DEFAULT_GROUP_SIZE=8 -DTMC_FAST_NORM=1
+build seconds: 75
+generated/ts1.c lines: 48739
+ts1.o text bytes: 540701
+built: 2026-10-18T06:13:09-06:00 on derecho1

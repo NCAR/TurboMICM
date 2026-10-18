@@ -347,4 +347,40 @@ groups of 16 then), `lever3-g8` with groups of 8.
 
 ### The Jacobian assembled inside the LU (`results/2026-10-18-lever4`)
 
-(measurement in progress)
+Node dec0921, 3 rounds. New generated kernels `jacobian_lu` and
+`forcing_jacobian_lu` form each LU element's sum of partials (alpha last on
+the diagonal) at the point where the elimination first reads it, so the
+assembled matrix, 73 KB per block, is never stored and reloaded; the partials
+of up to 8 blocks sit in one thread-local buffer, so the blocks of a chunk
+still run in lock step through each panel. The result is bit for bit that of
+assembly followed by the LU (`bench/lu_compare.c` compares the two paths on
+random states: 0 of 73,376 values differ over 8 blocks), after one lesson:
+where an assembled value is a lone yielded product, or a fill element starts
+from zero, GCC had two unrounded products in one statement and contracted
+the pair the other way round than in the stored assembly; both emitters now
+round a first yielded term with C11's `fma(a, b, 0.0)`, which fixes the
+compiler's choice. `lever3b` is the same build with `--no-assemble-in-lu`
+(groups of 8, panels of 16, the fused norm and copy-free solve), `final` the
+final session's build at its defaults.
+
+| Build | 128 threads, median ms (range) | vs stored assembly | 1 thread, median ms (range) | vs stored assembly |
+|---|---:|---:|---:|---:|
+| the final session's build (groups of 16 at 128 threads, 32 at one) | 495 (495–498) | 0.95x | 43,773 (43,769–44,141) | 0.94x |
+| the same with groups of 8 | 470 (469–470) | 1.00x | 40,790 (40,211–41,512) | 1.01x |
+| levers 1–3, assembly stored (`--no-assemble-in-lu`) | 468 (466–471) | 1.00x | 41,006 (40,810–41,336) | 1.00x |
+| **levers 1–4, the Jacobian assembled inside the LU (the branch's default)** | **439** (439–441) | **1.07x** | **39,046** (38,454–39,503) | **1.05x** |
+
+### The four levers together
+
+| | 128 threads | 1 thread |
+|---|---:|---:|
+| the final session's build, its defaults | 495 ms | 43,773 ms |
+| the follow-up build, its defaults | 439 ms | 39,046 ms |
+| gain | 1.13x | 1.12x |
+| against MICM's fastest at that thread count, final session (1,915 and 141,011 ms, another node) | about 4.4x | about 3.6x |
+| against MICM's fastest on a node (1,391 ms at 256 threads, another node) | about 3.2x | |
+
+The MICM ratios in the last two rows cross nodes and so carry the few
+percent of node-to-node spread; a ranking session on one node would settle
+them. The generated TS1 kernels are now 719 KB of code (the assembling LU
+family beside the plain one), and compile in about 100 s on a dev node.
