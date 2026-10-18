@@ -7,6 +7,7 @@ Group size 32 matches the C scan, and 100 matches the supplied reference runner'
 import argparse
 import csv
 import json
+import hashlib
 import re
 import subprocess
 import sys
@@ -23,6 +24,7 @@ def main():
     work=ROOT/'results/micm-scan';work.mkdir(parents=True,exist_ok=True)
     output=ROOT/a.output;exists=output.exists()
     config={'method':'MICM-three-stage','group_size':a.group_size}
+    with (ROOT/'bin/micm_scenario').open('rb') as binary: digest=hashlib.file_digest(binary,'sha256').hexdigest()
     if a.rtol: config['rtol']=float(a.rtol)
     if a.atol: config['atol']=float(a.atol)
     with output.open('a',newline='') as f:
@@ -37,13 +39,15 @@ def main():
                 row=dict(re.findall(r'(\w+)=([^\s]+)',result.stdout))
                 row.update(suite='micm-baseline',configuration=json.dumps(config,sort_keys=True,separators=(',',':')),
                     scenario=name,repeat=repeat,compiler='clang++',threads=10,returncode=result.returncode,
-                    nonlinear_iterations=0,message=result.stderr.strip().replace('\n',' | '))
+                    nonlinear_iterations=0,message=result.stderr.strip().replace('\n',' | '),
+                    binary_sha256=digest,optflags=(ROOT/'build/configuration.txt').read_text().splitlines()[1],revision='MICM-e15898ce')
                 if result.returncode==0:
                     kind='snapshots' if (SCENARIOS/name/'reference_snapshots.csv').exists() else 'final'
-                    score=json.loads(subprocess.check_output([sys.executable,str(SCENARIOS/'score.py'),
-                        str(work/f'ts1_{kind}.csv'),str(SCENARIOS/name/f'reference_{kind}.csv'),'--json'],text=True))
+                    score=json.loads(subprocess.run([sys.executable,str(SCENARIOS/'score.py'),
+                        str(work/f'ts1_{kind}.csv'),str(SCENARIOS/name/f'reference_{kind}.csv'),'--json','--level','3'],capture_output=True,text=True).stdout)
                     row.update(overall_digits=score['overall_digits'],worst_species=score['worst_species'][0][0],
-                        worst_digits=score['worst_species'][0][1],gate=score['gate'])
+                        worst_digits=score['worst_species'][0][1],gate=score['gate'],
+                        level=score['level'],level_result=score['level_result'])
                 else: row['gate']='FAIL'
                 writer.writerow(row);f.flush()
                 print(name,row.get('overall_digits','FAIL'),row.get('elapsed_ms',''),flush=True)

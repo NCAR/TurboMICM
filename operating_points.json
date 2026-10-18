@@ -1,0 +1,7 @@
+[
+  {"id":"L2","method":"rodas31","level":2,"recommended":false,"options":{"rtol":0.002,"atol":1e-18,"group_size":32,"schedule":2,"schedule_chunk":1}},
+  {"id":"L2_margin","method":"rodas31","level":2,"recommended":false,"options":{"rtol":0.001,"atol":1e-18,"group_size":32,"schedule":2,"schedule_chunk":1}},
+  {"id":"L3","method":"rodas31","level":3,"recommended":false,"options":{"rtol":0.0003,"atol":1e-16,"group_size":32,"schedule":2,"schedule_chunk":1}},
+  {"id":"recommended","method":"rodas31","level":3,"recommended":true,"options":{"rtol":0.0003,"atol":1e-18,"group_size":32,"schedule":2,"schedule_chunk":1}},
+  {"id":"L4","method":"rodas4","level":4,"recommended":false,"options":{"rtol":0.0001,"atol":1e-18,"group_size":32,"schedule":2,"schedule_chunk":1}}
+]

@@ -1,0 +1,4 @@
+scenario,overall_digits,worst_species,worst_digits,gate,rtol,atol
+stress-summer,10.076,BRCL,8.992,PASS,1e-9 vs 1e-10,1e-22 vs 1e-23
+stress-winter,10.349,ACBZO2,9.337,PASS,1e-9 vs 1e-10,1e-22 vs 1e-23
+stress-equator,10.115,HO2NO2,9.301,PASS,1e-9 vs 1e-10,1e-22 vs 1e-23
