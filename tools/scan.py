@@ -7,18 +7,23 @@ their matching reference rows; full experiments use the original input paths.
 import argparse
 import csv
 import json
+import hashlib
 import re
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCENARIOS = ROOT.parent / "scenarios"
 FIELDS = ["scan", "config", "method", "options", "scenario", "cells", "repeat", "threads",
+          "utc", "binary_sha256", "compiler",
           "status", "overall_digits", "worst_species", "worst_digits", "gate", "elapsed_ms",
           "internal_steps", "accepted", "rejected", "function_calls", "jacobian_updates",
           "decompositions", "solves", "jacobian_reuses", "factor_reuses",
           "positivity_rejections", "nonfinite_rejections", "clipped_values", "clipped_mass",
+          "nonlinear_iterations", "nonlinear_rejections",
+          "extrap_order2", "extrap_order3", "extrap_order4",
           "completed_steps", "score_json", "run_log"]
 
 
@@ -55,6 +60,7 @@ def main():
     parser.add_argument("--timeout", type=float, default=1800)
     a = parser.parse_args()
     configs = json.loads(a.configs.read_text())
+    compiler = (ROOT / "build" / "compiler.conf").read_text().strip().replace("\n", " | ")
     output = ROOT / "scans" / f"{a.scan}.csv"
     if output.exists():
         raise SystemExit(f"Refusing to overwrite {output}")
@@ -66,10 +72,12 @@ def main():
                 for repeat in range(a.repeats):
                     work = ROOT / "build" / "scan-runs" / a.scan / config["id"] / name / str(repeat)
                     work.mkdir(parents=True, exist_ok=True)
-                    command = [str(ROOT / "bin" / "ts1_scenario"), "--threads", str(a.threads),
+                    binary = ROOT / "bin" / ("micm_scenario" if config.get("backend") == "micm" else "ts1_scenario")
+                    binary_hash = hashlib.sha256(binary.read_bytes()).hexdigest()
+                    command = [str(binary), "--threads", str(a.threads),
                                "--method", config["method"]]
                     for key, value in config.get("options", {}).items():
-                        command += ["--option", f"{key}={value}"]
+                        command += [f"--{key}", str(value)] if config.get("backend") == "micm" else ["--option", f"{key}={value}"]
                     command += [str(scenario / "scenario.txt")]
                     print(a.scan, config["id"], name, repeat, flush=True)
                     try:
@@ -85,6 +93,7 @@ def main():
                                options=json.dumps(config.get("options", {}), sort_keys=True),
                                scenario=name, cells=cells, repeat=repeat, threads=a.threads, status=status,
                                run_log=str((work / "run.txt").relative_to(ROOT)))
+                    row.update(utc=datetime.now(timezone.utc).isoformat(), binary_sha256=binary_hash, compiler=compiler)
                     if status == "ok":
                         snapshots = "snapshot_every" in (scenario / "scenario.txt").read_text()
                         suffix = "snapshots.csv" if snapshots else "final.csv"

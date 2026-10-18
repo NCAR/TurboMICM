@@ -25,6 +25,14 @@ tables have their existing MICM attribution.
    controlled Jacobian/factor reuse experiments; the discussion of internal
    positivity motivated a separate stage-clipping experiment. Clipping is an
    explicitly measured numerical projection and does not guarantee conservation.
+4. Alexander (1977), *Diagonally Implicit Runge–Kutta Methods for Stiff O.D.E.'s*,
+   SIAM J. Numerical Analysis 14, 1006–1021,
+   https://doi.org/10.1137/0714068, and John Butcher's
+   [Implicit Runge–Kutta tutorial](https://www.math.auckland.ac.nz/~butcher/ODE-book-2008/Tutorials/IRK.pdf).
+   Used the stiffly accurate two-/three-stage SDIRK family and third-order
+   diagonal root. The embedded weights were obtained here from the quadrature
+   moment equations, with the last embedded weight fixed to zero. Newton
+   iteration, stopping rules, and error/reuse experiments are local implementations.
 
 Read-only local sources: `../reference/README.md`, `../reference/micm_cases.txt`,
 `../reference/compare_final.py`, `../scenarios/README.md`,

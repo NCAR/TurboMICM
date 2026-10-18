@@ -31,7 +31,7 @@ LDLIBS := $(OMP_LIBS) -lm
 
 env: .conda/conda-meta/history
 .conda/conda-meta/history: environment.yml
-	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
+	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env $(if $(wildcard .conda/conda-meta/history),update,create --yes) --prefix $(CURDIR)/.conda --file environment.yml
 
 SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c src/array.c src/sparse.c src/factor.c src/version.c src/system.c src/process.c src/solver.c src/external.c src/adaptive.c
 OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
@@ -42,6 +42,15 @@ bench: cpu bin/ts1_scenario
 bin/ts1_scenario: build/scenario.o build/ts1.o build/libchem.a
 	@mkdir -p bin
 	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
+
+bin/adaptive_probe: prototypes/probe.c build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
+
+.PHONY: test-prototypes
+test-prototypes: bin/adaptive_probe
+	$(PYTHON) prototypes/independent.py
+	$(PYTHON) prototypes/convergence.py
 
 test-cpu: cpu bin/test_cpu
 	bin/test_cpu $(TEST_FILTER)
@@ -65,7 +74,7 @@ build/libchem.a: $(OBJECTS)
 generated/ts1.c: configs/ts1.json tools/configure.py tools/generate.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py $< $@ --symbol ts1_mechanism
 
-build/ts1.o: generated/ts1.c $(wildcard include/*.h) build/compiler.conf
+build/ts1.o: generated/ts1.c include/chem.h build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -82,6 +91,12 @@ bin/ts1_bench_cpu: build/bench.o build/ts1.o build/libchem.a
 
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: $(REFERENCE)/micm_ts1_ref.cpp build/reference-compiler.conf
+	@mkdir -p bin
+	clang++ -std=c++20 $(OPTFLAGS) -I$(MICM)/include -I$(MICM)/test/benchmark $< -o $@
+
+.PHONY: micm-scenario
+micm-scenario: bin/micm_scenario
+bin/micm_scenario: ../scenarios/micm_scenario.cpp build/reference-compiler.conf
 	@mkdir -p bin
 	clang++ -std=c++20 $(OPTFLAGS) -I$(MICM)/include -I$(MICM)/test/benchmark $< -o $@
 

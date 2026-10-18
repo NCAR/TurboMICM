@@ -35,3 +35,20 @@ costs are exploratory: the early rows overlapped compilation/tests. All 680
 Clang Tier 1 tests pass, as does the default 100-cell TS1 roundoff gate (maximum
 relative difference 4.25e-14). Prototype equivalence, broader scans, final
 operating points, both-compiler final validation, and updated reports remain.
+
+## Tier 3 checkpoint 2
+
+Added SDIRK2/3 with simplified Newton and independent Python prototypes.
+Forty-four adaptive comparisons now agree within 1.14e-14 absolute with identical
+function/Jacobian/LU/solve/reuse/nonlinear/order counts; analytical convergence
+orders and conservation pass for ten fixed-order formulas, including grouped
+seven-cell layouts. All tests use a small mechanism unrelated to TS1.
+
+Completed family, tolerance, and structural scans. RODAS3 favors lower accuracy;
+four-level Euler extrapolation favors three-plus digits. SDIRK was substantially
+more expensive in the screened range. Added automatic extrapolation order as a
+further structural comparison; its scan is in progress. Eliminated duplicate
+initial forcing in extrapolation and redundant refreshes after same-state
+rejections. The earlier CSVs remain historical evidence with their original
+counts. Full disclosed-cell scans, final gates, stress cases, operating points,
+and research reports remain.

@@ -1,0 +1,221 @@
+[
+  {
+    "id": "ros2-base",
+    "method": "ros2",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "ros2-jacobian-age2",
+    "method": "ros2",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian-age": 2
+    }
+  },
+  {
+    "id": "ros2-jacobian-age4",
+    "method": "ros2",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian-age": 4
+    }
+  },
+  {
+    "id": "ros2-jacobian-age8",
+    "method": "ros2",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian-age": 8
+    }
+  },
+  {
+    "id": "ros2-controller1",
+    "method": "ros2",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "controller": 1
+    }
+  },
+  {
+    "id": "ros2-warm-start0",
+    "method": "ros2",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "warm-start": 0
+    }
+  },
+  {
+    "id": "ros2-clip-stages1",
+    "method": "ros2",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "clip-stages": 1
+    }
+  },
+  {
+    "id": "ros2-reuse-window0.2",
+    "method": "ros2",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "reuse-window": 0.2
+    }
+  },
+  {
+    "id": "ros2-reuse-window0.5",
+    "method": "ros2",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "reuse-window": 0.5
+    }
+  },
+  {
+    "id": "rodas3-base",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18
+    }
+  },
+  {
+    "id": "rodas3-jacobian-age2",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian-age": 2
+    }
+  },
+  {
+    "id": "rodas3-jacobian-age4",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian-age": 4
+    }
+  },
+  {
+    "id": "rodas3-jacobian-age8",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "jacobian-age": 8
+    }
+  },
+  {
+    "id": "rodas3-controller1",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "controller": 1
+    }
+  },
+  {
+    "id": "rodas3-warm-start0",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "warm-start": 0
+    }
+  },
+  {
+    "id": "rodas3-clip-stages1",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "clip-stages": 1
+    }
+  },
+  {
+    "id": "rodas3-reuse-window0.2",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "reuse-window": 0.2
+    }
+  },
+  {
+    "id": "rodas3-reuse-window0.5",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "reuse-window": 0.5
+    }
+  },
+  {
+    "id": "extrap4-base",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "order": 4
+    }
+  },
+  {
+    "id": "extrap4-jacobian-age2",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "order": 4,
+      "jacobian-age": 2
+    }
+  },
+  {
+    "id": "extrap4-jacobian-age4",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "order": 4,
+      "jacobian-age": 4
+    }
+  },
+  {
+    "id": "extrap4-jacobian-age8",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "order": 4,
+      "jacobian-age": 8
+    }
+  },
+  {
+    "id": "extrap4-controller1",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "order": 4,
+      "controller": 1
+    }
+  },
+  {
+    "id": "extrap4-warm-start0",
+    "method": "extrap",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "order": 4,
+      "warm-start": 0
+    }
+  }
+]

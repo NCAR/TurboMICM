@@ -129,15 +129,18 @@ static int option(const char *arg,chem_adaptive_parameters *p,chem_ros_parameter
     if (!strcmp(key,"safety")) { if (!real_value(eq+1,&v) || v<=0 || v>=1) return 0; p->safety=v; return 1; }
     if (!strcmp(key,"growth")) { if (!real_value(eq+1,&v) || v<1) return 0; p->growth=v; return 1; }
     if (!strcmp(key,"reuse-window")) { if (!real_value(eq+1,&v) || v<0 || v>=1) return 0; p->reuse_window=v; return 1; }
+    if (!strcmp(key,"newton-tol")) { if (!real_value(eq+1,&v) || v<=0 || v>=1) return 0; p->newton_tolerance=v; return 1; }
     if (!integer(eq+1,&n,1)) return 0;
     if (!strcmp(key,"max-steps") && n) p->max_steps=ros->max_steps=n;
     else if (!strcmp(key,"jacobian-age") && n) p->jacobian_age=n;
+    else if (!strcmp(key,"newton-iterations") && n) p->newton_iterations=n;
     else if (!strcmp(key,"order") && n>=2 && n<=4) p->extrap_order=n;
     else if (!strcmp(key,"group-size") && n) *group=n;
     else if (!strcmp(key,"norm") && n<=2) p->error_norm=(int)n;
     else if (!strcmp(key,"controller") && n<=1) p->controller=(int)n;
     else if (!strcmp(key,"clip-stages") && n<=1) p->clip_stages=(int)n;
     else if (!strcmp(key,"warm-start") && n<=1) p->warm_start=(int)n;
+    else if (!strcmp(key,"adaptive-order") && n<=1) p->adaptive_order=(int)n;
     else if (!strcmp(key,"generic") && n<=1) *generic=(int)n;
     else return 0;
     return 1;
@@ -163,6 +166,7 @@ int main(int argc,char **argv)
         if (!strcmp(method,old_names[i])) { ros=chem_ros_parameters_default((chem_ros_method)i); found=1; }
     }
     if (!strcmp(method,"extrap")) { adaptive=1; p.method=CHEM_ADAPT_EXTRAP; found=1; }
+    if (!strcmp(method,"sdirk")) { adaptive=1; p.method=CHEM_ADAPT_SDIRK; found=1; }
     if (!found) goto usage;
     for (int i=1;i<argc;++i) {
         if (!strcmp(argv[i],"--method")) { ++i; continue; }
@@ -229,11 +233,13 @@ int main(int argc,char **argv)
             if (!snapshot(snap,states,groups,completed)) goto done;
     }
     chem_stats stats={0};
-    uint64_t jr=0,fr=0,pr=0,nr=0,cv=0; double mass=0;
+    uint64_t jr=0,fr=0,pr=0,nr=0,cv=0,ni=0,nj=0,eo[3]={0}; double mass=0;
     for (size_t g=0;g<groups;++g) {
         chem_stats_add(&stats,&results[g].stats);
         jr+=work[g].jacobian_reuses; fr+=work[g].factor_reuses; pr+=work[g].positivity_rejections;
         nr+=work[g].nonfinite_rejections; cv+=work[g].clipped_values; mass+=work[g].clipped_mass;
+        ni+=work[g].nonlinear_iterations; nj+=work[g].nonlinear_rejections;
+        for (size_t j=0;j<3;++j) eo[j]+=work[g].extrap_orders[j];
     }
     printf("elapsed_ms=%.6f\n",elapsed);
     printf("internal_steps=%" PRIu64 " accepted=%" PRIu64 " rejected=%" PRIu64 " function_calls=%" PRIu64
@@ -242,6 +248,8 @@ int main(int argc,char **argv)
     printf("jacobian_reuses=%" PRIu64 " factor_reuses=%" PRIu64 " positivity_rejections=%" PRIu64
         " nonfinite_rejections=%" PRIu64 " clipped_values=%" PRIu64 " clipped_mass=%.17g completed_steps=%zu\n",
         jr,fr,pr,nr,cv,mass,completed);
+    printf("nonlinear_iterations=%" PRIu64 " nonlinear_rejections=%" PRIu64 "\n",ni,nj);
+    printf("extrap_order2=%" PRIu64 " extrap_order3=%" PRIu64 " extrap_order4=%" PRIu64 "\n",eo[0],eo[1],eo[2]);
     if (completed==a.steps) ok=write_final(states,groups);
 done:
     if (snap && fclose(snap)) ok=0;
@@ -253,6 +261,6 @@ done:
     free(states); free(results); free(work); free(base); chem_model_destroy(&model); destroy_scenario(&a);
     return ok ? 0 : 1;
 usage:
-    fprintf(stderr,"Usage: %s [--threads N] [--method micm|micm2|micm4|micm4dae|micm6|ros2|ros3|ros4|rodas3|rodas4|extrap] [--option KEY=VALUE ...] SCENARIO\n",argv[0]);
+    fprintf(stderr,"Usage: %s [--threads N] [--method micm|micm2|micm4|micm4dae|micm6|ros2|ros3|ros4|rodas3|rodas4|extrap|sdirk] [--option KEY=VALUE ...] SCENARIO\n",argv[0]);
     return 2;
 }
