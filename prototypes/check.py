@@ -7,6 +7,8 @@ The Tier 1 table tests independently check these data. No Python timing is used.
 """
 import itertools
 import math
+import csv
+import sys
 from pathlib import Path
 import subprocess
 
@@ -71,7 +73,7 @@ def norm(y,z,err,kind):
     if kind==0: worst=math.sqrt(total/6)
     return max(negative,worst,1e-12)
 
-def integrate(method,ctl,jage,deadband,kind,warm,p):
+def integrate(method,ctl,jage,deadband,kind,warm,p,controller_k=0.,controller_b=4.):
     y=INITIAL[:];proposed=0.;counts=[0]*7;outputs=[]
     for call in range(2):
         time=0.;h=min(.2,proposed if warm and proposed>0 else .01)
@@ -119,7 +121,9 @@ def integrate(method,ctl,jage,deadband,kind,warm,p):
             fac=.9*e**(-1/order)
             if ctl==1 and not rejected and accepted: fac=.9*e**(-.7/order)*previous**(.4/order)
             if ctl==2 and not rejected and accepted:
-                fac=.9*e**(-1/(4*order))*previous**(-1/(4*order))*(h/previous_h)**(-1/4)
+                k=controller_k if controller_k>0 else order
+                b=controller_b
+                fac=.9*e**(-1/(b*k))*previous**(-1/(b*k))*(h/previous_h)**(-1/b)
             fac=min(6.,max(.1,fac))
             if e<=1:
                 counts[1]+=1;accepted+=1
@@ -140,30 +144,46 @@ def integrate(method,ctl,jage,deadband,kind,warm,p):
     return outputs,counts
 
 def main():
-    total=0;worst_error=0.
-    for method,(ctl,jage,deadband,kind,warm) in itertools.product([2,3,4,43,6,12,13,31],
-        [(0,1,0.,1,1),(1,1,0.,1,1),(2,1,0.,1,1),(0,4,.2,1,1),(0,1,0.,0,0),(0,2,.5,2,1)]):
-        text=subprocess.check_output([str(ROOT/'bin/integrator_probe'),*map(str,[method,ctl,jage,deadband,kind,warm])],text=True)
+    total=0;strict=0;worst_error=0.;sensitivity=[]
+    for method,(ctl,jage,deadband,kind,warm,k,b) in itertools.product([2,3,4,43,6,12,13,31],
+        [(0,1,0.,1,1,0,4),(1,1,0.,1,1,0,4),(2,1,0.,1,1,0,4),
+         (2,1,0.,1,1,2,1),(2,1,0.,1,1,1.7,1),
+         (0,4,.2,1,1,0,4),(0,1,0.,0,0,0,4),(0,2,.5,2,1,0,4)]):
+        text=subprocess.check_output([str(ROOT/'bin/integrator_probe'),*map(str,[method,ctl,jage,deadband,kind,warm,1,k,b])],text=True)
         p={};ys=[]
         for line in text.splitlines():
             key,*values=line.split();v=list(map(float,values))
             if key=='y': ys.append(v)
             else: p[key]=v
-        expected,counts=integrate(method,ctl,jage,deadband,kind,warm,p)
-        assert counts==p['counts'],(method,ctl,jage,kind,counts,p['counts'])
+        expected,counts=integrate(method,ctl,jage,deadband,kind,warm,p,k,b)
         error=max(abs(a-b) for x,z in zip(expected,ys) for a,b in zip(x,z))
-        worst_error=max(worst_error,error)
-        assert error<3e-13,(method,ctl,jage,kind,error)
+        if ctl==2 and b==1:
+            # Marginal filter parameters can amplify roundoff into different
+            # adaptive grids. Preserve that evidence rather than disguising it
+            # as a roundoff-level implementation agreement check.
+            assert error<1e-6,(method,k,b,error)
+            sensitivity.append(dict(method=method,k=k,b=b,python_steps=counts[0],
+                c_steps=int(p['counts'][0]),counts_match=counts==p['counts'],max_abs_difference=error))
+        else:
+            assert counts==p['counts'],(method,ctl,jage,kind,counts,p['counts'])
+            worst_error=max(worst_error,error)
+            assert error<3e-13,(method,ctl,jage,kind,error)
+            strict+=1
         uncached=subprocess.check_output([str(ROOT/'bin/integrator_probe'),
-            *map(str,[method,ctl,jage,deadband,kind,warm,0])],text=True)
+            *map(str,[method,ctl,jage,deadband,kind,warm,0,k,b])],text=True)
         lines=uncached.splitlines()
         uncached_y=[list(map(float,line.split()[1:])) for line in lines if line.startswith('y ')]
         uncached_counts=[int(x) for line in lines if line.startswith('counts ') for x in line.split()[1:]]
         assert uncached_y==ys, 'Forcing reuse changed the C trajectory'
-        counts[3]+=counts[2]
-        assert counts==uncached_counts, 'Forcing reuse must save exactly one call per rejection'
+        expected_uncached=[int(x) for x in p['counts']]
+        expected_uncached[3]+=expected_uncached[2]
+        assert expected_uncached==uncached_counts, 'Forcing reuse must save exactly one call per rejection'
         total+=1
-    print(f'{total} C/prototype comparisons PASS: eight methods, exact operation counts, solutions within 3e-13')
+    print(f'{strict} C/prototype comparisons PASS: eight methods, exact operation counts, solutions within 3e-13')
     print(f'Maximum C/prototype absolute difference: {worst_error:.3g}')
     print(f'{total} forcing-cache checks PASS: identical trajectories, one evaluation saved per rejection')
+    print(f'{len(sensitivity)} aggressive H211b sensitivity diagnostics: max difference {max(r["max_abs_difference"] for r in sensitivity):.3g}; see prototypes/README.md')
+    if '--record-sensitivity' in sys.argv:
+        with (ROOT/'prototypes/roundoff_sensitivity.csv').open('w',newline='') as f:
+            writer=csv.DictWriter(f,list(sensitivity[0]));writer.writeheader();writer.writerows(sensitivity)
 if __name__=='__main__': main()

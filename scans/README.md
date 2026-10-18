@@ -41,3 +41,12 @@ are normalized to include the explicit zero when the running scan finishes.
 This is an exact-work reuse change, with identical trajectories and a saving
 of one forcing call per rejected attempt. Controller scans include the
 uncached setting for a controlled comparison.
+
+The `revision` column records the orchestration checkout; `binary_sha256`
+identifies the executable actually run. The phase-two binary digest beginning
+`812ca613609a` is the build of commit daec954, and is held unchanged throughout
+those scans even while later coefficient/controller code is developed and
+unit-tested in separate executables. Later method/controller scans rebuild the
+scenario binary before use. This prevents a mid-scan implementation change.
+`level` and `level_result` are the supplied scorer's explicit level checks;
+older initial rows predate these columns and retain only the reported digits.

@@ -13,7 +13,7 @@ static void array(const char *key, const double *a, size_t n)
 }
 int main(int argc, char **argv)
 {
-  if (argc != 7 && argc != 8)
+  if (argc != 7 && argc != 8 && argc != 10)
     return 2;
   ck_integrator_options o = ck_integrator_defaults();
   o.method = atoi(argv[1]);
@@ -22,8 +22,13 @@ int main(int argc, char **argv)
   o.deadband = atof(argv[4]);
   o.norm = atoi(argv[5]);
   o.warm_start = atoi(argv[6]);
-  if (argc == 8)
+  if (argc >= 8)
     o.reuse_rhs = atoi(argv[7]);
+  if (argc == 10)
+  {
+    o.controller_k = atof(argv[8]);
+    o.controller_b = atof(argv[9]);
+  }
   static const ck_species species[] = {{.name = "A"}, {.name = "B"}, {.name = "C"}};
   static const size_t aa[] = {0, 0}, b[] = {1}, c[] = {2};
   static const ck_product pb[] = {{1, 1}}, pa[] = {{0, 2}}, pc[] = {{2, 1}};
