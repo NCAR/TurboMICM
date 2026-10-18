@@ -299,7 +299,7 @@ Launch changes
 
 | Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|---|
-| sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45– | | running |
+| sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive, `--search` | 2026-10-18 01:45–03:34 | `63d246f` | done; verification under way |
 | sol-max | gpt-6.1-sol | max | `001fb64` | | | | queued |
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | | | | queued |
 | astra-max | gpt-6-astra | max | `0dc7f67` | | | | queued |
@@ -314,3 +314,41 @@ Launch changes
 - Codex session `01a14df8-cf84-7851-b9c3-3c76c4eef53e`.
 - The machine had restarted at 01:31. At launch, macOS's photo analysis
   (`mediaanalysisd`) was still using part of one core.
+- The whole run was one turn, from the goal at 01:45:16 to its end at 03:34:07
+  (1 h 48 min 51 s), with no context compaction. Its one turn context shows
+  gpt-6.1-sol at xhigh. The session marked its goal complete and ended with
+  DONE. Claude Code closed it with `/quit` at 03:45, after the record had been
+  idle for 10 minutes.
+- Tokens: 661,749 total; input 421,143 (plus 24,919,424 cached); output 240,606
+  (170,859 reasoning). Codex's weekly limit went from 19 % used to 23 %.
+- Web: 13 web items: 3 searches (9 queries), 4 pages opened, 2 finds in a page,
+  and 4 page reads. It searched for Sandu et al. (1997), KPP's Rosenbrock
+  methods, Söderlind and Gustafsson's step-size control, SEULEX, and CVODE's
+  Jacobian reuse. It read Sandu et al. (1997, part II), Söderlind (2002), KPP's
+  documentation of its Rosenbrock methods (the source of its RODAS3.1
+  coefficients), Dreger et al. (2025, GMD; the H211b controller), and Hairer and
+  Lubich's overview. REFERENCES.md cites every page it opened.
+- 14 commits after `171f54a`, from 01:49 to 03:33, ending `63d246f`, "Complete
+  integration research, work-precision reports and final validation audit":
+  68 files changed, 4,263 lines added and 281 removed. No remote; the working
+  tree is clean.
+- Compliance: no command reads outside its directory and the read-only inputs,
+  apart from Codex's own check for AGENTS.md in the parent folders. It built its
+  own copies of MICM's drivers in its `bin/` and made its own 48-hour test
+  conditions with references. It installed nothing outside its conda
+  environment.
+- Self-reported, not yet verified: both compilers pass the Tier 1 gate; five
+  operating points, four RODAS3.1 (rtol 2e-3 to 3e-4) and one six-stage RODAS4;
+  the recommended RODAS3.1 point (rtol 3e-4, atol 1e-18) reaches 3.70 digits
+  overall and 2.73 for every species on the disclosed scenarios, 3.3 to 8.6
+  times faster than MICM's three-stage Rosenbrock tuned to 3 digits, on 1,000
+  cells.
+- Other load during the session: Claude Code checked progress read-only, wrote
+  scripts and the run log, and at 01:54 ran one dry check of the verification
+  script's audit stage (`make -n` and a grep, a few seconds at low priority). No
+  builds, tests, or timing ran.
+- Collected as `tier3/sol/xhigh`; transcript `transcripts/tier3/sol-xhigh.jsonl.gz`
+  on the `transcripts` branch.
+- The session record's world state lists the SSE's approved Codex command
+  prefixes, which name other projects; the Tier 1 transcripts carry the same
+  list. It holds no credential values.

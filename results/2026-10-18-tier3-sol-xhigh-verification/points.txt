@@ -1,0 +1,7 @@
+# sol-xhigh's declared operating points, from OPERATING_POINTS.md at 63d246f
+# NAME<TAB>bin/ts1_scenario options before the scenario
+L2	--method rodas31 --option rtol=0.002 --option atol=1e-18 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+L2_margin	--method rodas31 --option rtol=0.001 --option atol=1e-18 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+L3	--method rodas31 --option rtol=0.0003 --option atol=1e-16 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+recommended	--method rodas31 --option rtol=0.0003 --option atol=1e-18 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+L4	--method rodas4 --option rtol=0.0001 --option atol=1e-18 --option group_size=32 --option schedule=2 --option schedule_chunk=1
