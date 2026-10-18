@@ -1,0 +1,2 @@
+elapsed_ms=600.165
+internal_steps=281700 accepted=281700 rejected=0 function_calls=563400 jacobian_updates=281700 decompositions=281700 solves=845100

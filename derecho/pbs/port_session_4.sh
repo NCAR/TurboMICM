@@ -52,5 +52,5 @@ python3 "$repo/admin/time_entries.py" --input "$cells" --reference "$micm_final"
     "${micm[@]}" "${programs[@]}"
 echo "== part B: 1 thread ($(date -Is))"
 python3 "$repo/admin/time_entries.py" --input "$cells" --reference "$micm_final" --out "$out/threads-1" --threads 1 --rounds 3 \
-    "${micm[1]}" "${programs[@]}"
+    "${micm[1]}" "${programs[@]}" "w4n-g16=$here/work/variants/w4n/bin/ts1_bench_cpu --group-size 16"
 echo "== done ($(date -Is))"

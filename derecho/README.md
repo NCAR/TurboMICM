@@ -156,5 +156,35 @@ The omp simd lane loops are the Derecho result: without them the port is
 arrays are worth 4–6 %. The panel size changes 1–2 %, inside the spread of
 the identical-binary repeat. GCC's FMA-chain tuning does not touch this code.
 
-(Sessions 3 and 4, the MICM sweep, the verification, and the final session
-follow below as they complete.)
+### Session 3: grouping, schedule, and hardware threads (`results/2026-10-18-session-3-grouping`)
+
+Node dec1360, 3 rounds, the session-1 build (`w4`), run-time options only. At a
+whole node the 10,000 cells make 313 groups of 32 for 128 threads, 2.4 per
+thread, and the slowest thread does three; groups of 16 (625, 4.9 per thread)
+balance better. One group per thread (79 cells, MICM's default grouping) does
+not pay: a 79-cell group's working set is 2.4 MB. The static schedule, which
+keeps each group on the thread that first touched its memory, gains nothing.
+At 256 threads (both hardware threads of every core) MICM gains 25–30 %, the
+compute-bound port loses 20 %.
+
+| Program | 128 threads, median ms (range) | vs MICM vector8 g32 | 256 threads, median ms (range) | vs MICM vector8 g32 |
+|---|---:|---:|---:|---:|
+| MICM default | 3,642 (3,605–3,644) | 0.54x | 2,535 (2,534–2,574) | 0.62x |
+| MICM vector8, 32-cell groups | 1,976 (1,974–1,988) | 1.00x | 1,568 (1,567–1,569) | 1.00x |
+| MICM vector4, 32-cell groups | 2,299 (2,258–2,355) | 0.86x | 1,728 (1,722–1,762) | 0.91x |
+| port, groups of 16 | **515 (514–518)** | **3.83x** | 618 (616–638) | 2.54x |
+| port, groups of 32 (the entry's default) | 592 (591–596) | 3.33x | 775 (774–786) | 2.02x |
+| port, groups of 64 | 754 (754–765) | 2.62x | 1,490 (1,274–1,534) | 1.05x |
+| port, groups of 79 (one per thread at 128) | 618 (614–628) | 3.19x | 2,033 (1,991–2,091) | 0.77x |
+| port, groups of 128 | 1,439 (1,403–1,489) | 1.37x | 7,158 (6,632–7,798) | 0.22x |
+| port, groups of 16, static schedule | 523 (521–548) | 3.78x | 665 (664–671) | 2.36x |
+| port, groups of 32, static schedule | 640 (640–652) | 3.09x | 814 (813–815) | 1.93x |
+| port, groups of 79, static schedule | 593 (589–598) | 3.33x | 2,806 (2,724–2,818) | 0.56x |
+
+The benchmark's default grouping on Derecho therefore adapts to the thread
+count: groups of 32 cells, halved while there would be fewer than four groups
+per thread (`bench/ts1_bench.c`), which is 16 at 128 threads and 8 at 256 for
+10,000 cells, and 32 at one thread, where (part B, below) 32 stays best.
+
+(Session 3 part B, session 4, the MICM sweep, the verification, and the final
+session follow as they complete.)

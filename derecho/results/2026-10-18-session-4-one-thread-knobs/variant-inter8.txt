@@ -1,0 +1,8 @@
+variant: inter8
+variables: GEN_FLAGS=--interleave 8
+compiler: /glade/u/apps/common/25.10/spack/opt/spack/gcc/14.3.0/nw2m/bin/gcc (gcc (Spack GCC) 14.3.0)
+cflags: -std=c11 -Wall -Wextra -Wpedantic -O3 -DNDEBUG -march=znver3 -ffp-contract=fast -fopenmp -Iinclude -DTMC_WIDTH=4 -DTMC_DEFAULT_GROUP_SIZE=32 -DTMC_FAST_NORM=1
+build seconds: 87
+generated/ts1.c lines: 43747
+ts1.o text bytes: 511013
+built: 2026-10-18T02:04:54-06:00 on derecho1

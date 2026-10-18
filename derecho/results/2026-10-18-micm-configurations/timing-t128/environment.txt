@@ -1,0 +1,56 @@
+date: 2026-10-18T02:58:30
+host: dec1596
+platform: Linux-6.4.0-150600.23.53-default-x86_64-with-glibc2.38
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: 
+uptime: 02:58:30  up 45 days 15:21,  0 users,  load average: 9.57, 68.10, 72.71
+input: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/cells_2026.csv
+reference: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-reference/micm_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 128; rounds: 3
+program micm-standard-in-place-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-in-place-mozart
+program micm-standard-in-place-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-in-place-mozart --group-size 32
+program micm-standard-in-place-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-in-place-doolittle
+program micm-standard-in-place-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-in-place-doolittle --group-size 32
+program micm-standard-separate-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-separate-mozart
+program micm-standard-separate-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-separate-mozart --group-size 32
+program micm-standard-separate-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-separate-doolittle
+program micm-standard-separate-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-standard-separate-doolittle --group-size 32
+program micm-vector1-in-place-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector1-in-place-mozart
+program micm-vector1-in-place-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector1-in-place-mozart --group-size 32
+program micm-vector1-in-place-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector1-in-place-doolittle
+program micm-vector1-in-place-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector1-in-place-doolittle --group-size 32
+program micm-vector1-separate-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector1-separate-mozart
+program micm-vector1-separate-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector1-separate-mozart --group-size 32
+program micm-vector1-separate-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector1-separate-doolittle
+program micm-vector1-separate-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector1-separate-doolittle --group-size 32
+program micm-vector2-in-place-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector2-in-place-mozart
+program micm-vector2-in-place-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector2-in-place-mozart --group-size 32
+program micm-vector2-in-place-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector2-in-place-doolittle
+program micm-vector2-in-place-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector2-in-place-doolittle --group-size 32
+program micm-vector2-separate-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector2-separate-mozart
+program micm-vector2-separate-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector2-separate-mozart --group-size 32
+program micm-vector2-separate-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector2-separate-doolittle
+program micm-vector2-separate-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector2-separate-doolittle --group-size 32
+program micm-vector4-in-place-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector4-in-place-mozart
+program micm-vector4-in-place-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector4-in-place-mozart --group-size 32
+program micm-vector4-in-place-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector4-in-place-doolittle
+program micm-vector4-in-place-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector4-in-place-doolittle --group-size 32
+program micm-vector4-separate-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector4-separate-mozart
+program micm-vector4-separate-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector4-separate-mozart --group-size 32
+program micm-vector4-separate-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector4-separate-doolittle
+program micm-vector4-separate-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector4-separate-doolittle --group-size 32
+program micm-vector8-in-place-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-in-place-mozart
+program micm-vector8-in-place-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-in-place-mozart --group-size 32
+program micm-vector8-in-place-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-in-place-doolittle
+program micm-vector8-in-place-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-in-place-doolittle --group-size 32
+program micm-vector8-separate-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-separate-mozart
+program micm-vector8-separate-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-separate-mozart --group-size 32
+program micm-vector8-separate-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-separate-doolittle
+program micm-vector8-separate-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector8-separate-doolittle --group-size 32
+program micm-vector128-in-place-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector128-in-place-mozart
+program micm-vector128-in-place-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector128-in-place-mozart --group-size 32
+program micm-vector128-in-place-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector128-in-place-doolittle
+program micm-vector128-in-place-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector128-in-place-doolittle --group-size 32
+program micm-vector128-separate-mozart: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector128-separate-mozart
+program micm-vector128-separate-mozart-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector128-separate-mozart --group-size 32
+program micm-vector128-separate-doolittle: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector128-separate-doolittle
+program micm-vector128-separate-doolittle-g32: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-configs/bin/micm-vector128-separate-doolittle --group-size 32
