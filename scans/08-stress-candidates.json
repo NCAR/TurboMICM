@@ -1,0 +1,38 @@
+[
+  {
+    "id": "economy",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-16,
+      "h_max": 0
+    }
+  },
+  {
+    "id": "fast3",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 300
+    }
+  },
+  {
+    "id": "balanced",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 200
+    }
+  },
+  {
+    "id": "conservative",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 100
+    }
+  }
+]

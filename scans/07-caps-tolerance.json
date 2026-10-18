@@ -1,0 +1,92 @@
+[
+  {
+    "id": "rodas3-r0.003-cap150",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 150
+    }
+  },
+  {
+    "id": "rodas3-r0.003-cap200",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 200
+    }
+  },
+  {
+    "id": "rodas3-r0.003-cap250",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 250
+    }
+  },
+  {
+    "id": "rodas3-r0.001-cap150",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "h_max": 150
+    }
+  },
+  {
+    "id": "rodas3-r0.001-cap200",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "h_max": 200
+    }
+  },
+  {
+    "id": "rodas3-r0.001-cap250",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.001,
+      "atol": 1e-18,
+      "h_max": 250
+    }
+  },
+  {
+    "id": "rodas3-r.003-a1e-17-cap0",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-17,
+      "h_max": 0
+    }
+  },
+  {
+    "id": "rodas3-r.003-a1e-16-cap0",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-16,
+      "h_max": 0
+    }
+  },
+  {
+    "id": "rodas3-r.003-a1e-17-cap200",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-17,
+      "h_max": 200
+    }
+  },
+  {
+    "id": "rodas3-r.003-a1e-16-cap200",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-16,
+      "h_max": 200
+    }
+  }
+]

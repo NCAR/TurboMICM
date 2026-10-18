@@ -1,6 +1,6 @@
 # Structure scans
 
-Every native scenario run is recorded in `scans/*.csv`, including failed runs.
+Every native research scenario run is recorded in `scans/*.csv`, including failed runs.
 Matching JSON files give exact command-line configurations. `tools/scan.py`
 runs one native process at a time, obtains `elapsed_ms` from that process, and
 invokes the **supplied** `../scenarios/score.py --json`. Its full JSON result,
@@ -25,6 +25,10 @@ tolerance value itself guarantees a number of digits.
 | `04-workprecision` | Intermediate relative tolerances for promising methods; atol changed within fixed-rtol series; repeat of the structural baseline after norm-loop reordering |
 | `05-baselines` | Native MICM three-stage defaults and a tighter robust baseline, plus the same tight setup in the C port |
 | `06-stepcaps` | Per-method/per-tolerance pairs, changing only maximum internal step to 300 or 100 seconds |
+| `07-caps-tolerance` | Intermediate step caps, then relative/absolute tolerance changes with cap held fixed |
+| `08-stress-candidates` | Independent 48-hour scenarios with converged references; four candidate operating points |
+| `09-groups` | 10,000 cells; only group size changes (16, 32, 64, 128), scoring the disclosed prefix |
+| `10-copy-elision` | Repeat two leading groups after eliminating the unnecessary preserved-Jacobian copy |
 
 In scan 03, `structure-base` is the parent unless stated otherwise.
 `restart-large` differs only in starting h from `restart`; `h211b-b1` differs
@@ -93,6 +97,34 @@ The main structural observations at the scan-03 setting were:
   improve reported accuracy and did not establish a time benefit. The more
   conservative default was retained.
 
+The step-cap scan gave a useful improvement in the global error/cost tradeoff.
+For RODAS3 at rtol `0.003`, atol `1e-18`, a 300-second cap improved the minimum
+overall/species digits from 2.484/1.546 to 3.086/2.060, with a six-scenario
+total of 4,279 ms. A 200-second cap gave 3.433/2.509 digits at 5,174 ms, and
+a 100-second cap gave 3.867/3.065 digits at 7,583 ms. RODAS3.1 remained weaker
+on the 5-minute case unless capped more tightly. These results motivate a
+step-limited RODAS3 recommendation; the cap limits internal integration steps
+and never changes the prescribed photolysis update times.
+
+The three independent 48-hour cases vary latitude, season, initial solar time,
+NOx scaling, and random seed. Their two tight reference integrations agree to
+10.193–10.412 overall digits and at least 9.494 digits per species. All four
+candidate settings passed their intended accuracy levels. Reference generation
+and bidirectional convergence scores are recorded in `stress-reference.csv`
+and `validation/stress-references.json`.
+
+At 10,000 cells, scan 09 initially favored groups of 16 over 32, 64 and 128.
+The fresh-Jacobian path then removed an unnecessary unfactored matrix allocation
+and copy. Scan 10 compared groups 16 and 32 again, with two repeats per scenario:
+the sums of the six per-scenario median times were 50,199 and 48,628 ms, and
+their geometric means were 7,458 and 7,334 ms. Group 32 was faster in four of
+six scenarios, but slower on the short Tier 1 case. The final points use 32;
+the advantage is modest (1.7% by geometric mean), not a universal group-size
+rule. Every full output hash and every operation counter matched the respective
+pre-copy-elision run across all 24 comparisons; see
+`validation/copy-elision.json`. Preliminary GCC point checks with group 16 are
+retained with `-group16` suffixes, separately from the final group-32 checks.
+
 ## Scope of the conclusions
 
 This is a systematic search over two families, seven formulas, three
@@ -109,3 +141,48 @@ roundoff and matches all counters. Formal order tests, stiff analytical tests,
 and independent 48-hour scenarios supplement the disclosed benchmark. Final
 selected configurations, repeated measurements, and scope of generalization
 are reported in `OPERATING_POINTS.md`, `ACCURACY.md`, and `RESULTS.md`.
+
+## Reproduction and retained records
+
+Use the pinned local conda environment (`make env`) and build the native runners
+before beginning timing. Every Python command below uses `.conda/bin/python`.
+The default scanner output root is `runs/scans`; `--run-root` separates series
+that share configuration IDs. `--keep` retains the large native CSV files as
+well as the stdout, stderr and scorer JSON. CSV logs append and must have a
+fresh filename for a new experiment; they are not silently overwritten.
+
+```sh
+make bench bin/micm_scenario CC=clang
+.conda/bin/python tools/prepare_experiments.py --large --stress
+
+# Two independent tight reference integrations; keep both sets of outputs.
+.conda/bin/python tools/scan.py scans/stress-reference.json --log runs/recheck-stress-reference.csv --scenario-root runs/stress --scenarios winter-night-48h summer-polluted-48h tropical-clean-48h --keep
+.conda/bin/python tools/finalize_references.py --log runs/recheck-stress-reference.csv --manifest runs/recheck-stress-references.json
+```
+
+`finalize_references.py` reads the two named reference directories under
+`runs/scans`, checks convergence in both directions with the supplied scorer,
+and installs the tighter reference only inside `runs/stress`. It adds convergence
+scores to the selected log and writes the requested manifest. With no arguments
+its destinations are the canonical `scans/stress-reference.csv` and
+`validation/stress-references.json`. Reference work is completed before any
+candidate timings.
+
+The final clang series is generated sequentially with:
+
+```sh
+.conda/bin/python tools/scan.py scans/operating-points.json --log scans/final-1000.csv --run-root runs/final-1000 --keep
+.conda/bin/python tools/scan.py scans/operating-points.json --log scans/final-stress.csv --run-root runs/final-stress --scenario-root runs/stress --scenarios winter-night-48h summer-polluted-48h tropical-clean-48h --keep
+.conda/bin/python tools/scan.py scans/operating-points.json --log scans/final-10000.csv --run-root runs/final-10000 --scenario-root runs/large --reference-root ../scenarios --prefix-cells 1000 --repeat 5
+.conda/bin/python tools/scan.py scans/final-baseline.json --log scans/final-baseline-10000.csv --run-root runs/final-baseline --scenario-root runs/large --reference-root ../scenarios --prefix-cells 1000 --repeat 5
+```
+
+These are the original filenames; choose new log names when repeating completed
+experiments. Full 10,000-cell output hashes are logged even though only the
+disclosed 1,000-cell prefix has reference accuracy. Each run's finite-state and
+minimum-concentration diagnostics cover all cells. The final plotting/report
+scripts read the canonical final logs and fail if required measurements or
+accuracy gates are missing. GCC checks use the same point JSON, with
+`--compiler gcc-15`, after rebuilding; they are accuracy checks, not the primary
+timing ranking. Compiler labels describe the built binary and do not invoke a
+compiler themselves.

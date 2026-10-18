@@ -31,7 +31,9 @@ Rosenbrock trials factor `A = I/(gamma*h) - J`, with the analytical Jacobian.
 Stage right sides are `f(y + sum(a_ij*k_j)) + sum(c_ij*k_j/h)`; the candidate is
 `y + sum(m_i*k_i)` and embedded error is `sum(e_i*k_i)`. One LU serves all
 stages. The initial RHS is exactly reused on rejected trials because state and
-rates have not changed. There is no approximate RHS reuse.
+rates have not changed. There is no approximate RHS reuse. Fresh-Jacobian runs
+assemble directly into the factor workspace; only lagged runs allocate and
+copy a preserved unfactored Jacobian.
 
 SDIRK2 uses `g = 1 - 1/sqrt(2)` and solves
 `Y1 = y + g*h*f(Y1)`, then `Y2 = y + (1-g)*h*f(Y1) + g*h*f(Y2)`.

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "balanced-g16",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 200,
+      "group_size": 16
+    }
+  },
+  {
+    "id": "balanced-g32",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 200,
+      "group_size": 32
+    }
+  },
+  {
+    "id": "balanced-g64",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 200,
+      "group_size": 64
+    }
+  },
+  {
+    "id": "balanced-g128",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.003,
+      "atol": 1e-18,
+      "h_max": 200,
+      "group_size": 128
+    }
+  }
+]

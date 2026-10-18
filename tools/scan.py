@@ -35,7 +35,7 @@ def run(config, scenario, repeat, args):
     settings = {key.strip():value.strip() for key,value in settings.items()}
     with (scenario.parent/settings['cells']).open() as file:
         cells = sum(bool(line.strip()) for line in file)-1
-    directory = ROOT/'runs'/'scans'/config['id']/name/str(repeat)
+    directory = args.run_root/config['id']/name/str(repeat)
     directory.mkdir(parents=True, exist_ok=True)
     binary = ROOT/'bin'/config.get('binary', 'ts1_scenario')
     options = config.get('options', {})
@@ -109,8 +109,11 @@ def main():
     parser.add_argument('--repeat', type=int, default=1)
     parser.add_argument('--threads', type=int, default=10)
     parser.add_argument('--compiler', default='clang')
+    parser.add_argument('--run-root',type=Path,default=ROOT/'runs'/'scans',
+                        help='Directory for native outputs; use a separate root to retain independent series')
     parser.add_argument('--keep', action='store_true')
     args = parser.parse_args()
+    args.run_root = args.run_root.resolve()
     digest = hashlib.sha256()
     for file in sorted([*ROOT.glob('src/*.[ch]'), *ROOT.glob('include/*.h'),
                         *ROOT.glob('tools/*.c'), *ROOT.glob('tools/*.h'), ROOT/'Makefile']):

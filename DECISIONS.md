@@ -5,6 +5,9 @@
 - The legacy `ch_solve` arithmetic, coefficients, tolerances and counters remain
   unchanged. A separate `ch_integrator` API owns new adaptive policies, so the
   roundoff gate and research targets can be checked independently.
+- Environment creation disables conda's environment registration, keeps its
+  package cache inside the repository, and pins the plotting dependency as well
+  as the existing build/test dependencies. Plotting caches also stay local.
 - New methods integrate the full mechanism with the analytical sparse Jacobian.
   No species are removed, lumped, classified by name, or replaced by surrogates.
   New algorithms initially cover ODEs; the retained solvers cover DAEs.
@@ -34,6 +37,17 @@
 - Research scripts retain source/binary hashes and exact options per run. Inputs
   under the supplied read-only directories are never modified. Reference
   executables and generated stress scenarios live only in this repository.
+- Declare four operating points: an uncapped two-digit economy setting and
+  three three-digit settings with 300-, 200-, or 100-second internal step caps.
+  Recommend 200 seconds for its measured accuracy margin. Caps never change
+  the prescribed photolysis schedule. The selected points use fresh matrices,
+  double precision, cell-wise RMS control and warm step prediction; lagging,
+  alternative controllers and SDIRK did not establish a better measured tradeoff.
+- Select groups of 32 for the final points after repeating the group comparison
+  with the unnecessary fresh-Jacobian copy removed. It won four of six large
+  cases and improved the geometric timing summary by about 1.7% versus 16.
+  The short case still favors 16; no universal optimum is claimed. Keep the
+  original compiled default of 32 and expose the choice at runtime.
 
 - The public C interface uses owned model and state handles, explicit error codes,
   and callback tables in place of C++ builders, exceptions, and policy templates.

@@ -1,0 +1,170 @@
+[
+  {
+    "group_size": 16,
+    "scenario": "tier1-30s",
+    "repeat": "1",
+    "output_sha256": "c9bbf3a41cbf7507f75c8e68182acfb0fb34476fb480b567dc865bd5e0621121",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "tier1-30s",
+    "repeat": "2",
+    "output_sha256": "c9bbf3a41cbf7507f75c8e68182acfb0fb34476fb480b567dc865bd5e0621121",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "diurnal-30min",
+    "repeat": "1",
+    "output_sha256": "a137570407a4a85125befb4b35cd9efb1b4920f9e0289cf02a627d91e3203d17",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "diurnal-30min",
+    "repeat": "2",
+    "output_sha256": "a137570407a4a85125befb4b35cd9efb1b4920f9e0289cf02a627d91e3203d17",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "diurnal-10min",
+    "repeat": "1",
+    "output_sha256": "88562b1dc02e2d9a30f07f0c21f82e63c6b9b164650458d2b6a885e8a15edde4",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "diurnal-10min",
+    "repeat": "2",
+    "output_sha256": "88562b1dc02e2d9a30f07f0c21f82e63c6b9b164650458d2b6a885e8a15edde4",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "diurnal-5min",
+    "repeat": "1",
+    "output_sha256": "cd4c92c545a5c9bdb32109ef4523f2127e013a69e966b15f19fe28474810be73",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "diurnal-5min",
+    "repeat": "2",
+    "output_sha256": "cd4c92c545a5c9bdb32109ef4523f2127e013a69e966b15f19fe28474810be73",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "polluted-10min",
+    "repeat": "1",
+    "output_sha256": "604e681536bb73a23935aa7bb51735879d3c0520d839ab0b6756b1026f08ff15",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "polluted-10min",
+    "repeat": "2",
+    "output_sha256": "604e681536bb73a23935aa7bb51735879d3c0520d839ab0b6756b1026f08ff15",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "clean-10min",
+    "repeat": "1",
+    "output_sha256": "ada271f4ad9d87350478db3e75915687db5975172bab56a5c52aacad2e38f445",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 16,
+    "scenario": "clean-10min",
+    "repeat": "2",
+    "output_sha256": "ada271f4ad9d87350478db3e75915687db5975172bab56a5c52aacad2e38f445",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "tier1-30s",
+    "repeat": "1",
+    "output_sha256": "5e47551d06e12335a9d815ced18e69cae97ab4668f4476d042d1d8bbb0ca8e0a",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "tier1-30s",
+    "repeat": "2",
+    "output_sha256": "5e47551d06e12335a9d815ced18e69cae97ab4668f4476d042d1d8bbb0ca8e0a",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "diurnal-30min",
+    "repeat": "1",
+    "output_sha256": "5196059b40967732a065e1bda1e78827a884a74cc6dccae9d7e2d5b50b098e54",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "diurnal-30min",
+    "repeat": "2",
+    "output_sha256": "5196059b40967732a065e1bda1e78827a884a74cc6dccae9d7e2d5b50b098e54",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "diurnal-10min",
+    "repeat": "1",
+    "output_sha256": "45893fe3feb5031aa0f25369331272affbb688df6683378e40295368f0d9fd26",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "diurnal-10min",
+    "repeat": "2",
+    "output_sha256": "45893fe3feb5031aa0f25369331272affbb688df6683378e40295368f0d9fd26",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "diurnal-5min",
+    "repeat": "1",
+    "output_sha256": "8000340ea142c6586f70c2b8f5db15e1578281b5faf70a755eb5a2ccd5568f81",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "diurnal-5min",
+    "repeat": "2",
+    "output_sha256": "8000340ea142c6586f70c2b8f5db15e1578281b5faf70a755eb5a2ccd5568f81",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "polluted-10min",
+    "repeat": "1",
+    "output_sha256": "0e566a7df47190172c645e440318fce68e75290ce6e92bcac4e0b4689f6e89eb",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "polluted-10min",
+    "repeat": "2",
+    "output_sha256": "0e566a7df47190172c645e440318fce68e75290ce6e92bcac4e0b4689f6e89eb",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "clean-10min",
+    "repeat": "1",
+    "output_sha256": "e2b8d49e753716817cbe31438196ea5b16976ec9ad2dc3133cf6149f683a7126",
+    "identical_output_and_counters": true
+  },
+  {
+    "group_size": 32,
+    "scenario": "clean-10min",
+    "repeat": "2",
+    "output_sha256": "e2b8d49e753716817cbe31438196ea5b16976ec9ad2dc3133cf6149f683a7126",
+    "identical_output_and_counters": true
+  }
+]

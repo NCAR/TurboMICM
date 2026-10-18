@@ -1,4 +1,5 @@
 """Check two tight independent references and install the tighter local files."""
+import argparse
 import csv
 import hashlib
 import json
@@ -16,13 +17,18 @@ def sha(path):
 
 
 def main():
-    log = ROOT/'scans/stress-reference.csv'
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--log',type=Path,default=ROOT/'scans/stress-reference.csv')
+    parser.add_argument('--run-root',type=Path,default=ROOT/'runs/scans')
+    parser.add_argument('--manifest',type=Path,default=ROOT/'validation/stress-references.json')
+    args = parser.parse_args()
+    log = args.log
     with log.open() as file:
         reader = csv.DictReader(file); fields = reader.fieldnames; rows = list(reader)
     assert len(rows) == 6 and all(row['status'] == '0' for row in rows)
     manifest = {}
     for name in NAMES:
-        paths = {level:ROOT/'runs/scans'/f'stress-reference-{level}'/name/'1' for level in [9,10]}
+        paths = {level:args.run_root/f'stress-reference-{level}'/name/'1' for level in [9,10]}
         comparisons = {}
         for level,other in [(9,10),(10,9)]:
             result = subprocess.run([sys.executable,str(ROOT.parent/'scenarios/score.py'),
@@ -44,7 +50,8 @@ def main():
     with log.open('w',newline='') as file:
         writer = csv.DictWriter(file,fieldnames=fields,lineterminator='\n')
         writer.writeheader(); writer.writerows(rows)
-    (ROOT/'validation/stress-references.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    args.manifest.parent.mkdir(parents=True,exist_ok=True)
+    args.manifest.write_text(json.dumps(manifest,indent=2)+'\n')
 
 
 if __name__ == '__main__':
