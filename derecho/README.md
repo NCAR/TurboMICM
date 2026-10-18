@@ -10,8 +10,12 @@ fastest configuration on this machine, at a whole node and at one thread? It
 does: 3.2x at one thread and 2.8x on a whole node with each program at its
 best thread count (the final session, below).
 
-Everything here lives on branch `derecho/fable`, under `derecho/`, so the other
-branches' work on `fable/` and the run root is untouched.
+Everything here lives under `derecho/`, so the other branches' work on `fable/`
+and the run root is untouched. It was developed on branches `derecho/fable`
+(the port and tuning through the final session) and `derecho/fable-2` (the
+follow-up levers), both merged into `main` on 2026-10-18; `derecho/fable` is
+a copy of `fable/`, unchanged on `main` since the copy, with the Derecho
+changes on top.
 
 ## Layout
 
@@ -387,3 +391,57 @@ them. The follow-up build passes the held-out seed-7 verification as well
 and the gate at every setting with a largest relative difference of 9.3e-14
 (444 ms at 128 threads, 37.8 s at one, on that input). The generated TS1 kernels are now 719 KB of code (the assembling LU
 family beside the plain one), and compile in about 100 s on a dev node.
+
+## Next: the LU storage order (not started)
+
+The one lever of the assessment left untried, and the only one with a
+double-digit estimate (10–20 %, at low to medium confidence): lay the LU
+elements out in the order the generated kernels touch them. Today an element's
+index is its position in the CSR numbering of the LU pattern
+(`lu_elements` in `tools/mechanism.py`, sorted by row, then column), and the
+kernels address a block's 2,293 elements by literal offset. The forward and
+backward substitutions already stream in that order (row i's L entries, then
+its U entries, are consecutive), but the elimination does not: at each pivot
+it walks the pivot's column, one element per row, 350 bytes apart on average,
+and the trailing update of a panel reads the panel's rows and columns both;
+the Jacobian partials it consumes are written reaction by reaction and read
+element by element. The one-thread profile is the motive: 1.17 instructions
+per cycle, 35 % of L1 data accesses missing, and a 73 KB block matrix against
+a 32 KB L1, with interleaved solves changing nothing, so the kernels wait on
+L2 rather than on their dependency chains. Elements numbered by first touch
+in the elimination (panel by panel, pivot by pivot) would turn the LU's loads
+into sequential streams for the L2 prefetcher, with every fetched line used
+whole; the price is that the substitutions then read each row's entries from
+scattered positions, so one layout cannot serve all three kernels, and the
+gain is a trade to measure, not a sum.
+
+The numbering is the generator's choice alone: with generated kernels the
+library never reads the LU array (`src/rosenbrock.c` only passes it between
+`jacobian_lu`, `lu_solve`, and `lu_solve_from`; `mz_diag` is used on the
+generic path), so a permutation of the element indices changes no arithmetic
+and the final state must stay bit for bit that of the follow-up build. The
+study, in order:
+
+1. `perf` at one thread (1,000 cells, as in `pbs/profile.sh`) with the L1 and
+   L2 miss counters split by kernel, so the share of the misses in the
+   elimination against the substitutions is known before any code changes;
+   if the substitutions carry most of them, the layout is not the fix and
+   the lever is closed.
+2. A generator option, say `--lu-order csr|elimination|solve`, that permutes
+   the element numbering before emission and otherwise leaves every emitter
+   as it is (the emitters already go through one index map).
+3. Builds for each order through `tools/build_variant.sh`, run against the
+   follow-up build as control in the same rounds of one whole-node session
+   (`pbs/final_session.sh`, 128 threads and one), `compare_final.py` on the
+   final CSVs with a tolerance of zero, and the static counts
+   (`tools/asm_stats.sh`) to confirm the code itself is unchanged in size.
+4. If the elimination order wins at the LU but loses at the substitutions,
+   try the panel's rows stored as contiguous slabs (the 16 pivot rows of a
+   panel together, then the rows below in CSR order), which gives the
+   trailing update sequential sources without moving the row entries the
+   substitutions read.
+
+The same question applies to the partials buffer that `jacobian_lu` fills
+(up to 8 blocks of partials in one thread-local buffer, written reaction by
+reaction): writing it in the order the LU reads it is a second permutation of
+the same kind.
