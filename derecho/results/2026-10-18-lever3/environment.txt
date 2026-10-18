@@ -1,0 +1,11 @@
+date: 2026-10-18T05:53:28
+host: dec2334
+platform: Linux-6.4.0-150600.23.53-default-x86_64-with-glibc2.38
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: 
+uptime: 05:53:29  up 45 days 18:16,  0 users,  load average: 78.05, 115.94, 124.04
+input: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/cells_2026.csv
+reference: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/micm-reference/micm_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 128,1; rounds: 3
+program control-p16-g16: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/final-p16/bin/ts1_bench_cpu --group-size 16
+program lever3: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/lever3/bin/ts1_bench_cpu
+program lever3-g8: /glade/work/fillmore/TurboMICM/.claude/worktrees/derecho-fable/derecho/work/variants/lever3/bin/ts1_bench_cpu --group-size 8

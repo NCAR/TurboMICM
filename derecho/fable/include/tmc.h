@@ -626,6 +626,14 @@ typedef struct tmc_kernels
   /* Optional (may be NULL): the forcing at y + a k, the stage combination
    * formed on the way (one fused multiply-add per element). */
   void (*forcing_at)(const double *y, const double *k, double a, const double *rate_constants, double *forcing, int nb);
+  /* Optional (may be NULL): the solve with its right-hand side b read from a
+   * separate array (b != x), the result in x. */
+  void (*lu_solve_from)(double *x, const double *b, const double *lu, const double *reciprocals, int nb);
+  /* Optional (may be NULL): alpha I - J assembled inside the factorization,
+   * each element where the elimination first reads it, with the pivot
+   * reciprocals; and the same with the forcing of y, for the start of a step. */
+  void (*jacobian_lu)(const double *y, const double *rate_constants, double alpha, double *lu, double *reciprocals, int nb);
+  void (*forcing_jacobian_lu)(const double *y, const double *rate_constants, double alpha, double *forcing, double *lu, double *reciprocals, int nb);
 } tmc_kernels;
 
 /* ------------------------------------------------------------------------- */

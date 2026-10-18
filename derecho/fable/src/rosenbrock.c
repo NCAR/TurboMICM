@@ -4,6 +4,11 @@
 
 #include <math.h>
 
+/* Fast kernel mode's reassociated error norm (the Makefile sets it) */
+#ifndef TMC_FAST_NORM
+#define TMC_FAST_NORM 0
+#endif
+
 static const double DEFAULT_H_MIN = 1.0e-15;  /* relative to the time step */
 static const double DEFAULT_H_START = 1.0e-6; /* relative to the time step */
 
@@ -34,7 +39,9 @@ void tmc_rosenbrock_alpha_minus_jacobian(const tmc_solver *s, tmc_state *st, dou
 /* alpha M - J(y) into the state's LU matrix, then its factorization. */
 static void factor(const tmc_solver *s, tmc_state *st, const tmc_dense *y, double alpha, tmc_stats *stats)
 {
-  if (s->kernels)
+  if (s->kernels && s->kernels->jacobian_lu)
+    s->kernels->jacobian_lu(y->data, st->rate_constants->data, alpha, st->jacobian->data, st->reciprocals, st->n_blocks);
+  else if (s->kernels)
   {
     s->kernels->jacobian(y->data, st->rate_constants->data, alpha, st->jacobian->data, st->n_blocks);
     s->kernels->lu_decompose(st->jacobian->data, st->reciprocals, st->n_blocks);
@@ -72,6 +79,22 @@ static void solve(const tmc_solver *s, tmc_state *st, tmc_dense *x, tmc_stats *s
   else
     tmc_lu_solve_in_place(s->lu, st->jacobian, NULL, x);
   stats->solves += 1;
+}
+
+/* x = (LU)^-1 b with b in its own array (a Derecho tuning): the generated
+ * kernels read b straight from the forcing instead of the library copying it
+ * into x first; without that kernel, the copy and the in-place solve. */
+static void solve_from(const tmc_solver *s, tmc_state *st, tmc_dense *x, const tmc_dense *b, tmc_stats *stats)
+{
+  if (s->kernels && s->kernels->lu_solve_from && b != x)
+  {
+    s->kernels->lu_solve_from(x->data, b->data, st->jacobian->data, st->reciprocals, st->n_blocks);
+    stats->solves += 1;
+    return;
+  }
+  if (b != x)
+    tmc_dense_copy_into(x, b);
+  solve(s, st, x, stats);
 }
 
 /* out = base + sum_j coef[j] k[j], element by element with one fused
@@ -188,6 +211,86 @@ static void combine_solution_and_error(tmc_dense *ynew, tmc_dense *yerror, const
   }
 }
 
+#if TMC_FAST_NORM
+/* Ynew = Y + sum m_j K_j, Yerror = sum e_j K_j, and the normalized error, in
+ * one pass over the stage vectors (three stages, no constraints; a Derecho
+ * tuning): the arithmetic of combine_solution_and_error and of the fast
+ * norm below, with the arrays read once. The squared terms go into per-lane
+ * partial sums, block by block and variable by variable, padded lanes
+ * excluded, and the lanes' sums are added in lane order at the end. */
+static double combine_solution_error_norm(const tmc_state *st, tmc_dense *ynew, tmc_dense *yerror, const tmc_dense *y, const double *m, const double *e, tmc_dense *const *k)
+{
+  const int L = st->L, n_vars = st->n_vars, n_cells = st->n_cells, n_blocks = st->n_blocks;
+  const double rtol = st->relative_tolerance;
+  const double m0 = m[0], m1 = m[1], m2 = m[2], e0 = e[0], e1 = e[1], e2 = e[2];
+  double acc_lane[TMC_WIDTH];
+  for (int lane = 0; lane < TMC_WIDTH; ++lane)
+    acc_lane[lane] = 0.0;
+  for (int block = 0; block < n_blocks; ++block)
+  {
+    const int lanes = block == n_blocks - 1 ? n_cells - block * L : L;
+    for (int v = 0; v < n_vars; ++v)
+    {
+      const size_t base = ((size_t)block * n_vars + v) * L;
+      const double atol = st->absolute_tolerance[v];
+      const double *restrict yv = y->data + base;
+      const double *restrict k0 = k[0]->data + base, *restrict k1 = k[1]->data + base, *restrict k2 = k[2]->data + base;
+      double *restrict out = ynew->data + base, *restrict err = yerror->data + base;
+      if (L == TMC_WIDTH && lanes == TMC_WIDTH)
+      {
+#pragma omp simd
+        for (int lane = 0; lane < TMC_WIDTH; ++lane)
+        {
+          double a = k0[lane], b = k1[lane], c = k2[lane];
+          double t = yv[lane] + m0 * a;
+          t = t + m1 * b;
+          double yn = t + m2 * c;
+          double u = e0 * a;
+          u = u + e1 * b;
+          double er = u + e2 * c;
+          out[lane] = yn;
+          err[lane] = er;
+          double ay = fabs(yv[lane]), an = fabs(yn);
+          double ymax = ay > an ? ay : an;
+          double q = er / (atol + rtol * ymax);
+          acc_lane[lane] += q * q;
+        }
+      }
+      else
+      {
+        for (int lane = 0; lane < L; ++lane)
+        {
+          double a = k0[lane], b = k1[lane], c = k2[lane];
+          double t = yv[lane] + m0 * a;
+          t = t + m1 * b;
+          double yn = t + m2 * c;
+          double u = e0 * a;
+          u = u + e1 * b;
+          double er = u + e2 * c;
+          out[lane] = yn;
+          err[lane] = er;
+          if (lane < lanes)
+          {
+            double ay = fabs(yv[lane]), an = fabs(yn);
+            double ymax = ay > an ? ay : an;
+            double q = er / (atol + rtol * ymax);
+            acc_lane[lane % TMC_WIDTH] += q * q;
+          }
+        }
+      }
+    }
+  }
+  double acc = 0.0;
+  for (int lane = 0; lane < TMC_WIDTH; ++lane)
+    acc += acc_lane[lane];
+  size_t N = (size_t)n_cells * (size_t)n_vars;
+  if (N == 0)
+    N = 1;
+  double error = sqrt(acc / (double)N);
+  return error > 1.0e-10 ? error : 1.0e-10;
+}
+#endif
+
 /* MICM's normalized error: the root mean square over all cells and variables
  * of error / (atol + rtol max(|y|, |ynew|)), accumulated variable by variable
  * and cell by cell, padded lanes excluded, floored at 1e-10.
@@ -198,9 +301,6 @@ static void combine_solution_and_error(tmc_dense *ynew, tmc_dense *yerror, const
  * adds, and the lanes' sums are added in lane order at the end: a reassociated
  * sum, within the gate like the fast kernels' split sums. Exact mode keeps
  * MICM's order. */
-#ifndef TMC_FAST_NORM
-#define TMC_FAST_NORM 0
-#endif
 double tmc_rosenbrock_normalized_error(const tmc_state *st, const tmc_dense *y, const tmc_dense *ynew, const tmc_dense *errors)
 {
   const int L = st->L, n_vars = st->n_vars, n_cells = st->n_cells;
@@ -547,7 +647,16 @@ tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state
     H = fmin(H, fabs(time_step - present_time));
 
     bool factored = false;
-    if (s->kernels && s->kernels->forcing_jacobian)
+    if (s->kernels && s->kernels->forcing_jacobian_lu)
+    {
+      /* the forcing, the shifted Jacobian of Y, and its factorization in one pass */
+      const double alpha = 1.0 / (H * p->gamma[0]);
+      s->kernels->forcing_jacobian_lu(Y->data, st->rate_constants->data, alpha, initial_forcing->data, st->jacobian->data, st->reciprocals, st->n_blocks);
+      stats->jacobian_updates += 1;
+      stats->decompositions += 1;
+      factored = true;
+    }
+    else if (s->kernels && s->kernels->forcing_jacobian)
     {
       /* the forcing and the shifted Jacobian of Y in one pass, for the first attempt's H */
       const double alpha = 1.0 / (H * p->gamma[0]);
@@ -579,7 +688,9 @@ tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state
         tmc_dense *raw = reused_by_next ? K[stage + 1] : K[stage]; /* where the raw forcing goes */
         if (stage == 0)
         {
-          if (raw != initial_forcing)
+          /* K[0] takes the initial forcing in its solve (solve_from, below); a
+           * next stage that reuses it gets its copy */
+          if (raw != initial_forcing && raw != K[0])
             tmc_dense_copy_into(raw, initial_forcing);
         }
         else if (p->new_function_evaluation[stage])
@@ -611,20 +722,26 @@ tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state
           for (int j = 0; j < stage; ++j)
             add_coupling_masked(s, K[stage], p->c[stage_combinations + j] / H, K[j]);
         }
-        else if (raw != K[0])
-        {
-          tmc_dense_copy_into(K[0], raw);
-        }
-        solve(s, st, K[stage], stats);
+        if (stage == 0)
+          solve_from(s, st, K[0], initial_forcing, stats);
+        else
+          solve(s, st, K[stage], stats);
       }
 
-      combine_solution_and_error(Ynew, Yerror, Y, p->stages, p->m, p->e, K);
-      /* For DAE systems the embedded error is near zero on algebraic rows;
-       * MICM uses the step change there instead. */
-      if (s->n_algebraic)
-        tmc_set_algebraic_errors(s, Yerror, Y, Ynew);
-
-      const double error = tmc_rosenbrock_normalized_error(st, Y, Ynew, Yerror);
+      double error;
+#if TMC_FAST_NORM
+      if (p->stages == 3 && s->n_algebraic == 0)
+        error = combine_solution_error_norm(st, Ynew, Yerror, Y, p->m, p->e, K);
+      else
+#endif
+      {
+        combine_solution_and_error(Ynew, Yerror, Y, p->stages, p->m, p->e, K);
+        /* For DAE systems the embedded error is near zero on algebraic rows;
+         * MICM uses the step change there instead. */
+        if (s->n_algebraic)
+          tmc_set_algebraic_errors(s, Yerror, Y, Ynew);
+        error = tmc_rosenbrock_normalized_error(st, Y, Ynew, Yerror);
+      }
       const double fac = s->controller(error, p, s->controller_context);
       double Hnew = H * fac;
       stats->number_of_steps += 1;

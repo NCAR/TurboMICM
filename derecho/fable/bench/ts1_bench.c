@@ -147,9 +147,8 @@ int main(int argc, char **argv)
     omp_set_num_threads(threads);
   omp_set_schedule(schedule, chunk);
   /* The default grouping (a Derecho tuning): groups of TMC_DEFAULT_GROUP_SIZE
-   * cells, halved while there would be fewer than four groups per thread, so
-   * that a node's 128 threads stay balanced: 10,000 cells make groups of 32
-   * at 78 threads or fewer, 16 at 128, and 8 at 256. --group-size sets it. */
+   * cells (8), halved while there would be fewer than four groups per thread,
+   * so that a node's threads stay balanced; --group-size sets it. */
   if (!group_size_given)
     while (group_size > 4 && (n_cells + group_size - 1) / group_size < 4 * omp_get_max_threads())
       group_size /= 2;

@@ -304,7 +304,47 @@ groups of 16). On a whole node with each program at its best thread count, 504
 ms at 128 threads against 1,391 ms at 256, the port is 2.76x. The goal, 2x over
 the fastest MICM configuration on Derecho, is met.
 
-Follow-up (a new branch): groups of 16 as the default, groups of 8 at 128
-threads, the error norm fused into the solution-and-error pass with the
-stage-0 copy replaced by an out-of-place forward solve, and the Jacobian
-assembled panel by panel inside the LU.
+## Follow-up: the four levers (branch `derecho/fable-2`)
+
+After the final session the SSE asked for the first four levers of the
+assessment, each measured on a whole node against a control in the same
+rounds. All passed the 680 cases (673/0/7) and the gates; where a change is
+meant to be bit-identical, it was checked bit for bit.
+
+### Finer groups (`results/2026-10-18-grouping-fine`)
+
+Node dec0889, the final build, 5 rounds at 128 threads and 3 at one. Groups
+of 8 cells beat 16 by 7 % at 128 threads (1,250 groups, 9.8 per thread) and
+cost nothing at one thread, so **8 cells is the committed default**
+(`GROUP_SIZE`); the halving rule stays for larger thread counts. The 16-pivot
+LU panels, equal at 128 and one thread and 4 % faster at 256 in the final
+session, are the default too (`PANEL`).
+
+| Grouping | 128 threads, median ms (range) | vs 16 | 1 thread, median ms (range) | vs 16 |
+|---|---:|---:|---:|---:|
+| MICM vector8, one group per thread | 1,955 (1,904–2,001) | | | |
+| 8 cells | **479** (478–480) | 1.07x | 43,701 (42,438–44,140) | 1.02x |
+| 12 cells | 500 (498–502) | 1.03x | | |
+| 16 cells | 513 (512–516) | 1.00x | 44,454 (43,922–44,478) | 1.00x |
+| 8 cells, static schedule | 497 (495–504) | 1.03x | | |
+
+### The fused norm and the copy-free solve (`results/2026-10-18-lever3`)
+
+Node dec2334, 3 rounds. Two library changes, both in fast mode only: the new
+solution, the error estimate, and the normalized error in one pass over the
+stage vectors (`combine_solution_error_norm`), and the first stage's solve
+reading the forcing straight from its own array (`lu_solve_from`, a second
+forward-substitution family in the generated kernels) instead of the library
+copying it into K first. The control is the final build with 16-pivot panels
+run with groups of 16; `lever3` is the same with the two changes (default
+groups of 16 then), `lever3-g8` with groups of 8.
+
+| Build | 128 threads, median ms (range) | vs control | 1 thread, median ms (range) | vs control |
+|---|---:|---:|---:|---:|
+| control (final build, panels of 16, groups of 16) | 508 (505–509) | 1.00x | 43,803 (43,253–44,392) | 1.00x |
+| fused norm and copy-free solve | 497 (492–498) | 1.02x | 42,272 (41,824–43,252) | 1.04x |
+| the same with groups of 8 | **473** (472–475) | 1.07x | **41,298** (40,927–41,801) | 1.06x |
+
+### The Jacobian assembled inside the LU (`results/2026-10-18-lever4`)
+
+(measurement in progress)

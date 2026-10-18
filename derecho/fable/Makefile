@@ -31,7 +31,11 @@ PYTHON := $(CURDIR)/.conda/bin/python
 
 # Tuning parameters (see DESIGN.md). Every value gives correct results.
 WIDTH ?= 4
-GROUP_SIZE ?= 32
+# Derecho: groups of 8 cells (the benchmark halves them while there are fewer
+# than four per thread) and LU panels of 16 pivots, each measured on whole dev
+# nodes on 2026-10-18 (derecho/README.md)
+GROUP_SIZE ?= 8
+PANEL ?= 16
 KERNEL_CHUNK ?= 16
 KERNEL_MODE ?= fast
 # the TS1 kernels' species ordering: minimum fill, or MICM's Markowitz in exact mode;
@@ -39,6 +43,7 @@ KERNEL_MODE ?= fast
 ifeq ($(KERNEL_MODE),exact)
 TS1_ORDERING ?= markowitz
 FAST_NORM ?= 0
+GEN_FLAGS += --no-assemble-in-lu
 else
 TS1_ORDERING ?= minimum-fill
 FAST_NORM ?= 1
@@ -105,7 +110,7 @@ configs/ts1.json: tools/translate_ts1.py $(MICM)/test/benchmark/ts1_mechanism.hp
 
 generated/ts1.c generated/ts1.h: configs/ts1.json tools/generate.py tools/mechanism.py | $(PYTHON)
 	@mkdir -p generated
-	$(PYTHON) tools/generate.py configs/ts1.json generated/ts1 --name ts1 --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE) --ordering $(TS1_ORDERING) $(GEN_FLAGS)
+	$(PYTHON) tools/generate.py configs/ts1.json generated/ts1 --name ts1 --width $(WIDTH) --chunk $(KERNEL_CHUNK) --mode $(KERNEL_MODE) --ordering $(TS1_ORDERING) --panel $(PANEL) $(GEN_FLAGS)
 
 build/ts1.o: generated/ts1.c generated/ts1.h include/tmc.h build/flags.txt
 	$(CC) $(CFLAGS) -Igenerated -c $< -o $@
