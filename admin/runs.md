@@ -580,4 +580,7 @@ Launch changes
   and so were the agents' own reference and check files (`reference_*.csv`,
   `check_*.csv`) from their stress and scaling tests. With Claude Code's scratch
   verification outputs and gcc-15 builds also deleted, free space went from 19 to
-  45 GiB. Tier 1 astra-max's directory waits until Tier 3 astra-max ends.
+  45 GiB. Tier 1 astra-max's directory waited until Tier 3 astra-max ended.
+- 2026-10-18, 11:58, after Tier 3 astra-max was collected, archived, and
+  verified: the same rule deleted 158 files, 2.70 GiB, from Tier 3 astra-max's
+  run directory (1.64 GiB) and Tier 1 astra-max's (1.06 GiB).
