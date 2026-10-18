@@ -1,0 +1,65 @@
+[
+  {
+    "name": "static32",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003,
+      "group": 32,
+      "schedule": "static"
+    }
+  },
+  {
+    "name": "dynamic32",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003,
+      "group": 32,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "name": "guided32",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003,
+      "group": 32,
+      "schedule": "guided"
+    }
+  },
+  {
+    "name": "dynamic8",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003,
+      "group": 8,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "name": "dynamic16",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003,
+      "group": 16,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "name": "dynamic64",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003,
+      "group": 64,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "name": "dynamic128",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003,
+      "group": 128,
+      "schedule": "dynamic"
+    }
+  }
+]

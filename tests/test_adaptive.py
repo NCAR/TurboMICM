@@ -38,14 +38,24 @@ def jacobian(y):
 def main():
     records = []
     m = mechanism()
-    for method in [2, 3, 4, 5, 6, 10]:
-        for variant in ['fixed', 'adaptive', 'reuse']:
+    methods = [(method, 5) for method in [2, 3, 4, 5, 6]] + [(10, order) for order in range(1, 6)]
+    for method, order in methods:
+        for variant in ['fixed', 'adaptive', 'reuse', 'maxnorm', 'filtered']:
+            if method == 10 and variant == 'filtered':
+                continue
             p = lib.chem_adaptive_parameters(method)
+            p.max_order = order
             p.h_start = .01 if variant == 'fixed' else .08
             p.h_max = .01 if variant == 'fixed' else .2
             p.jacobian_age = 8 if variant == 'reuse' else 1
             p.reuse_ratio = .2
+            if variant == 'reuse':
+                p.h_start = p.h_max = .01; p.step_hold = 1.2
+            if variant == 'maxnorm':
+                p.norm = 2
             p.controller = int(method != 10 and variant == 'adaptive')
+            if variant == 'filtered':
+                p.controller = 2
             settings = {key: getattr(p, key) for key, _ in p._fields_}
             state = State(m); state.set('A', 1.); state.set('B', .1); state.rates()
             state.tolerances(relative=1e-4, absolute=1e-9)
@@ -63,7 +73,7 @@ def main():
             assert diff < 3e-12, (method, variant, diff, actual, expected)
             assert counts(stats) == operations, (method, variant, counts(stats), operations)
             assert abs(actual[0] + actual[1] + 2*actual[2] - 1.1) < 3e-12
-            records.append(dict(method=method, variant=variant, max_absolute_difference=diff, **operations))
+            records.append(dict(method=method, max_order=order, variant=variant, max_absolute_difference=diff, **operations))
             lib.chem_workspace_free(w); state.close()
     # Multiple lanes and a partial group, with a stiff conservative transfer.
     stiff = Model(['X', 'Y']); stiff.reaction(['X'], [('Y', 1.)], rate(A=1e6)); stiff.finalize()
@@ -86,7 +96,7 @@ def main():
     stiff.close(); m.close()
     dest = ROOT / 'build' / 'prototype-verification.csv'
     with dest.open('w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['method', 'variant', 'max_absolute_difference'] + COUNTERS)
+        writer = csv.DictWriter(f, fieldnames=['method', 'max_order', 'variant', 'max_absolute_difference'] + COUNTERS, lineterminator='\n')
         writer.writeheader(); writer.writerows(records)
     print(f'prototype agreement: {len(records)} configurations, matching counts; stiff/positivity/API checks PASS')
 

@@ -109,7 +109,13 @@ ChemStatus chem_bdf_solve(const ChemAdaptive *p, double dt, ChemState *s, ChemWo
       for (size_t j = keep; j > 0; --j) {
         memcpy(w->history+j*n,w->history+(j-1)*n,n*sizeof(double)); w->times[j] = w->times[j-1]-h;
       }
-      for (size_t a = 0; a < n; ++a) s->variables[a] = fmax(0.0,s->new_y[a]);
+      for (size_t a = 0; a < n; ++a) {
+        if (s->new_y[a] < 0.0) {
+          ++stats->clipped_values;
+          stats->largest_clip = fmax(stats->largest_clip,-s->new_y[a]);
+        }
+        s->variables[a] = fmax(0.0,s->new_y[a]);
+      }
       memcpy(w->history,s->variables,n*sizeof(double)); w->times[0] = 0.0;
       if (w->history_count < 7) ++w->history_count;
       t = h == dt-t ? dt : t+h; stats->base.final_time = t;

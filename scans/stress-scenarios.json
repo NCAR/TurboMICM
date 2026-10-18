@@ -1,0 +1,5 @@
+[
+  {"name":"summer-48h-30min","cells":64,"seed":7001,"dt":1800,"steps":96,"snapshot_every":12,"lat":55,"doy":172,"start":0,"nox_scale":1},
+  {"name":"clean-winter-48h-5min","cells":64,"seed":7002,"dt":300,"steps":576,"snapshot_every":72,"lat":20,"doy":355,"start":5,"nox_scale":0.01},
+  {"name":"polluted-48h-10min","cells":64,"seed":7003,"dt":600,"steps":288,"snapshot_every":36,"lat":65,"doy":80,"start":4,"nox_scale":30}
+]

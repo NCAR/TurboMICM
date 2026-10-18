@@ -40,19 +40,21 @@ SOURCES := $(filter-out src/bench.c src/scenario.c,$(wildcard src/*.c))
 OBJECTS := $(patsubst src/%.c,$(BUILD)/%.o,$(SOURCES))
 GENERATED_OBJECTS := $(BUILD)/ts1.o $(BUILD)/example_no_user.o $(BUILD)/example_user.o $(BUILD)/example_robertson.o $(BUILD)/validation.o
 
-.PHONY: all env cpu test-cpu test-tier3 bench micm-ref clean
+.PHONY: all env cpu test-cpu test-tier3 bench micm-ref micm-scenario clean
 all: cpu
 env: .conda/conda-meta/history
 	mkdir -p $(TMPDIR)
 .conda/conda-meta/history: environment.yml
 	mkdir -p $(TMPDIR)
-	if [ -f $@ ]; then CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env update --prefix $(CURDIR)/.conda --file environment.yml >&2; else CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes >&2; fi
+	if [ -f $@ ]; then CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env update --prefix $(CURDIR)/.conda --file environment.yml >&2; else CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes >&2; fi
+	touch $@
 cpu: bin/libchem.a bin/libchem.$(SHARED_EXT) bin/ts1_bench_cpu bin/ts1_scenario bin/tutorials
 bench: cpu
 test-cpu: cpu
 	$(PYTHON) tests/run.py
 test-tier3: cpu
 	$(PYTHON) tests/test_adaptive.py
+	$(PYTHON) tests/test_scenario.py
 $(BUILD)/%.o: src/%.c $(wildcard include/*.h) $(wildcard src/*.h) $(BUILD)/flags
 	@mkdir -p $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $< -o $@
@@ -112,6 +114,10 @@ bin/ts1_bench_cpu: $(BUILD)/ts1_bench_cpu force
 	@mkdir -p bin
 	cp $< $@
 micm-ref: bin/micm_ts1_ref
+micm-scenario: bin/micm_scenario
+bin/micm_scenario: $(ROOT)/scenarios/micm_scenario.cpp build/reference-flags
+	@mkdir -p bin
+	clang++ -std=c++20 $(OPTFLAGS) -I$(ROOT)/micm/include -I$(ROOT)/micm/test/benchmark $< -o $@
 bin/micm_ts1_ref: $(ROOT)/reference/micm_ts1_ref.cpp build/reference-flags
 	@mkdir -p bin
 	clang++ -std=c++20 $(OPTFLAGS) -I$(ROOT)/micm/include -I$(ROOT)/micm/test/benchmark $< -o $@

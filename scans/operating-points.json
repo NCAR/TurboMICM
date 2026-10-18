@@ -1,0 +1,37 @@
+[
+  {
+    "name": "fast",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.01
+    }
+  },
+  {
+    "name": "balanced",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.005
+    }
+  },
+  {
+    "name": "accurate",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0005
+    }
+  },
+  {
+    "name": "recommended",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003
+    }
+  },
+  {
+    "name": "precise",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0001
+    }
+  }
+]

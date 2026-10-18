@@ -9,7 +9,7 @@ import math
 
 COUNTERS = ('internal_steps accepted rejected function_calls jacobian_updates '
             'decompositions solves nonlinear_iterations matrix_reuses '
-            'positivity_rejections failed_iterations').split()
+            'positivity_rejections failed_iterations clipped_values').split()
 
 
 def lu(matrix):
@@ -54,7 +54,7 @@ def axpy(y, a, x):
 def rosenbrock(f, jac, y0, dt, table, p, rtol, atol):
     counts = dict.fromkeys(COUNTERS, 0)
     y = y0[:]; t = 0.; h = p['h_start']; previous = 1.
-    fresh = True; rejected = False; age = 0; matrix_h = None
+    fresh = True; rejected = False; age = 0; matrix_h = None; previous_h = 0.
     while t < dt:
         h = min(h, p.get('h_max', 0) or dt, dt-t)
         if fresh:
@@ -92,17 +92,23 @@ def rosenbrock(f, jac, y0, dt, table, p, rtol, atol):
         error = norm(y, yn, e, rtol, atol, p['norm'])
         good = positive(y, yn, rtol, atol, p['positivity'])
         counts['internal_steps'] += 1
-        if p['controller'] and not rejected:
+        if p['controller'] == 2 and not rejected and previous_h > 0:
+            exponent = 1/(p['controller_b']*p['controller_k'])
+            factor = p['safety'] * max(error, 1e-12)**(-exponent) * previous**(-exponent) * (h/previous_h)**(-1/p['controller_b'])
+        elif p['controller'] == 1 and not rejected:
             factor = p['safety'] * max(error, 1e-12)**(-.7/table.order) * previous**(.4/table.order)
         else:
             factor = p['safety'] * max(error, 1e-12)**(-1/table.order)
         factor = min(p['growth'], max(p['shrink'], factor))
         if error <= 1 and good:
+            counts['clipped_values'] += sum(v < 0 for v in yn)
             y = [max(0., v) for v in yn]; t = dt if h == dt-t else t+h
             counts['accepted'] += 1; age += 1; fresh = True; previous = max(error, 1e-12)
             if rejected:
                 factor = min(1., factor)
-            h *= factor; rejected = False
+            if 1/p.get('step_hold', 1) <= factor <= p.get('step_hold', 1):
+                factor = 1.
+            previous_h = h; h *= factor; rejected = False
         else:
             counts['rejected'] += 1
             if not good:
@@ -203,6 +209,7 @@ def bdf(f, jac, y0, dt, p, rtol, atol):
             counts['failed_iterations'] += 1; factor_alpha = None
         good = positive(y, yn, rtol, atol, p['positivity'])
         if converged and good and error <= 1:
+            counts['clipped_values'] += sum(v < 0 for v in yn)
             counts['accepted'] += 1; age += 1; successes += 1
             y = [max(0., v) for v in yn]
             history = [y[:]] + history[:6]; times = [0.] + [v-h for v in times[:6]]

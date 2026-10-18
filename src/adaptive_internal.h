@@ -5,7 +5,7 @@
 struct ChemWorkspace {
   const ChemState *owner;
   double *jacobian, *history, *scratch;
-  double next_h, previous_error, factor_h, times[7];
+  double next_h, previous_error, previous_h, factor_h, times[7];
   size_t history_count, jacobian_age;
   int order, factor_valid;
 };

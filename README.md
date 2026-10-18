@@ -13,6 +13,33 @@ make test-cpu CC=gcc-15
 
 `make cpu` creates `bin/libchem.a`, the shared library, `bin/ts1_bench_cpu`, and the C tutorial runner. `make bench` builds the same binaries. Compilers and optimization flags are configurable, for example `make cpu CC=gcc-15 OPTFLAGS='-O3 -DNDEBUG'`. Compiler-specific intermediate directories prevent stale binaries when switching compilers. OpenMP is required. On macOS the Makefile sets the SDK and finds Homebrew libomp for Apple clang; other platforms use `-fopenmp`.
 
+Tier 3 also builds `bin/ts1_scenario` from both `make cpu` and `make bench`. Run a disclosed scenario with the recommended numerical settings:
+
+```sh
+bin/ts1_scenario --method rodas3 --option rtol=3e-4 \
+  ../scenarios/diurnal-10min/scenario.txt
+.conda/bin/python ../scenarios/score.py ts1_snapshots.csv \
+  ../scenarios/diurnal-10min/reference_snapshots.csv --level 3
+```
+
+Omit `--method` for the exact inherited three-stage solver and its default tolerances. That default remains available for compatibility but is inaccurate or fails on some long-step scenarios. `OPERATING_POINTS.md` gives the five declared alternatives and their measured accuracy. New methods are opt-in additions; the original numerical API and benchmark remain available.
+
+The scenario executable reads every cell, applies the piecewise linear photolysis factor at each step's start, and integrates with rates held fixed through that step. It has no warm-up. The printed `elapsed_ms` includes rate updates and integration but excludes reading, setup, validation, and writing. It writes the final state and requested snapshots with 17 significant digits. Use `--threads N` to limit workers; the default uses all OpenMP workers. All options, numerical policies, and extension points are documented in `DESIGN.md`.
+
+Additional validation and reproducible scans:
+
+```sh
+make test-tier3 CC=clang
+make test-tier3 CC=gcc-15
+make bench CC=clang
+.conda/bin/python tools/scan.py scans/operating-points.json --study local-points --repeats 5
+make micm-scenario
+.conda/bin/python tools/scan.py scans/micm-baselines.json --study local-reference \
+  --backend micm --compiler clang++ --repeats 5
+```
+
+`test-tier3` compares independent Python prototypes with all new C formulas, including operation counts, and tests native scenario interpolation, partial groups, snapshots, rate caching, and scheduling. `ACCURACY.md` explains the accuracy policy, `SCANS.md` gives the research conclusions, and `scans/README.md` documents the raw data and reproduction. `RESULTS.md` includes work–precision figures and independent MICM comparisons. Python is used only by build, test, prototype, and analysis tools. NumPy and Matplotlib are pinned inside the private environment; the runtime library and benchmarks link neither.
+
 The prefix environment `.conda` contains pinned build/test dependencies. All Python commands use `.conda/bin/python`; environment creation confines the package cache to `.conda-pkgs`. The library and executables run without that environment.
 
 Run the benchmark with:

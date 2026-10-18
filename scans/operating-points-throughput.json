@@ -1,0 +1,47 @@
+[
+  {
+    "name": "fast",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.01,
+      "group": 16,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "name": "balanced",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.005,
+      "group": 16,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "name": "accurate",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0005,
+      "group": 16,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "name": "recommended",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0003,
+      "group": 16,
+      "schedule": "dynamic"
+    }
+  },
+  {
+    "name": "precise",
+    "method": "rodas3",
+    "options": {
+      "rtol": 0.0001,
+      "group": 16,
+      "schedule": "dynamic"
+    }
+  }
+]

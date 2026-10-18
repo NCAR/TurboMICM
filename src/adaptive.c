@@ -6,6 +6,8 @@ ChemAdaptive chem_adaptive_parameters(int method) {
   p.jacobian_age = 1; p.max_steps = 200000;
   p.h_start = 1.0; p.safety = 0.85; p.growth = 3.0; p.shrink = 0.1;
   p.positivity = 1.0; p.reuse = 1; p.reuse_ratio = 0.2;
+  p.step_hold = 1.0;
+  p.controller_b = 1.0; p.controller_k = 2.0;
   return p;
 }
 ChemWorkspace *chem_workspace_create(const ChemState *s) {
@@ -24,7 +26,10 @@ void chem_workspace_free(ChemWorkspace *w) {
   if (w) { free(w->jacobian); free(w->history); free(w->scratch); free(w); }
 }
 void chem_workspace_reset(ChemWorkspace *w) {
-  if (w) { w->history_count = 0; w->factor_valid = 0; w->jacobian_age = 0; w->order = 1; }
+  if (w) {
+    w->history_count = 0; w->factor_valid = 0; w->jacobian_age = 0; w->order = 1;
+    w->previous_error = 1.0; w->previous_h = 0.0;
+  }
 }
 double chem_adaptive_norm(const ChemAdaptive *p, const ChemState *s, const double *y,
                           const double *yn, const double *e) {
@@ -102,17 +107,29 @@ static ChemStatus rosenbrock(const ChemAdaptive *p, double dt, ChemState *s, Che
     int positive = chem_adaptive_positive(p,s,s->variables,s->new_y);
     double factor = p->shrink;
     if (isfinite(error)) {
-      if (p->controller && !rejected)
+      if (p->controller == 2 && !rejected && w->previous_h > 0.0) {
+        double exponent = 1.0/(p->controller_b*p->controller_k);
+        factor = p->safety*pow(fmax(error,1e-12),-exponent)*pow(w->previous_error,-exponent)*
+          pow(h/w->previous_h,-1.0/p->controller_b);
+      } else if (p->controller == 1 && !rejected)
         factor = p->safety*pow(fmax(error,1e-12),-0.7/r->order)*pow(w->previous_error,0.4/r->order);
       else factor = p->safety*pow(fmax(error,1e-12),-1.0/r->order);
       factor = fmin(p->growth,fmax(p->shrink,factor));
     }
     if (positive && error <= 1.0) {
-      for (size_t a = 0; a < n; ++a) s->variables[a] = fmax(0.0,s->new_y[a]);
+      for (size_t a = 0; a < n; ++a) {
+        if (s->new_y[a] < 0.0) {
+          ++stats->clipped_values;
+          stats->largest_clip = fmax(stats->largest_clip,-s->new_y[a]);
+        }
+        s->variables[a] = fmax(0.0,s->new_y[a]);
+      }
       t = h == dt-t ? dt : t+h; stats->base.final_time = t;
       ++stats->base.accepted; ++w->jacobian_age; fresh = 1;
       w->previous_error = fmax(error,1e-12);
+      w->previous_h = h;
       if (rejected) factor = fmin(1.0,factor);
+      if (factor >= 1.0/p->step_hold && factor <= p->step_hold) factor = 1.0;
       w->next_h = h*factor; h = w->next_h; rejected = 0;
     } else {
       ++stats->base.rejected;
@@ -127,12 +144,13 @@ static ChemStatus rosenbrock(const ChemAdaptive *p, double dt, ChemState *s, Che
 }
 ChemStatus chem_adaptive_solve(const ChemAdaptive *p, double dt, ChemState *s, ChemWorkspace *w, ChemAdaptiveStats *stats) {
   if (!p || !s || !w || w->owner != s || !stats || s->model->nconstraints || !isfinite(dt) || dt < 0.0 ||
-      !((p->method >= 2 && p->method <= 6) || p->method == 10) || p->controller < 0 || p->controller > 1 ||
+      !((p->method >= 2 && p->method <= 6) || p->method == 10) || p->controller < 0 || p->controller > 2 ||
       p->norm < 0 || p->norm > 2 || p->max_order < 1 || p->max_order > 5 || !p->max_steps || !p->jacobian_age ||
       !(p->h_start > 0.0) || !isfinite(p->h_start) || !(p->h_max >= 0.0) || !isfinite(p->h_max) ||
-      !(p->safety > 0.0 && p->safety < 1.0) || !(p->growth >= 1.0) || !isfinite(p->growth) ||
+      !(p->safety > 0.0) || !isfinite(p->safety) || !(p->growth >= 1.0) || !isfinite(p->growth) ||
       !(p->shrink > 0.0 && p->shrink < 1.0) || !(p->positivity >= 0.0) || !isfinite(p->positivity) ||
-      !(p->reuse_ratio >= 0.0 && p->reuse_ratio < 1.0)) return CHEM_INVALID;
+      !(p->reuse_ratio >= 0.0 && p->reuse_ratio < 1.0) || !(p->step_hold >= 1.0) || !isfinite(p->step_hold) ||
+      !(p->controller_b >= 1.0) || !isfinite(p->controller_b) || !(p->controller_k > 0.0) || !isfinite(p->controller_k)) return CHEM_INVALID;
   memset(stats,0,sizeof *stats);
   if (dt == 0.0) return CHEM_OK;
   if (p->method == 10) return chem_bdf_solve(p,dt,s,w,stats);

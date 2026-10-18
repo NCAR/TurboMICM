@@ -1,0 +1,19 @@
+[
+  {
+    "name": "MICM3-default",
+    "method": "rosenbrock3",
+    "options": {
+      "group": 32
+    }
+  },
+  {
+    "name": "MICM3-controlled",
+    "method": "rosenbrock3",
+    "options": {
+      "group": 32,
+      "rtol": 0.0003,
+      "atol": 1e-18,
+      "max_steps": 100000
+    }
+  }
+]

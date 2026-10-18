@@ -92,6 +92,8 @@ static void stats_add(ChemAdaptiveStats *a, const ChemAdaptiveStats *b) {
   a->base.solves += b->base.solves; a->nonlinear_iterations += b->nonlinear_iterations;
   a->matrix_reuses += b->matrix_reuses; a->positivity_rejections += b->positivity_rejections;
   a->failed_iterations += b->failed_iterations;
+  a->clipped_values += b->clipped_values;
+  a->largest_clip = fmax(a->largest_clip,b->largest_clip);
 }
 static int header(FILE *f, const ChemModel *m, int snapshot) {
   fprintf(f,"%stemperature,pressure",snapshot ? "step,cell," : "");
@@ -116,13 +118,16 @@ static int option(const char *text, ChemAdaptive *p, double *rtol, double *atol,
   else if (!strcmp(key,"atol")) { if (!(x > 0.0)) return 0; *atol = x; }
   else if (!strcmp(key,"h_start")) { if (!(x > 0.0)) return 0; p->h_start = x; }
   else if (!strcmp(key,"h_max")) { if (x < 0.0) return 0; p->h_max = x; }
-  else if (!strcmp(key,"safety")) { if (!(x > 0.0 && x < 1.0)) return 0; p->safety = x; }
+  else if (!strcmp(key,"safety")) { if (!(x > 0.0)) return 0; p->safety = x; }
+  else if (!strcmp(key,"controller_b")) { if (x < 1.0) return 0; p->controller_b = x; }
+  else if (!strcmp(key,"controller_k")) { if (!(x > 0.0)) return 0; p->controller_k = x; }
   else if (!strcmp(key,"growth")) { if (x < 1.0) return 0; p->growth = x; }
+  else if (!strcmp(key,"step_hold")) { if (x < 1.0) return 0; p->step_hold = x; }
   else if (!strcmp(key,"positivity")) { if (x < 0.0) return 0; p->positivity = x; }
   else if (!strcmp(key,"reuse_ratio")) { if (!(x >= 0.0 && x < 1.0)) return 0; p->reuse_ratio = x; }
   else {
     size_t value; if (!positive_size(eq+1,&value,1)) return 0;
-    if (!strcmp(key,"controller") && value <= 1) p->controller = (int)value;
+    if (!strcmp(key,"controller") && value <= 2) p->controller = (int)value;
     else if (!strcmp(key,"norm") && value <= 2) p->norm = (int)value;
     else if (!strcmp(key,"order") && value >= 1 && value <= 5) p->max_order = (int)value;
     else if (!strcmp(key,"reuse") && value <= 1) p->reuse = (int)value;
@@ -135,6 +140,7 @@ static int option(const char *text, ChemAdaptive *p, double *rtol, double *atol,
 }
 int main(int argc, char **argv) {
   size_t threads = (size_t)omp_get_max_threads(), group = CHEM_GROUP_SIZE;
+  int schedule_choice = -1, schedule_chunk = -1;
   const char *method = "micm3", *path = NULL;
   for (int i = 1; i < argc; ++i) {
     if (!strcmp(argv[i],"--method") && i+1 < argc) method = argv[++i];
@@ -153,14 +159,36 @@ int main(int argc, char **argv) {
   for (int i = 1; i < argc; ++i) {
     if (!strcmp(argv[i],"--threads") && i+1 < argc) { if (!positive_size(argv[++i],&threads,0) || threads > INT_MAX) goto usage; }
     else if (!strcmp(argv[i],"--method") && i+1 < argc) ++i;
-    else if (!strcmp(argv[i],"--option") && i+1 < argc) { if (!option(argv[++i],&p,&rtol,&atol,&group)) goto usage; }
+    else if (!strcmp(argv[i],"--option") && i+1 < argc) {
+      const char *text = argv[++i];
+      if (!strncmp(text,"schedule=",9)) {
+        if (!strcmp(text+9,"static")) schedule_choice = 0;
+        else if (!strcmp(text+9,"dynamic")) schedule_choice = 1;
+        else if (!strcmp(text+9,"guided")) schedule_choice = 2;
+        else goto usage;
+        continue;
+      }
+      if (!strncmp(text,"schedule_chunk=",15)) {
+        size_t chunk;
+        if (!positive_size(text+15,&chunk,1) || chunk > INT_MAX) goto usage;
+        schedule_chunk = (int)chunk; continue;
+      }
+      if (legacy && strncmp(text,"rtol=",5) && strncmp(text,"atol=",5) && strncmp(text,"group=",6)) goto usage;
+      if (!option(text,&p,&rtol,&atol,&group)) goto usage;
+    }
     else if (!strcmp(argv[i],"--group") && i+1 < argc) { if (!positive_size(argv[++i],&group,0)) goto usage; }
     else if (argv[i][0] == '-' || path) goto usage;
     else path = argv[i];
   }
   if (!path || !group || threads > INT_MAX) goto usage;
   omp_set_num_threads((int)threads);
-  if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_static,0);
+  if (schedule_choice >= 0) {
+    omp_sched_t kind = schedule_choice == 0 ? omp_sched_static : (schedule_choice == 1 ? omp_sched_dynamic : omp_sched_guided);
+    omp_set_schedule(kind,schedule_chunk >= 0 ? schedule_chunk : (schedule_choice == 0 ? 0 : 1));
+  } else if (schedule_chunk >= 0) {
+    omp_sched_t kind; int chunk;
+    omp_get_schedule(&kind,&chunk); omp_set_schedule(kind,schedule_chunk);
+  } else if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_static,0);
   Scenario scenario = {0}; Light light = {0}; Table table = {0};
   ChemModel *m = NULL; ChemState **states = NULL; ChemWorkspace **work = NULL;
   ChemStatus *statuses = NULL; ChemAdaptiveStats *totals = NULL;
@@ -229,10 +257,11 @@ int main(int argc, char **argv) {
         statuses[g] = chem_adaptive_solve(&p,scenario.dt,s,work[g],&one);
       }
       stats_add(totals+g,&one);
-      if (!statuses[g]) for (size_t a = 0; a < m->nvariables*nc; ++a)
-        if (!isfinite(s->variables[a]) || s->variables[a] < -1e-20) { statuses[g] = CHEM_NAN; break; }
     }
     elapsed += (omp_get_wtime()-start)*1000.0; previous_light = factor;
+    for (size_t g = 0; g < groups; ++g) if (!statuses[g])
+      for (size_t a = 0; a < m->nvariables*states[g]->cells; ++a)
+        if (!isfinite(states[g]->variables[a]) || states[g]->variables[a] < -1e-20) { statuses[g] = CHEM_NAN; break; }
     for (size_t g = 0; g < groups; ++g) if (statuses[g]) {
       fprintf(stderr,"step=%zu group=%zu status=%s\n",step+1,g,chem_status_string(statuses[g])); failed = 1; break;
     }
@@ -248,6 +277,7 @@ int main(int argc, char **argv) {
   printf("nonlinear_iterations=%llu matrix_reuses=%llu positivity_rejections=%llu failed_iterations=%llu\n",
     (unsigned long long)total.nonlinear_iterations,(unsigned long long)total.matrix_reuses,
     (unsigned long long)total.positivity_rejections,(unsigned long long)total.failed_iterations);
+  printf("clipped_values=%llu largest_clip=%.17g\n",(unsigned long long)total.clipped_values,total.largest_clip);
   if (!failed) {
     FILE *final = fopen("ts1_final.csv","w");
     if (!final) failed = 1;
@@ -256,8 +286,10 @@ int main(int argc, char **argv) {
 cleanup:
   if (snapshots && fclose(snapshots)) failed = 1;
   for (size_t g = 0; g < groups; ++g) {
-    if (work) chem_workspace_free(work[g]); if (states) chem_state_free(states[g]);
-    if (base_rates) free(base_rates[g]); if (base_custom) free(base_custom[g]);
+    if (work) chem_workspace_free(work[g]);
+    if (states) chem_state_free(states[g]);
+    if (base_rates) free(base_rates[g]);
+    if (base_custom) free(base_custom[g]);
   }
   free(states); free(work); free(statuses); free(totals); free(base_rates); free(base_custom);
   chem_model_free(m); table_free(&table); free(light.time); free(light.factor); free(scenario.cells); free(scenario.light);

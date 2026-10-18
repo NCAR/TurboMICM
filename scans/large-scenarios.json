@@ -1,0 +1,8 @@
+[
+  {"name":"tier1-30s","cells":10000,"seed":2026,"dt":30,"steps":101,"constant":true},
+  {"name":"diurnal-30min","cells":10000,"seed":101,"dt":1800,"steps":48,"snapshot_every":12,"diurnal":true},
+  {"name":"diurnal-10min","cells":10000,"seed":101,"dt":600,"steps":144,"snapshot_every":36,"diurnal":true},
+  {"name":"diurnal-5min","cells":10000,"seed":101,"dt":300,"steps":288,"snapshot_every":72,"diurnal":true},
+  {"name":"polluted-10min","cells":10000,"seed":102,"dt":600,"steps":144,"snapshot_every":36,"nox_scale":10,"diurnal":true},
+  {"name":"clean-10min","cells":10000,"seed":103,"dt":600,"steps":144,"snapshot_every":36,"nox_scale":0.1,"diurnal":true}
+]

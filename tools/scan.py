@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from species_metrics import measure
 
 ROOT = Path(__file__).resolve().parents[1]
 SCENARIOS = ROOT.parent / 'scenarios'
@@ -19,19 +20,19 @@ NAMES = ['tier1-30s', 'diurnal-30min', 'diurnal-10min', 'diurnal-5min',
          'polluted-10min', 'clean-10min']
 COUNTERS = ('internal_steps accepted rejected function_calls jacobian_updates '
             'decompositions solves nonlinear_iterations matrix_reuses '
-            'positivity_rejections failed_iterations').split()
+            'positivity_rejections failed_iterations clipped_values').split()
 FIELDS = ['study', 'configuration', 'method', 'options', 'scenario', 'cells',
           'repeat', 'compiler', 'threads', 'status', 'elapsed_ms',
           'overall_digits', 'worst_digits', 'worst_species', 'gate', 'values_counted'] + COUNTERS + [
-          'input_sha256', 'reference_sha256', 'output_sha256', 'diagnostic']
+          'largest_clip', 'input_sha256', 'reference_sha256', 'output_sha256', 'diagnostic']
 
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def prepare(name, count):
-    source = SCENARIOS / name
+def prepare(name, count, scenario_root=SCENARIOS):
+    source = scenario_root / name
     if not count:
         return source
     out = ROOT / 'results' / f'prefix-{count}' / name
@@ -41,7 +42,7 @@ def prepare(name, count):
         if not path.exists():
             continue
         with path.open(newline='') as f, (out / filename).open('w', newline='') as g:
-            reader = csv.reader(f); writer = csv.writer(g)
+            reader = csv.reader(f); writer = csv.writer(g, lineterminator='\n')
             header = next(reader); writer.writerow(header)
             for i, row in enumerate(reader):
                 if (int(row[1]) if filename == 'reference_snapshots.csv' else i) < count:
@@ -59,32 +60,54 @@ def run(args):
         raise ValueError('no configurations selected')
     out = ROOT / 'scans' / f'{args.study}.csv'
     out.parent.mkdir(exist_ok=True)
+    metadata = out.with_suffix('.metadata.json')
+    if not metadata.exists():
+        sources = sorted(p for directory in ['src', 'include', 'configs', 'tools']
+                         for p in (ROOT / directory).rglob('*') if p.is_file() and '__pycache__' not in p.parts)
+        metadata.write_text(json.dumps(dict(
+            command=sys.argv, configs_sha256=digest(args.configs),
+            flags=(ROOT / ('build/reference-flags' if args.backend == 'micm' else f'build/{args.compiler}/flags')).read_text().strip(),
+            binary_sha256=digest(ROOT / 'bin' / ('micm_scenario' if args.backend == 'micm' else 'ts1_scenario')),
+            sources={str(p.relative_to(ROOT)): digest(p) for p in sources}), indent=2)+'\n')
     working = ROOT / 'results' / 'scan-run'; working.mkdir(parents=True, exist_ok=True)
     done = set()
     if out.exists():
         with out.open() as f:
             done = {(r['configuration'], r['scenario'], int(r['repeat'])) for r in csv.DictReader(f)}
     with out.open('a', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDS)
+        writer = csv.DictWriter(f, fieldnames=FIELDS, lineterminator='\n')
         if f.tell() == 0:
             writer.writeheader()
         for config in configs:
             options = config.get('options', {})
             for name in args.scenarios.split(','):
-                scenario = prepare(name, args.cells)
+                scenario = prepare(name, args.cells, args.scenario_root.resolve())
+                with (scenario / 'cells.csv').open() as cells_file:
+                    native_cells = sum(1 for row in csv.reader(cells_file) if row)-1
                 reference = scenario / ('reference_snapshots.csv' if (scenario / 'reference_snapshots.csv').exists() else 'reference_final.csv')
                 for repeat in range(args.repeats):
                     if (config['name'], name, repeat) in done:
                         continue
                     for filename in ['ts1_final.csv', 'ts1_snapshots.csv']:
                         (working / filename).unlink(missing_ok=True)
-                    command = [str(ROOT / 'bin/ts1_scenario'), '--threads', str(args.threads), '--method', config['method']]
+                    executable = 'micm_scenario' if args.backend == 'micm' else 'ts1_scenario'
+                    command = [str(ROOT / 'bin' / executable), '--threads', str(args.threads), '--method', config['method']]
                     for key, value in options.items():
-                        command += ['--option', f'{key}={value}']
+                        if args.backend == 'micm':
+                            flag = {'group':'--group-size', 'rtol':'--rtol', 'atol':'--atol', 'max_steps':'--max-steps'}[key]
+                            command += [flag, str(value)]
+                        else:
+                            command += ['--option', f'{key}={value}']
                     command.append(str(scenario / 'scenario.txt'))
+                    # Validate which binary will actually run, even if a compiler
+                    # switch in another shell replaced bin/ during a long scan.
+                    binary_hash = digest(ROOT / 'bin' / executable)
+                    expected_hash = binary_hash if args.backend == 'micm' else digest(ROOT / 'build' / args.compiler / 'ts1_scenario')
+                    if binary_hash != expected_hash:
+                        raise RuntimeError('bin/ts1_scenario differs from the selected compiler build; finish rebuilding before scanning')
                     row = dict(study=args.study, configuration=config['name'], method=config['method'],
                                options=json.dumps(options, sort_keys=True, separators=(',', ':')),
-                               scenario=name, cells=args.cells or 1000, repeat=repeat,
+                               scenario=name, cells=native_cells, repeat=repeat,
                                compiler=args.compiler, threads=args.threads,
                                input_sha256=digest(scenario / 'cells.csv'), reference_sha256=digest(reference))
                     try:
@@ -107,6 +130,15 @@ def run(args):
                             row['output_sha256'] = digest(output)
                             if score.returncode:
                                 row['status'] = 'GATE_FAIL'
+                            if args.metrics and repeat == 0:
+                                metrics = out.with_name(out.stem+'-species.csv')
+                                exists = metrics.exists()
+                                records = [dict(configuration=config['name'], scenario=name, **v) for v in measure(output, reference)]
+                                with metrics.open('a', newline='') as mf:
+                                    mw = csv.DictWriter(mf, fieldnames=list(records[0]), lineterminator='\n')
+                                    if not exists:
+                                        mw.writeheader()
+                                    mw.writerows(records)
                     except subprocess.TimeoutExpired:
                         row.update(status='TIMEOUT', diagnostic=f'native process exceeded {args.timeout}s')
                     writer.writerow(row); f.flush()
@@ -123,6 +155,9 @@ if __name__ == '__main__':
     p.add_argument('--threads', type=int, default=10)
     p.add_argument('--repeats', type=int, default=1)
     p.add_argument('--compiler', default='clang')
+    p.add_argument('--backend', choices=['c', 'micm'], default='c')
+    p.add_argument('--metrics', action='store_true')
     p.add_argument('--timeout', type=float, default=300)
     p.add_argument('--scenarios', default=','.join(NAMES))
+    p.add_argument('--scenario-root', type=Path, default=SCENARIOS)
     run(p.parse_args())
