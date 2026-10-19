@@ -27,9 +27,23 @@ For example, the recommended operating point on a disclosed scenario:
 
 ```
 cd <a work directory>
-<entry>/bin/ts1_scenario --method rodas3 --option rtol=1e-3 --option atol=1e-18 <root>/scenarios/diurnal-10min/scenario.txt
+<entry>/bin/ts1_scenario --method extrap --option order=4 --option sequence=shifted --option rtol=5e-4 --option atol=1e-22 --option quantize=1 <root>/scenarios/diurnal-10min/scenario.txt
 python3 <root>/scenarios/score.py ts1_snapshots.csv <root>/scenarios/diurnal-10min/reference_snapshots.csv --level 3
 ```
+
+The five operating points and their command lines are in OPERATING_POINTS.md;
+their measurements, with MICM's three-stage Rosenbrock beside them, in
+RESULTS.md; the accuracy argument in ACCURACY.md; the scans that chose them
+in SCANS.md and `scans/`; the design and the decisions in DESIGN.md and
+DECISIONS.md; the sources in REFERENCES.md. In short: RODAS3 with the step
+carried from one interval to the next and quantized to the interval is the
+two-digit method (its elementary controller at relative 5e-3, absolute
+1e-20); the same method with the digital-filter controller H211b reaches
+three digits at relative 2e-3; and extrapolated linearly implicit Euler with
+the substep sequence 2, 3, 4, ... is the three-digit and the accurate method
+(orders 3 and 4 at relative 1e-3 to 2e-4, absolute 1e-20 to 1e-22). A tight
+absolute tolerance matters because the species that set the score sit near
+the 1e-14 mol m-3 floor it counts from.
 
 ## Tier 1: the port
 
