@@ -5,39 +5,70 @@ Tier 3's results come first; the Tier 1 measurements follow under "Tier 1".
 # Tier 3
 
 The operating points of OPERATING_POINTS.md on the six disclosed scenarios,
-against MICM's three-stage Rosenbrock, all at 1,000 cells and 10 threads on
-the Apple M5 laptop with clang 21 unless stated. Accuracy is
-`scenarios/score.py`'s: digits overall and for the worst species, with the
-gate. Times are medians of 3 runs, idle machine; the experimenter's ranking
-times 10,000-cell scenarios, median of 5, and those numbers are the
+against MICM's three-stage Rosenbrock, all at 1,000 cells on the Apple M5
+laptop (10 cores) with Apple clang 21, built with `-O3 -DNDEBUG`. Accuracy
+is `scenarios/score.py`'s: digits overall and for the worst species, with
+the gate (no NaN or infinity, nothing below -1e-20 mol m-3). Times are
+medians of three runs at 10 threads in one session (scan S13, 06:27 to 06:39
+on 2026-10-19, idle machine, AC power; `scans/S13-confirmation.csv`), and
+one run at one thread (S14). The experimenter's ranking times 10,000-cell
+scenarios, median of five, in its own session; those numbers are the
 ranking's, not these.
 
 ## Operating points
 
-*(table: point, method and options, per scenario: digits overall, worst
-species, elapsed ms, internal steps, factorizations, solves; the lowest
-digits over the six scenarios; the level reached.)*
+Every run passes the gate, and every point's output is byte-identical
+across the three rounds, so the digits are exact. Per scenario: digits
+overall (worst species and its digits), median elapsed ms at 10 threads.
+
+| Point | clean-10min | diurnal-10min | diurnal-30min | diurnal-5min | polluted-10min | tier1-30s | Lowest (worst) | Level | Time, s |
+|---|---|---|---|---|---|---|---|---|---:|
+| L2 | 2.58 (ISOP 1.52) 175 | 2.56 (ISOP 1.39) 205 | 2.52 (ISOP 1.37) 162 | 2.73 (NO 1.87) 281 | 2.42 (ISOP 1.29) 247 | 5.09 (C6H5O2 4.40) 89 | 2.42 (1.29) | 2 | 1.160 |
+| balanced | 3.26 (ISOP 2.26) 365 | 3.25 (ISOP 2.17) 410 | 3.30 (ISOP 2.32) 335 | 3.75 (ISOP 2.89) 488 | 3.17 (ISOP 2.17) 482 | 5.80 (ISOP 5.02) 128 | 3.17 (2.17) | 3 (declared 2) | 2.208 |
+| L3 | 3.61 (ISOP 2.49) 399 | 3.84 (ISOP 2.58) 449 | 3.65 (ISOP 2.52) 387 | 4.12 (ISOP 3.00) 644 | 3.95 (ISOP 2.85) 550 | 5.87 (ISOPO2 5.32) 217 | 3.61 (2.49) | 3 | 2.647 |
+| recommended | 3.62 (MALO2 2.87) 467 | 3.65 (OClO 2.69) 471 | 4.24 (ISOP 3.10) 372 | 3.87 (BrO 3.00) 830 | 4.52 (ISOP 3.40) 599 | 6.53 (MEKO2 5.86) 303 | 3.62 (2.69) | 3 | 3.041 |
+| accurate | 4.81 (ISOP 3.66) 530 | 4.72 (ISOP 3.49) 556 | 4.57 (ISOP 3.54) 488 | 3.87 (BrO 3.00) 870 | 4.54 (ISOP 3.41) 701 | 6.84 (MEKO2 6.30) 303 | 3.87 (3.00) | 3 | 3.449 |
+
+Operation counts per interval and 32-cell group, the mean over the six
+scenarios (the per-scenario values are in the CSV): internal steps,
+rejections, forcing evaluations, Jacobians, factorizations, solves.
+
+| Point | Steps | Rejected | Forcings | Jacobians | Factorizations | Solves |
+|---|---:|---:|---:|---:|---:|---:|
+| L2 | 2.12 | 0.21 | 6.2 | 2.1 | 2.1 | 8.5 |
+| balanced | 4.16 | 0.35 | 12.1 | 4.2 | 4.2 | 16.6 |
+| L3 | 2.11 | 0.10 | 14.7 | 2.0 | 6.3 | 19.0 |
+| recommended | 1.62 | 0.06 | 17.7 | 1.6 | 6.5 | 22.6 |
+| accurate | 1.91 | 0.11 | 21.0 | 1.8 | 7.7 | 26.8 |
+
+Photolysis rate constants are recomputed in 0.5 of the intervals (none by
+night, when the rates stay zero). The 30-minute scenario takes two to three
+times the steps per interval of the 10-minute ones; the 5-minute scenario
+and Tier 1's 30-second steps take about one step per interval for every
+point, which is why the extrapolation points, at 9 and 14 substeps per step,
+are dearest there (644 to 870 ms on diurnal-5min against 281 for L2).
 
 ## Against MICM's three-stage Rosenbrock
 
-*(table: MICM at the tolerances that reach each level on the six scenarios,
-with its time and digits, and each point's speedup over it.)*
+*(MICM at the ranking's baseline tolerances on the same six scenarios in the
+same session, `scans/MICM-baselines.csv`, and each point's speedup: filled
+when the rerun ends.)*
 
 ## Work-precision plots
 
-*(figures from `tools/plot_wp.py`: time against digits, overall and worst
-species, one curve per method; the operating points marked.)*
+*(figures in `plots/`, from `tools/plot_wp.py`.)*
 
 ## Where the time goes
 
-*(the operation counts per scenario step for each point: steps,
-factorizations, solves, forcing evaluations, matrix reuses, rate updates;
-and the cost model's prediction against the measured time.)*
+*(the one-thread times of S14 against the cost model.)*
+
+## Generated against generic kernels
+
+*(S10: the same points with `generic=1`.)*
 
 ## Build and run times
 
-*(make env, make bench, make test-cpu with clang and gcc-15; the generated
-kernels' compile time.)*
+*(make env, make bench, make test-cpu with clang and gcc-15.)*
 
 # Tier 1
 
