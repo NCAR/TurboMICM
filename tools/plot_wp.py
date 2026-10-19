@@ -7,7 +7,7 @@
 
 One curve per series, by default the method (the label up to the first
 '-'); --series gives a regular expression whose capture groups, joined by
-spaces, name the series (for example '^(\w+)-.*-(micm|h211b)$' separates
+spaces, name the series (for example '^(\\w+)-.*-(micm|h211b)$' separates
 the controllers). --mark draws the named configurations, the operating
 points, with large markers and their labels. One point per configuration: x is the median elapsed time summed over the scenarios (or the
 summed operation count), y is the lowest overall digits (or the lowest worst-
