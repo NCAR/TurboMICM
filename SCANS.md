@@ -37,6 +37,20 @@ per step (the tableau), and a cheaper matrix (precision).
 | S10 generic kernels | generated vs generic | best points | time, identity of results |
 | S11 precision (if time allows) | double; single-precision factorization and solves with double residuals | best points | digits, time |
 
+S11 would need the generator to emit single-precision variants of the
+Jacobian, LU, and solve kernels (the forcing stays double): the matrix
+halves in size (37 to 18 KB per block of two cells) and the vector units do
+four lanes per instruction instead of two, so the matrix and solves, 76 %
+of a RODAS3 step by the cost model, could run up to 1.5 times faster, about
+1.3 times for the step. The risk is accuracy: the stage solutions carry the
+single-precision solve's error (about 1e-7 relative) straight into the
+state, which is harmless for two or three digits if it stays random, and
+the EMAC single-precision Rosenbrock runs kept species masses within
+0.004 % [SKTC26]; but species near the threshold and a W-method-like loss
+of order from the inexact matrix would have to be measured on every
+scenario. It is the last lever, taken only if the algorithmic ones leave
+it worth a day of generator work.
+
 Scenarios: all six disclosed ones for the work-precision scans (S2, S3, S6,
 S8); the others on diurnal-10min and polluted-10min, with the winner
 confirmed on all six. The held-out behavior is estimated by the spread

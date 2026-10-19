@@ -77,6 +77,35 @@ new scenario is most likely to test (isoprene and the nitrogen reservoirs
 sit near it in these runs). The margin asked is 0.2 digit (a factor 1.6 in
 error), the spread seen between the disclosed scenarios themselves.
 
+## What the solver controls and what the score measures
+
+The loop controls a scaled root-mean-square error over the group's cells
+and all 209 species per internal step; the score measures, per species, the
+root mean square over cells and snapshots of the relative error, and asks
+for L - 1 digits of the worst species. The two differ in one way that the
+scans show matters: the loop's norm averages a badly resolved species with
+208 well resolved ones, so a tolerance that gives three digits overall gives
+about two for the worst species. In S2 the gap between the lowest overall
+and the lowest per-species digits is 0.9 to 1.0 digit for every tableau and
+tolerance (RODAS3 at 5e-4: 3.04 and 2.07; ROS3 at 1e-3: 3.33 and 2.12;
+extrapolation order 4 at 5e-4: 3.19 and 2.34), and the worst species is
+isoprene on almost every day-night scenario: emitted nowhere in these
+scenarios, it decays by day with a lifetime of about an hour against OH,
+so its relative error grows as its concentration falls, until it drops below
+the scoring threshold. The per-species level is therefore the binding
+constraint, and a point declared for level L must be chosen by its worst
+species, with the overall digits following a digit behind.
+
+Two consequences for the design:
+- The maximum over species of the scaled error, as the loop's norm, controls
+  the worst species directly instead of through the average; whether it
+  reaches L - 1 per species at a looser tolerance, and so with fewer steps,
+  than the root mean square does is the question of scan S5.
+- Margins are measured per species. ACCURACY.md's margin of 0.2 digit
+  applies to the worst species' score, and the spread of that score across
+  the six disclosed scenarios (0.1 to 0.3 digit for the candidate points) is
+  the uncertainty an undisclosed scenario brings.
+
 ## What the measurements show
 
 *(Filled from the scans: a table of the operating points with their lowest
