@@ -12,11 +12,16 @@ enough for an atmospheric model.
 Status: designed and approved on 2026-10-15; tooling built; launched on 2026-10-18,
 one run at a time in the order of the Tier 1 runs (sol-xhigh, sol-max,
 astra-xhigh, astra-max; see `admin/runs.md`). All four ended and were verified
-that day; the rest moved to another machine, as `HANDOFF.md` describes.
+that day, and the rest followed on the same laptop by the morning of
+2026-10-19: MICM's baselines, the blind review
+(`results/2026-10-18-tier3-blind-review/`), the timing session, and the
+ranking (`results/2026-10-19-tier3-ranking/`; the wiki's Tier-3-Results has
+the tables). Luna's arm is open; it would need new held-out scenarios, since
+`heldout/` is public.
 The prompt template is `prompt.v1`. This directory mirrors the committed files of
 the Tier 3 run root, `ODE/benchmarks/tier3`; keep the two identical, except for
-this README, `HANDOFF.md`, `heldout/` (the held-out scenarios, published after
-the last run), and `review/` (the blind review's instructions).
+this README, `heldout/` (the held-out scenarios, published after the last
+run), and `review/` (the blind review's instructions).
 
 ## Plan
 
@@ -76,8 +81,33 @@ Done after the launch (the agents needed neither):
   digits overall, and published in `heldout/` when the last run ended;
 - a test of the scenario mode of `admin/time_entries.py`, on 2026-10-18.
 
-Still to do, in `HANDOFF.md`: MICM's baselines at tolerances that reach 2 and 3
-digits, the timing session, the ranking, and the blind review.
+## How the ranking was made
+
+The rules, fixed before the runs (in `HANDOFF.md` until the ranking was
+published on 2026-10-19):
+- **Timing:** one interleaved session on one idle machine on AC power under
+  `caffeinate`: all 19 declared points and MICM's baselines on the 10,000-cell
+  versions of the 11 scenarios, 5 rounds in rotating order, all cores (10 on
+  the M5). It ran from 21:19 on 2026-10-18 to 05:46 on 2026-10-19.
+- **Accuracy for the ranking** from the same session: each 10,000-cell output's
+  first 1,000 cells scored against the 1,000-cell reference, the gate applied
+  to every cell.
+- **Level L:** L digits overall and L - 1 for every species, on every scenario
+  (`scenarios/score.py --level`).
+- **Rank:** for each entry and level, its fastest declared point that reaches
+  the level on all 11 scenarios, by the sum over the scenarios of the point's
+  median elapsed time; the disclosed and held-out sums shown beside it.
+- **MICM's baselines:** MICM's default three-stage Rosenbrock with 32-cell
+  groups, one tolerance setting per level, the fastest of an 18-setting scan
+  that reaches the level on all 11 scenarios at 1,000 cells, confirmed in the
+  session (relative 1e-2 with absolute 1e-15 for level 2, 3e-4 with 1e-15 for
+  level 3).
+- **Blind review:** Opus and Fable at max effort, in fresh sessions, on
+  anonymized copies with random letters; the key private until both reports
+  were in; run while nothing was timed.
+- **Tools:** `admin/verify_tier3.py`, `admin/time_entries.py --scenario`,
+  `admin/time_tier3.sh`, `admin/rank_tier3.py`, `admin/anonymize_tier3.py`,
+  and `review/`.
 
 ## MICM's default on the scenarios
 

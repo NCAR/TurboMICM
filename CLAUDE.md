@@ -210,11 +210,12 @@ Tier-2-Results.
   sol-max, astra-xhigh, astra-max), each collected, archived, and gate-checked
   before the next launches. All four ended and were verified that day (details
   in `admin/runs.md`).
-- **Handoff:** the SSE moved the rest of Tier 3 to another machine on
-  2026-10-18: the MICM baselines, the timing session, the ranking, the blind
-  review, and publishing. `tier3/HANDOFF.md` has the state, the decisions
-  already made, and the steps; regenerate results there rather than copying
-  them.
+- **Finished on the same laptop** (the SSE's decision of 2026-10-18 19:32,
+  reversing a planned handoff): MICM's baselines, the blind review
+  (`results/2026-10-18-tier3-blind-review/`), the timing session (21:19 to
+  05:46), and the ranking (`results/2026-10-19-tier3-ranking/`; wiki:
+  Tier-3-Results). The rules are in `tier3/README.md`, "How the ranking was
+  made".
 - **Arms:**
   - Sol and Astra at xhigh and max, a 2 x 2 matrix, each started from a clone of
     the run's own Tier 1 repository (`<tier1_commit>` placeholder);
@@ -245,17 +246,26 @@ Tier-2-Results.
     `tier3/heldout/` with the driver that makes their files (1,000 and 10,000
     cells), references, and the 10,000-cell disclosed set, in
     `~/NSF-NCAR/.tier3-heldout/`.
-  - `admin/time_entries.py`'s scenario mode was tested on 2026-10-18. Remaining,
-    per `tier3/HANDOFF.md`: MICM's baselines (one tolerance setting per level,
-    reaching it on all 11 scenarios), the timing session, the ranking, and the
-    blind review.
+  - MICM's baselines: 32-cell groups, relative 1e-2 with absolute 1e-15 for
+    level 2 and 3e-4 with 1e-15 for level 3, the loosest settings of an
+    18-setting scan that reach the level on all 11 scenarios.
+- **Ranking (2026-10-19):** astra-xhigh first at both levels: fast (RODAS3,
+  relative 1e-2) at 34.7 s summed over the 11 scenarios, 13.4 times MICM;
+  accurate (extrapolated linearly implicit Euler, order 4, 4e-3) at 74.5 s,
+  7.3 times MICM. Then sol-max, sol-xhigh, astra-max at level 2 and
+  sol-xhigh, sol-max, astra-max at level 3 (the last two 2.6 % apart). The
+  held-out scenarios changed no rank; astra-max's fast3 misses level 3 on two
+  of them. Every entry's 10,000-cell scores matched its 1,000-cell
+  verification within 0.01 digit.
 
 ## Open items
 
 - Rank with an undisclosed seed, and run the blind review.
 - Time the entries on an x86-64 Linux machine.
-- Tier 3: MICM's baselines, the timing session, the ranking, and the blind
-  review, on another machine (`tier3/HANDOFF.md`).
+- Tier 3: Luna's arm, if its Tier 1 passes (it needs new held-out scenarios,
+  since `tier3/heldout/` is public); Fable's reference solution, not a
+  contestant, in `ODE/benchmarks/tier3/fable-max` (to be collected as
+  `tier3/fable/max`; see `admin/runs.md`, 2026-10-18 evening).
 - Verification worktrees of `runs/*` are built in a session scratchpad. If it is
   gone, `git worktree prune` and rebuild per "Verify an entry".
 - Time each new entry with all the others in one session (`admin/time_entries.py`,

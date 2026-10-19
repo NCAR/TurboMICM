@@ -1,0 +1,2690 @@
+2026-10-18 21:19:19
+21:19  up  2:01, 2 users, load averages: 2.80 3.65 4.84
+  414   6.6 02:00:51 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  721 121.0 02:00:48 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ 1890  28.1 01:48:06 claude
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:20:19
+21:20  up  2:02, 2 users, load averages: 6.97 4.57 5.09
+  721  20.3 02:01:48 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+28655 930.8    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:21:19
+21:21  up  2:03, 2 users, load averages: 6.79 5.02 5.23
+28595  14.7    02:11 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+28712 917.3    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:22:19
+21:22  up  2:04, 2 users, load averages: 6.36 5.11 5.24
+  721  23.8 02:03:48 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+28831 961.5    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:23:19
+21:23  up  2:05, 2 users, load averages: 7.48 5.74 5.47
+  414   5.5 02:04:51 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+28911  65.8    00:07 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+ 1890   6.9 01:52:06 claude
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:24:19
+21:24  up  2:06, 2 users, load averages: 4.76 5.27 5.31
+28934 973.8    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:25:19
+21:25  up  2:07, 2 users, load averages: 4.95 5.22 5.28
+28954 954.5    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:26:19
+21:26  up  2:08, 2 users, load averages: 8.08 5.90 5.52
+28970 994.8    00:21 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:27:19
+21:27  up  2:09, 2 users, load averages: 10.52 6.92 5.92
+ 1890   6.4 01:56:07 claude
+28982 975.9    00:34 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:28:20
+21:28  up  2:10, 2 users, load averages: 14.03 8.44 6.55
+28996 991.2    00:40 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:29:20
+21:29  up  2:11, 2 users, load averages: 14.13 9.54 7.09
+29019 258.9    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:30:20
+21:30  up  2:12, 2 users, load averages: 9.25 9.00 7.05
+  721 100.4 02:11:49 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29034  99.1    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:31:20
+21:31  up  2:13, 2 users, load averages: 7.08 8.58 7.04
+29048 404.7    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:32:20
+21:32  up  2:14, 2 users, load averages: 5.59 7.92 6.90
+29066 956.9    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:33:20
+21:33  up  2:15, 2 users, load averages: 8.65 8.34 7.12
+29082 998.1    00:05 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:34:20
+21:34  up  2:16, 2 users, load averages: 9.86 8.74 7.35
+29095 993.4    00:19 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:35:20
+21:35  up  2:17, 2 users, load averages: 10.40 9.08 7.57
+29108 996.1    00:28 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:36:20
+21:36  up  2:18, 2 users, load averages: 8.89 8.89 7.60
+29125 980.7    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:37:21
+21:37  up  2:19, 2 users, load averages: 7.52 8.44 7.51
+29138 978.7    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:38:21
+21:38  up  2:20, 2 users, load averages: 5.54 7.79 7.33
+29155 100.0    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:39:21
+21:39  up  2:21, 2 users, load averages: 5.21 7.33 7.19
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:40:21
+21:40  up  2:22, 2 users, load averages: 6.62 7.29 7.18
+29181 993.3    00:18 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:41:21
+21:41  up  2:23, 2 users, load averages: 8.84 7.75 7.36
+29195 995.2    00:33 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:42:21
+21:42  up  2:24, 2 users, load averages: 20.64 10.87 8.52
+29208 894.8    00:42 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:43:21
+21:43  up  2:25, 2 users, load averages: 12.69 10.39 8.50
+29249 991.4    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:44:21
+21:44  up  2:26, 2 users, load averages: 9.57 9.93 8.46
+29261 772.1    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:45:21
+21:45  up  2:27, 2 users, load averages: 5.75 8.67 8.08
+29276 593.1    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:46:22
+21:46  up  2:28, 2 users, load averages: 5.75 8.11 7.91
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:47:22
+21:47  up  2:29, 2 users, load averages: 10.26 8.88 8.20
+  721  55.9 02:28:51 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29316 945.0    00:37 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:48:22
+21:48  up  2:30, 2 users, load averages: 11.39 9.42 8.44
+  721 204.2 02:29:51 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29345  12.8    00:00 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:49:22
+21:49  up  2:31, 2 users, load averages: 11.16 9.82 8.66
+ 1261  20.2 02:28:10 /System/Library/PrivateFrameworks/SafariSafeBrowsing.framework/com.apple.Safari.SafeBrowsing.Service
+29372 969.8    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:50:22
+21:50  up  2:32, 2 users, load averages: 9.35 9.56 8.64
+  721 218.8 02:31:51 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:51:22
+21:51  up  2:33, 2 users, load averages: 9.91 9.69 8.75
+  721  20.5 02:32:51 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29425 879.8    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:52:22
+21:52  up  2:34, 2 users, load averages: 8.99 9.35 8.68
+  721  10.2 02:33:51 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29444 966.7    00:12 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:53:22
+21:53  up  2:35, 2 users, load averages: 6.85 8.72 8.49
+  721 113.8 02:34:51 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29445   5.7    01:07 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+29464  60.7    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:54:22
+21:54  up  2:36, 2 users, load averages: 9.44 9.07 8.63
+29477 988.8    00:19 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:55:22
+21:55  up  2:37, 2 users, load averages: 14.51 10.39 9.15
+  721  10.5 02:36:51 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29493 985.2    00:32 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:56:22
+21:56  up  2:38, 2 users, load averages: 12.42 10.51 9.27
+  721   8.1 02:37:51 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29516 983.3    00:38 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:57:22
+21:57  up  2:39, 2 users, load averages: 8.45 9.75 9.07
+29543  98.9    00:08 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:58:23
+21:58  up  2:40, 2 users, load averages: 9.75 9.94 9.19
+  721  47.9 02:39:52 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29543  24.2    01:08 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+29559 440.4    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 21:59:23
+21:59  up  2:41, 2 users, load averages: 9.30 9.68 9.13
+  721 172.7 02:40:52 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:00:23
+22:00  up  2:42, 2 users, load averages: 6.99 9.09 8.96
+  721 120.1 02:41:52 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29600  46.8    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:01:23
+22:01  up  2:43, 2 users, load averages: 7.09 8.80 8.86
+  721 200.5 02:42:52 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29621   7.4    00:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:02:23
+22:02  up  2:44, 2 users, load averages: 7.25 8.49 8.74
+29644  15.2    00:21 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+29648 983.4    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:03:23
+22:03  up  2:45, 2 users, load averages: 8.71 8.58 8.75
+  721  10.6 02:44:52 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29662 986.4    00:21 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:04:23
+22:04  up  2:46, 2 users, load averages: 8.16 8.50 8.71
+29696  66.2    00:05 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+29692 412.5    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:05:23
+22:05  up  2:47, 2 users, load averages: 9.57 8.76 8.78
+  721  53.9 02:46:53 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29712 347.4    00:21 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:06:24
+22:06  up  2:48, 2 users, load averages: 6.10 7.94 8.48
+  721  53.4 02:47:53 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+  947   5.1 02:47:46 /Users/fillmore/Library/Application Support/Claude/claude-code/2.1.299/4fa9694b7975/claude.app/Contents/MacOS/claude
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:07:24
+22:07  up  2:49, 2 users, load averages: 8.43 8.40 8.61
+  414   6.2 02:48:56 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  721  96.3 02:48:53 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29811   7.8    00:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+ 1890   9.1 02:36:11 claude
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:08:24
+22:08  up  2:50, 2 users, load averages: 9.06 8.55 8.65
+  414   6.6 02:49:56 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  565  95.5 02:49:54 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  721  86.9 02:49:53 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29874   7.5    00:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+29865 100.0    00:19 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:09:24
+22:09  up  2:51, 2 users, load averages: 10.42 9.05 8.83
+  721   7.7 02:50:53 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29923 969.8    00:03 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:10:24
+22:10  up  2:52, 2 users, load averages: 11.03 9.55 9.04
+  721  17.8 02:51:53 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29943 982.7    00:06 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:11:24
+22:11  up  2:53, 2 users, load averages: 10.85 9.84 9.18
+  721  11.2 02:52:53 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29959 978.8    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:12:24
+22:12  up  2:54, 2 users, load averages: 8.80 9.52 9.11
+29934   8.0    02:59 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+29976 972.2    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:13:24
+22:13  up  2:55, 2 users, load averages: 9.97 9.74 9.22
+  721 115.4 02:54:53 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29991 134.3    00:24 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:14:25
+22:14  up  2:56, 2 users, load averages: 6.61 8.76 8.89
+  721 120.6 02:55:54 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+29633   8.2    12:43 python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:15:25
+22:15  up  2:57, 2 users, load averages: 6.17 8.27 8.69
+30035 952.5    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:16:25
+22:16  up  2:58, 2 users, load averages: 7.59 8.22 8.64
+30056 997.1    00:23 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:17:25
+22:17  up  2:59, 2 users, load averages: 10.59 8.85 8.84
+  681  20.0 02:58:54 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd
+30071 977.3    00:36 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:18:25
+22:18  up 3 hrs, 2 users, load averages: 11.81 9.54 9.10
+30085 907.5    00:43 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:19:25
+22:19  up  3:01, 2 users, load averages: 7.45 8.66 8.79
+30109 983.5    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:20:25
+22:20  up  3:02, 2 users, load averages: 8.13 8.55 8.74
+30119 947.1    00:21 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:21:25
+22:21  up  3:03, 2 users, load averages: 5.44 7.66 8.39
+30133 714.3    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:22:25
+22:22  up  3:04, 2 users, load averages: 5.00 7.16 8.16
+30149 915.5    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:23:26
+22:23  up  3:05, 2 users, load averages: 7.89 7.56 8.23
+30159 990.4    00:21 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:24:26
+22:24  up  3:06, 2 users, load averages: 9.06 7.93 8.32
+30174 992.9    00:35 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:25:26
+22:25  up  3:07, 2 users, load averages: 13.29 9.25 8.78
+30188 990.6    00:42 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:26:26
+22:26  up  3:08, 2 users, load averages: 7.59 8.39 8.49
+30208 198.1    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:27:26
+22:27  up  3:09, 2 users, load averages: 10.51 8.91 8.67
+30222 961.5    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:28:26
+22:28  up  3:10, 2 users, load averages: 8.04 8.42 8.49
+30238  58.2    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:29:26
+22:29  up  3:11, 2 users, load averages: 8.07 8.30 8.44
+30251 947.5    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:30:26
+22:30  up  3:12, 2 users, load averages: 8.94 8.41 8.46
+30261 996.0    00:28 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:31:27
+22:31  up  3:13, 2 users, load averages: 9.50 8.62 8.53
+30277 995.6    00:42 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:32:27
+22:32  up  3:14, 2 users, load averages: 9.65 8.83 8.62
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:33:27
+22:33  up  3:15, 2 users, load averages: 7.69 8.37 8.45
+30314 990.7    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:34:27
+22:34  up  3:16, 2 users, load averages: 7.12 8.14 8.36
+  721  90.1 03:15:56 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:35:27
+22:35  up  3:17, 2 users, load averages: 5.99 7.64 8.16
+30346  97.7    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:36:27
+22:36  up  3:18, 2 users, load averages: 6.01 7.42 8.05
+30360 987.6    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:37:27
+22:37  up  3:19, 2 users, load averages: 7.13 7.41 7.99
+30375 985.2    00:06 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:38:27
+22:38  up  3:20, 2 users, load averages: 9.13 7.97 8.16
+30389 981.2    00:20 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:39:28
+22:39  up  3:21, 2 users, load averages: 11.90 8.90 8.49
+    1  17.1 03:21:24 /sbin/launchd
+30403 979.5    00:29 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:40:28
+22:40  up  3:22, 2 users, load averages: 7.59 8.24 8.27
+    1  10.3 03:22:24 /sbin/launchd
+30421 937.5    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:41:28
+22:41  up  3:23, 2 users, load averages: 8.12 8.15 8.23
+    1   8.3 03:23:24 /sbin/launchd
+30433 963.6    00:28 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:42:28
+22:42  up  3:24, 2 users, load averages: 7.42 7.84 8.10
+30449 984.6    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:43:28
+22:43  up  3:25, 2 users, load averages: 6.59 7.57 7.98
+    1  10.3 03:25:24 /sbin/launchd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:44:28
+22:44  up  3:26, 2 users, load averages: 6.70 7.33 7.86
+30484 302.6    00:13 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:45:28
+22:45  up  3:27, 2 users, load averages: 6.24 7.05 7.71
+30505 434.3    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:46:28
+22:46  up  3:28, 2 users, load averages: 6.43 6.85 7.59
+30532 986.5    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:47:28
+22:47  up  3:29, 2 users, load averages: 4.75 6.32 7.34
+30497  19.7    02:22 python3
+30550  10.2    00:00 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:48:28
+22:48  up  3:30, 2 users, load averages: 5.94 6.34 7.27
+30567 357.2    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:49:28
+22:49  up  3:31, 2 users, load averages: 4.42 5.88 7.03
+30588  24.3    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:50:28
+22:50  up  3:32, 2 users, load averages: 5.53 5.96 6.99
+30604 975.5    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:51:29
+22:51  up  3:33, 2 users, load averages: 6.52 6.15 6.99
+  565  14.2 03:32:59 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+30622  11.6    00:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:52:29
+22:52  up  3:34, 2 users, load averages: 7.85 6.59 7.09
+  721  13.0 03:33:58 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+30636  97.6    00:01 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:53:29
+22:53  up  3:35, 2 users, load averages: 4.99 6.09 6.88
+30651 963.7    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:54:29
+22:54  up  3:36, 2 users, load averages: 6.39 6.20 6.86
+  400  95.5 03:36:01 /usr/libexec/PerfPowerServices
+  419  24.9 03:36:01 /usr/libexec/runningboardd
+30664 505.2    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:55:29
+22:55  up  3:37, 2 users, load averages: 6.56 6.24 6.82
+30677 455.0    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:56:29
+22:56  up  3:38, 2 users, load averages: 7.73 6.59 6.90
+30692 977.5    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:57:29
+22:57  up  3:39, 2 users, load averages: 7.90 6.82 6.97
+  565  52.6 03:38:59 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+30707  99.3    00:21 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:58:29
+22:58  up  3:40, 2 users, load averages: 6.32 6.66 6.90
+  721  40.7 03:39:58 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 22:59:29
+22:59  up  3:41, 2 users, load averages: 6.08 6.57 6.85
+30737 989.1    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:00:29
+23:00  up  3:42, 2 users, load averages: 5.77 6.47 6.80
+30752 977.6    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:01:30
+23:01  up  3:43, 2 users, load averages: 5.72 6.42 6.76
+30765 865.2    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:02:30
+23:02  up  3:44, 2 users, load averages: 6.55 6.53 6.78
+ 1890   8.7 03:31:17 claude
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:03:30
+23:03  up  3:45, 2 users, load averages: 9.36 7.36 7.07
+30798 762.6    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:04:30
+23:04  up  3:46, 2 users, load averages: 6.27 6.86 6.90
+30811 100.0    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:05:30
+23:05  up  3:47, 2 users, load averages: 6.88 6.94 6.93
+30824 206.5    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:06:30
+23:06  up  3:48, 2 users, load averages: 5.34 6.43 6.73
+30849 110.2    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:07:30
+23:07  up  3:49, 2 users, load averages: 6.98 6.60 6.77
+30861 991.5    00:13 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:08:30
+23:08  up  3:50, 2 users, load averages: 10.48 7.58 7.11
+  400   7.4 03:50:02 /usr/libexec/PerfPowerServices
+  565   5.2 03:50:00 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  721  11.2 03:49:59 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+30875  98.8    00:23 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:09:30
+23:09  up  3:51, 2 users, load averages: 9.94 7.71 7.18
+  721  91.3 03:50:59 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+30890 197.1    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:10:30
+23:10  up  3:52, 2 users, load averages: 6.30 7.15 7.01
+30905 798.7    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:11:30
+23:11  up  3:53, 2 users, load averages: 9.16 7.85 7.28
+  565  24.1 03:53:00 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+30918 731.4    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:12:30
+23:12  up  3:54, 2 users, load averages: 6.58 7.27 7.09
+30931 990.9    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:13:31
+23:13  up  3:55, 2 users, load averages: 9.24 7.94 7.35
+  565  63.3 03:55:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+30940  99.2    00:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+30948  99.1    00:23 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:14:31
+23:14  up  3:56, 2 users, load averages: 7.91 7.87 7.37
+30940  99.6    01:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:15:31
+23:15  up  3:57, 2 users, load averages: 6.81 7.54 7.28
+30940  99.9    02:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:16:31
+23:16  up  3:58, 2 users, load averages: 5.66 7.09 7.13
+  721   6.9 03:58:00 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+30940  98.1    03:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:17:31
+23:17  up  3:59, 2 users, load averages: 5.48 6.83 7.03
+30940  97.2    04:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31015 125.1    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:18:31
+23:18  up 4 hrs, 2 users, load averages: 6.48 6.94 7.06
+30940 100.0    05:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31032 102.5    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:19:31
+23:19  up  4:01, 2 users, load averages: 6.74 6.93 7.05
+  565  70.0 04:01:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+30940 100.0    06:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31055  99.6    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:20:31
+23:20  up  4:02, 2 users, load averages: 8.36 7.25 7.15
+30940  22.1    07:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31067 974.6    00:25 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:21:31
+23:21  up  4:03, 2 users, load averages: 7.76 7.22 7.14
+  565  91.3 04:03:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  721   9.0 04:03:00 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+30940  98.8    08:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31089  98.8    00:02 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:22:31
+23:22  up  4:04, 2 users, load averages: 6.82 7.06 7.08
+30940  21.5    09:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31104 962.5    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:23:31
+23:23  up  4:05, 2 users, load averages: 6.23 6.98 7.06
+30940  34.8    10:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31119 734.2    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:24:31
+23:24  up  4:06, 2 users, load averages: 5.82 6.75 6.97
+30940  10.6    11:52 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31136 966.6    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:25:32
+23:25  up  4:07, 2 users, load averages: 6.40 6.75 6.95
+30940  99.4    12:53 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31152  95.8    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:26:32
+23:26  up  4:08, 2 users, load averages: 6.75 6.80 6.95
+30940  19.6    13:53 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31166 978.7    00:09 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:27:32
+23:27  up  4:09, 2 users, load averages: 10.12 7.76 7.30
+30940  25.7    14:53 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31166 969.3    01:09 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:28:32
+23:28  up  4:10, 2 users, load averages: 10.72 8.31 7.53
+30940  19.8    15:53 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31188 962.5    00:46 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:29:32
+23:29  up  4:11, 2 users, load averages: 10.19 8.62 7.70
+30940  16.5    16:53 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31207 982.0    00:17 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:30:32
+23:30  up  4:12, 2 users, load averages: 11.64 9.33 8.03
+30940  92.8    17:53 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31207 833.1    01:17 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:31:32
+23:31  up  4:13, 2 users, load averages: 10.34 9.34 8.12
+  721 105.4 04:13:01 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+30940  97.3    18:53 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:32:32
+23:32  up  4:14, 2 users, load averages: 9.18 9.17 8.13
+31252 960.6    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:33:32
+23:33  up  4:15, 2 users, load averages: 9.21 9.10 8.17
+  565  19.5 04:15:02 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  681  11.9 04:15:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd
+30940  99.8    20:53 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:34:32
+23:34  up  4:16, 2 users, load averages: 8.70 8.92 8.16
+30940  99.9    21:53 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31279 100.0    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:35:32
+23:35  up  4:17, 2 users, load averages: 7.44 8.61 8.10
+30940  12.6    22:54 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31291 935.4    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:36:33
+23:36  up  4:18, 2 users, load averages: 9.35 8.87 8.23
+30940  21.3    23:54 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31304 982.5    00:19 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:37:33
+23:37  up  4:19, 2 users, load averages: 11.13 9.53 8.52
+30940 100.0    24:54 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:38:33
+23:38  up  4:20, 2 users, load averages: 18.71 11.46 9.28
+30940  18.1    25:54 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31324 966.3    00:59 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:39:33
+23:39  up  4:21, 2 users, load averages: 19.56 12.90 9.95
+30940  25.3    26:54 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31340 975.9    00:33 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:40:33
+23:40  up  4:22, 2 users, load averages: 18.10 14.21 10.67
+31361 980.9    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:41:33
+23:41  up  4:23, 2 users, load averages: 12.35 13.30 10.58
+30940  14.9    28:54 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31388 981.2    00:13 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:42:33
+23:42  up  4:24, 2 users, load averages: 11.20 12.74 10.55
+30940  21.5    29:54 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31397 836.9    00:26 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:43:33
+23:43  up  4:25, 2 users, load averages: 7.50 11.39 10.19
+30940  12.1    30:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31414 973.5    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:44:34
+23:44  up  4:27, 2 users, load averages: 6.30 10.31 9.86
+30940   9.8    31:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31427 931.0    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:45:34
+23:45  up  4:28, 2 users, load averages: 6.85 9.76 9.69
+30940  22.8    32:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31440 982.5    00:02 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:46:34
+23:46  up  4:29, 2 users, load averages: 10.55 10.28 9.88
+30940  17.8    33:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31440 979.0    01:02 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:47:34
+23:47  up  4:30, 2 users, load averages: 10.99 10.38 9.94
+ 1344   9.4 04:23:52 /usr/libexec/ospredictiond
+30940  27.9    34:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31464 958.7    00:41 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:48:34
+23:48  up  4:31, 2 users, load averages: 10.72 10.45 10.00
+30940  17.8    35:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31480 982.4    00:15 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:49:34
+23:49  up  4:32, 2 users, load averages: 11.74 10.78 10.15
+30940  19.9    36:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31480 981.5    01:15 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:50:34
+23:50  up  4:33, 2 users, load averages: 8.68 10.00 9.90
+  565  14.5 04:32:04 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+30940  99.7    37:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31510  99.3    00:14 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:51:34
+23:51  up  4:34, 2 users, load averages: 9.67 9.96 9.88
+30940  18.0    38:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31522 977.9    00:32 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:52:34
+23:52  up  4:35, 2 users, load averages: 9.40 9.77 9.81
+30940  86.3    39:55 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31538 249.0    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:53:34
+23:53  up  4:36, 2 users, load averages: 9.29 9.64 9.76
+30940  96.0    40:56 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31552 134.2    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:54:35
+23:54  up  4:37, 2 users, load averages: 10.06 9.67 9.75
+30940  19.5    41:56 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31567 939.8    00:14 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:55:35
+23:55  up  4:38, 2 users, load averages: 11.40 10.08 9.89
+30940  46.8    42:56 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31578 946.5    00:49 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:56:35
+23:56  up  4:39, 2 users, load averages: 11.09 10.20 9.95
+30940  18.2    43:56 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31593 983.2    00:29 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:57:35
+23:57  up  4:40, 2 users, load averages: 10.14 10.20 9.97
+30940  96.2    44:56 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:58:35
+23:58  up  4:41, 2 users, load averages: 11.71 10.68 10.17
+30940   9.8    45:56 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31613 977.5    01:00 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-18 23:59:35
+23:59  up  4:42, 2 users, load averages: 8.85 10.11 9.99
+  653   6.7 04:41:04 /usr/libexec/trustd
+  721  47.6 04:41:04 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+  735   6.7 04:41:03 /usr/libexec/nsurlsessiond
+30940  94.3    46:56 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:00:35
+ 0:00  up  4:43, 2 users, load averages: 9.43 9.95 9.93
+30940  20.0    47:56 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31662 978.0    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:01:35
+ 0:01  up  4:44, 2 users, load averages: 9.28 9.86 9.90
+30940  82.1    48:56 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31680 270.5    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:02:35
+ 0:02  up  4:45, 2 users, load averages: 8.33 9.46 9.74
+30940  14.5    49:57 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31694 962.3    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:03:36
+ 0:03  up  4:46, 2 users, load averages: 9.18 9.57 9.77
+30940  12.9    50:57 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31708 974.7    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:04:36
+ 0:04  up  4:47, 2 users, load averages: 7.60 9.02 9.54
+30940  99.2    51:57 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:05:36
+ 0:05  up  4:48, 2 users, load averages: 11.10 9.75 9.78
+30940  20.9    52:57 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31728 969.0    01:00 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:06:36
+ 0:06  up  4:49, 2 users, load averages: 12.46 10.24 9.95
+30940  24.2    53:57 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31745 964.7    00:40 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:07:36
+ 0:07  up  4:50, 2 users, load averages: 12.08 10.52 10.07
+30940  21.1    54:57 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31861 968.0    00:14 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:08:36
+ 0:08  up  4:51, 2 users, load averages: 18.59 12.51 10.84
+31861 984.5    01:14 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:09:36
+ 0:09  up  4:52, 2 users, load averages: 12.75 11.83 10.69
+30940  98.4    56:57 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31895 121.9    00:13 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:10:36
+ 0:10  up  4:53, 2 users, load averages: 10.53 11.24 10.54
+30940  20.2    57:57 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31907 980.7    00:31 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:11:36
+ 0:11  up  4:54, 2 users, load averages: 8.94 10.64 10.36
+30940  18.8    58:58 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31924 968.1    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:12:37
+ 0:12  up  4:55, 2 users, load averages: 11.33 10.86 10.45
+30940  27.0    59:58 /System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged
+31935 872.3    00:26 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:13:37
+ 0:13  up  4:56, 2 users, load averages: 6.89 9.68 10.04
+  721  26.7 04:55:06 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+31950 898.8    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:14:37
+ 0:14  up  4:57, 2 users, load averages: 8.77 9.84 10.08
+31963 927.4    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:15:37
+ 0:15  up  4:58, 2 users, load averages: 7.39 9.19 9.81
+ 1890   6.0 04:44:24 claude
+31986 983.6    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:16:37
+ 0:16  up  4:59, 2 users, load averages: 7.45 8.76 9.60
+32001 993.9    00:20 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:17:37
+ 0:17  up 5 hrs, 2 users, load averages: 5.55 8.08 9.29
+32035  90.5    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:18:37
+ 0:18  up  5:01, 2 users, load averages: 6.49 7.94 9.16
+32051 987.5    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:19:38
+ 0:19  up  5:02, 2 users, load averages: 5.83 7.58 8.95
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:20:38
+ 0:20  up  5:03, 2 users, load averages: 6.13 7.25 8.73
+32082 813.5    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:21:38
+ 0:21  up  5:04, 2 users, load averages: 6.53 7.10 8.57
+32105 957.8    00:12 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:22:38
+ 0:22  up  5:05, 2 users, load averages: 8.00 7.29 8.53
+ 1890   5.5 04:51:25 claude
+32119 990.0    00:22 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:23:38
+ 0:23  up  5:06, 2 users, load averages: 9.41 7.79 8.63
+32133 993.3    00:33 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:24:38
+ 0:24  up  5:07, 2 users, load averages: 10.50 8.39 8.79
+32150 994.2    00:36 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:25:38
+ 0:25  up  5:08, 2 users, load averages: 9.19 8.35 8.75
+  721  53.4 05:07:07 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:26:38
+ 0:26  up  5:09, 2 users, load averages: 7.17 7.79 8.50
+32182 970.6    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:27:38
+ 0:27  up  5:10, 2 users, load averages: 7.29 7.80 8.46
+32194 514.5    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:28:39
+ 0:28  up  5:11, 2 users, load averages: 4.90 7.06 8.14
+32210 909.2    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:29:39
+ 0:29  up  5:12, 2 users, load averages: 6.40 7.12 8.09
+32224 968.8    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:30:39
+ 0:30  up  5:13, 2 users, load averages: 7.62 7.27 8.07
+32242 985.9    00:23 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:31:39
+ 0:31  up  5:14, 2 users, load averages: 9.57 7.83 8.22
+32255 992.6    00:36 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:32:39
+ 0:32  up  5:15, 2 users, load averages: 14.14 9.49 8.81
+32269 980.3    00:41 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:33:39
+ 0:33  up  5:16, 2 users, load averages: 11.67 9.60 8.90
+  721 111.6 05:15:08 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:34:39
+ 0:34  up  5:17, 2 users, load averages: 9.02 9.24 8.81
+32302 988.2    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:35:39
+ 0:35  up  5:18, 2 users, load averages: 7.88 8.92 8.72
+32314 319.9    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:36:40
+ 0:36  up  5:19, 2 users, load averages: 7.82 8.71 8.65
+32328 169.4    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:37:40
+ 0:37  up  5:20, 2 users, load averages: 8.05 8.49 8.56
+32340 976.5    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:38:40
+ 0:38  up  5:21, 2 users, load averages: 8.18 8.43 8.54
+32357 991.6    00:04 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:39:40
+ 0:39  up  5:22, 2 users, load averages: 8.96 8.69 8.63
+32372 991.7    00:09 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:40:40
+ 0:40  up  5:23, 2 users, load averages: 8.00 8.60 8.61
+32390  63.0    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:41:40
+ 0:41  up  5:24, 2 users, load averages: 7.12 8.25 8.47
+32403  97.2    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:42:40
+ 0:42  up  5:25, 2 users, load averages: 6.68 8.10 8.41
+32439 695.6    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:43:40
+ 0:43  up  5:26, 2 users, load averages: 6.59 7.82 8.28
+32470 957.2    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:44:40
+ 0:44  up  5:27, 2 users, load averages: 7.08 7.70 8.21
+32484 105.4    00:13 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:45:40
+ 0:45  up  5:28, 2 users, load averages: 8.57 7.90 8.24
+32496 990.7    00:28 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:46:40
+ 0:46  up  5:29, 2 users, load averages: 9.55 8.24 8.33
+32510 998.7    00:43 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:47:41
+ 0:47  up  5:30, 2 users, load averages: 10.03 8.54 8.44
+  565  38.9 05:29:11 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+32535  20.2    00:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+32532  93.0    00:48 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:48:41
+ 0:48  up  5:31, 2 users, load averages: 7.02 7.93 8.21
+32554 910.0    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:49:41
+ 0:49  up  5:32, 2 users, load averages: 9.32 8.56 8.43
+  721  95.9 05:31:10 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+32573   5.7    00:01 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+ 1890   6.4 05:18:28 claude
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:50:41
+ 0:50  up  5:33, 2 users, load averages: 6.29 7.77 8.14
+32587 987.7    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:51:41
+ 0:51  up  5:34, 2 users, load averages: 8.15 8.07 8.23
+32598 447.4    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:52:41
+ 0:52  up  5:35, 2 users, load averages: 6.15 7.49 8.00
+32614  63.9    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:53:41
+ 0:53  up  5:36, 2 users, load averages: 8.14 7.78 8.07
+32624 994.1    00:35 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:54:41
+ 0:54  up  5:37, 2 users, load averages: 9.31 8.15 8.18
+  565  14.3 05:36:11 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+32641 100.0    00:49 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:55:41
+ 0:55  up  5:38, 2 users, load averages: 9.15 8.37 8.26
+32661  89.1    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:56:41
+ 0:56  up  5:39, 2 users, load averages: 8.33 8.27 8.23
+32673 957.5    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:57:42
+ 0:57  up  5:40, 2 users, load averages: 11.05 9.11 8.55
+32688 553.8    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:58:42
+ 0:58  up  5:41, 2 users, load averages: 9.07 8.72 8.43
+32704 997.7    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 00:59:42
+ 0:59  up  5:42, 2 users, load averages: 6.99 8.24 8.27
+32719  95.8    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:00:42
+ 1:00  up  5:43, 2 users, load averages: 7.65 8.12 8.22
+32734 975.7    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:01:42
+ 1:01  up  5:44, 2 users, load averages: 7.03 7.82 8.09
+32755 993.6    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:02:42
+ 1:02  up  5:45, 2 users, load averages: 4.95 7.16 7.83
+32777  98.8    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:03:42
+ 1:03  up  5:46, 2 users, load averages: 2.79 6.13 7.40
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:04:42
+ 1:04  up  5:47, 2 users, load averages: 3.66 5.73 7.16
+32821  92.3    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:05:42
+ 1:05  up  5:48, 2 users, load averages: 9.45 7.16 7.60
+32834 985.1    00:20 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:06:42
+ 1:06  up  5:49, 2 users, load averages: 7.78 7.33 7.65
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:07:42
+ 1:07  up  5:50, 2 users, load averages: 6.08 6.86 7.45
+32870  99.8    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:08:42
+ 1:08  up  5:51, 2 users, load averages: 4.19 6.28 7.19
+  721 105.5 05:50:11 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:09:43
+ 1:09  up  5:52, 2 users, load averages: 9.05 7.10 7.42
+32899 989.4    00:18 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:10:43
+ 1:10  up  5:53, 2 users, load averages: 8.97 7.66 7.62
+  721 100.0 05:52:12 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:11:43
+ 1:11  up  5:54, 2 users, load averages: 7.45 7.49 7.56
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:12:43
+ 1:12  up  5:55, 2 users, load averages: 4.13 6.62 7.23
+32946 118.9    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:13:43
+ 1:13  up  5:56, 2 users, load averages: 6.36 6.73 7.23
+32960 992.1    00:16 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:14:43
+ 1:14  up  5:57, 2 users, load averages: 6.50 6.86 7.25
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:15:43
+ 1:15  up  5:58, 2 users, load averages: 5.14 6.35 7.03
+  721  16.5 05:57:12 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:16:43
+ 1:16  up  5:59, 2 users, load averages: 3.72 5.80 6.78
+33007 920.8    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:17:43
+ 1:17  up 6 hrs, 2 users, load averages: 7.47 6.40 6.93
+33027  76.5    00:24 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:18:43
+ 1:18  up  6:01, 2 users, load averages: 8.17 6.81 7.05
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:19:43
+ 1:19  up  6:02, 2 users, load averages: 5.41 6.34 6.86
+  721 116.9 06:01:12 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:20:44
+ 1:20  up  6:03, 2 users, load averages: 2.75 5.41 6.47
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:21:44
+ 1:21  up  6:04, 2 users, load averages: 6.74 6.06 6.64
+  721  20.8 06:03:13 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:22:44
+ 1:22  up  6:05, 2 users, load averages: 6.56 6.23 6.67
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:23:44
+ 1:23  up  6:06, 2 users, load averages: 5.40 6.03 6.57
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:24:44
+ 1:24  up  6:07, 2 users, load averages: 3.97 5.48 6.33
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:25:44
+ 1:25  up  6:08, 2 users, load averages: 5.92 5.85 6.41
+33163 995.2    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:26:44
+ 1:26  up  6:09, 2 users, load averages: 6.28 6.11 6.48
+33178 815.8    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:27:44
+ 1:27  up  6:10, 2 users, load averages: 8.16 6.70 6.67
+33189 988.2    00:23 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:28:44
+ 1:28  up  6:11, 2 users, load averages: 10.35 7.56 6.99
+33189 119.7    01:23 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:29:44
+ 1:29  up  6:12, 2 users, load averages: 6.13 6.78 6.73
+  565   5.7 06:11:14 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+33218 100.0    00:03 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:30:44
+ 1:30  up  6:13, 2 users, load averages: 6.04 6.55 6.64
+33233 580.4    00:18 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:31:45
+ 1:31  up  6:14, 2 users, load averages: 7.67 6.91 6.77
+33245 966.0    00:36 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:32:45
+ 1:32  up  6:15, 2 users, load averages: 5.76 6.52 6.64
+33265 816.4    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:33:45
+ 1:33  up  6:16, 2 users, load averages: 6.12 6.51 6.62
+33288 978.4    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:34:45
+ 1:34  up  6:17, 2 users, load averages: 6.96 6.66 6.67
+33300 118.3    00:27 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:35:45
+ 1:35  up  6:18, 2 users, load averages: 6.35 6.44 6.58
+33317 110.0    00:17 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:36:45
+ 1:36  up  6:19, 2 users, load averages: 6.53 6.47 6.58
+33334 959.1    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:37:45
+ 1:37  up  6:20, 2 users, load averages: 8.09 6.92 6.74
+33345 993.7    00:20 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:38:45
+ 1:38  up  6:21, 2 users, load averages: 10.22 7.74 7.05
+33345 993.7    01:20 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:39:45
+ 1:39  up  6:22, 2 users, load averages: 11.63 8.74 7.48
+33345  99.0    02:20 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:40:45
+ 1:40  up  6:23, 2 users, load averages: 12.27 9.31 7.77
+33388 989.4    00:47 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:41:46
+ 1:41  up  6:24, 2 users, load averages: 13.17 10.27 8.24
+33388 990.6    01:47 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:42:46
+ 1:42  up  6:25, 2 users, load averages: 9.83 10.00 8.29
+33426 866.3    00:01 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:43:46
+ 1:43  up  6:26, 2 users, load averages: 10.96 10.29 8.51
+33426 985.9    01:01 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:44:46
+ 1:44  up  6:27, 2 users, load averages: 11.73 10.65 8.76
+33426 986.3    02:01 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:45:46
+ 1:45  up  6:28, 2 users, load averages: 8.84 10.08 8.68
+33463 979.3    00:12 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:46:46
+ 1:46  up  6:29, 2 users, load averages: 10.25 10.23 8.83
+33463 997.9    01:13 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:47:47
+ 1:47  up  6:30, 2 users, load averages: 7.58 9.53 8.66
+33501 953.9    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:48:47
+ 1:48  up  6:31, 2 users, load averages: 6.83 9.04 8.54
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:49:47
+ 1:49  up  6:32, 2 users, load averages: 10.23 9.82 8.88
+33535  94.6    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:50:47
+ 1:50  up  6:33, 2 users, load averages: 9.98 9.79 8.93
+33547 979.4    00:21 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:51:47
+ 1:51  up  6:34, 2 users, load averages: 9.50 9.64 8.93
+33558 970.3    00:20 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:52:47
+ 1:52  up  6:35, 2 users, load averages: 8.08 9.18 8.80
+33154  24.4    27:41 python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:53:47
+ 1:53  up  6:36, 2 users, load averages: 7.92 8.88 8.71
+33585 957.7    00:22 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:54:47
+ 1:54  up  6:37, 2 users, load averages: 10.16 9.24 8.85
+33596 992.2    00:42 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:55:47
+ 1:55  up  6:38, 2 users, load averages: 10.96 9.65 9.03
+33596 990.0    01:42 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:56:48
+ 1:56  up  6:39, 2 users, load averages: 10.46 9.77 9.12
+33621 994.7    00:16 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:57:48
+ 1:57  up  6:40, 2 users, load averages: 10.92 10.05 9.27
+33621 993.2    01:16 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:58:48
+ 1:58  up  6:41, 2 users, load averages: 11.15 10.25 9.39
+33621 994.3    02:16 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 01:59:48
+ 1:59  up  6:42, 2 users, load averages: 10.69 10.20 9.42
+33657 990.8    00:36 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:00:48
+ 2:00  up  6:43, 2 users, load averages: 10.77 10.31 9.52
+33657 995.5    01:36 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:01:48
+ 2:01  up  6:44, 2 users, load averages: 10.71 10.41 9.60
+33657  98.6    02:36 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:02:48
+ 2:02  up  6:45, 2 users, load averages: 6.58 9.31 9.25
+  414   7.2 06:44:20 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+33696 978.0    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:03:48
+ 2:03  up  6:46, 2 users, load averages: 6.48 8.84 9.08
+33710 582.1    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:04:48
+ 2:04  up  6:47, 2 users, load averages: 7.81 8.84 9.06
+33720 825.1    00:27 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:05:49
+ 2:05  up  6:48, 2 users, load averages: 6.55 8.44 8.90
+33735 878.1    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:06:49
+ 2:06  up  6:49, 2 users, load averages: 7.71 8.38 8.85
+33747 974.4    00:21 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:07:49
+ 2:07  up  6:50, 2 users, load averages: 7.44 8.09 8.70
+  565  74.1 06:49:19 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+33758  99.9    00:18 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:08:49
+ 2:08  up  6:51, 2 users, load averages: 8.16 8.08 8.65
+  565  84.6 06:50:19 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+33772  98.4    00:25 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:09:49
+ 2:09  up  6:52, 2 users, load averages: 8.27 8.10 8.61
+  721   9.4 06:51:18 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+33786 977.2    00:12 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:10:49
+ 2:10  up  6:53, 2 users, load averages: 11.87 9.28 9.02
+33786 995.1    01:12 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:11:49
+ 2:11  up  6:54, 2 users, load averages: 13.42 10.12 9.35
+33786 900.1    02:12 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:12:49
+ 2:12  up  6:55, 2 users, load averages: 16.32 11.22 9.79
+33817 992.8    00:43 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:13:49
+ 2:13  up  6:56, 2 users, load averages: 18.28 12.55 10.38
+  721   6.2 06:55:19 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+33817 989.8    01:44 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:14:50
+ 2:14  up  6:57, 2 users, load averages: 14.39 12.82 10.64
+33845 988.8    00:03 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:15:50
+ 2:15  up  6:58, 2 users, load averages: 14.04 13.08 10.89
+33845 995.2    01:03 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:16:50
+ 2:16  up  6:59, 2 users, load averages: 22.41 15.65 12.00
+33845 984.8    02:03 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:17:50
+ 2:17  up 7 hrs, 2 users, load averages: 17.23 15.61 12.25
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:18:50
+ 2:18  up  7:01, 2 users, load averages: 10.69 14.06 11.90
+33904 100.0    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:19:50
+ 2:19  up  7:02, 2 users, load averages: 9.52 13.09 11.68
+33915 995.7    00:28 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:20:50
+ 2:20  up  7:03, 2 users, load averages: 8.93 12.37 11.51
+  721   9.8 07:02:19 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:21:50
+ 2:21  up  7:04, 2 users, load averages: 6.17 10.92 11.02
+33944 541.7    00:17 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:22:51
+ 2:22  up  7:05, 2 users, load averages: 6.54 10.17 10.73
+33958 991.5    00:17 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:23:51
+ 2:23  up  7:06, 2 users, load averages: 7.98 9.95 10.61
+  565  94.2 07:05:21 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+33971 100.0    00:19 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:24:51
+ 2:24  up  7:07, 2 users, load averages: 7.64 9.45 10.38
+33983 957.6    00:20 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:25:51
+ 2:25  up  7:08, 2 users, load averages: 9.22 9.51 10.33
+33992 993.6    00:40 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:26:51
+ 2:26  up  7:09, 2 users, load averages: 11.28 10.05 10.47
+33992 996.1    01:40 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:27:51
+ 2:27  up  7:10, 2 users, load averages: 10.45 10.02 10.43
+34018 988.2    00:13 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:28:51
+ 2:28  up  7:11, 2 users, load averages: 11.36 10.34 10.52
+34018 990.9    01:14 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:29:52
+ 2:29  up  7:12, 2 users, load averages: 11.25 10.48 10.56
+34018 994.7    02:14 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:30:52
+ 2:30  up  7:13, 2 users, load averages: 9.98 10.19 10.44
+34056 989.7    00:31 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:31:52
+ 2:31  up  7:14, 2 users, load averages: 10.77 10.37 10.48
+34056 995.8    01:31 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:32:52
+ 2:32  up  7:15, 2 users, load averages: 10.24 10.33 10.46
+34056 400.0    02:31 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:33:52
+ 2:33  up  7:16, 2 users, load averages: 7.32 9.44 10.12
+  721  13.9 07:15:21 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:34:52
+ 2:34  up  7:17, 2 users, load averages: 7.97 9.26 10.01
+33154  36.4 01:09:46 python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:35:52
+ 2:35  up  7:18, 2 users, load averages: 9.69 9.48 10.03
+34117 991.6    00:55 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:36:52
+ 2:36  up  7:19, 2 users, load averages: 8.12 9.09 9.85
+34136 769.0    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:37:52
+ 2:37  up  7:20, 2 users, load averages: 8.11 8.88 9.71
+34147 955.6    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:38:53
+ 2:38  up  7:21, 2 users, load averages: 10.38 9.34 9.82
+  733   8.8 07:20:21 /usr/libexec/duetexpertd
+34159 967.4    00:39 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:39:53
+ 2:39  up  7:22, 2 users, load averages: 8.76 9.22 9.76
+34189 901.9    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:40:53
+ 2:40  up  7:23, 2 users, load averages: 8.90 9.26 9.74
+34206  59.3    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:41:53
+ 2:41  up  7:24, 2 users, load averages: 10.94 9.59 9.82
+34216 985.3    00:21 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:42:53
+ 2:42  up  7:25, 2 users, load averages: 15.77 11.30 10.45
+34216 992.6    01:21 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:43:53
+ 2:43  up  7:26, 2 users, load averages: 14.89 11.95 10.75
+33154  12.0 01:18:47 python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:44:53
+ 2:44  up  7:27, 2 users, load averages: 13.99 12.06 10.86
+  681  14.7 07:26:22 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd
+34249 981.0    00:55 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:45:53
+ 2:45  up  7:28, 2 users, load averages: 15.61 13.21 11.40
+34249 995.2    01:55 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:46:53
+ 2:46  up  7:29, 2 users, load averages: 10.73 12.29 11.18
+34285 984.6    00:13 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:47:54
+ 2:47  up  7:30, 2 users, load averages: 11.33 12.16 11.20
+34285 975.1    01:13 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:48:54
+ 2:48  up  7:31, 2 users, load averages: 11.35 12.01 11.21
+34285 997.2    02:13 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:49:54
+ 2:49  up  7:32, 2 users, load averages: 7.30 10.81 10.82
+34324 992.3    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:50:54
+ 2:50  up  7:33, 2 users, load averages: 7.23 10.18 10.58
+34337 992.1    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:51:54
+ 2:51  up  7:34, 2 users, load averages: 9.15 10.17 10.55
+ 1890   5.3 07:20:41 claude
+34347 991.5    00:36 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:52:54
+ 2:52  up  7:35, 2 users, load averages: 8.63 9.98 10.46
+34362 305.7    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:53:54
+ 2:53  up  7:36, 2 users, load averages: 7.57 9.29 10.15
+34376 968.6    00:23 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:54:54
+ 2:54  up  7:37, 2 users, load averages: 8.31 9.21 10.07
+34392 989.2    00:18 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:55:55
+ 2:55  up  7:38, 2 users, load averages: 6.67 8.71 9.83
+34410 804.4    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:56:55
+ 2:56  up  7:39, 2 users, load averages: 7.21 8.51 9.68
+34421 984.0    00:13 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:57:55
+ 2:57  up  7:40, 2 users, load averages: 7.37 8.33 9.53
+34434 940.1    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:58:55
+ 2:58  up  7:41, 2 users, load averages: 5.74 7.68 9.20
+34456  99.0    00:05 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 02:59:55
+ 2:59  up  7:42, 2 users, load averages: 4.55 6.97 8.83
+34472  49.9    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:00:55
+ 3:00  up  7:43, 2 users, load averages: 6.91 7.15 8.77
+34484 993.8    00:27 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:01:55
+ 3:01  up  7:44, 2 users, load averages: 5.08 6.60 8.45
+34504  99.0    00:04 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:02:55
+ 3:02  up  7:45, 2 users, load averages: 6.91 6.81 8.40
+34517 909.5    00:22 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:03:56
+ 3:03  up  7:46, 2 users, load averages: 5.30 6.41 8.14
+34538 628.4    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:04:56
+ 3:04  up  7:47, 2 users, load averages: 4.98 6.17 7.93
+  721  85.0 07:46:25 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:05:56
+ 3:05  up  7:48, 2 users, load averages: 5.67 6.20 7.83
+ 1616   5.6 07:36:56 /Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/155.0.8059.80/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:06:56
+ 3:06  up  7:49, 2 users, load averages: 4.90 5.89 7.60
+34583 975.9    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:07:56
+ 3:07  up  7:50, 2 users, load averages: 6.47 6.14 7.57
+34449  15.0    09:18 python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:08:56
+ 3:08  up  7:51, 2 users, load averages: 7.48 6.46 7.59
+34612 995.7    00:06 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:09:56
+ 3:09  up  7:52, 2 users, load averages: 13.82 8.54 8.29
+34627 988.6    00:12 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:10:56
+ 3:10  up  7:53, 2 users, load averages: 15.46 9.95 8.84
+  721   5.4 07:52:25 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+34644 984.4    00:17 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:11:56
+ 3:11  up  7:54, 2 users, load averages: 9.90 9.38 8.69
+  565  32.4 07:53:26 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  721  62.7 07:53:25 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+  862   9.4 07:53:21 /usr/libexec/aned
+17234   8.3 07:18:37 /System/Library/PrivateFrameworks/MediaAnalysisAccess.framework/Versions/A/XPCServices/mediaanalysisd-access.xpc/Contents/MacOS/mediaanalysisd-access
+34658  99.1    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:12:56
+ 3:12  up  7:55, 2 users, load averages: 10.71 9.69 8.85
+34670 989.4    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:13:56
+ 3:13  up  7:56, 2 users, load averages: 8.56 9.26 8.75
+  565  13.0 07:55:27 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  721  95.2 07:55:26 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:14:57
+ 3:14  up  7:57, 2 users, load averages: 6.89 8.58 8.52
+34697 848.6    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:15:57
+ 3:15  up  7:58, 2 users, load averages: 7.05 8.30 8.42
+34711 975.2    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:16:57
+ 3:16  up  7:59, 2 users, load averages: 7.62 8.25 8.39
+34732 749.1    00:01 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:17:57
+ 3:17  up 8 hrs, 2 users, load averages: 8.82 8.46 8.46
+34743 992.8    00:23 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:18:57
+ 3:18  up  8:01, 2 users, load averages: 10.50 8.94 8.63
+34756 993.3    00:35 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:19:57
+ 3:19  up  8:02, 2 users, load averages: 8.29 8.56 8.51
+34776 980.2    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:20:57
+ 3:20  up  8:03, 2 users, load averages: 8.59 8.53 8.49
+34790 966.5    00:20 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:21:58
+ 3:21  up  8:04, 2 users, load averages: 7.31 8.25 8.39
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:22:58
+ 3:22  up  8:05, 2 users, load averages: 7.61 8.17 8.35
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:23:58
+ 3:23  up  8:06, 2 users, load averages: 11.61 9.32 8.78
+34830 110.0    00:16 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:24:58
+ 3:24  up  8:07, 2 users, load averages: 12.64 9.87 9.00
+    1  18.3 08:06:54 /sbin/launchd
+34842 961.5    00:23 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:25:58
+ 3:25  up  8:08, 2 users, load averages: 10.11 9.62 8.97
+    1   7.5 08:07:54 /sbin/launchd
+34856 983.3    00:08 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:26:58
+ 3:26  up  8:09, 2 users, load averages: 10.17 9.72 9.05
+34869 989.1    00:20 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:27:58
+ 3:27  up  8:10, 2 users, load averages: 7.77 9.15 8.88
+    1   7.3 08:09:54 /sbin/launchd
+34883  98.1    00:14 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:28:58
+ 3:28  up  8:11, 2 users, load averages: 7.00 8.65 8.71
+34898 978.7    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:29:58
+ 3:29  up  8:12, 2 users, load averages: 7.26 8.51 8.66
+34911 306.5    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:30:58
+ 3:30  up  8:13, 2 users, load averages: 5.51 7.79 8.38
+    1   8.5 08:12:54 /sbin/launchd
+ 1890   7.9 07:59:45 claude
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:31:58
+ 3:31  up  8:14, 2 users, load averages: 5.38 7.35 8.17
+34936 102.7    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:32:59
+ 3:32  up  8:15, 2 users, load averages: 6.78 7.27 8.07
+34946 980.4    00:24 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:33:59
+ 3:33  up  8:16, 2 users, load averages: 8.50 7.50 8.09
+  724   6.5 08:15:28 /System/Library/PrivateFrameworks/PhotoLibraryServices.framework/Versions/A/Support/photolibraryd
+34964 983.0    00:08 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:34:59
+ 3:34  up  8:17, 2 users, load averages: 8.71 7.74 8.14
+ 4904   5.1 07:53:52 /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/155.0.8059.82/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)
+34974 984.6    00:20 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:35:59
+ 3:35  up  8:18, 2 users, load averages: 7.75 7.62 8.07
+ 4904   8.2 07:54:52 /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/155.0.8059.82/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)
+34993 100.0    00:13 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:36:59
+ 3:36  up  8:19, 2 users, load averages: 6.40 7.24 7.90
+35006 985.7    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:37:59
+ 3:37  up  8:20, 2 users, load averages: 6.52 7.29 7.88
+ 1890   7.5 08:06:46 claude
+35033 453.8    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:38:59
+ 3:38  up  8:21, 2 users, load averages: 7.73 7.45 7.90
+35148 314.9    00:20 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:39:59
+ 3:39  up  8:22, 2 users, load averages: 5.87 7.07 7.73
+  414   5.3 08:21:31 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  721  46.3 08:21:28 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ 1890   7.2 08:08:46 claude
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:40:59
+ 3:40  up  8:23, 2 users, load averages: 6.80 7.04 7.67
+  565  94.7 08:22:29 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+35214 100.0    00:20 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:41:59
+ 3:41  up  8:24, 2 users, load averages: 7.84 7.24 7.69
+ 4904  13.4 08:00:52 /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/155.0.8059.82/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)
+35228 978.1    00:14 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:42:59
+ 3:42  up  8:25, 2 users, load averages: 10.00 7.90 7.90
+35238 949.2    00:36 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:43:59
+ 3:43  up  8:26, 2 users, load averages: 8.61 7.85 7.88
+  721  17.3 08:25:28 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:45:00
+ 3:45  up  8:27, 2 users, load averages: 9.73 8.52 8.14
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:46:00
+ 3:46  up  8:28, 2 users, load averages: 9.38 8.56 8.17
+ 4904  10.8 08:04:53 /Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/155.0.8059.82/Helpers/Google Chrome Helper (Aperitif Renderer).app/Contents/MacOS/Google Chrome Helper (Aperitif Renderer)
+35293 981.5    00:32 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:47:00
+ 3:47  up  8:29, 2 users, load averages: 6.49 7.87 7.94
+35317 430.9    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:48:00
+ 3:48  up  8:30, 2 users, load averages: 8.04 7.94 7.95
+ 1716   8.6 08:18:49 /Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/155.0.8059.80/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)
+35329 964.2    00:19 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:49:00
+ 3:49  up  8:31, 2 users, load averages: 9.95 8.36 8.09
+  630  13.3 08:30:30 /System/Library/PrivateFrameworks/BiomeStreams.framework/Support/BiomeAgent
+34669  37.3    36:18 /usr/libexec/biomesyncd
+35348 503.4    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:50:00
+ 3:50  up  8:32, 2 users, load averages: 6.61 7.65 7.84
+35369 100.0    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:51:00
+ 3:51  up  8:33, 2 users, load averages: 4.89 7.06 7.61
+35391 773.7    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:52:00
+ 3:52  up  8:34, 2 users, load averages: 5.99 7.00 7.55
+35407 974.3    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:53:00
+ 3:53  up  8:35, 2 users, load averages: 5.96 6.92 7.49
+  565  91.8 08:34:30 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  721   8.4 08:34:29 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+35423 100.0    00:03 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:54:01
+ 3:54  up  8:36, 2 users, load averages: 7.24 7.09 7.51
+35440 417.0    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:55:01
+ 3:55  up  8:37, 2 users, load averages: 6.31 6.79 7.37
+35457 926.4    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:56:01
+ 3:56  up  8:38, 2 users, load averages: 5.18 6.38 7.17
+  483   8.3 08:37:32 /usr/libexec/airportd
+  721  37.1 08:37:30 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:57:01
+ 3:57  up  8:39, 2 users, load averages: 5.26 6.17 7.04
+  565   6.4 08:38:31 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+35490  85.3    00:01 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:58:01
+ 3:58  up  8:40, 2 users, load averages: 7.13 6.54 7.12
+35505 984.0    00:16 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 03:59:01
+ 3:59  up  8:41, 2 users, load averages: 8.79 7.11 7.29
+35520 919.7    00:32 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:00:01
+ 4:00  up  8:42, 2 users, load averages: 6.92 6.94 7.21
+35535  99.4    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:01:01
+ 4:01  up  8:43, 2 users, load averages: 6.41 6.74 7.12
+35551 393.4    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:02:01
+ 4:02  up  8:44, 2 users, load averages: 5.43 6.52 7.01
+35565  99.5    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:03:01
+ 4:03  up  8:45, 2 users, load averages: 5.96 6.46 6.96
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:04:01
+ 4:04  up  8:46, 2 users, load averages: 7.83 6.83 7.05
+35592 994.7    00:19 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:05:01
+ 4:05  up  8:47, 2 users, load averages: 10.71 7.81 7.40
+35605 991.9    00:04 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:06:02
+ 4:06  up  8:48, 2 users, load averages: 8.49 7.92 7.48
+  483  21.3 08:47:33 /usr/libexec/airportd
+  721  87.0 08:47:31 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+  752   7.5 08:47:30 /System/Library/CoreServices/WiFiAgent.app/Contents/MacOS/WiFiAgent
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:07:02
+ 4:07  up  8:49, 2 users, load averages: 7.00 7.66 7.41
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:08:02
+ 4:08  up  8:50, 2 users, load averages: 6.42 7.36 7.32
+35644 884.7    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:09:02
+ 4:09  up  8:51, 2 users, load averages: 6.10 7.08 7.22
+35660 958.3    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:10:02
+ 4:10  up  8:52, 2 users, load averages: 7.80 7.29 7.28
+35673 996.1    00:09 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:11:02
+ 4:11  up  8:53, 2 users, load averages: 8.49 7.60 7.39
+  483   8.8 08:52:33 /usr/libexec/airportd
+  565  22.5 08:52:32 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+35682 100.0    00:35 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:12:02
+ 4:12  up  8:54, 2 users, load averages: 6.49 7.32 7.31
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:13:02
+ 4:13  up  8:55, 2 users, load averages: 6.68 7.17 7.25
+35711 990.7    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:14:02
+ 4:14  up  8:56, 2 users, load averages: 6.43 6.99 7.17
+35726 982.5    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:15:02
+ 4:15  up  8:57, 2 users, load averages: 4.97 6.47 6.97
+35742 980.6    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:16:02
+ 4:16  up  8:58, 2 users, load averages: 6.37 6.58 6.97
+  483   9.4 08:57:34 /usr/libexec/airportd
+35753 978.3    00:10 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:17:03
+ 4:17  up  8:59, 2 users, load averages: 20.44 10.85 8.55
+35763 100.0    00:36 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:18:03
+ 4:18  up 9 hrs, 2 users, load averages: 12.32 10.33 8.51
+35786  43.9    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:19:03
+ 4:19  up  9:01, 2 users, load averages: 10.62 10.11 8.55
+35803 988.5    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:20:03
+ 4:20  up  9:02, 2 users, load averages: 7.85 9.52 8.44
+35821 975.0    00:10 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:21:03
+ 4:21  up  9:03, 2 users, load averages: 8.03 9.26 8.41
+35840 687.9    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:22:03
+ 4:22  up  9:04, 2 users, load averages: 5.96 8.44 8.16
+35854 969.6    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:23:03
+ 4:23  up  9:05, 2 users, load averages: 7.62 8.45 8.18
+35865 981.5    00:08 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:24:03
+ 4:24  up  9:06, 2 users, load averages: 8.93 8.66 8.27
+35877 989.2    00:28 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:25:03
+ 4:25  up  9:07, 2 users, load averages: 6.98 8.18 8.12
+35896 959.7    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:26:04
+ 4:26  up  9:08, 2 users, load averages: 7.42 8.11 8.10
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:27:04
+ 4:27  up  9:09, 2 users, load averages: 6.52 7.67 7.93
+35922 981.6    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:28:04
+ 4:28  up  9:10, 2 users, load averages: 7.54 7.76 7.94
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:29:04
+ 4:29  up  9:11, 2 users, load averages: 6.58 7.42 7.80
+35953 117.0    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:30:04
+ 4:30  up  9:12, 2 users, load averages: 4.90 6.83 7.56
+35978  95.1    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:31:04
+ 4:31  up  9:13, 2 users, load averages: 6.26 6.93 7.55
+35995  81.3    00:01 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:32:04
+ 4:32  up  9:14, 2 users, load averages: 4.27 6.23 7.24
+  565  36.2 09:13:34 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  721  63.4 09:13:33 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+36011 100.0    00:02 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:33:04
+ 4:33  up  9:15, 2 users, load averages: 3.95 5.92 7.07
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:34:04
+ 4:34  up  9:16, 2 users, load averages: 3.22 5.37 6.78
+36049  97.4    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:35:04
+ 4:35  up  9:17, 2 users, load averages: 2.98 4.91 6.51
+36065 974.5    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:36:04
+ 4:36  up  9:18, 2 users, load averages: 5.39 5.29 6.54
+36082 994.3    00:08 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:37:04
+ 4:37  up  9:19, 2 users, load averages: 8.85 6.32 6.85
+36096  96.1    00:01 /Users/fillmore/miniforge3/bin/python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:38:04
+ 4:38  up  9:20, 2 users, load averages: 5.84 6.00 6.69
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:39:04
+ 4:39  up  9:21, 2 users, load averages: 6.47 6.11 6.68
+  721 109.6 09:20:34 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:40:05
+ 4:40  up  9:22, 2 users, load averages: 5.67 5.92 6.57
+36149  99.9    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:41:05
+ 4:41  up  9:23, 2 users, load averages: 6.14 6.04 6.57
+  721 113.2 09:22:34 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:42:05
+ 4:42  up  9:24, 2 users, load averages: 7.15 6.36 6.65
+ 1564   8.2 09:13:10 /Applications/ChatGPT.app/Contents/MacOS/ChatGPT
+36179 982.3    00:06 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:43:05
+ 4:43  up  9:25, 2 users, load averages: 8.22 6.84 6.81
+  721  85.3 09:24:34 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:44:05
+ 4:44  up  9:26, 2 users, load averages: 7.43 6.78 6.79
+36205 115.9    00:12 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:45:05
+ 4:45  up  9:27, 2 users, load averages: 8.51 7.23 6.95
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:46:05
+ 4:46  up  9:28, 2 users, load averages: 6.87 6.98 6.87
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:47:05
+ 4:47  up  9:29, 2 users, load averages: 5.95 6.64 6.75
+36253 981.5    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:48:05
+ 4:48  up  9:30, 2 users, load averages: 8.77 7.19 6.94
+36265 988.4    00:17 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:49:05
+ 4:49  up  9:31, 2 users, load averages: 12.21 8.46 7.43
+  565  92.1 09:30:35 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+36280  99.3    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:50:05
+ 4:50  up  9:32, 2 users, load averages: 7.93 7.89 7.28
+36295 993.4    00:05 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:51:06
+ 4:51  up  9:33, 2 users, load averages: 7.35 7.79 7.29
+36309 705.3    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:52:06
+ 4:52  up  9:34, 2 users, load averages: 6.21 7.44 7.19
+36322 983.7    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:53:06
+ 4:53  up  9:35, 2 users, load averages: 6.31 7.24 7.13
+36336 991.1    00:09 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:54:06
+ 4:54  up  9:36, 2 users, load averages: 9.22 7.86 7.36
+36349 991.6    00:07 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:55:06
+ 4:55  up  9:37, 2 users, load averages: 6.90 7.56 7.29
+36362 993.7    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:56:06
+ 4:56  up  9:38, 2 users, load averages: 6.30 7.28 7.21
+36376  99.2    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:57:06
+ 4:57  up  9:39, 2 users, load averages: 5.79 6.95 7.08
+  721  28.5 09:38:35 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:58:06
+ 4:58  up  9:40, 2 users, load averages: 5.51 6.68 6.98
+36403 906.0    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 04:59:07
+ 4:59  up  9:41, 2 users, load averages: 6.28 6.61 6.92
+36418 982.4    00:12 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:00:07
+ 5:00  up  9:42, 2 users, load averages: 8.57 7.17 7.10
+36432 991.8    00:10 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:01:07
+ 5:01  up  9:43, 2 users, load averages: 7.32 7.12 7.09
+36446 990.2    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:02:07
+ 5:02  up  9:44, 2 users, load averages: 7.09 7.05 7.06
+36459 967.4    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:03:07
+ 5:03  up  9:45, 2 users, load averages: 5.71 6.74 6.95
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:04:07
+ 5:04  up  9:46, 2 users, load averages: 6.66 6.82 6.97
+36488 119.8    00:09 (ts1_scenario)
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:05:07
+ 5:05  up  9:47, 2 users, load averages: 7.02 6.85 6.96
+36502 190.2    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:06:07
+ 5:06  up  9:48, 2 users, load averages: 5.26 6.39 6.78
+  721  60.3 09:47:36 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:07:07
+ 5:07  up  9:49, 2 users, load averages: 5.76 6.33 6.73
+36540 838.3    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:08:08
+ 5:08  up  9:50, 2 users, load averages: 6.34 6.27 6.67
+36558 960.7    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:09:08
+ 5:09  up  9:51, 2 users, load averages: 5.51 6.10 6.58
+36576 761.5    00:03 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:10:08
+ 5:10  up  9:52, 2 users, load averages: 5.69 6.06 6.53
+36592 361.0    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:11:08
+ 5:11  up  9:53, 2 users, load averages: 6.65 6.26 6.57
+  721  12.5 09:52:37 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+36611 961.5    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:12:08
+ 5:12  up  9:54, 2 users, load averages: 7.71 6.53 6.65
+36625 993.1    00:20 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:13:08
+ 5:13  up  9:55, 2 users, load averages: 9.45 7.19 6.88
+36636 996.0    00:33 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:14:08
+ 5:14  up  9:56, 2 users, load averages: 10.17 7.75 7.11
+36654 905.7    00:40 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:15:08
+ 5:15  up  9:57, 2 users, load averages: 8.08 7.56 7.08
+36673 671.0    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:16:08
+ 5:16  up  9:58, 2 users, load averages: 8.22 7.59 7.11
+  342  12.3 09:57:41 /usr/libexec/logd
+36698 980.7    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:17:09
+ 5:17  up  9:59, 2 users, load averages: 9.18 7.89 7.25
+36737   5.9    00:09 /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtectRemediatorPirrit
+36738 963.8    00:06 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:18:09
+ 5:18  up 10 hrs, 2 users, load averages: 7.99 7.86 7.29
+  625   6.2 09:59:39 /System/Library/CoreServices/CoreServicesUIAgent.app/Contents/MacOS/CoreServicesUIAgent
+  634  15.6 09:59:39 /System/Library/PrivateFrameworks/TCC.framework/Support/tccd
+  721  95.6 09:59:38 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+  733  96.7 09:59:37 /usr/libexec/duetexpertd
+36737  72.7    01:09 /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtectRemediatorPirrit
+36751  95.6    00:30 /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtectRemediatorDolittle
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:19:09
+ 5:19  up 10:01, 2 users, load averages: 10.17 8.42 7.53
+36776  12.2    00:14 /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtectRemediatorSnowDrift
+36775 983.7    00:14 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:20:09
+ 5:20  up 10:02, 2 users, load averages: 12.52 9.38 7.94
+36793  11.5    00:30 /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtectRemediatorSheepSwap
+36794 981.8    00:29 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:21:09
+ 5:21  up 10:03, 2 users, load averages: 13.94 10.27 8.37
+36816 983.2    00:38 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:22:09
+ 5:22  up 10:04, 2 users, load averages: 9.92 9.78 8.31
+36858  96.1    00:18 /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtectRemediatorPirrit
+36862 100.0    00:04 /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtectRemediatorSnowBeagle
+36863  90.1    00:00 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:23:09
+ 5:23  up 10:05, 2 users, load averages: 10.22 9.81 8.42
+36891  98.4    00:06 /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtectRemediatorMRTv3
+36511   8.4    17:55 python3
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:24:09
+ 5:24  up 10:06, 2 users, load averages: 8.09 9.19 8.27
+36919 127.5    00:12 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:25:09
+ 5:25  up 10:07, 2 users, load averages: 6.89 8.70 8.15
+36938 975.9    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:26:10
+ 5:26  up 10:08, 2 users, load averages: 7.90 8.59 8.14
+36951 992.4    00:22 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:27:10
+ 5:27  up 10:09, 2 users, load averages: 9.29 8.79 8.24
+36961 978.9    00:37 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:28:10
+ 5:28  up 10:10, 2 users, load averages: 8.66 8.73 8.26
+  721  18.1 10:09:39 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:29:10
+ 5:29  up 10:11, 2 users, load averages: 7.53 8.36 8.15
+36997 965.8    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:30:10
+ 5:30  up 10:12, 2 users, load averages: 7.06 8.08 8.06
+  721  58.6 10:11:39 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:31:10
+ 5:31  up 10:13, 2 users, load averages: 5.94 7.59 7.87
+37029 100.0    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:32:10
+ 5:32  up 10:14, 2 users, load averages: 6.40 7.38 7.77
+37041 962.6    00:11 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:33:10
+ 5:33  up 10:15, 2 users, load averages: 8.06 7.70 7.86
+37055 990.9    00:02 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:34:10
+ 5:34  up 10:16, 2 users, load averages: 9.59 8.20 8.04
+37071 993.3    00:12 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:35:10
+ 5:35  up 10:17, 2 users, load averages: 7.51 7.98 7.97
+37086 316.8    00:08 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:36:11
+ 5:36  up 10:18, 2 users, load averages: 7.52 7.85 7.92
+37101 987.6    00:16 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:37:11
+ 5:37  up 10:19, 2 users, load averages: 5.02 7.11 7.64
+37118  98.8    00:02 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:38:11
+ 5:38  up 10:20, 2 users, load averages: 5.18 6.90 7.53
+37132 983.1    00:04 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:39:11
+ 5:39  up 10:21, 2 users, load averages: 15.62 8.81 8.16
+  681  17.2 10:20:40 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/corespotlightd
+37182 963.7    00:15 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:40:11
+ 5:40  up 10:22, 2 users, load averages: 18.40 10.97 9.01
+37200 992.0    00:06 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:41:11
+ 5:41  up 10:23, 2 users, load averages: 17.38 12.24 9.63
+37216 994.9    00:16 /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:42:11
+ 5:42  up 10:24, 2 users, load averages: 10.72 11.40 9.50
+  721 115.1 10:23:40 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:43:11
+ 5:43  up 10:25, 2 users, load averages: 10.06 11.01 9.48
+37258 988.1    00:21 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:44:12
+ 5:44  up 10:26, 2 users, load averages: 6.63 9.79 9.12
+37300 988.8    00:07 /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:45:12
+ 5:45  up 10:27, 2 users, load averages: 5.85 9.05 8.89
+37314 251.4    00:09 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+
+2026-10-19 05:46:12
+ 5:46  up 10:28, 2 users, load averages: 5.91 8.48 8.69
+37339  98.1    00:01 /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario
+ -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+

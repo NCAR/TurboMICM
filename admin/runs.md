@@ -634,6 +634,27 @@ set up. All times MDT.
   parallel (19:48–20:16) and are filed in the entry's `research/`. The
   entry is not a contestant; its collection branch will be
   `tier3/fable/max`.
+- 05:46 on 2026-10-19: the **timing session ended**: 1,210 runs, no
+  errors, every run passing the gate, every program's output byte-identical
+  across its five rounds. `admin/rank_tier3.py` flagged nothing. The
+  ranking (`results/2026-10-19-tier3-ranking/`), as sums over the 11
+  scenarios of the median elapsed time: level 2, astra-xhigh/fast 34.72 s
+  (13.4 times MICM at relative 1e-2, 465.40 s), sol-max/fast 39.80,
+  sol-xhigh/L2 54.52, astra-max/economy 62.13; level 3, astra-xhigh/accurate
+  74.47 s (7.3 times MICM at 3e-4, 542.66 s), sol-xhigh/L3 93.67,
+  sol-max/accurate 106.57, astra-max/balanced 109.29. The held-out scenarios
+  changed no rank; level 3's third place is a 2.6 % gap, inside the noise.
+  Scores at 10,000 cells matched the 1,000-cell verification within 0.01
+  digit; astra-max's fast3 misses level 3 on the same two held-out
+  scenarios; `micm/L3` kept its isoprene margin, so `micm/L3b` was not
+  needed. Load audit: AC power throughout; macOS's media analysis and
+  Spotlight daemons ran at about half a core in a quarter of the minute
+  samples, spread over all programs by the rotation; round-to-round spreads
+  were 1.3 to 3.9 % on average and 8.4 % at most. Published on the wiki
+  (Tier-3-Results, Home); `tier3/HANDOFF.md` retired, its rules moved to
+  `tier3/README.md`.
+- 05:52: the Fable entry's S4 scan (controllers) started, the first work on
+  the machine after the session.
 
 # Disk space
 

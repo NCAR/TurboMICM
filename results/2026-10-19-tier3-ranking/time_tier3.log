@@ -1,0 +1,1488 @@
+start 2026-10-18 21:19:19
+== disclosed-10000/clean-10min: 21:19:19
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    3923.372 process_s=   8.267 gate=PASS digits=2.805
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    5330.898 process_s=   9.693 gate=PASS digits=3.147
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    7313.278 process_s=  11.884 gate=PASS digits=3.527
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=   10028.603 process_s=  14.521 gate=PASS digits=3.841
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   28820.160 process_s=  33.417 gate=PASS digits=4.882
+round 1 threads 10 sol-max/fast elapsed_ms=    3050.908 process_s=   7.686 gate=PASS digits=2.423
+round 1 threads 10 sol-max/balanced elapsed_ms=    3529.688 process_s=   8.127 gate=PASS digits=2.644
+round 1 threads 10 sol-max/accurate elapsed_ms=    8967.694 process_s=  13.584 gate=PASS digits=3.299
+round 1 threads 10 sol-max/recommended elapsed_ms=   11909.467 process_s=  16.597 gate=PASS digits=3.665
+round 1 threads 10 sol-max/precise elapsed_ms=   19874.033 process_s=  24.676 gate=PASS digits=4.422
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2560.658932 process_s=   7.317 gate=PASS digits=2.556
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 3738.916636 process_s=   8.426 gate=PASS digits=2.765
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 5110.620975 process_s=   9.812 gate=PASS digits=3.201
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 5833.567142 process_s=  10.419 gate=PASS digits=4.243
+round 1 threads 10 astra-xhigh/strict elapsed_ms= 7572.300196 process_s=  12.228 gate=PASS digits=4.553
+round 1 threads 10 astra-max/economy elapsed_ms=    4788.862 process_s=   9.422 gate=PASS digits=2.622
+round 1 threads 10 astra-max/fast3 elapsed_ms=    6773.322 process_s=  11.583 gate=PASS digits=3.224
+round 1 threads 10 astra-max/balanced elapsed_ms=    8208.779 process_s=  12.972 gate=PASS digits=3.554
+round 1 threads 10 astra-max/conservative elapsed_ms=   13163.975 process_s=  18.003 gate=PASS digits=4.126
+round 1 threads 10 micm/L2      elapsed_ms=   36678.812 process_s=  40.182 gate=PASS digits=3.423
+round 1 threads 10 micm/L3      elapsed_ms=   43086.260 process_s=  46.488 gate=PASS digits=3.988
+round 1 threads 10 micm/L3b     elapsed_ms=   43931.100 process_s=  47.207 gate=PASS digits=4.028
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   27852.576 process_s=  32.410 gate=PASS digits=4.882
+round 2 threads 10 sol-max/fast elapsed_ms=    2986.058 process_s=   7.695 gate=PASS digits=2.423
+round 2 threads 10 sol-max/balanced elapsed_ms=    3440.009 process_s=   8.021 gate=PASS digits=2.644
+round 2 threads 10 sol-max/accurate elapsed_ms=    8631.329 process_s=  13.342 gate=PASS digits=3.299
+round 2 threads 10 sol-max/recommended elapsed_ms=   11468.481 process_s=  16.287 gate=PASS digits=3.665
+round 2 threads 10 sol-max/precise elapsed_ms=   19503.232 process_s=  24.429 gate=PASS digits=4.422
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2511.984348 process_s=   7.396 gate=PASS digits=2.556
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 3742.083549 process_s=   8.647 gate=PASS digits=2.765
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 5141.294956 process_s=   9.999 gate=PASS digits=3.201
+round 2 threads 10 astra-xhigh/recommended elapsed_ms= 5876.226425 process_s=  10.677 gate=PASS digits=4.243
+round 2 threads 10 astra-xhigh/strict elapsed_ms= 7589.395523 process_s=  12.551 gate=PASS digits=4.553
+round 2 threads 10 astra-max/economy elapsed_ms=    4824.645 process_s=   9.411 gate=PASS digits=2.622
+round 2 threads 10 astra-max/fast3 elapsed_ms=    6800.671 process_s=  11.567 gate=PASS digits=3.224
+round 2 threads 10 astra-max/balanced elapsed_ms=    8268.093 process_s=  13.008 gate=PASS digits=3.554
+round 2 threads 10 astra-max/conservative elapsed_ms=   13459.522 process_s=  18.271 gate=PASS digits=4.126
+round 2 threads 10 micm/L2      elapsed_ms=   37075.501 process_s=  40.492 gate=PASS digits=3.423
+round 2 threads 10 micm/L3      elapsed_ms=   43416.409 process_s=  46.758 gate=PASS digits=3.988
+round 2 threads 10 micm/L3b     elapsed_ms=   43206.853 process_s=  46.576 gate=PASS digits=4.028
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    4003.350 process_s=   8.391 gate=PASS digits=2.805
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    5388.231 process_s=   9.924 gate=PASS digits=3.147
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    7303.024 process_s=  11.715 gate=PASS digits=3.527
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=    9945.949 process_s=  14.450 gate=PASS digits=3.841
+round 3 threads 10 sol-max/recommended elapsed_ms=   11266.145 process_s=  15.977 gate=PASS digits=3.665
+round 3 threads 10 sol-max/precise elapsed_ms=   18526.895 process_s=  23.301 gate=PASS digits=4.422
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2457.484722 process_s=   7.229 gate=PASS digits=2.556
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 3662.997246 process_s=   8.425 gate=PASS digits=2.765
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 5018.631697 process_s=   9.698 gate=PASS digits=3.201
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 5712.072849 process_s=  10.356 gate=PASS digits=4.243
+round 3 threads 10 astra-xhigh/strict elapsed_ms= 7446.294069 process_s=  12.190 gate=PASS digits=4.553
+round 3 threads 10 astra-max/economy elapsed_ms=    4684.455 process_s=   9.249 gate=PASS digits=2.622
+round 3 threads 10 astra-max/fast3 elapsed_ms=    6632.321 process_s=  11.249 gate=PASS digits=3.224
+round 3 threads 10 astra-max/balanced elapsed_ms=    8001.508 process_s=  12.977 gate=PASS digits=3.554
+round 3 threads 10 astra-max/conservative elapsed_ms=   12782.569 process_s=  17.535 gate=PASS digits=4.126
+round 3 threads 10 micm/L2      elapsed_ms=   36317.168 process_s=  39.630 gate=PASS digits=3.423
+round 3 threads 10 micm/L3      elapsed_ms=   43450.465 process_s=  46.720 gate=PASS digits=3.988
+round 3 threads 10 micm/L3b     elapsed_ms=   43654.975 process_s=  46.901 gate=PASS digits=4.028
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    4117.750 process_s=   8.770 gate=PASS digits=2.805
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    5401.089 process_s=   9.810 gate=PASS digits=3.147
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    7278.495 process_s=  11.652 gate=PASS digits=3.527
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=    9920.908 process_s=  14.392 gate=PASS digits=3.841
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   28405.856 process_s=  33.334 gate=PASS digits=4.882
+round 3 threads 10 sol-max/fast elapsed_ms=    3009.657 process_s=   7.685 gate=PASS digits=2.423
+round 3 threads 10 sol-max/balanced elapsed_ms=    3451.167 process_s=   8.114 gate=PASS digits=2.644
+round 3 threads 10 sol-max/accurate elapsed_ms=    8729.203 process_s=  13.595 gate=PASS digits=3.299
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 5858.946085 process_s=  10.840 gate=PASS digits=4.243
+round 4 threads 10 astra-xhigh/strict elapsed_ms= 7526.736498 process_s=  12.366 gate=PASS digits=4.553
+round 4 threads 10 astra-max/economy elapsed_ms=    4777.964 process_s=   9.480 gate=PASS digits=2.622
+round 4 threads 10 astra-max/fast3 elapsed_ms=    6744.305 process_s=  11.528 gate=PASS digits=3.224
+round 4 threads 10 astra-max/balanced elapsed_ms=    8152.948 process_s=  12.771 gate=PASS digits=3.554
+round 4 threads 10 astra-max/conservative elapsed_ms=   13124.914 process_s=  18.492 gate=PASS digits=4.126
+round 4 threads 10 micm/L2      elapsed_ms=   37821.358 process_s=  41.167 gate=PASS digits=3.423
+round 4 threads 10 micm/L3      elapsed_ms=   44282.999 process_s=  47.983 gate=PASS digits=3.988
+round 4 threads 10 micm/L3b     elapsed_ms=   45427.903 process_s=  48.686 gate=PASS digits=4.028
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    4074.478 process_s=   8.519 gate=PASS digits=2.805
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    5484.180 process_s=  10.090 gate=PASS digits=3.147
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=    7396.329 process_s=  12.128 gate=PASS digits=3.527
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=   10037.463 process_s=  14.509 gate=PASS digits=3.841
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   28989.311 process_s=  33.839 gate=PASS digits=4.882
+round 4 threads 10 sol-max/fast elapsed_ms=    3030.527 process_s=   7.723 gate=PASS digits=2.423
+round 4 threads 10 sol-max/balanced elapsed_ms=    3469.875 process_s=   8.426 gate=PASS digits=2.644
+round 4 threads 10 sol-max/accurate elapsed_ms=    9001.840 process_s=  13.795 gate=PASS digits=3.299
+round 4 threads 10 sol-max/recommended elapsed_ms=   12116.709 process_s=  16.968 gate=PASS digits=3.665
+round 4 threads 10 sol-max/precise elapsed_ms=   20050.630 process_s=  25.007 gate=PASS digits=4.422
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 2566.502333 process_s=   7.432 gate=PASS digits=2.556
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 3796.985388 process_s=   8.715 gate=PASS digits=2.765
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 5251.264572 process_s=  10.150 gate=PASS digits=3.201
+round 5 threads 10 astra-max/balanced elapsed_ms=    8381.291 process_s=  13.034 gate=PASS digits=3.554
+round 5 threads 10 astra-max/conservative elapsed_ms=   13500.939 process_s=  18.296 gate=PASS digits=4.126
+round 5 threads 10 micm/L2      elapsed_ms=   38419.330 process_s=  41.855 gate=PASS digits=3.423
+round 5 threads 10 micm/L3      elapsed_ms=   45558.530 process_s=  48.880 gate=PASS digits=3.988
+round 5 threads 10 micm/L3b     elapsed_ms=   44285.595 process_s=  47.552 gate=PASS digits=4.028
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    4051.771 process_s=   8.464 gate=PASS digits=2.805
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    5478.262 process_s=  10.166 gate=PASS digits=3.147
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=    7365.638 process_s=  11.939 gate=PASS digits=3.527
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=   10097.144 process_s=  14.583 gate=PASS digits=3.841
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   28554.093 process_s=  33.251 gate=PASS digits=4.882
+round 5 threads 10 sol-max/fast elapsed_ms=    3034.758 process_s=   7.740 gate=PASS digits=2.423
+round 5 threads 10 sol-max/balanced elapsed_ms=    3474.789 process_s=   8.202 gate=PASS digits=2.644
+round 5 threads 10 sol-max/accurate elapsed_ms=    8781.439 process_s=  13.681 gate=PASS digits=3.299
+round 5 threads 10 sol-max/recommended elapsed_ms=   11670.743 process_s=  16.337 gate=PASS digits=3.665
+round 5 threads 10 sol-max/precise elapsed_ms=   19246.557 process_s=  24.727 gate=PASS digits=4.422
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 2540.195465 process_s=   7.278 gate=PASS digits=2.556
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 3742.352247 process_s=   8.395 gate=PASS digits=2.765
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 5147.299767 process_s=   9.912 gate=PASS digits=3.201
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 5868.132353 process_s=  10.902 gate=PASS digits=4.243
+round 5 threads 10 astra-xhigh/strict elapsed_ms= 7560.286045 process_s=  12.459 gate=PASS digits=4.553
+round 5 threads 10 astra-max/economy elapsed_ms=    4773.641 process_s=   9.392 gate=PASS digits=2.622
+round 5 threads 10 astra-max/fast3 elapsed_ms=    6805.516 process_s=  11.720 gate=PASS digits=3.224
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 4,051.8 | 3,923.4–4,117.8 | 8.5 | 2.81 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 5,401.1 | 5,330.9–5,484.2 | 9.9 | 3.15 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 7,313.3 | 7,278.5–7,396.3 | 11.9 | 3.53 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 10,028.6 | 9,920.9–10,097.1 | 14.5 | 3.84 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 28,554.1 | 27,852.6–28,989.3 | 33.3 | 4.88 |
+| sol-max/fast | 10 | 5 of 5 | 3,030.5 | 2,986.1–3,050.9 | 7.7 | 2.42 |
+| sol-max/balanced | 10 | 5 of 5 | 3,469.9 | 3,440.0–3,529.7 | 8.1 | 2.64 |
+| sol-max/accurate | 10 | 5 of 5 | 8,781.4 | 8,631.3–9,001.8 | 13.6 | 3.30 |
+| sol-max/recommended | 10 | 5 of 5 | 11,670.7 | 11,266.1–12,116.7 | 16.3 | 3.67 |
+| sol-max/precise | 10 | 5 of 5 | 19,503.2 | 18,526.9–20,050.6 | 24.7 | 4.42 |
+| astra-xhigh/fast | 10 | 5 of 5 | 2,540.2 | 2,457.5–2,566.5 | 7.3 | 2.56 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 3,742.1 | 3,663.0–3,797.0 | 8.4 | 2.77 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 5,141.3 | 5,018.6–5,251.3 | 9.9 | 3.20 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 5,858.9 | 5,712.1–5,876.2 | 10.7 | 4.24 |
+| astra-xhigh/strict | 10 | 5 of 5 | 7,560.3 | 7,446.3–7,589.4 | 12.4 | 4.55 |
+| astra-max/economy | 10 | 5 of 5 | 4,778.0 | 4,684.5–4,824.6 | 9.4 | 2.62 |
+| astra-max/fast3 | 10 | 5 of 5 | 6,773.3 | 6,632.3–6,805.5 | 11.6 | 3.22 |
+| astra-max/balanced | 10 | 5 of 5 | 8,208.8 | 8,001.5–8,381.3 | 13.0 | 3.55 |
+| astra-max/conservative | 10 | 5 of 5 | 13,164.0 | 12,782.6–13,500.9 | 18.3 | 4.13 |
+| micm/L2 | 10 | 5 of 5 | 37,075.5 | 36,317.2–38,419.3 | 40.5 | 3.42 |
+| micm/L3 | 10 | 5 of 5 | 43,450.5 | 43,086.3–45,558.5 | 46.8 | 3.99 |
+| micm/L3b | 10 | 5 of 5 | 43,931.1 | 43,206.9–45,427.9 | 47.2 | 4.03 |
+== disclosed-10000/diurnal-10min: 22:01:42
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    4617.930 process_s=   9.034 gate=PASS digits=2.843
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    5923.635 process_s=  10.388 gate=PASS digits=3.098
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    8301.597 process_s=  12.805 gate=PASS digits=3.502
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=   10925.394 process_s=  15.498 gate=PASS digits=3.796
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   29092.770 process_s=  33.909 gate=PASS digits=4.902
+round 1 threads 10 sol-max/fast elapsed_ms=    3239.572 process_s=   7.900 gate=PASS digits=2.509
+round 1 threads 10 sol-max/balanced elapsed_ms=    3746.652 process_s=   8.437 gate=PASS digits=2.629
+round 1 threads 10 sol-max/accurate elapsed_ms=    9455.845 process_s=  14.379 gate=PASS digits=3.273
+round 1 threads 10 sol-max/recommended elapsed_ms=   12319.966 process_s=  17.142 gate=PASS digits=3.626
+round 1 threads 10 sol-max/precise elapsed_ms=   19795.541 process_s=  24.697 gate=PASS digits=4.459
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2723.015785 process_s=   7.517 gate=PASS digits=2.527
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 3983.337164 process_s=   8.745 gate=PASS digits=2.728
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 5572.890759 process_s=  10.310 gate=PASS digits=3.213
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 6939.959049 process_s=  11.633 gate=PASS digits=4.294
+round 1 threads 10 astra-xhigh/strict elapsed_ms= 8493.958235 process_s=  13.206 gate=PASS digits=4.562
+round 1 threads 10 astra-max/economy elapsed_ms=    5137.848 process_s=   9.714 gate=PASS digits=2.59
+round 1 threads 10 astra-max/fast3 elapsed_ms=    7494.469 process_s=  12.078 gate=PASS digits=3.17
+round 1 threads 10 astra-max/balanced elapsed_ms=    8873.789 process_s=  13.542 gate=PASS digits=3.467
+round 1 threads 10 astra-max/conservative elapsed_ms=   13851.779 process_s=  18.520 gate=PASS digits=3.975
+round 1 threads 10 micm/L2      elapsed_ms=   37979.041 process_s=  41.387 gate=PASS digits=3.432
+round 1 threads 10 micm/L3      elapsed_ms=   45123.578 process_s=  48.492 gate=PASS digits=4.007
+round 1 threads 10 micm/L3b     elapsed_ms=   45535.044 process_s=  48.862 gate=PASS digits=4.047
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   28342.475 process_s=  32.902 gate=PASS digits=4.902
+round 2 threads 10 sol-max/fast elapsed_ms=    3219.868 process_s=   7.897 gate=PASS digits=2.509
+round 2 threads 10 sol-max/balanced elapsed_ms=    3724.748 process_s=   8.301 gate=PASS digits=2.629
+round 2 threads 10 sol-max/accurate elapsed_ms=    9284.001 process_s=  14.015 gate=PASS digits=3.273
+round 2 threads 10 sol-max/recommended elapsed_ms=   12208.848 process_s=  17.100 gate=PASS digits=3.626
+round 2 threads 10 sol-max/precise elapsed_ms=   19871.746 process_s=  24.819 gate=PASS digits=4.459
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2749.452114 process_s=   7.852 gate=PASS digits=2.527
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 4018.857479 process_s=   9.132 gate=PASS digits=2.728
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 5648.566723 process_s=  10.260 gate=PASS digits=3.213
+round 2 threads 10 astra-xhigh/recommended elapsed_ms= 6888.705492 process_s=  11.775 gate=PASS digits=4.294
+round 2 threads 10 astra-xhigh/strict elapsed_ms= 8469.715118 process_s=  13.465 gate=PASS digits=4.562
+round 2 threads 10 astra-max/economy elapsed_ms=    5090.734 process_s=   9.868 gate=PASS digits=2.59
+round 2 threads 10 astra-max/fast3 elapsed_ms=    7405.545 process_s=  12.153 gate=PASS digits=3.17
+round 2 threads 10 astra-max/balanced elapsed_ms=    8773.799 process_s=  13.577 gate=PASS digits=3.467
+round 2 threads 10 astra-max/conservative elapsed_ms=   13713.845 process_s=  18.545 gate=PASS digits=3.975
+round 2 threads 10 micm/L2      elapsed_ms=   38012.367 process_s=  41.446 gate=PASS digits=3.432
+round 2 threads 10 micm/L3      elapsed_ms=   44480.572 process_s=  47.839 gate=PASS digits=4.007
+round 2 threads 10 micm/L3b     elapsed_ms=   44195.961 process_s=  47.493 gate=PASS digits=4.047
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    4482.326 process_s=   8.887 gate=PASS digits=2.843
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    5766.334 process_s=  10.300 gate=PASS digits=3.098
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    8056.444 process_s=  12.659 gate=PASS digits=3.502
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=   10625.470 process_s=  15.074 gate=PASS digits=3.796
+round 3 threads 10 sol-max/recommended elapsed_ms=   12152.942 process_s=  17.219 gate=PASS digits=3.626
+round 3 threads 10 sol-max/precise elapsed_ms=   19657.988 process_s=  24.587 gate=PASS digits=4.459
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2713.671446 process_s=   7.704 gate=PASS digits=2.527
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 3981.440544 process_s=   9.012 gate=PASS digits=2.728
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 5593.122482 process_s=  10.337 gate=PASS digits=3.213
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 6816.463232 process_s=  11.547 gate=PASS digits=4.294
+round 3 threads 10 astra-xhigh/strict elapsed_ms= 8442.452908 process_s=  13.439 gate=PASS digits=4.562
+round 3 threads 10 astra-max/economy elapsed_ms=    5115.577 process_s=   9.723 gate=PASS digits=2.59
+round 3 threads 10 astra-max/fast3 elapsed_ms=    7501.784 process_s=  12.263 gate=PASS digits=3.17
+round 3 threads 10 astra-max/balanced elapsed_ms=    8796.083 process_s=  13.591 gate=PASS digits=3.467
+round 3 threads 10 astra-max/conservative elapsed_ms=   13728.559 process_s=  18.590 gate=PASS digits=3.975
+round 3 threads 10 micm/L2      elapsed_ms=   37617.162 process_s=  41.083 gate=PASS digits=3.432
+round 3 threads 10 micm/L3      elapsed_ms=   44478.489 process_s=  47.815 gate=PASS digits=4.007
+round 3 threads 10 micm/L3b     elapsed_ms=   44482.757 process_s=  47.743 gate=PASS digits=4.047
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    4470.432 process_s=   8.940 gate=PASS digits=2.843
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    5778.242 process_s=  10.287 gate=PASS digits=3.098
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    8043.332 process_s=  12.591 gate=PASS digits=3.502
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=   10607.608 process_s=  15.118 gate=PASS digits=3.796
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   28615.809 process_s=  33.332 gate=PASS digits=4.902
+round 3 threads 10 sol-max/fast elapsed_ms=    3265.219 process_s=   8.111 gate=PASS digits=2.509
+round 3 threads 10 sol-max/balanced elapsed_ms=    3757.221 process_s=   8.489 gate=PASS digits=2.629
+round 3 threads 10 sol-max/accurate elapsed_ms=    9433.663 process_s=  14.369 gate=PASS digits=3.273
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 6855.734110 process_s=  11.801 gate=PASS digits=4.294
+round 4 threads 10 astra-xhigh/strict elapsed_ms= 8384.983778 process_s=  13.222 gate=PASS digits=4.562
+round 4 threads 10 astra-max/economy elapsed_ms=    5114.915 process_s=   9.753 gate=PASS digits=2.59
+round 4 threads 10 astra-max/fast3 elapsed_ms=    7411.530 process_s=  12.048 gate=PASS digits=3.17
+round 4 threads 10 astra-max/balanced elapsed_ms=    8789.302 process_s=  13.562 gate=PASS digits=3.467
+round 4 threads 10 astra-max/conservative elapsed_ms=   13733.733 process_s=  18.583 gate=PASS digits=3.975
+round 4 threads 10 micm/L2      elapsed_ms=   38092.630 process_s=  41.492 gate=PASS digits=3.432
+round 4 threads 10 micm/L3      elapsed_ms=   44274.819 process_s=  47.612 gate=PASS digits=4.007
+round 4 threads 10 micm/L3b     elapsed_ms=   44981.370 process_s=  48.296 gate=PASS digits=4.047
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    4538.100 process_s=   8.949 gate=PASS digits=2.843
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    5835.899 process_s=  10.316 gate=PASS digits=3.098
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=    8100.852 process_s=  12.616 gate=PASS digits=3.502
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=   10604.359 process_s=  15.190 gate=PASS digits=3.796
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   28980.251 process_s=  33.665 gate=PASS digits=4.902
+round 4 threads 10 sol-max/fast elapsed_ms=    3267.707 process_s=   8.057 gate=PASS digits=2.509
+round 4 threads 10 sol-max/balanced elapsed_ms=    3777.805 process_s=   8.550 gate=PASS digits=2.629
+round 4 threads 10 sol-max/accurate elapsed_ms=    9537.702 process_s=  14.497 gate=PASS digits=3.273
+round 4 threads 10 sol-max/recommended elapsed_ms=   12498.813 process_s=  17.354 gate=PASS digits=3.626
+round 4 threads 10 sol-max/precise elapsed_ms=   19978.300 process_s=  24.960 gate=PASS digits=4.459
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 2739.759445 process_s=   7.502 gate=PASS digits=2.527
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 3989.356518 process_s=   8.992 gate=PASS digits=2.728
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 5599.070549 process_s=  10.722 gate=PASS digits=3.213
+round 5 threads 10 astra-max/balanced elapsed_ms=    8738.456 process_s=  13.517 gate=PASS digits=3.467
+round 5 threads 10 astra-max/conservative elapsed_ms=   13744.056 process_s=  18.562 gate=PASS digits=3.975
+round 5 threads 10 micm/L2      elapsed_ms=   37459.736 process_s=  40.900 gate=PASS digits=3.432
+round 5 threads 10 micm/L3      elapsed_ms=   44325.166 process_s=  47.626 gate=PASS digits=4.007
+round 5 threads 10 micm/L3b     elapsed_ms=   44327.043 process_s=  47.565 gate=PASS digits=4.047
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    4475.480 process_s=   9.004 gate=PASS digits=2.843
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    5772.393 process_s=  10.236 gate=PASS digits=3.098
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=    8042.849 process_s=  12.604 gate=PASS digits=3.502
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=   10617.401 process_s=  15.306 gate=PASS digits=3.796
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   28634.903 process_s=  33.371 gate=PASS digits=4.902
+round 5 threads 10 sol-max/fast elapsed_ms=    3241.791 process_s=   8.072 gate=PASS digits=2.509
+round 5 threads 10 sol-max/balanced elapsed_ms=    3785.151 process_s=   8.503 gate=PASS digits=2.629
+round 5 threads 10 sol-max/accurate elapsed_ms=    9503.441 process_s=  14.345 gate=PASS digits=3.273
+round 5 threads 10 sol-max/recommended elapsed_ms=   12395.297 process_s=  17.342 gate=PASS digits=3.626
+round 5 threads 10 sol-max/precise elapsed_ms=   19983.418 process_s=  24.890 gate=PASS digits=4.459
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 2726.200104 process_s=   7.588 gate=PASS digits=2.527
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 3986.441612 process_s=   8.902 gate=PASS digits=2.728
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 5608.324289 process_s=  10.435 gate=PASS digits=3.213
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 6821.458817 process_s=  11.557 gate=PASS digits=4.294
+round 5 threads 10 astra-xhigh/strict elapsed_ms= 8408.007622 process_s=  13.401 gate=PASS digits=4.562
+round 5 threads 10 astra-max/economy elapsed_ms=    5123.329 process_s=   9.725 gate=PASS digits=2.59
+round 5 threads 10 astra-max/fast3 elapsed_ms=    7443.397 process_s=  12.160 gate=PASS digits=3.17
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 4,482.3 | 4,470.4–4,617.9 | 8.9 | 2.84 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 5,778.2 | 5,766.3–5,923.6 | 10.3 | 3.10 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 8,056.4 | 8,042.8–8,301.6 | 12.6 | 3.50 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 10,617.4 | 10,604.4–10,925.4 | 15.2 | 3.80 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 28,634.9 | 28,342.5–29,092.8 | 33.4 | 4.90 |
+| sol-max/fast | 10 | 5 of 5 | 3,241.8 | 3,219.9–3,267.7 | 8.1 | 2.51 |
+| sol-max/balanced | 10 | 5 of 5 | 3,757.2 | 3,724.7–3,785.2 | 8.5 | 2.63 |
+| sol-max/accurate | 10 | 5 of 5 | 9,455.8 | 9,284.0–9,537.7 | 14.4 | 3.27 |
+| sol-max/recommended | 10 | 5 of 5 | 12,320.0 | 12,152.9–12,498.8 | 17.2 | 3.63 |
+| sol-max/precise | 10 | 5 of 5 | 19,871.7 | 19,658.0–19,983.4 | 24.8 | 4.46 |
+| astra-xhigh/fast | 10 | 5 of 5 | 2,726.2 | 2,713.7–2,749.5 | 7.6 | 2.53 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 3,986.4 | 3,981.4–4,018.9 | 9.0 | 2.73 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 5,599.1 | 5,572.9–5,648.6 | 10.3 | 3.21 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 6,855.7 | 6,816.5–6,940.0 | 11.6 | 4.29 |
+| astra-xhigh/strict | 10 | 5 of 5 | 8,442.5 | 8,385.0–8,494.0 | 13.4 | 4.56 |
+| astra-max/economy | 10 | 5 of 5 | 5,115.6 | 5,090.7–5,137.8 | 9.7 | 2.59 |
+| astra-max/fast3 | 10 | 5 of 5 | 7,443.4 | 7,405.5–7,501.8 | 12.2 | 3.17 |
+| astra-max/balanced | 10 | 5 of 5 | 8,789.3 | 8,738.5–8,873.8 | 13.6 | 3.47 |
+| astra-max/conservative | 10 | 5 of 5 | 13,733.7 | 13,713.8–13,851.8 | 18.6 | 3.98 |
+| micm/L2 | 10 | 5 of 5 | 37,979.0 | 37,459.7–38,092.6 | 41.4 | 3.43 |
+| micm/L3 | 10 | 5 of 5 | 44,478.5 | 44,274.8–45,123.6 | 47.8 | 4.01 |
+| micm/L3b | 10 | 5 of 5 | 44,482.8 | 44,196.0–45,535.0 | 47.7 | 4.05 |
+== disclosed-10000/diurnal-30min: 22:45:06
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    3413.511 process_s=   7.835 gate=PASS digits=2.542
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    4425.833 process_s=   8.949 gate=PASS digits=2.8
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    6252.010 process_s=  10.818 gate=PASS digits=3.617
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=    8055.968 process_s=  12.542 gate=PASS digits=4.016
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   15062.555 process_s=  19.880 gate=PASS digits=5.226
+round 1 threads 10 sol-max/fast elapsed_ms=    2575.252 process_s=   7.528 gate=PASS digits=2.123
+round 1 threads 10 sol-max/balanced elapsed_ms=    2934.741 process_s=   7.623 gate=PASS digits=2.328
+round 1 threads 10 sol-max/accurate elapsed_ms=    7126.972 process_s=  12.004 gate=PASS digits=3.702
+round 1 threads 10 sol-max/recommended elapsed_ms=    8812.482 process_s=  13.517 gate=PASS digits=3.885
+round 1 threads 10 sol-max/precise elapsed_ms=   12612.162 process_s=  17.488 gate=PASS digits=4.297
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2027.508974 process_s=   7.026 gate=PASS digits=2.103
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 3150.108576 process_s=   8.177 gate=PASS digits=2.74
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 4307.294607 process_s=   9.021 gate=PASS digits=3.67
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 5048.045158 process_s=   9.734 gate=PASS digits=3.825
+round 1 threads 10 astra-xhigh/strict elapsed_ms= 6683.532715 process_s=  11.783 gate=PASS digits=4.065
+round 1 threads 10 astra-max/economy elapsed_ms=    3664.038 process_s=   8.179 gate=PASS digits=2.267
+round 1 threads 10 astra-max/fast3 elapsed_ms=    6384.471 process_s=  10.894 gate=PASS digits=3.343
+round 1 threads 10 astra-max/balanced elapsed_ms=    7914.466 process_s=  12.433 gate=PASS digits=3.613
+round 1 threads 10 astra-max/conservative elapsed_ms=   12939.631 process_s=  17.722 gate=PASS digits=4.008
+round 1 threads 10 micm/L2      elapsed_ms=   13513.354 process_s=  16.897 gate=PASS digits=2.487
+round 1 threads 10 micm/L3      elapsed_ms=   19134.680 process_s=  22.509 gate=PASS digits=3.288
+round 1 threads 10 micm/L3b     elapsed_ms=   20161.716 process_s=  23.578 gate=PASS digits=3.425
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   15207.788 process_s=  20.042 gate=PASS digits=5.226
+round 2 threads 10 sol-max/fast elapsed_ms=    2588.110 process_s=   7.344 gate=PASS digits=2.123
+round 2 threads 10 sol-max/balanced elapsed_ms=    2953.107 process_s=   7.770 gate=PASS digits=2.328
+round 2 threads 10 sol-max/accurate elapsed_ms=    7209.245 process_s=  12.024 gate=PASS digits=3.702
+round 2 threads 10 sol-max/recommended elapsed_ms=    8827.878 process_s=  13.953 gate=PASS digits=3.885
+round 2 threads 10 sol-max/precise elapsed_ms=   12692.227 process_s=  17.471 gate=PASS digits=4.297
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2051.258564 process_s=   7.089 gate=PASS digits=2.103
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 3161.730528 process_s=   8.125 gate=PASS digits=2.74
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 4139.954090 process_s=   8.980 gate=PASS digits=3.67
+round 2 threads 10 astra-xhigh/recommended elapsed_ms= 5075.201273 process_s=   9.988 gate=PASS digits=3.825
+round 2 threads 10 astra-xhigh/strict elapsed_ms= 6683.161497 process_s=  11.742 gate=PASS digits=4.065
+round 2 threads 10 astra-max/economy elapsed_ms=    3682.211 process_s=   8.459 gate=PASS digits=2.267
+round 2 threads 10 astra-max/fast3 elapsed_ms=    6445.256 process_s=  11.014 gate=PASS digits=3.343
+round 2 threads 10 astra-max/balanced elapsed_ms=    7940.702 process_s=  12.804 gate=PASS digits=3.613
+round 2 threads 10 astra-max/conservative elapsed_ms=   13020.337 process_s=  17.788 gate=PASS digits=4.008
+round 2 threads 10 micm/L2      elapsed_ms=   13492.561 process_s=  16.941 gate=PASS digits=2.487
+round 2 threads 10 micm/L3      elapsed_ms=   19156.438 process_s=  22.579 gate=PASS digits=3.288
+round 2 threads 10 micm/L3b     elapsed_ms=   20218.259 process_s=  23.656 gate=PASS digits=3.425
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    3415.521 process_s=   7.911 gate=PASS digits=2.542
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    4448.060 process_s=   9.004 gate=PASS digits=2.8
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    6313.048 process_s=  11.102 gate=PASS digits=3.617
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=    8091.494 process_s=  12.549 gate=PASS digits=4.016
+round 3 threads 10 sol-max/recommended elapsed_ms=    8868.791 process_s=  13.595 gate=PASS digits=3.885
+round 3 threads 10 sol-max/precise elapsed_ms=   12742.787 process_s=  17.599 gate=PASS digits=4.297
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2036.663055 process_s=   6.929 gate=PASS digits=2.103
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 3195.694923 process_s=   8.041 gate=PASS digits=2.74
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 4125.484228 process_s=   9.057 gate=PASS digits=3.67
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 5108.584404 process_s=  10.088 gate=PASS digits=3.825
+round 3 threads 10 astra-xhigh/strict elapsed_ms= 6677.489519 process_s=  11.548 gate=PASS digits=4.065
+round 3 threads 10 astra-max/economy elapsed_ms=    3677.155 process_s=   8.187 gate=PASS digits=2.267
+round 3 threads 10 astra-max/fast3 elapsed_ms=    6431.650 process_s=  11.039 gate=PASS digits=3.343
+round 3 threads 10 astra-max/balanced elapsed_ms=    7930.475 process_s=  12.621 gate=PASS digits=3.613
+round 3 threads 10 astra-max/conservative elapsed_ms=   13042.425 process_s=  17.804 gate=PASS digits=4.008
+round 3 threads 10 micm/L2      elapsed_ms=   13553.228 process_s=  16.979 gate=PASS digits=2.487
+round 3 threads 10 micm/L3      elapsed_ms=   19809.321 process_s=  23.191 gate=PASS digits=3.288
+round 3 threads 10 micm/L3b     elapsed_ms=   21141.665 process_s=  24.513 gate=PASS digits=3.425
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    3463.369 process_s=   7.884 gate=PASS digits=2.542
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    4501.861 process_s=   8.940 gate=PASS digits=2.8
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    6384.954 process_s=  10.783 gate=PASS digits=3.617
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=    8200.500 process_s=  12.646 gate=PASS digits=4.016
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   15348.081 process_s=  20.008 gate=PASS digits=5.226
+round 3 threads 10 sol-max/fast elapsed_ms=    2625.070 process_s=   7.359 gate=PASS digits=2.123
+round 3 threads 10 sol-max/balanced elapsed_ms=    2984.586 process_s=   7.654 gate=PASS digits=2.328
+round 3 threads 10 sol-max/accurate elapsed_ms=    7282.393 process_s=  11.984 gate=PASS digits=3.702
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 5188.941002 process_s=   9.901 gate=PASS digits=3.825
+round 4 threads 10 astra-xhigh/strict elapsed_ms= 6783.704758 process_s=  11.503 gate=PASS digits=4.065
+round 4 threads 10 astra-max/economy elapsed_ms=    3707.542 process_s=   8.206 gate=PASS digits=2.267
+round 4 threads 10 astra-max/fast3 elapsed_ms=    6452.948 process_s=  10.974 gate=PASS digits=3.343
+round 4 threads 10 astra-max/balanced elapsed_ms=    8003.995 process_s=  12.521 gate=PASS digits=3.613
+round 4 threads 10 astra-max/conservative elapsed_ms=   13064.604 process_s=  17.856 gate=PASS digits=4.008
+round 4 threads 10 micm/L2      elapsed_ms=   13588.308 process_s=  17.069 gate=PASS digits=2.487
+round 4 threads 10 micm/L3      elapsed_ms=   19354.357 process_s=  22.865 gate=PASS digits=3.288
+round 4 threads 10 micm/L3b     elapsed_ms=   20458.494 process_s=  23.856 gate=PASS digits=3.425
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    3411.394 process_s=   7.996 gate=PASS digits=2.542
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    4445.860 process_s=   9.149 gate=PASS digits=2.8
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=    6395.099 process_s=  11.000 gate=PASS digits=3.617
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=    8237.697 process_s=  12.945 gate=PASS digits=4.016
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   15207.844 process_s=  20.013 gate=PASS digits=5.226
+round 4 threads 10 sol-max/fast elapsed_ms=    2589.393 process_s=   7.390 gate=PASS digits=2.123
+round 4 threads 10 sol-max/balanced elapsed_ms=    2948.527 process_s=   7.637 gate=PASS digits=2.328
+round 4 threads 10 sol-max/accurate elapsed_ms=    7186.068 process_s=  12.023 gate=PASS digits=3.702
+round 4 threads 10 sol-max/recommended elapsed_ms=    8772.661 process_s=  13.673 gate=PASS digits=3.885
+round 4 threads 10 sol-max/precise elapsed_ms=   12685.217 process_s=  17.562 gate=PASS digits=4.297
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 2034.934759 process_s=   6.891 gate=PASS digits=2.103
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 3156.678438 process_s=   8.194 gate=PASS digits=2.74
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 4163.938284 process_s=   9.079 gate=PASS digits=3.67
+round 5 threads 10 astra-max/balanced elapsed_ms=    7857.205 process_s=  12.377 gate=PASS digits=3.613
+round 5 threads 10 astra-max/conservative elapsed_ms=   12991.185 process_s=  17.784 gate=PASS digits=4.008
+round 5 threads 10 micm/L2      elapsed_ms=   13838.017 process_s=  17.333 gate=PASS digits=2.487
+round 5 threads 10 micm/L3      elapsed_ms=   19616.769 process_s=  23.035 gate=PASS digits=3.288
+round 5 threads 10 micm/L3b     elapsed_ms=   20728.327 process_s=  24.195 gate=PASS digits=3.425
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    3450.819 process_s=   7.949 gate=PASS digits=2.542
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    4504.533 process_s=   9.024 gate=PASS digits=2.8
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=    6392.185 process_s=  11.098 gate=PASS digits=3.617
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=    8208.943 process_s=  12.914 gate=PASS digits=4.016
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   15319.909 process_s=  20.031 gate=PASS digits=5.226
+round 5 threads 10 sol-max/fast elapsed_ms=    2611.736 process_s=   7.592 gate=PASS digits=2.123
+round 5 threads 10 sol-max/balanced elapsed_ms=    2968.106 process_s=   7.758 gate=PASS digits=2.328
+round 5 threads 10 sol-max/accurate elapsed_ms=    7265.940 process_s=  12.111 gate=PASS digits=3.702
+round 5 threads 10 sol-max/recommended elapsed_ms=    8955.968 process_s=  13.697 gate=PASS digits=3.885
+round 5 threads 10 sol-max/precise elapsed_ms=   12817.881 process_s=  17.806 gate=PASS digits=4.297
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 2055.927038 process_s=   7.075 gate=PASS digits=2.103
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 3184.283257 process_s=   8.250 gate=PASS digits=2.74
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 4165.225267 process_s=   8.948 gate=PASS digits=3.67
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 5137.541294 process_s=   9.910 gate=PASS digits=3.825
+round 5 threads 10 astra-xhigh/strict elapsed_ms= 6782.653570 process_s=  11.554 gate=PASS digits=4.065
+round 5 threads 10 astra-max/economy elapsed_ms=    3721.800 process_s=   8.263 gate=PASS digits=2.267
+round 5 threads 10 astra-max/fast3 elapsed_ms=    6494.871 process_s=  11.098 gate=PASS digits=3.343
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 3,415.5 | 3,411.4–3,463.4 | 7.9 | 2.54 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 4,448.1 | 4,425.8–4,504.5 | 9.0 | 2.80 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 6,385.0 | 6,252.0–6,395.1 | 11.0 | 3.62 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 8,200.5 | 8,056.0–8,237.7 | 12.6 | 4.02 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 15,207.8 | 15,062.6–15,348.1 | 20.0 | 5.23 |
+| sol-max/fast | 10 | 5 of 5 | 2,589.4 | 2,575.3–2,625.1 | 7.4 | 2.12 |
+| sol-max/balanced | 10 | 5 of 5 | 2,953.1 | 2,934.7–2,984.6 | 7.7 | 2.33 |
+| sol-max/accurate | 10 | 5 of 5 | 7,209.2 | 7,127.0–7,282.4 | 12.0 | 3.70 |
+| sol-max/recommended | 10 | 5 of 5 | 8,827.9 | 8,772.7–8,956.0 | 13.7 | 3.88 |
+| sol-max/precise | 10 | 5 of 5 | 12,692.2 | 12,612.2–12,817.9 | 17.6 | 4.30 |
+| astra-xhigh/fast | 10 | 5 of 5 | 2,036.7 | 2,027.5–2,055.9 | 7.0 | 2.10 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 3,161.7 | 3,150.1–3,195.7 | 8.2 | 2.74 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 4,163.9 | 4,125.5–4,307.3 | 9.0 | 3.67 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 5,108.6 | 5,048.0–5,188.9 | 9.9 | 3.83 |
+| astra-xhigh/strict | 10 | 5 of 5 | 6,683.5 | 6,677.5–6,783.7 | 11.6 | 4.07 |
+| astra-max/economy | 10 | 5 of 5 | 3,682.2 | 3,664.0–3,721.8 | 8.2 | 2.27 |
+| astra-max/fast3 | 10 | 5 of 5 | 6,445.3 | 6,384.5–6,494.9 | 11.0 | 3.34 |
+| astra-max/balanced | 10 | 5 of 5 | 7,930.5 | 7,857.2–8,004.0 | 12.5 | 3.61 |
+| astra-max/conservative | 10 | 5 of 5 | 13,020.3 | 12,939.6–13,064.6 | 17.8 | 4.01 |
+| micm/L2 | 10 | 5 of 5 | 13,553.2 | 13,492.6–13,838.0 | 17.0 | 2.49 |
+| micm/L3 | 10 | 5 of 5 | 19,354.4 | 19,134.7–19,809.3 | 22.9 | 3.29 |
+| micm/L3b | 10 | 5 of 5 | 20,458.5 | 20,161.7–21,141.7 | 23.9 | 3.42 |
+== disclosed-10000/diurnal-5min: 23:18:37
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    6636.327 process_s=  11.149 gate=PASS digits=3.3
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    7785.861 process_s=  12.260 gate=PASS digits=3.444
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=   10539.529 process_s=  15.177 gate=PASS digits=3.697
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=   13396.678 process_s=  18.197 gate=PASS digits=3.873
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   43224.214 process_s=  48.016 gate=PASS digits=4.659
+round 1 threads 10 sol-max/fast elapsed_ms=    4618.722 process_s=   9.432 gate=PASS digits=2.041
+round 1 threads 10 sol-max/balanced elapsed_ms=    4831.340 process_s=   9.730 gate=PASS digits=2.29
+round 1 threads 10 sol-max/accurate elapsed_ms=   10698.813 process_s=  15.719 gate=PASS digits=3.414
+round 1 threads 10 sol-max/recommended elapsed_ms=   14170.844 process_s=  19.145 gate=PASS digits=3.571
+round 1 threads 10 sol-max/precise elapsed_ms=   25194.400 process_s=  30.200 gate=PASS digits=4.251
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 4145.285606 process_s=   8.920 gate=PASS digits=2.041
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 5006.742001 process_s=   9.793 gate=PASS digits=3.163
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 9300.735712 process_s=  14.366 gate=PASS digits=3.448
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 9944.484949 process_s=  14.822 gate=PASS digits=3.448
+round 1 threads 10 astra-xhigh/strict elapsed_ms=10978.473663 process_s=  16.157 gate=PASS digits=4.823
+round 1 threads 10 astra-max/economy elapsed_ms=    7206.758 process_s=  12.197 gate=PASS digits=2.795
+round 1 threads 10 astra-max/fast3 elapsed_ms=    8172.971 process_s=  13.199 gate=PASS digits=3.139
+round 1 threads 10 astra-max/balanced elapsed_ms=   11230.433 process_s=  16.347 gate=PASS digits=3.449
+round 1 threads 10 astra-max/conservative elapsed_ms=   14456.899 process_s=  19.532 gate=PASS digits=3.867
+round 1 threads 10 micm/L2      elapsed_ms=   72352.611 process_s=  75.657 gate=PASS digits=3.513
+round 1 threads 10 micm/L3      elapsed_ms=   77850.494 process_s=  81.168 gate=PASS digits=4.292
+round 1 threads 10 micm/L3b     elapsed_ms=   78928.334 process_s=  82.221 gate=PASS digits=4.384
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   39755.484 process_s=  44.652 gate=PASS digits=4.659
+round 2 threads 10 sol-max/fast elapsed_ms=    4554.059 process_s=   9.571 gate=PASS digits=2.041
+round 2 threads 10 sol-max/balanced elapsed_ms=    4756.608 process_s=   9.552 gate=PASS digits=2.29
+round 2 threads 10 sol-max/accurate elapsed_ms=   10377.946 process_s=  15.201 gate=PASS digits=3.414
+round 2 threads 10 sol-max/recommended elapsed_ms=   13556.261 process_s=  18.422 gate=PASS digits=3.571
+round 2 threads 10 sol-max/precise elapsed_ms=   24464.312 process_s=  29.385 gate=PASS digits=4.251
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 4096.200228 process_s=   9.101 gate=PASS digits=2.041
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 4964.552641 process_s=   9.714 gate=PASS digits=3.163
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 9293.706417 process_s=  14.116 gate=PASS digits=3.448
+round 2 threads 10 astra-xhigh/recommended elapsed_ms=10333.557367 process_s=  15.192 gate=PASS digits=3.448
+round 2 threads 10 astra-xhigh/strict elapsed_ms=10955.350637 process_s=  15.966 gate=PASS digits=4.823
+round 2 threads 10 astra-max/economy elapsed_ms=    7204.669 process_s=  12.109 gate=PASS digits=2.795
+round 2 threads 10 astra-max/fast3 elapsed_ms=    8204.614 process_s=  13.391 gate=PASS digits=3.139
+round 2 threads 10 astra-max/balanced elapsed_ms=   11388.875 process_s=  16.289 gate=PASS digits=3.449
+round 2 threads 10 astra-max/conservative elapsed_ms=   14495.440 process_s=  19.615 gate=PASS digits=3.867
+round 2 threads 10 micm/L2      elapsed_ms=   71957.893 process_s=  75.254 gate=PASS digits=3.513
+round 2 threads 10 micm/L3      elapsed_ms=   77681.272 process_s=  80.970 gate=PASS digits=4.292
+round 2 threads 10 micm/L3b     elapsed_ms=   79504.491 process_s=  82.796 gate=PASS digits=4.384
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    6364.775 process_s=  10.811 gate=PASS digits=3.3
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    7420.389 process_s=  11.884 gate=PASS digits=3.444
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=   10129.879 process_s=  14.573 gate=PASS digits=3.697
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=   12872.705 process_s=  17.286 gate=PASS digits=3.873
+round 3 threads 10 sol-max/recommended elapsed_ms=   13914.045 process_s=  18.819 gate=PASS digits=3.571
+round 3 threads 10 sol-max/precise elapsed_ms=   24537.360 process_s=  29.447 gate=PASS digits=4.251
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 4107.876539 process_s=   8.951 gate=PASS digits=2.041
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 4977.041721 process_s=   9.736 gate=PASS digits=3.163
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 9234.015226 process_s=  14.236 gate=PASS digits=3.448
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 9905.030251 process_s=  14.778 gate=PASS digits=3.448
+round 3 threads 10 astra-xhigh/strict elapsed_ms=11001.385689 process_s=  15.762 gate=PASS digits=4.823
+round 3 threads 10 astra-max/economy elapsed_ms=    7249.373 process_s=  12.115 gate=PASS digits=2.795
+round 3 threads 10 astra-max/fast3 elapsed_ms=    8244.068 process_s=  13.110 gate=PASS digits=3.139
+round 3 threads 10 astra-max/balanced elapsed_ms=   11293.187 process_s=  16.419 gate=PASS digits=3.449
+round 3 threads 10 astra-max/conservative elapsed_ms=   14486.627 process_s=  19.642 gate=PASS digits=3.867
+round 3 threads 10 micm/L2      elapsed_ms=   72709.678 process_s=  76.021 gate=PASS digits=3.513
+round 3 threads 10 micm/L3      elapsed_ms=   78111.605 process_s=  81.406 gate=PASS digits=4.292
+round 3 threads 10 micm/L3b     elapsed_ms=   79977.690 process_s=  83.269 gate=PASS digits=4.384
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    6312.861 process_s=  10.795 gate=PASS digits=3.3
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    7464.902 process_s=  11.926 gate=PASS digits=3.444
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=   10017.588 process_s=  14.521 gate=PASS digits=3.697
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=   12828.799 process_s=  17.309 gate=PASS digits=3.873
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   41421.659 process_s=  46.107 gate=PASS digits=4.659
+round 3 threads 10 sol-max/fast elapsed_ms=    4659.189 process_s=   9.455 gate=PASS digits=2.041
+round 3 threads 10 sol-max/balanced elapsed_ms=    4853.856 process_s=   9.720 gate=PASS digits=2.29
+round 3 threads 10 sol-max/accurate elapsed_ms=   10617.181 process_s=  15.594 gate=PASS digits=3.414
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 9879.852057 process_s=  14.667 gate=PASS digits=3.448
+round 4 threads 10 astra-xhigh/strict elapsed_ms=10914.780378 process_s=  15.868 gate=PASS digits=4.823
+round 4 threads 10 astra-max/economy elapsed_ms=    7228.900 process_s=  12.186 gate=PASS digits=2.795
+round 4 threads 10 astra-max/fast3 elapsed_ms=    8215.900 process_s=  13.037 gate=PASS digits=3.139
+round 4 threads 10 astra-max/balanced elapsed_ms=   11440.959 process_s=  16.396 gate=PASS digits=3.449
+round 4 threads 10 astra-max/conservative elapsed_ms=   14516.521 process_s=  19.636 gate=PASS digits=3.867
+round 4 threads 10 micm/L2      elapsed_ms=   71675.248 process_s=  74.980 gate=PASS digits=3.513
+round 4 threads 10 micm/L3      elapsed_ms=   80889.671 process_s=  84.199 gate=PASS digits=4.292
+round 4 threads 10 micm/L3b     elapsed_ms=   81075.918 process_s=  84.400 gate=PASS digits=4.384
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    6381.668 process_s=  10.811 gate=PASS digits=3.3
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    7447.498 process_s=  12.169 gate=PASS digits=3.444
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=   10055.623 process_s=  14.714 gate=PASS digits=3.697
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=   12909.277 process_s=  17.310 gate=PASS digits=3.873
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   41809.971 process_s=  46.555 gate=PASS digits=4.659
+round 4 threads 10 sol-max/fast elapsed_ms=    4673.728 process_s=   9.489 gate=PASS digits=2.041
+round 4 threads 10 sol-max/balanced elapsed_ms=    4879.200 process_s=   9.841 gate=PASS digits=2.29
+round 4 threads 10 sol-max/accurate elapsed_ms=   10696.460 process_s=  15.689 gate=PASS digits=3.414
+round 4 threads 10 sol-max/recommended elapsed_ms=   14337.262 process_s=  19.329 gate=PASS digits=3.571
+round 4 threads 10 sol-max/precise elapsed_ms=   24997.492 process_s=  30.113 gate=PASS digits=4.251
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 4171.504259 process_s=   8.912 gate=PASS digits=2.041
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 4990.903854 process_s=   9.961 gate=PASS digits=3.163
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 9247.669935 process_s=  14.306 gate=PASS digits=3.448
+round 5 threads 10 astra-max/balanced elapsed_ms=   11257.580 process_s=  16.221 gate=PASS digits=3.449
+round 5 threads 10 astra-max/conservative elapsed_ms=   14470.126 process_s=  19.496 gate=PASS digits=3.867
+round 5 threads 10 micm/L2      elapsed_ms=   71738.096 process_s=  75.014 gate=PASS digits=3.513
+round 5 threads 10 micm/L3      elapsed_ms=   78242.467 process_s=  81.504 gate=PASS digits=4.292
+round 5 threads 10 micm/L3b     elapsed_ms=   79746.359 process_s=  83.008 gate=PASS digits=4.384
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    6414.558 process_s=  10.887 gate=PASS digits=3.3
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    7375.961 process_s=  11.850 gate=PASS digits=3.444
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=   10003.642 process_s=  14.560 gate=PASS digits=3.697
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=   12854.856 process_s=  17.319 gate=PASS digits=3.873
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   41428.061 process_s=  46.152 gate=PASS digits=4.659
+round 5 threads 10 sol-max/fast elapsed_ms=    4691.341 process_s=   9.446 gate=PASS digits=2.041
+round 5 threads 10 sol-max/balanced elapsed_ms=    4866.186 process_s=   9.762 gate=PASS digits=2.29
+round 5 threads 10 sol-max/accurate elapsed_ms=   10653.178 process_s=  15.712 gate=PASS digits=3.414
+round 5 threads 10 sol-max/recommended elapsed_ms=   14068.082 process_s=  19.122 gate=PASS digits=3.571
+round 5 threads 10 sol-max/precise elapsed_ms=   24961.979 process_s=  30.047 gate=PASS digits=4.251
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 4137.091398 process_s=   8.880 gate=PASS digits=2.041
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 4963.595867 process_s=   9.714 gate=PASS digits=3.163
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 9204.393864 process_s=  14.214 gate=PASS digits=3.448
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 9984.215021 process_s=  14.818 gate=PASS digits=3.448
+round 5 threads 10 astra-xhigh/strict elapsed_ms=10873.870611 process_s=  15.825 gate=PASS digits=4.823
+round 5 threads 10 astra-max/economy elapsed_ms=    7179.231 process_s=  12.325 gate=PASS digits=2.795
+round 5 threads 10 astra-max/fast3 elapsed_ms=    8210.973 process_s=  13.049 gate=PASS digits=3.139
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 6,381.7 | 6,312.9–6,636.3 | 10.8 | 3.30 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 7,447.5 | 7,376.0–7,785.9 | 11.9 | 3.44 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 10,055.6 | 10,003.6–10,539.5 | 14.6 | 3.70 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 12,872.7 | 12,828.8–13,396.7 | 17.3 | 3.87 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 41,428.1 | 39,755.5–43,224.2 | 46.2 | 4.66 |
+| sol-max/fast | 10 | 5 of 5 | 4,659.2 | 4,554.1–4,691.3 | 9.5 | 2.04 |
+| sol-max/balanced | 10 | 5 of 5 | 4,853.9 | 4,756.6–4,879.2 | 9.7 | 2.29 |
+| sol-max/accurate | 10 | 5 of 5 | 10,653.2 | 10,377.9–10,698.8 | 15.7 | 3.41 |
+| sol-max/recommended | 10 | 5 of 5 | 14,068.1 | 13,556.3–14,337.3 | 19.1 | 3.57 |
+| sol-max/precise | 10 | 5 of 5 | 24,962.0 | 24,464.3–25,194.4 | 30.0 | 4.25 |
+| astra-xhigh/fast | 10 | 5 of 5 | 4,137.1 | 4,096.2–4,171.5 | 8.9 | 2.04 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 4,977.0 | 4,963.6–5,006.7 | 9.7 | 3.16 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 9,247.7 | 9,204.4–9,300.7 | 14.2 | 3.45 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 9,944.5 | 9,879.9–10,333.6 | 14.8 | 3.45 |
+| astra-xhigh/strict | 10 | 5 of 5 | 10,955.4 | 10,873.9–11,001.4 | 15.9 | 4.82 |
+| astra-max/economy | 10 | 5 of 5 | 7,206.8 | 7,179.2–7,249.4 | 12.2 | 2.79 |
+| astra-max/fast3 | 10 | 5 of 5 | 8,211.0 | 8,173.0–8,244.1 | 13.1 | 3.14 |
+| astra-max/balanced | 10 | 5 of 5 | 11,293.2 | 11,230.4–11,441.0 | 16.3 | 3.45 |
+| astra-max/conservative | 10 | 5 of 5 | 14,486.6 | 14,456.9–14,516.5 | 19.6 | 3.87 |
+| micm/L2 | 10 | 5 of 5 | 71,957.9 | 71,675.2–72,709.7 | 75.3 | 3.51 |
+| micm/L3 | 10 | 5 of 5 | 78,111.6 | 77,681.3–80,889.7 | 81.4 | 4.29 |
+| micm/L3b | 10 | 5 of 5 | 79,746.4 | 78,928.3–81,075.9 | 83.0 | 4.38 |
+== disclosed-10000/polluted-10min: 00:14:51
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    5511.596 process_s=  10.045 gate=PASS digits=2.843
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    7102.391 process_s=  11.648 gate=PASS digits=3.041
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    9789.613 process_s=  14.372 gate=PASS digits=3.343
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=   14254.245 process_s=  18.969 gate=PASS digits=3.707
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   33345.059 process_s=  38.109 gate=PASS digits=4.998
+round 1 threads 10 sol-max/fast elapsed_ms=    3760.648 process_s=   8.460 gate=PASS digits=2.401
+round 1 threads 10 sol-max/balanced elapsed_ms=    4528.167 process_s=   9.375 gate=PASS digits=2.566
+round 1 threads 10 sol-max/accurate elapsed_ms=   12597.169 process_s=  17.523 gate=PASS digits=3.344
+round 1 threads 10 sol-max/recommended elapsed_ms=   16281.595 process_s=  21.080 gate=PASS digits=3.759
+round 1 threads 10 sol-max/precise elapsed_ms=   23838.076 process_s=  28.706 gate=PASS digits=4.428
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 3298.908472 process_s=   8.079 gate=PASS digits=2.401
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 5041.385889 process_s=   9.844 gate=PASS digits=2.645
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 6969.550133 process_s=  11.731 gate=PASS digits=3.927
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 8950.495481 process_s=  13.721 gate=PASS digits=4.142
+round 1 threads 10 astra-xhigh/strict elapsed_ms=11218.133688 process_s=  16.196 gate=PASS digits=4.579
+round 1 threads 10 astra-max/economy elapsed_ms=    5991.826 process_s=  10.633 gate=PASS digits=2.456
+round 1 threads 10 astra-max/fast3 elapsed_ms=    8627.878 process_s=  13.293 gate=PASS digits=3.086
+round 1 threads 10 astra-max/balanced elapsed_ms=    9898.048 process_s=  14.631 gate=PASS digits=3.433
+round 1 threads 10 astra-max/conservative elapsed_ms=   14613.380 process_s=  19.514 gate=PASS digits=3.947
+round 1 threads 10 micm/L2      elapsed_ms=   37686.953 process_s=  41.062 gate=PASS digits=3.288
+round 1 threads 10 micm/L3      elapsed_ms=   45590.663 process_s=  48.867 gate=PASS digits=3.888
+round 1 threads 10 micm/L3b     elapsed_ms=   46338.339 process_s=  49.632 gate=PASS digits=3.983
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   31611.652 process_s=  36.201 gate=PASS digits=4.998
+round 2 threads 10 sol-max/fast elapsed_ms=    3699.884 process_s=   8.807 gate=PASS digits=2.401
+round 2 threads 10 sol-max/balanced elapsed_ms=    4483.839 process_s=   9.130 gate=PASS digits=2.566
+round 2 threads 10 sol-max/accurate elapsed_ms=   12298.886 process_s=  17.032 gate=PASS digits=3.344
+round 2 threads 10 sol-max/recommended elapsed_ms=   16028.579 process_s=  21.233 gate=PASS digits=3.759
+round 2 threads 10 sol-max/precise elapsed_ms=   23569.350 process_s=  28.516 gate=PASS digits=4.428
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 3310.342073 process_s=   8.321 gate=PASS digits=2.401
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 5015.082121 process_s=   9.947 gate=PASS digits=2.645
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 7003.847599 process_s=  11.891 gate=PASS digits=3.927
+round 2 threads 10 astra-xhigh/recommended elapsed_ms= 8972.054243 process_s=  14.025 gate=PASS digits=4.142
+round 2 threads 10 astra-xhigh/strict elapsed_ms=11308.653116 process_s=  16.461 gate=PASS digits=4.579
+round 2 threads 10 astra-max/economy elapsed_ms=    6074.058 process_s=  10.757 gate=PASS digits=2.456
+round 2 threads 10 astra-max/fast3 elapsed_ms=    8695.675 process_s=  13.648 gate=PASS digits=3.086
+round 2 threads 10 astra-max/balanced elapsed_ms=   10043.875 process_s=  14.914 gate=PASS digits=3.433
+round 2 threads 10 astra-max/conservative elapsed_ms=   14804.604 process_s=  19.620 gate=PASS digits=3.947
+round 2 threads 10 micm/L2      elapsed_ms=   37893.980 process_s=  41.251 gate=PASS digits=3.288
+round 2 threads 10 micm/L3      elapsed_ms=   46670.572 process_s=  49.966 gate=PASS digits=3.888
+round 2 threads 10 micm/L3b     elapsed_ms=   45872.366 process_s=  49.186 gate=PASS digits=3.983
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    5256.389 process_s=   9.934 gate=PASS digits=2.843
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    6871.116 process_s=  11.366 gate=PASS digits=3.041
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    9422.553 process_s=  13.887 gate=PASS digits=3.343
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=   13764.028 process_s=  18.341 gate=PASS digits=3.707
+round 3 threads 10 sol-max/recommended elapsed_ms=   15973.869 process_s=  20.742 gate=PASS digits=3.759
+round 3 threads 10 sol-max/precise elapsed_ms=   23352.846 process_s=  28.330 gate=PASS digits=4.428
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 3293.607235 process_s=   8.279 gate=PASS digits=2.401
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 5016.388893 process_s=  10.066 gate=PASS digits=2.645
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 6986.492395 process_s=  11.983 gate=PASS digits=3.927
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 8984.197617 process_s=  13.766 gate=PASS digits=4.142
+round 3 threads 10 astra-xhigh/strict elapsed_ms=11205.598116 process_s=  16.307 gate=PASS digits=4.579
+round 3 threads 10 astra-max/economy elapsed_ms=    6063.353 process_s=  10.824 gate=PASS digits=2.456
+round 3 threads 10 astra-max/fast3 elapsed_ms=    8682.230 process_s=  13.426 gate=PASS digits=3.086
+round 3 threads 10 astra-max/balanced elapsed_ms=    9991.563 process_s=  14.724 gate=PASS digits=3.433
+round 3 threads 10 astra-max/conservative elapsed_ms=   14733.616 process_s=  19.587 gate=PASS digits=3.947
+round 3 threads 10 micm/L2      elapsed_ms=   37685.624 process_s=  41.071 gate=PASS digits=3.288
+round 3 threads 10 micm/L3      elapsed_ms=   46560.506 process_s=  49.844 gate=PASS digits=3.888
+round 3 threads 10 micm/L3b     elapsed_ms=   45689.263 process_s=  48.952 gate=PASS digits=3.983
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    5258.120 process_s=   9.778 gate=PASS digits=2.843
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    6830.127 process_s=  11.438 gate=PASS digits=3.041
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    9393.707 process_s=  14.039 gate=PASS digits=3.343
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=   13768.705 process_s=  18.424 gate=PASS digits=3.707
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   32333.704 process_s=  37.103 gate=PASS digits=4.998
+round 3 threads 10 sol-max/fast elapsed_ms=    3770.335 process_s=   8.630 gate=PASS digits=2.401
+round 3 threads 10 sol-max/balanced elapsed_ms=    4532.278 process_s=   9.374 gate=PASS digits=2.566
+round 3 threads 10 sol-max/accurate elapsed_ms=   12621.064 process_s=  17.520 gate=PASS digits=3.344
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 9082.600832 process_s=  14.238 gate=PASS digits=4.142
+round 4 threads 10 astra-xhigh/strict elapsed_ms=11265.609503 process_s=  16.348 gate=PASS digits=4.579
+round 4 threads 10 astra-max/economy elapsed_ms=    6078.617 process_s=  10.851 gate=PASS digits=2.456
+round 4 threads 10 astra-max/fast3 elapsed_ms=    8719.529 process_s=  13.483 gate=PASS digits=3.086
+round 4 threads 10 astra-max/balanced elapsed_ms=   10011.067 process_s=  14.842 gate=PASS digits=3.433
+round 4 threads 10 astra-max/conservative elapsed_ms=   14751.284 process_s=  20.070 gate=PASS digits=3.947
+round 4 threads 10 micm/L2      elapsed_ms=   37820.452 process_s=  41.167 gate=PASS digits=3.288
+round 4 threads 10 micm/L3      elapsed_ms=   45894.314 process_s=  49.200 gate=PASS digits=3.888
+round 4 threads 10 micm/L3b     elapsed_ms=   46712.040 process_s=  50.094 gate=PASS digits=3.983
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    5338.596 process_s=   9.897 gate=PASS digits=2.843
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    6896.994 process_s=  11.373 gate=PASS digits=3.041
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=    9421.888 process_s=  13.958 gate=PASS digits=3.343
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=   13960.561 process_s=  18.509 gate=PASS digits=3.707
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   32603.103 process_s=  37.263 gate=PASS digits=4.998
+round 4 threads 10 sol-max/fast elapsed_ms=    3751.953 process_s=   8.528 gate=PASS digits=2.401
+round 4 threads 10 sol-max/balanced elapsed_ms=    4537.172 process_s=   9.388 gate=PASS digits=2.566
+round 4 threads 10 sol-max/accurate elapsed_ms=   12602.077 process_s=  17.707 gate=PASS digits=3.344
+round 4 threads 10 sol-max/recommended elapsed_ms=   16337.768 process_s=  21.249 gate=PASS digits=3.759
+round 4 threads 10 sol-max/precise elapsed_ms=   23849.460 process_s=  28.906 gate=PASS digits=4.428
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 3321.002960 process_s=   8.467 gate=PASS digits=2.401
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 5030.512094 process_s=   9.792 gate=PASS digits=2.645
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 6979.376793 process_s=  11.962 gate=PASS digits=3.927
+round 5 threads 10 astra-max/balanced elapsed_ms=    9992.414 process_s=  14.903 gate=PASS digits=3.433
+round 5 threads 10 astra-max/conservative elapsed_ms=   14727.581 process_s=  19.685 gate=PASS digits=3.947
+round 5 threads 10 micm/L2      elapsed_ms=   38296.961 process_s=  41.604 gate=PASS digits=3.288
+round 5 threads 10 micm/L3      elapsed_ms=   45728.255 process_s=  49.073 gate=PASS digits=3.888
+round 5 threads 10 micm/L3b     elapsed_ms=   45861.876 process_s=  49.138 gate=PASS digits=3.983
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    5271.129 process_s=  10.061 gate=PASS digits=2.843
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    6846.743 process_s=  11.503 gate=PASS digits=3.041
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=    9396.054 process_s=  14.017 gate=PASS digits=3.343
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=   13752.614 process_s=  18.314 gate=PASS digits=3.707
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   32559.291 process_s=  37.160 gate=PASS digits=4.998
+round 5 threads 10 sol-max/fast elapsed_ms=    3757.518 process_s=   8.396 gate=PASS digits=2.401
+round 5 threads 10 sol-max/balanced elapsed_ms=    4526.750 process_s=   9.253 gate=PASS digits=2.566
+round 5 threads 10 sol-max/accurate elapsed_ms=   12556.859 process_s=  17.534 gate=PASS digits=3.344
+round 5 threads 10 sol-max/recommended elapsed_ms=   16285.064 process_s=  21.260 gate=PASS digits=3.759
+round 5 threads 10 sol-max/precise elapsed_ms=   23757.014 process_s=  28.659 gate=PASS digits=4.428
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 3313.237429 process_s=   8.345 gate=PASS digits=2.401
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 5013.165712 process_s=   9.920 gate=PASS digits=2.645
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 7106.275082 process_s=  11.950 gate=PASS digits=3.927
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 9122.130871 process_s=  13.990 gate=PASS digits=4.142
+round 5 threads 10 astra-xhigh/strict elapsed_ms=11323.550701 process_s=  16.169 gate=PASS digits=4.579
+round 5 threads 10 astra-max/economy elapsed_ms=    6116.323 process_s=  10.752 gate=PASS digits=2.456
+round 5 threads 10 astra-max/fast3 elapsed_ms=    8706.547 process_s=  13.493 gate=PASS digits=3.086
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 5,271.1 | 5,256.4–5,511.6 | 9.9 | 2.84 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 6,871.1 | 6,830.1–7,102.4 | 11.4 | 3.04 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 9,421.9 | 9,393.7–9,789.6 | 14.0 | 3.34 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 13,768.7 | 13,752.6–14,254.2 | 18.4 | 3.71 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 32,559.3 | 31,611.7–33,345.1 | 37.2 | 5.00 |
+| sol-max/fast | 10 | 5 of 5 | 3,757.5 | 3,699.9–3,770.3 | 8.5 | 2.40 |
+| sol-max/balanced | 10 | 5 of 5 | 4,528.2 | 4,483.8–4,537.2 | 9.4 | 2.57 |
+| sol-max/accurate | 10 | 5 of 5 | 12,597.2 | 12,298.9–12,621.1 | 17.5 | 3.34 |
+| sol-max/recommended | 10 | 5 of 5 | 16,281.6 | 15,973.9–16,337.8 | 21.2 | 3.76 |
+| sol-max/precise | 10 | 5 of 5 | 23,757.0 | 23,352.8–23,849.5 | 28.7 | 4.43 |
+| astra-xhigh/fast | 10 | 5 of 5 | 3,310.3 | 3,293.6–3,321.0 | 8.3 | 2.40 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 5,016.4 | 5,013.2–5,041.4 | 9.9 | 2.65 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 6,986.5 | 6,969.6–7,106.3 | 11.9 | 3.93 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 8,984.2 | 8,950.5–9,122.1 | 14.0 | 4.14 |
+| astra-xhigh/strict | 10 | 5 of 5 | 11,265.6 | 11,205.6–11,323.6 | 16.3 | 4.58 |
+| astra-max/economy | 10 | 5 of 5 | 6,074.1 | 5,991.8–6,116.3 | 10.8 | 2.46 |
+| astra-max/fast3 | 10 | 5 of 5 | 8,695.7 | 8,627.9–8,719.5 | 13.5 | 3.09 |
+| astra-max/balanced | 10 | 5 of 5 | 9,992.4 | 9,898.0–10,043.9 | 14.8 | 3.43 |
+| astra-max/conservative | 10 | 5 of 5 | 14,733.6 | 14,613.4–14,804.6 | 19.6 | 3.95 |
+| micm/L2 | 10 | 5 of 5 | 37,820.5 | 37,685.6–38,297.0 | 41.2 | 3.29 |
+| micm/L3 | 10 | 5 of 5 | 45,894.3 | 45,590.7–46,670.6 | 49.2 | 3.89 |
+| micm/L3b | 10 | 5 of 5 | 45,872.4 | 45,689.3–46,712.0 | 49.2 | 3.98 |
+== disclosed-10000/tier1-30s: 01:01:28
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    2218.203 process_s=   4.523 gate=PASS digits=5.741
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    2287.259 process_s=   4.530 gate=PASS digits=5.852
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    2363.167 process_s=   4.642 gate=PASS digits=5.935
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=    2785.834 process_s=   5.102 gate=PASS digits=5.959
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=    3443.308 process_s=   5.784 gate=PASS digits=7.993
+round 1 threads 10 sol-max/fast elapsed_ms=    1543.005 process_s=   4.072 gate=PASS digits=5.062
+round 1 threads 10 sol-max/balanced elapsed_ms=    1583.302 process_s=   4.400 gate=PASS digits=5.323
+round 1 threads 10 sol-max/accurate elapsed_ms=    1980.922 process_s=   4.728 gate=PASS digits=5.822
+round 1 threads 10 sol-max/recommended elapsed_ms=    2206.228 process_s=   4.802 gate=PASS digits=5.842
+round 1 threads 10 sol-max/precise elapsed_ms=    2535.616 process_s=   5.007 gate=PASS digits=5.862
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 1394.761801 process_s=   3.945 gate=PASS digits=5.029
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 1490.051985 process_s=   4.201 gate=PASS digits=5.486
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 3275.074005 process_s=   5.837 gate=PASS digits=6.085
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 3443.212986 process_s=   6.152 gate=PASS digits=6.334
+round 1 threads 10 astra-xhigh/strict elapsed_ms= 3619.998217 process_s=   6.335 gate=PASS digits=6.663
+round 1 threads 10 astra-max/economy elapsed_ms=    2167.281 process_s=   5.043 gate=PASS digits=5.357
+round 1 threads 10 astra-max/fast3 elapsed_ms=    2321.709 process_s=   5.900 gate=PASS digits=5.463
+round 1 threads 10 astra-max/balanced elapsed_ms=    2333.341 process_s=   5.400 gate=PASS digits=5.463
+round 1 threads 10 astra-max/conservative elapsed_ms=    2324.484 process_s=   5.382 gate=PASS digits=5.463
+round 1 threads 10 micm/L2      elapsed_ms=   22553.101 process_s=  23.605 gate=PASS digits=5.546
+round 1 threads 10 micm/L3      elapsed_ms=   24052.250 process_s=  25.064 gate=PASS digits=6.394
+round 1 threads 10 micm/L3b     elapsed_ms=   24129.153 process_s=  25.116 gate=PASS digits=6.42
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=    3498.921 process_s=   5.824 gate=PASS digits=7.993
+round 2 threads 10 sol-max/fast elapsed_ms=    1542.452 process_s=   4.176 gate=PASS digits=5.062
+round 2 threads 10 sol-max/balanced elapsed_ms=    1589.684 process_s=   4.176 gate=PASS digits=5.323
+round 2 threads 10 sol-max/accurate elapsed_ms=    1978.894 process_s=   4.503 gate=PASS digits=5.822
+round 2 threads 10 sol-max/recommended elapsed_ms=    2197.104 process_s=   4.728 gate=PASS digits=5.842
+round 2 threads 10 sol-max/precise elapsed_ms=    2533.653 process_s=   5.006 gate=PASS digits=5.862
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 1396.867275 process_s=   4.115 gate=PASS digits=5.029
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 1494.045973 process_s=   4.135 gate=PASS digits=5.486
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 3310.801744 process_s=   5.988 gate=PASS digits=6.085
+round 2 threads 10 astra-xhigh/recommended elapsed_ms= 3427.416801 process_s=   6.142 gate=PASS digits=6.334
+round 2 threads 10 astra-xhigh/strict elapsed_ms= 3610.512733 process_s=   6.157 gate=PASS digits=6.663
+round 2 threads 10 astra-max/economy elapsed_ms=    2170.056 process_s=   5.485 gate=PASS digits=5.357
+round 2 threads 10 astra-max/fast3 elapsed_ms=    2335.075 process_s=   5.766 gate=PASS digits=5.463
+round 2 threads 10 astra-max/balanced elapsed_ms=    2329.154 process_s=   5.429 gate=PASS digits=5.463
+round 2 threads 10 astra-max/conservative elapsed_ms=    2327.322 process_s=   5.383 gate=PASS digits=5.463
+round 2 threads 10 micm/L2      elapsed_ms=   22663.463 process_s=  23.651 gate=PASS digits=5.546
+round 2 threads 10 micm/L3      elapsed_ms=   23913.130 process_s=  24.976 gate=PASS digits=6.394
+round 2 threads 10 micm/L3b     elapsed_ms=   24097.866 process_s=  25.119 gate=PASS digits=6.42
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    2192.272 process_s=   4.558 gate=PASS digits=5.741
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    2260.051 process_s=   4.685 gate=PASS digits=5.852
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    2374.982 process_s=   4.922 gate=PASS digits=5.935
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=    2777.535 process_s=   5.270 gate=PASS digits=5.959
+round 3 threads 10 sol-max/recommended elapsed_ms=    2187.606 process_s=   4.686 gate=PASS digits=5.842
+round 3 threads 10 sol-max/precise elapsed_ms=    2513.769 process_s=   5.009 gate=PASS digits=5.862
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 1398.763895 process_s=   4.233 gate=PASS digits=5.029
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 1518.199921 process_s=   4.465 gate=PASS digits=5.486
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 3283.502340 process_s=   6.231 gate=PASS digits=6.085
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 3581.586599 process_s=   6.277 gate=PASS digits=6.334
+round 3 threads 10 astra-xhigh/strict elapsed_ms= 3601.008654 process_s=   6.301 gate=PASS digits=6.663
+round 3 threads 10 astra-max/economy elapsed_ms=    2151.119 process_s=   5.252 gate=PASS digits=5.357
+round 3 threads 10 astra-max/fast3 elapsed_ms=    2312.238 process_s=   5.308 gate=PASS digits=5.463
+round 3 threads 10 astra-max/balanced elapsed_ms=    2300.669 process_s=   5.438 gate=PASS digits=5.463
+round 3 threads 10 astra-max/conservative elapsed_ms=    2309.101 process_s=   5.383 gate=PASS digits=5.463
+round 3 threads 10 micm/L2      elapsed_ms=   22807.296 process_s=  23.848 gate=PASS digits=5.546
+round 3 threads 10 micm/L3      elapsed_ms=   23643.102 process_s=  24.671 gate=PASS digits=6.394
+round 3 threads 10 micm/L3b     elapsed_ms=   24344.137 process_s=  25.354 gate=PASS digits=6.42
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    2173.447 process_s=   4.746 gate=PASS digits=5.741
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    2260.626 process_s=   4.738 gate=PASS digits=5.852
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    2344.140 process_s=   4.660 gate=PASS digits=5.935
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=    2789.802 process_s=   5.102 gate=PASS digits=5.959
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=    3427.334 process_s=   5.974 gate=PASS digits=7.993
+round 3 threads 10 sol-max/fast elapsed_ms=    1511.467 process_s=   4.018 gate=PASS digits=5.062
+round 3 threads 10 sol-max/balanced elapsed_ms=    1556.911 process_s=   4.063 gate=PASS digits=5.323
+round 3 threads 10 sol-max/accurate elapsed_ms=    1946.073 process_s=   4.494 gate=PASS digits=5.822
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 3447.031021 process_s=   6.338 gate=PASS digits=6.334
+round 4 threads 10 astra-xhigh/strict elapsed_ms= 3611.794949 process_s=   6.206 gate=PASS digits=6.663
+round 4 threads 10 astra-max/economy elapsed_ms=    2158.587 process_s=   5.533 gate=PASS digits=5.357
+round 4 threads 10 astra-max/fast3 elapsed_ms=    2306.786 process_s=   5.442 gate=PASS digits=5.463
+round 4 threads 10 astra-max/balanced elapsed_ms=    2307.413 process_s=   5.486 gate=PASS digits=5.463
+round 4 threads 10 astra-max/conservative elapsed_ms=    2312.515 process_s=   5.428 gate=PASS digits=5.463
+round 4 threads 10 micm/L2      elapsed_ms=   22675.593 process_s=  23.735 gate=PASS digits=5.546
+round 4 threads 10 micm/L3      elapsed_ms=   23670.613 process_s=  24.734 gate=PASS digits=6.394
+round 4 threads 10 micm/L3b     elapsed_ms=   24150.849 process_s=  25.159 gate=PASS digits=6.42
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    2186.442 process_s=   4.551 gate=PASS digits=5.741
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    2261.946 process_s=   4.718 gate=PASS digits=5.852
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=    2346.487 process_s=   4.741 gate=PASS digits=5.935
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=    2772.805 process_s=   5.121 gate=PASS digits=5.959
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=    3425.971 process_s=   5.754 gate=PASS digits=7.993
+round 4 threads 10 sol-max/fast elapsed_ms=    1508.927 process_s=   4.055 gate=PASS digits=5.062
+round 4 threads 10 sol-max/balanced elapsed_ms=    1558.681 process_s=   4.113 gate=PASS digits=5.323
+round 4 threads 10 sol-max/accurate elapsed_ms=    1949.972 process_s=   4.518 gate=PASS digits=5.822
+round 4 threads 10 sol-max/recommended elapsed_ms=    2172.362 process_s=   4.886 gate=PASS digits=5.842
+round 4 threads 10 sol-max/precise elapsed_ms=    2505.012 process_s=   5.235 gate=PASS digits=5.862
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 1392.950773 process_s=   4.219 gate=PASS digits=5.029
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 1488.276482 process_s=   4.180 gate=PASS digits=5.486
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 3280.450821 process_s=   6.106 gate=PASS digits=6.085
+round 5 threads 10 astra-max/balanced elapsed_ms=    2307.495 process_s=   5.298 gate=PASS digits=5.463
+round 5 threads 10 astra-max/conservative elapsed_ms=    2299.173 process_s=   5.658 gate=PASS digits=5.463
+round 5 threads 10 micm/L2      elapsed_ms=   23073.303 process_s=  24.065 gate=PASS digits=5.546
+round 5 threads 10 micm/L3      elapsed_ms=   23625.476 process_s=  24.623 gate=PASS digits=6.394
+round 5 threads 10 micm/L3b     elapsed_ms=   23984.791 process_s=  24.987 gate=PASS digits=6.42
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    2173.049 process_s=   4.537 gate=PASS digits=5.741
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    2260.983 process_s=   4.547 gate=PASS digits=5.852
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=    2337.435 process_s=   4.665 gate=PASS digits=5.935
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=    2772.748 process_s=   5.182 gate=PASS digits=5.959
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=    3417.772 process_s=   5.856 gate=PASS digits=7.993
+round 5 threads 10 sol-max/fast elapsed_ms=    1508.219 process_s=   4.006 gate=PASS digits=5.062
+round 5 threads 10 sol-max/balanced elapsed_ms=    1558.451 process_s=   4.323 gate=PASS digits=5.323
+round 5 threads 10 sol-max/accurate elapsed_ms=    1949.647 process_s=   4.553 gate=PASS digits=5.822
+round 5 threads 10 sol-max/recommended elapsed_ms=    2172.141 process_s=   4.859 gate=PASS digits=5.842
+round 5 threads 10 sol-max/precise elapsed_ms=    2505.910 process_s=   5.063 gate=PASS digits=5.862
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 1400.002718 process_s=   3.885 gate=PASS digits=5.029
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 1495.878458 process_s=   4.210 gate=PASS digits=5.486
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 3273.253679 process_s=   5.866 gate=PASS digits=6.085
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 3416.903019 process_s=   6.151 gate=PASS digits=6.334
+round 5 threads 10 astra-xhigh/strict elapsed_ms= 3585.553408 process_s=   6.181 gate=PASS digits=6.663
+round 5 threads 10 astra-max/economy elapsed_ms=    2155.019 process_s=   5.189 gate=PASS digits=5.357
+round 5 threads 10 astra-max/fast3 elapsed_ms=    2333.119 process_s=   5.298 gate=PASS digits=5.463
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 2,186.4 | 2,173.0–2,218.2 | 4.6 | 5.74 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 2,261.0 | 2,260.1–2,287.3 | 4.7 | 5.85 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 2,346.5 | 2,337.4–2,375.0 | 4.7 | 5.93 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 2,777.5 | 2,772.7–2,789.8 | 5.1 | 5.96 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 3,427.3 | 3,417.8–3,498.9 | 5.8 | 7.99 |
+| sol-max/fast | 10 | 5 of 5 | 1,511.5 | 1,508.2–1,543.0 | 4.1 | 5.06 |
+| sol-max/balanced | 10 | 5 of 5 | 1,558.7 | 1,556.9–1,589.7 | 4.2 | 5.32 |
+| sol-max/accurate | 10 | 5 of 5 | 1,950.0 | 1,946.1–1,980.9 | 4.5 | 5.82 |
+| sol-max/recommended | 10 | 5 of 5 | 2,187.6 | 2,172.1–2,206.2 | 4.8 | 5.84 |
+| sol-max/precise | 10 | 5 of 5 | 2,513.8 | 2,505.0–2,535.6 | 5.0 | 5.86 |
+| astra-xhigh/fast | 10 | 5 of 5 | 1,396.9 | 1,393.0–1,400.0 | 4.1 | 5.03 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 1,494.0 | 1,488.3–1,518.2 | 4.2 | 5.49 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 3,280.5 | 3,273.3–3,310.8 | 6.0 | 6.08 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 3,443.2 | 3,416.9–3,581.6 | 6.2 | 6.33 |
+| astra-xhigh/strict | 10 | 5 of 5 | 3,610.5 | 3,585.6–3,620.0 | 6.2 | 6.66 |
+| astra-max/economy | 10 | 5 of 5 | 2,158.6 | 2,151.1–2,170.1 | 5.3 | 5.36 |
+| astra-max/fast3 | 10 | 5 of 5 | 2,321.7 | 2,306.8–2,335.1 | 5.4 | 5.46 |
+| astra-max/balanced | 10 | 5 of 5 | 2,307.5 | 2,300.7–2,333.3 | 5.4 | 5.46 |
+| astra-max/conservative | 10 | 5 of 5 | 2,312.5 | 2,299.2–2,327.3 | 5.4 | 5.46 |
+| micm/L2 | 10 | 5 of 5 | 22,675.6 | 22,553.1–23,073.3 | 23.7 | 5.55 |
+| micm/L3 | 10 | 5 of 5 | 23,670.6 | 23,625.5–24,052.2 | 24.7 | 6.39 |
+| micm/L3b | 10 | 5 of 5 | 24,129.2 | 23,984.8–24,344.1 | 25.1 | 6.42 |
+== heldout-10000/clean-48h-5min: 01:25:06
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=   11750.596 process_s=  18.624 gate=PASS digits=2.474
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=   13604.417 process_s=  20.498 gate=PASS digits=3.587
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=   17602.805 process_s=  24.462 gate=PASS digits=3.825
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=   21817.930 process_s=  28.596 gate=PASS digits=3.995
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   80279.327 process_s=  87.047 gate=PASS digits=4.723
+round 1 threads 10 sol-max/fast elapsed_ms=    8187.314 process_s=  15.383 gate=PASS digits=2.304
+round 1 threads 10 sol-max/balanced elapsed_ms=    8561.551 process_s=  15.779 gate=PASS digits=2.461
+round 1 threads 10 sol-max/accurate elapsed_ms=   17318.274 process_s=  24.712 gate=PASS digits=3.54
+round 1 threads 10 sol-max/recommended elapsed_ms=   23226.471 process_s=  30.816 gate=PASS digits=3.692
+round 1 threads 10 sol-max/precise elapsed_ms=   44282.905 process_s=  51.967 gate=PASS digits=4.314
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 7545.960903 process_s=  14.655 gate=PASS digits=2.334
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 8472.503424 process_s=  15.559 gate=PASS digits=2.463
+round 1 threads 10 astra-xhigh/accurate elapsed_ms=17591.243029 process_s=  24.841 gate=PASS digits=3.663
+round 1 threads 10 astra-xhigh/recommended elapsed_ms=19039.948702 process_s=  26.521 gate=PASS digits=3.817
+round 1 threads 10 astra-xhigh/strict elapsed_ms=20216.574907 process_s=  27.500 gate=PASS digits=3.861
+round 1 threads 10 astra-max/economy elapsed_ms=   12999.414 process_s=  20.532 gate=PASS digits=2.462
+round 1 threads 10 astra-max/fast3 elapsed_ms=   13898.369 process_s=  21.635 gate=PASS digits=2.463
+round 1 threads 10 astra-max/balanced elapsed_ms=   20397.497 process_s=  28.078 gate=PASS digits=3.294
+round 1 threads 10 astra-max/conservative elapsed_ms=   27580.973 process_s=  35.590 gate=PASS digits=3.943
+round 1 threads 10 micm/L2      elapsed_ms=  137303.191 process_s= 142.965 gate=PASS digits=3.678
+round 1 threads 10 micm/L3      elapsed_ms=  149560.631 process_s= 155.212 gate=PASS digits=4.28
+round 1 threads 10 micm/L3b     elapsed_ms=  152318.802 process_s= 158.253 gate=PASS digits=4.396
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   76192.026 process_s=  83.067 gate=PASS digits=4.723
+round 2 threads 10 sol-max/fast elapsed_ms=    8173.442 process_s=  15.269 gate=PASS digits=2.304
+round 2 threads 10 sol-max/balanced elapsed_ms=    8513.658 process_s=  15.907 gate=PASS digits=2.461
+round 2 threads 10 sol-max/accurate elapsed_ms=   17083.886 process_s=  24.460 gate=PASS digits=3.54
+round 2 threads 10 sol-max/recommended elapsed_ms=   22922.909 process_s=  30.622 gate=PASS digits=3.692
+round 2 threads 10 sol-max/precise elapsed_ms=   43653.083 process_s=  51.330 gate=PASS digits=4.314
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 7539.590836 process_s=  14.685 gate=PASS digits=2.334
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 8372.318268 process_s=  15.622 gate=PASS digits=2.463
+round 2 threads 10 astra-xhigh/accurate elapsed_ms=17379.025698 process_s=  24.687 gate=PASS digits=3.663
+round 2 threads 10 astra-xhigh/recommended elapsed_ms=18669.370174 process_s=  25.839 gate=PASS digits=3.817
+round 2 threads 10 astra-xhigh/strict elapsed_ms=20002.983332 process_s=  27.252 gate=PASS digits=3.861
+round 2 threads 10 astra-max/economy elapsed_ms=   13016.052 process_s=  20.546 gate=PASS digits=2.462
+round 2 threads 10 astra-max/fast3 elapsed_ms=   13884.212 process_s=  21.560 gate=PASS digits=2.463
+round 2 threads 10 astra-max/balanced elapsed_ms=   20494.800 process_s=  28.158 gate=PASS digits=3.294
+round 2 threads 10 astra-max/conservative elapsed_ms=   27169.383 process_s=  34.912 gate=PASS digits=3.943
+round 2 threads 10 micm/L2      elapsed_ms=  135771.005 process_s= 141.424 gate=PASS digits=3.678
+round 2 threads 10 micm/L3      elapsed_ms=  149105.165 process_s= 154.968 gate=PASS digits=4.28
+round 2 threads 10 micm/L3b     elapsed_ms=  152055.983 process_s= 157.737 gate=PASS digits=4.396
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=   11645.910 process_s=  18.207 gate=PASS digits=2.474
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=   13205.787 process_s=  20.166 gate=PASS digits=3.587
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=   17297.109 process_s=  24.005 gate=PASS digits=3.825
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=   21460.672 process_s=  28.495 gate=PASS digits=3.995
+round 3 threads 10 sol-max/recommended elapsed_ms=   22959.760 process_s=  30.484 gate=PASS digits=3.692
+round 3 threads 10 sol-max/precise elapsed_ms=   43279.556 process_s=  51.092 gate=PASS digits=4.314
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 7521.795511 process_s=  14.541 gate=PASS digits=2.334
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 8388.563633 process_s=  15.412 gate=PASS digits=2.463
+round 3 threads 10 astra-xhigh/accurate elapsed_ms=17371.428490 process_s=  24.510 gate=PASS digits=3.663
+round 3 threads 10 astra-xhigh/recommended elapsed_ms=18639.025688 process_s=  25.737 gate=PASS digits=3.817
+round 3 threads 10 astra-xhigh/strict elapsed_ms=19987.576246 process_s=  27.210 gate=PASS digits=3.861
+round 3 threads 10 astra-max/economy elapsed_ms=   12980.274 process_s=  20.473 gate=PASS digits=2.462
+round 3 threads 10 astra-max/fast3 elapsed_ms=   13913.723 process_s=  21.497 gate=PASS digits=2.463
+round 3 threads 10 astra-max/balanced elapsed_ms=   20479.337 process_s=  28.271 gate=PASS digits=3.294
+round 3 threads 10 astra-max/conservative elapsed_ms=   27289.926 process_s=  35.004 gate=PASS digits=3.943
+round 3 threads 10 micm/L2      elapsed_ms=  137746.836 process_s= 143.406 gate=PASS digits=3.678
+round 3 threads 10 micm/L3      elapsed_ms=  150345.168 process_s= 156.025 gate=PASS digits=4.28
+round 3 threads 10 micm/L3b     elapsed_ms=  152811.072 process_s= 158.456 gate=PASS digits=4.396
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=   11693.927 process_s=  18.568 gate=PASS digits=2.474
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=   13185.972 process_s=  20.033 gate=PASS digits=3.587
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=   17210.638 process_s=  24.332 gate=PASS digits=3.825
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=   21437.814 process_s=  28.290 gate=PASS digits=3.995
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   78424.414 process_s=  85.180 gate=PASS digits=4.723
+round 3 threads 10 sol-max/fast elapsed_ms=    8068.634 process_s=  15.291 gate=PASS digits=2.304
+round 3 threads 10 sol-max/balanced elapsed_ms=    8396.038 process_s=  15.680 gate=PASS digits=2.461
+round 3 threads 10 sol-max/accurate elapsed_ms=   17035.089 process_s=  24.443 gate=PASS digits=3.54
+round 4 threads 10 astra-xhigh/recommended elapsed_ms=18385.915756 process_s=  25.648 gate=PASS digits=3.817
+round 4 threads 10 astra-xhigh/strict elapsed_ms=19869.289398 process_s=  27.170 gate=PASS digits=3.861
+round 4 threads 10 astra-max/economy elapsed_ms=   12717.468 process_s=  20.207 gate=PASS digits=2.462
+round 4 threads 10 astra-max/fast3 elapsed_ms=   13716.604 process_s=  21.246 gate=PASS digits=2.463
+round 4 threads 10 astra-max/balanced elapsed_ms=   20250.462 process_s=  27.851 gate=PASS digits=3.294
+round 4 threads 10 astra-max/conservative elapsed_ms=   26995.627 process_s=  34.829 gate=PASS digits=3.943
+round 4 threads 10 micm/L2      elapsed_ms=  135508.674 process_s= 141.147 gate=PASS digits=3.678
+round 4 threads 10 micm/L3      elapsed_ms=  152286.514 process_s= 157.915 gate=PASS digits=4.28
+round 4 threads 10 micm/L3b     elapsed_ms=  154144.011 process_s= 159.817 gate=PASS digits=4.396
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=   11589.127 process_s=  18.337 gate=PASS digits=2.474
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=   13195.193 process_s=  20.188 gate=PASS digits=3.587
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=   17266.268 process_s=  24.084 gate=PASS digits=3.825
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=   21527.882 process_s=  28.296 gate=PASS digits=3.995
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   78599.442 process_s=  85.381 gate=PASS digits=4.723
+round 4 threads 10 sol-max/fast elapsed_ms=    8043.128 process_s=  15.252 gate=PASS digits=2.304
+round 4 threads 10 sol-max/balanced elapsed_ms=    8395.420 process_s=  15.811 gate=PASS digits=2.461
+round 4 threads 10 sol-max/accurate elapsed_ms=   17018.948 process_s=  24.420 gate=PASS digits=3.54
+round 4 threads 10 sol-max/recommended elapsed_ms=   22758.082 process_s=  30.412 gate=PASS digits=3.692
+round 4 threads 10 sol-max/precise elapsed_ms=   43105.921 process_s=  50.604 gate=PASS digits=4.314
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 7502.287388 process_s=  14.432 gate=PASS digits=2.334
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 8355.805159 process_s=  15.437 gate=PASS digits=2.463
+round 4 threads 10 astra-xhigh/accurate elapsed_ms=17311.347723 process_s=  24.565 gate=PASS digits=3.663
+round 5 threads 10 astra-max/balanced elapsed_ms=   20297.768 process_s=  27.807 gate=PASS digits=3.294
+round 5 threads 10 astra-max/conservative elapsed_ms=   26906.253 process_s=  34.706 gate=PASS digits=3.943
+round 5 threads 10 micm/L2      elapsed_ms=  134984.473 process_s= 140.694 gate=PASS digits=3.678
+round 5 threads 10 micm/L3      elapsed_ms=  151501.217 process_s= 157.121 gate=PASS digits=4.28
+round 5 threads 10 micm/L3b     elapsed_ms=  154158.210 process_s= 159.784 gate=PASS digits=4.396
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=   11702.644 process_s=  19.709 gate=PASS digits=2.474
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=   13369.346 process_s=  20.115 gate=PASS digits=3.587
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=   17285.247 process_s=  23.997 gate=PASS digits=3.825
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=   21623.301 process_s=  28.410 gate=PASS digits=3.995
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   78766.463 process_s=  85.678 gate=PASS digits=4.723
+round 5 threads 10 sol-max/fast elapsed_ms=    8227.187 process_s=  15.558 gate=PASS digits=2.304
+round 5 threads 10 sol-max/balanced elapsed_ms=    8536.509 process_s=  16.127 gate=PASS digits=2.461
+round 5 threads 10 sol-max/accurate elapsed_ms=   17108.643 process_s=  24.517 gate=PASS digits=3.54
+round 5 threads 10 sol-max/recommended elapsed_ms=   23202.195 process_s=  30.794 gate=PASS digits=3.692
+round 5 threads 10 sol-max/precise elapsed_ms=   43012.708 process_s=  50.612 gate=PASS digits=4.314
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 7520.547628 process_s=  14.417 gate=PASS digits=2.334
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 8376.987696 process_s=  15.503 gate=PASS digits=2.463
+round 5 threads 10 astra-xhigh/accurate elapsed_ms=17302.464962 process_s=  24.520 gate=PASS digits=3.663
+round 5 threads 10 astra-xhigh/recommended elapsed_ms=18572.612762 process_s=  25.735 gate=PASS digits=3.817
+round 5 threads 10 astra-xhigh/strict elapsed_ms=19925.124884 process_s=  27.159 gate=PASS digits=3.861
+round 5 threads 10 astra-max/economy elapsed_ms=   12995.673 process_s=  20.507 gate=PASS digits=2.462
+round 5 threads 10 astra-max/fast3 elapsed_ms=   13876.511 process_s=  21.484 gate=PASS digits=2.463
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 11,693.9 | 11,589.1–11,750.6 | 18.6 | 2.47 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 13,205.8 | 13,186.0–13,604.4 | 20.2 | 3.59 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 17,285.2 | 17,210.6–17,602.8 | 24.1 | 3.83 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 21,527.9 | 21,437.8–21,817.9 | 28.4 | 4.00 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 78,599.4 | 76,192.0–80,279.3 | 85.4 | 4.72 |
+| sol-max/fast | 10 | 5 of 5 | 8,173.4 | 8,043.1–8,227.2 | 15.3 | 2.30 |
+| sol-max/balanced | 10 | 5 of 5 | 8,513.7 | 8,395.4–8,561.6 | 15.8 | 2.46 |
+| sol-max/accurate | 10 | 5 of 5 | 17,083.9 | 17,018.9–17,318.3 | 24.5 | 3.54 |
+| sol-max/recommended | 10 | 5 of 5 | 22,959.8 | 22,758.1–23,226.5 | 30.6 | 3.69 |
+| sol-max/precise | 10 | 5 of 5 | 43,279.6 | 43,012.7–44,282.9 | 51.1 | 4.31 |
+| astra-xhigh/fast | 10 | 5 of 5 | 7,521.8 | 7,502.3–7,546.0 | 14.5 | 2.33 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 8,377.0 | 8,355.8–8,472.5 | 15.5 | 2.46 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 17,371.4 | 17,302.5–17,591.2 | 24.6 | 3.66 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 18,639.0 | 18,385.9–19,039.9 | 25.7 | 3.82 |
+| astra-xhigh/strict | 10 | 5 of 5 | 19,987.6 | 19,869.3–20,216.6 | 27.2 | 3.86 |
+| astra-max/economy | 10 | 5 of 5 | 12,995.7 | 12,717.5–13,016.1 | 20.5 | 2.46 |
+| astra-max/fast3 | 10 | 5 of 5 | 13,884.2 | 13,716.6–13,913.7 | 21.5 | 2.46 |
+| astra-max/balanced | 10 | 5 of 5 | 20,397.5 | 20,250.5–20,494.8 | 28.1 | 3.29 |
+| astra-max/conservative | 10 | 5 of 5 | 27,169.4 | 26,906.3–27,581.0 | 34.9 | 3.94 |
+| micm/L2 | 10 | 5 of 5 | 135,771.0 | 134,984.5–137,746.8 | 141.4 | 3.68 |
+| micm/L3 | 10 | 5 of 5 | 150,345.2 | 149,105.2–152,286.5 | 156.0 | 4.28 |
+| micm/L3b | 10 | 5 of 5 | 152,811.1 | 152,056.0–154,158.2 | 158.5 | 4.40 |
+== heldout-10000/polluted-48h-30min: 02:58:38
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    5599.564 process_s=  12.310 gate=PASS digits=2.456
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    7730.220 process_s=  14.358 gate=PASS digits=2.821
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=   11406.116 process_s=  18.065 gate=PASS digits=3.43
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=   15224.947 process_s=  22.119 gate=PASS digits=3.938
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   31473.881 process_s=  38.518 gate=PASS digits=5.264
+round 1 threads 10 sol-max/fast elapsed_ms=    4167.614 process_s=  11.281 gate=PASS digits=2.215
+round 1 threads 10 sol-max/balanced elapsed_ms=    5000.358 process_s=  11.815 gate=PASS digits=2.445
+round 1 threads 10 sol-max/accurate elapsed_ms=   13574.219 process_s=  20.643 gate=PASS digits=3.737
+round 1 threads 10 sol-max/recommended elapsed_ms=   16911.130 process_s=  24.155 gate=PASS digits=3.96
+round 1 threads 10 sol-max/precise elapsed_ms=   23859.733 process_s=  31.152 gate=PASS digits=4.387
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 3694.044113 process_s=  10.677 gate=PASS digits=2.21
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 5832.848549 process_s=  12.684 gate=PASS digits=2.777
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 7108.563900 process_s=  14.172 gate=PASS digits=3.559
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 9157.673597 process_s=  16.112 gate=PASS digits=3.673
+round 1 threads 10 astra-xhigh/strict elapsed_ms=12547.656059 process_s=  19.585 gate=PASS digits=4.229
+round 1 threads 10 astra-max/economy elapsed_ms=    6869.850 process_s=  13.480 gate=PASS digits=2.4
+round 1 threads 10 astra-max/fast3 elapsed_ms=   12141.064 process_s=  19.098 gate=PASS digits=3.364
+round 1 threads 10 astra-max/balanced elapsed_ms=   15133.896 process_s=  22.109 gate=PASS digits=3.653
+round 1 threads 10 astra-max/conservative elapsed_ms=   25267.033 process_s=  32.428 gate=PASS digits=4.074
+round 1 threads 10 micm/L2      elapsed_ms=   27110.529 process_s=  32.687 gate=PASS digits=2.592
+round 1 threads 10 micm/L3      elapsed_ms=   37945.862 process_s=  43.671 gate=PASS digits=3.512
+round 1 threads 10 micm/L3b     elapsed_ms=   38785.166 process_s=  44.398 gate=PASS digits=3.635
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   30482.161 process_s=  37.405 gate=PASS digits=5.264
+round 2 threads 10 sol-max/fast elapsed_ms=    4131.942 process_s=  10.984 gate=PASS digits=2.215
+round 2 threads 10 sol-max/balanced elapsed_ms=    4951.248 process_s=  11.788 gate=PASS digits=2.445
+round 2 threads 10 sol-max/accurate elapsed_ms=   13515.060 process_s=  20.444 gate=PASS digits=3.737
+round 2 threads 10 sol-max/recommended elapsed_ms=   17281.054 process_s=  24.461 gate=PASS digits=3.96
+round 2 threads 10 sol-max/precise elapsed_ms=   24225.157 process_s=  31.602 gate=PASS digits=4.387
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 3730.412483 process_s=  10.850 gate=PASS digits=2.21
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 5893.971920 process_s=  12.978 gate=PASS digits=2.777
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 7228.997946 process_s=  14.328 gate=PASS digits=3.559
+round 2 threads 10 astra-xhigh/recommended elapsed_ms= 9275.550842 process_s=  16.544 gate=PASS digits=3.673
+round 2 threads 10 astra-xhigh/strict elapsed_ms=12697.850466 process_s=  19.913 gate=PASS digits=4.229
+round 2 threads 10 astra-max/economy elapsed_ms=    6959.532 process_s=  13.823 gate=PASS digits=2.4
+round 2 threads 10 astra-max/fast3 elapsed_ms=   12285.525 process_s=  19.258 gate=PASS digits=3.364
+round 2 threads 10 astra-max/balanced elapsed_ms=   15364.378 process_s=  22.514 gate=PASS digits=3.653
+round 2 threads 10 astra-max/conservative elapsed_ms=   25841.429 process_s=  32.942 gate=PASS digits=4.074
+round 2 threads 10 micm/L2      elapsed_ms=   26923.731 process_s=  32.661 gate=PASS digits=2.592
+round 2 threads 10 micm/L3      elapsed_ms=   36914.436 process_s=  42.516 gate=PASS digits=3.512
+round 2 threads 10 micm/L3b     elapsed_ms=   38361.310 process_s=  43.943 gate=PASS digits=3.635
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    5381.541 process_s=  11.901 gate=PASS digits=2.456
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    7524.174 process_s=  14.104 gate=PASS digits=2.821
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=   11100.420 process_s=  17.714 gate=PASS digits=3.43
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=   14871.857 process_s=  21.741 gate=PASS digits=3.938
+round 3 threads 10 sol-max/recommended elapsed_ms=   16892.189 process_s=  23.997 gate=PASS digits=3.96
+round 3 threads 10 sol-max/precise elapsed_ms=   24003.329 process_s=  31.570 gate=PASS digits=4.387
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 3705.541372 process_s=  11.344 gate=PASS digits=2.21
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 5879.067659 process_s=  12.981 gate=PASS digits=2.777
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 7169.629812 process_s=  14.334 gate=PASS digits=3.559
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 9234.956026 process_s=  16.602 gate=PASS digits=3.673
+round 3 threads 10 astra-xhigh/strict elapsed_ms=12699.775219 process_s=  19.916 gate=PASS digits=4.229
+round 3 threads 10 astra-max/economy elapsed_ms=    6969.994 process_s=  13.723 gate=PASS digits=2.4
+round 3 threads 10 astra-max/fast3 elapsed_ms=   12293.138 process_s=  19.512 gate=PASS digits=3.364
+round 3 threads 10 astra-max/balanced elapsed_ms=   15346.802 process_s=  22.415 gate=PASS digits=3.653
+round 3 threads 10 astra-max/conservative elapsed_ms=   26108.909 process_s=  33.275 gate=PASS digits=4.074
+round 3 threads 10 micm/L2      elapsed_ms=   26754.492 process_s=  32.380 gate=PASS digits=2.592
+round 3 threads 10 micm/L3      elapsed_ms=   36892.875 process_s=  42.516 gate=PASS digits=3.512
+round 3 threads 10 micm/L3b     elapsed_ms=   38152.804 process_s=  43.756 gate=PASS digits=3.635
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    5411.288 process_s=  11.952 gate=PASS digits=2.456
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    7501.751 process_s=  14.206 gate=PASS digits=2.821
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=   11083.324 process_s=  17.876 gate=PASS digits=3.43
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=   14946.532 process_s=  21.680 gate=PASS digits=3.938
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   31456.221 process_s=  38.581 gate=PASS digits=5.264
+round 3 threads 10 sol-max/fast elapsed_ms=    4168.397 process_s=  11.227 gate=PASS digits=2.215
+round 3 threads 10 sol-max/balanced elapsed_ms=    5024.046 process_s=  12.201 gate=PASS digits=2.445
+round 3 threads 10 sol-max/accurate elapsed_ms=   13652.512 process_s=  21.166 gate=PASS digits=3.737
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 9396.424294 process_s=  16.382 gate=PASS digits=3.673
+round 4 threads 10 astra-xhigh/strict elapsed_ms=12760.019541 process_s=  20.145 gate=PASS digits=4.229
+round 4 threads 10 astra-max/economy elapsed_ms=    6987.192 process_s=  13.697 gate=PASS digits=2.4
+round 4 threads 10 astra-max/fast3 elapsed_ms=   12290.120 process_s=  19.482 gate=PASS digits=3.364
+round 4 threads 10 astra-max/balanced elapsed_ms=   15385.964 process_s=  22.553 gate=PASS digits=3.653
+round 4 threads 10 astra-max/conservative elapsed_ms=   25786.320 process_s=  32.959 gate=PASS digits=4.074
+round 4 threads 10 micm/L2      elapsed_ms=   26899.758 process_s=  32.509 gate=PASS digits=2.592
+round 4 threads 10 micm/L3      elapsed_ms=   37383.963 process_s=  43.044 gate=PASS digits=3.512
+round 4 threads 10 micm/L3b     elapsed_ms=   38922.602 process_s=  44.531 gate=PASS digits=3.635
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    5382.261 process_s=  12.229 gate=PASS digits=2.456
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    7494.236 process_s=  14.153 gate=PASS digits=2.821
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=   11114.578 process_s=  18.091 gate=PASS digits=3.43
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=   14997.643 process_s=  21.709 gate=PASS digits=3.938
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   31939.084 process_s=  38.941 gate=PASS digits=5.264
+round 4 threads 10 sol-max/fast elapsed_ms=    4214.371 process_s=  11.049 gate=PASS digits=2.215
+round 4 threads 10 sol-max/balanced elapsed_ms=    5101.565 process_s=  11.835 gate=PASS digits=2.445
+round 4 threads 10 sol-max/accurate elapsed_ms=   13872.641 process_s=  20.834 gate=PASS digits=3.737
+round 4 threads 10 sol-max/recommended elapsed_ms=   17208.019 process_s=  25.163 gate=PASS digits=3.96
+round 4 threads 10 sol-max/precise elapsed_ms=   24552.303 process_s=  31.860 gate=PASS digits=4.387
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 3758.595943 process_s=  10.772 gate=PASS digits=2.21
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 5981.091261 process_s=  12.900 gate=PASS digits=2.777
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 7338.856936 process_s=  14.354 gate=PASS digits=3.559
+round 5 threads 10 astra-max/balanced elapsed_ms=   15394.132 process_s=  22.473 gate=PASS digits=3.653
+round 5 threads 10 astra-max/conservative elapsed_ms=   25901.916 process_s=  33.033 gate=PASS digits=4.074
+round 5 threads 10 micm/L2      elapsed_ms=   27473.216 process_s=  33.067 gate=PASS digits=2.592
+round 5 threads 10 micm/L3      elapsed_ms=   37556.001 process_s=  43.253 gate=PASS digits=3.512
+round 5 threads 10 micm/L3b     elapsed_ms=   39181.848 process_s=  44.778 gate=PASS digits=3.635
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    5389.349 process_s=  11.896 gate=PASS digits=2.456
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    7500.628 process_s=  14.275 gate=PASS digits=2.821
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=   11066.218 process_s=  17.747 gate=PASS digits=3.43
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=   14966.883 process_s=  21.903 gate=PASS digits=3.938
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   31566.140 process_s=  38.794 gate=PASS digits=5.264
+round 5 threads 10 sol-max/fast elapsed_ms=    4198.953 process_s=  11.157 gate=PASS digits=2.215
+round 5 threads 10 sol-max/balanced elapsed_ms=    5011.352 process_s=  11.943 gate=PASS digits=2.445
+round 5 threads 10 sol-max/accurate elapsed_ms=   13719.569 process_s=  20.936 gate=PASS digits=3.737
+round 5 threads 10 sol-max/recommended elapsed_ms=   17179.997 process_s=  24.646 gate=PASS digits=3.96
+round 5 threads 10 sol-max/precise elapsed_ms=   24315.039 process_s=  31.626 gate=PASS digits=4.387
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 3737.720013 process_s=  10.904 gate=PASS digits=2.21
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 5936.242819 process_s=  13.078 gate=PASS digits=2.777
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 7256.617069 process_s=  14.367 gate=PASS digits=3.559
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 9318.223476 process_s=  16.415 gate=PASS digits=3.673
+round 5 threads 10 astra-xhigh/strict elapsed_ms=12698.587179 process_s=  20.223 gate=PASS digits=4.229
+round 5 threads 10 astra-max/economy elapsed_ms=    6996.780 process_s=  13.857 gate=PASS digits=2.4
+round 5 threads 10 astra-max/fast3 elapsed_ms=   12351.745 process_s=  19.415 gate=PASS digits=3.364
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 5,389.3 | 5,381.5–5,599.6 | 12.0 | 2.46 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 7,501.8 | 7,494.2–7,730.2 | 14.2 | 2.82 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 11,100.4 | 11,066.2–11,406.1 | 17.9 | 3.43 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 14,966.9 | 14,871.9–15,224.9 | 21.7 | 3.94 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 31,473.9 | 30,482.2–31,939.1 | 38.6 | 5.26 |
+| sol-max/fast | 10 | 5 of 5 | 4,168.4 | 4,131.9–4,214.4 | 11.2 | 2.21 |
+| sol-max/balanced | 10 | 5 of 5 | 5,011.4 | 4,951.2–5,101.6 | 11.8 | 2.44 |
+| sol-max/accurate | 10 | 5 of 5 | 13,652.5 | 13,515.1–13,872.6 | 20.8 | 3.74 |
+| sol-max/recommended | 10 | 5 of 5 | 17,180.0 | 16,892.2–17,281.1 | 24.5 | 3.96 |
+| sol-max/precise | 10 | 5 of 5 | 24,225.2 | 23,859.7–24,552.3 | 31.6 | 4.39 |
+| astra-xhigh/fast | 10 | 5 of 5 | 3,730.4 | 3,694.0–3,758.6 | 10.8 | 2.21 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 5,894.0 | 5,832.8–5,981.1 | 13.0 | 2.78 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 7,229.0 | 7,108.6–7,338.9 | 14.3 | 3.56 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 9,275.6 | 9,157.7–9,396.4 | 16.4 | 3.67 |
+| astra-xhigh/strict | 10 | 5 of 5 | 12,698.6 | 12,547.7–12,760.0 | 19.9 | 4.23 |
+| astra-max/economy | 10 | 5 of 5 | 6,970.0 | 6,869.9–6,996.8 | 13.7 | 2.40 |
+| astra-max/fast3 | 10 | 5 of 5 | 12,290.1 | 12,141.1–12,351.7 | 19.4 | 3.36 |
+| astra-max/balanced | 10 | 5 of 5 | 15,364.4 | 15,133.9–15,394.1 | 22.5 | 3.65 |
+| astra-max/conservative | 10 | 5 of 5 | 25,841.4 | 25,267.0–26,108.9 | 33.0 | 4.07 |
+| micm/L2 | 10 | 5 of 5 | 26,923.7 | 26,754.5–27,473.2 | 32.7 | 2.59 |
+| micm/L3 | 10 | 5 of 5 | 37,384.0 | 36,892.9–37,945.9 | 43.0 | 3.51 |
+| micm/L3b | 10 | 5 of 5 | 38,785.2 | 38,152.8–39,181.8 | 44.4 | 3.63 |
+== heldout-10000/summer-15min: 03:50:42
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    3394.593 process_s=   7.894 gate=PASS digits=2.607
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    4769.794 process_s=   9.307 gate=PASS digits=2.855
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    7280.238 process_s=  11.852 gate=PASS digits=3.388
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=    9834.009 process_s=  14.465 gate=PASS digits=3.927
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   25350.120 process_s=  30.180 gate=PASS digits=5.122
+round 1 threads 10 sol-max/fast elapsed_ms=    2504.121 process_s=   7.208 gate=PASS digits=2.341
+round 1 threads 10 sol-max/balanced elapsed_ms=    3016.106 process_s=   7.696 gate=PASS digits=2.477
+round 1 threads 10 sol-max/accurate elapsed_ms=    8524.436 process_s=  13.182 gate=PASS digits=3.251
+round 1 threads 10 sol-max/recommended elapsed_ms=   11416.493 process_s=  16.287 gate=PASS digits=3.801
+round 1 threads 10 sol-max/precise elapsed_ms=   17704.337 process_s=  22.657 gate=PASS digits=4.423
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2192.141056 process_s=   7.197 gate=PASS digits=2.304
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 3367.420673 process_s=   8.169 gate=PASS digits=2.533
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 4487.554550 process_s=   9.266 gate=PASS digits=3.934
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 5224.617004 process_s=  10.002 gate=PASS digits=4.036
+round 1 threads 10 astra-xhigh/strict elapsed_ms= 6671.468019 process_s=  11.533 gate=PASS digits=4.092
+round 1 threads 10 astra-max/economy elapsed_ms=    4169.217 process_s=   8.808 gate=PASS digits=2.397
+round 1 threads 10 astra-max/fast3 elapsed_ms=    6282.061 process_s=  11.007 gate=PASS digits=3.305
+round 1 threads 10 astra-max/balanced elapsed_ms=    8037.296 process_s=  12.667 gate=PASS digits=3.586
+round 1 threads 10 astra-max/conservative elapsed_ms=   12371.358 process_s=  17.090 gate=PASS digits=4.05
+round 1 threads 10 micm/L2      elapsed_ms=   25161.057 process_s=  28.583 gate=PASS digits=3.262
+round 1 threads 10 micm/L3      elapsed_ms=   32685.092 process_s=  36.122 gate=PASS digits=3.757
+round 1 threads 10 micm/L3b     elapsed_ms=   33086.807 process_s=  36.490 gate=PASS digits=3.86
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   24618.357 process_s=  29.343 gate=PASS digits=5.122
+round 2 threads 10 sol-max/fast elapsed_ms=    2476.536 process_s=   7.227 gate=PASS digits=2.341
+round 2 threads 10 sol-max/balanced elapsed_ms=    2988.681 process_s=   7.680 gate=PASS digits=2.477
+round 2 threads 10 sol-max/accurate elapsed_ms=    8361.708 process_s=  13.225 gate=PASS digits=3.251
+round 2 threads 10 sol-max/recommended elapsed_ms=   11223.427 process_s=  16.075 gate=PASS digits=3.801
+round 2 threads 10 sol-max/precise elapsed_ms=   17653.296 process_s=  22.583 gate=PASS digits=4.423
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2189.654112 process_s=   7.245 gate=PASS digits=2.304
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 3367.943764 process_s=   8.371 gate=PASS digits=2.533
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 4477.988005 process_s=   9.479 gate=PASS digits=3.934
+round 2 threads 10 astra-xhigh/recommended elapsed_ms= 5243.759871 process_s=  10.041 gate=PASS digits=4.036
+round 2 threads 10 astra-xhigh/strict elapsed_ms= 6703.438282 process_s=  11.647 gate=PASS digits=4.092
+round 2 threads 10 astra-max/economy elapsed_ms=    4081.843 process_s=   8.709 gate=PASS digits=2.397
+round 2 threads 10 astra-max/fast3 elapsed_ms=    6294.942 process_s=  11.193 gate=PASS digits=3.305
+round 2 threads 10 astra-max/balanced elapsed_ms=    8052.697 process_s=  12.709 gate=PASS digits=3.586
+round 2 threads 10 astra-max/conservative elapsed_ms=   12424.687 process_s=  17.112 gate=PASS digits=4.05
+round 2 threads 10 micm/L2      elapsed_ms=   25594.405 process_s=  29.021 gate=PASS digits=3.262
+round 2 threads 10 micm/L3      elapsed_ms=   32299.283 process_s=  35.695 gate=PASS digits=3.757
+round 2 threads 10 micm/L3b     elapsed_ms=   33099.004 process_s=  36.441 gate=PASS digits=3.86
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    3285.401 process_s=   7.847 gate=PASS digits=2.607
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    4664.410 process_s=   9.136 gate=PASS digits=2.855
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    7111.297 process_s=  11.598 gate=PASS digits=3.388
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=    9691.042 process_s=  14.212 gate=PASS digits=3.927
+round 3 threads 10 sol-max/recommended elapsed_ms=   11362.662 process_s=  16.082 gate=PASS digits=3.801
+round 3 threads 10 sol-max/precise elapsed_ms=   17667.539 process_s=  22.780 gate=PASS digits=4.423
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2195.298910 process_s=   7.323 gate=PASS digits=2.304
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 3370.459557 process_s=   8.286 gate=PASS digits=2.533
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 4512.562037 process_s=   9.482 gate=PASS digits=3.934
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 5247.223854 process_s=  10.168 gate=PASS digits=4.036
+round 3 threads 10 astra-xhigh/strict elapsed_ms= 6680.601835 process_s=  11.479 gate=PASS digits=4.092
+round 3 threads 10 astra-max/economy elapsed_ms=    4072.449 process_s=   8.676 gate=PASS digits=2.397
+round 3 threads 10 astra-max/fast3 elapsed_ms=    6332.485 process_s=  10.967 gate=PASS digits=3.305
+round 3 threads 10 astra-max/balanced elapsed_ms=    8108.658 process_s=  12.824 gate=PASS digits=3.586
+round 3 threads 10 astra-max/conservative elapsed_ms=   12450.952 process_s=  17.228 gate=PASS digits=4.05
+round 3 threads 10 micm/L2      elapsed_ms=   25378.555 process_s=  28.915 gate=PASS digits=3.262
+round 3 threads 10 micm/L3      elapsed_ms=   32220.015 process_s=  35.640 gate=PASS digits=3.757
+round 3 threads 10 micm/L3b     elapsed_ms=   33504.322 process_s=  36.825 gate=PASS digits=3.86
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    3303.187 process_s=   7.861 gate=PASS digits=2.607
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    4718.918 process_s=   9.309 gate=PASS digits=2.855
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    7113.767 process_s=  11.623 gate=PASS digits=3.388
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=    9645.680 process_s=  14.246 gate=PASS digits=3.927
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   25024.988 process_s=  29.813 gate=PASS digits=5.122
+round 3 threads 10 sol-max/fast elapsed_ms=    2482.046 process_s=   7.489 gate=PASS digits=2.341
+round 3 threads 10 sol-max/balanced elapsed_ms=    3000.841 process_s=   7.979 gate=PASS digits=2.477
+round 3 threads 10 sol-max/accurate elapsed_ms=    8542.451 process_s=  13.272 gate=PASS digits=3.251
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 5327.136993 process_s=  10.011 gate=PASS digits=4.036
+round 4 threads 10 astra-xhigh/strict elapsed_ms= 6736.472607 process_s=  11.475 gate=PASS digits=4.092
+round 4 threads 10 astra-max/economy elapsed_ms=    4075.434 process_s=   8.744 gate=PASS digits=2.397
+round 4 threads 10 astra-max/fast3 elapsed_ms=    6316.790 process_s=  10.919 gate=PASS digits=3.305
+round 4 threads 10 astra-max/balanced elapsed_ms=    8065.299 process_s=  12.687 gate=PASS digits=3.586
+round 4 threads 10 astra-max/conservative elapsed_ms=   12427.249 process_s=  17.236 gate=PASS digits=4.05
+round 4 threads 10 micm/L2      elapsed_ms=   25372.869 process_s=  28.827 gate=PASS digits=3.262
+round 4 threads 10 micm/L3      elapsed_ms=   32201.348 process_s=  35.618 gate=PASS digits=3.757
+round 4 threads 10 micm/L3b     elapsed_ms=   33137.169 process_s=  36.462 gate=PASS digits=3.86
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    3287.928 process_s=   8.019 gate=PASS digits=2.607
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    4676.704 process_s=   9.202 gate=PASS digits=2.855
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=    7094.982 process_s=  11.660 gate=PASS digits=3.388
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=    9702.527 process_s=  14.350 gate=PASS digits=3.927
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   25222.002 process_s=  29.911 gate=PASS digits=5.122
+round 4 threads 10 sol-max/fast elapsed_ms=    2496.294 process_s=   7.676 gate=PASS digits=2.341
+round 4 threads 10 sol-max/balanced elapsed_ms=    3008.798 process_s=   7.636 gate=PASS digits=2.477
+round 4 threads 10 sol-max/accurate elapsed_ms=    8560.334 process_s=  13.266 gate=PASS digits=3.251
+round 4 threads 10 sol-max/recommended elapsed_ms=   11425.620 process_s=  16.177 gate=PASS digits=3.801
+round 4 threads 10 sol-max/precise elapsed_ms=   17736.003 process_s=  22.696 gate=PASS digits=4.423
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 2197.911024 process_s=   7.047 gate=PASS digits=2.304
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 3373.837948 process_s=   8.300 gate=PASS digits=2.533
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 4489.254713 process_s=   9.426 gate=PASS digits=3.934
+round 5 threads 10 astra-max/balanced elapsed_ms=    8027.771 process_s=  12.770 gate=PASS digits=3.586
+round 5 threads 10 astra-max/conservative elapsed_ms=   12467.245 process_s=  17.231 gate=PASS digits=4.05
+round 5 threads 10 micm/L2      elapsed_ms=   25259.239 process_s=  28.693 gate=PASS digits=3.262
+round 5 threads 10 micm/L3      elapsed_ms=   32266.463 process_s=  35.706 gate=PASS digits=3.757
+round 5 threads 10 micm/L3b     elapsed_ms=   32939.117 process_s=  36.296 gate=PASS digits=3.86
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    3282.642 process_s=   7.816 gate=PASS digits=2.607
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    4640.063 process_s=   9.193 gate=PASS digits=2.855
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=    7224.916 process_s=  11.723 gate=PASS digits=3.388
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=    9673.836 process_s=  14.240 gate=PASS digits=3.927
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   25055.860 process_s=  30.000 gate=PASS digits=5.122
+round 5 threads 10 sol-max/fast elapsed_ms=    2483.487 process_s=   7.365 gate=PASS digits=2.341
+round 5 threads 10 sol-max/balanced elapsed_ms=    3008.131 process_s=   8.057 gate=PASS digits=2.477
+round 5 threads 10 sol-max/accurate elapsed_ms=    8520.017 process_s=  13.452 gate=PASS digits=3.251
+round 5 threads 10 sol-max/recommended elapsed_ms=   11414.103 process_s=  16.222 gate=PASS digits=3.801
+round 5 threads 10 sol-max/precise elapsed_ms=   17762.770 process_s=  22.789 gate=PASS digits=4.423
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 2196.883202 process_s=   7.195 gate=PASS digits=2.304
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 3377.852440 process_s=   8.330 gate=PASS digits=2.533
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 4507.247448 process_s=   9.650 gate=PASS digits=3.934
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 5244.399071 process_s=  10.084 gate=PASS digits=4.036
+round 5 threads 10 astra-xhigh/strict elapsed_ms= 6713.714838 process_s=  11.650 gate=PASS digits=4.092
+round 5 threads 10 astra-max/economy elapsed_ms=    4079.658 process_s=   8.807 gate=PASS digits=2.397
+round 5 threads 10 astra-max/fast3 elapsed_ms=    6295.498 process_s=  11.014 gate=PASS digits=3.305
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 3,287.9 | 3,282.6–3,394.6 | 7.9 | 2.61 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 4,676.7 | 4,640.1–4,769.8 | 9.2 | 2.85 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 7,113.8 | 7,095.0–7,280.2 | 11.7 | 3.39 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 9,691.0 | 9,645.7–9,834.0 | 14.2 | 3.93 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 25,055.9 | 24,618.4–25,350.1 | 29.9 | 5.12 |
+| sol-max/fast | 10 | 5 of 5 | 2,483.5 | 2,476.5–2,504.1 | 7.4 | 2.34 |
+| sol-max/balanced | 10 | 5 of 5 | 3,008.1 | 2,988.7–3,016.1 | 7.7 | 2.48 |
+| sol-max/accurate | 10 | 5 of 5 | 8,524.4 | 8,361.7–8,560.3 | 13.3 | 3.25 |
+| sol-max/recommended | 10 | 5 of 5 | 11,414.1 | 11,223.4–11,425.6 | 16.2 | 3.80 |
+| sol-max/precise | 10 | 5 of 5 | 17,704.3 | 17,653.3–17,762.8 | 22.7 | 4.42 |
+| astra-xhigh/fast | 10 | 5 of 5 | 2,195.3 | 2,189.7–2,197.9 | 7.2 | 2.30 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 3,370.5 | 3,367.4–3,377.9 | 8.3 | 2.53 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 4,489.3 | 4,478.0–4,512.6 | 9.5 | 3.93 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 5,244.4 | 5,224.6–5,327.1 | 10.0 | 4.04 |
+| astra-xhigh/strict | 10 | 5 of 5 | 6,703.4 | 6,671.5–6,736.5 | 11.5 | 4.09 |
+| astra-max/economy | 10 | 5 of 5 | 4,079.7 | 4,072.4–4,169.2 | 8.7 | 2.40 |
+| astra-max/fast3 | 10 | 5 of 5 | 6,295.5 | 6,282.1–6,332.5 | 11.0 | 3.31 |
+| astra-max/balanced | 10 | 5 of 5 | 8,052.7 | 8,027.8–8,108.7 | 12.7 | 3.59 |
+| astra-max/conservative | 10 | 5 of 5 | 12,427.2 | 12,371.4–12,467.2 | 17.2 | 4.05 |
+| micm/L2 | 10 | 5 of 5 | 25,372.9 | 25,161.1–25,594.4 | 28.8 | 3.26 |
+| micm/L3 | 10 | 5 of 5 | 32,266.5 | 32,201.3–32,685.1 | 35.7 | 3.76 |
+| micm/L3b | 10 | 5 of 5 | 33,099.0 | 32,939.1–33,504.3 | 36.5 | 3.86 |
+== heldout-10000/tropics-20min: 04:29:11
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    3651.023 process_s=   8.031 gate=PASS digits=2.531
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    4790.249 process_s=   9.315 gate=PASS digits=2.877
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    6812.266 process_s=  11.327 gate=PASS digits=3.619
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=    8933.779 process_s=  13.541 gate=PASS digits=4.064
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   18639.215 process_s=  23.314 gate=PASS digits=5.231
+round 1 threads 10 sol-max/fast elapsed_ms=    2777.965 process_s=   7.582 gate=PASS digits=2.183
+round 1 threads 10 sol-max/balanced elapsed_ms=    3206.904 process_s=   7.945 gate=PASS digits=2.337
+round 1 threads 10 sol-max/accurate elapsed_ms=    7935.086 process_s=  12.747 gate=PASS digits=3.609
+round 1 threads 10 sol-max/recommended elapsed_ms=    9846.328 process_s=  14.575 gate=PASS digits=3.926
+round 1 threads 10 sol-max/precise elapsed_ms=   14628.928 process_s=  19.520 gate=PASS digits=4.369
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2240.881443 process_s=   7.148 gate=PASS digits=2.19
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 3414.474726 process_s=   8.174 gate=PASS digits=2.538
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 4471.266508 process_s=   9.305 gate=PASS digits=3.681
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 5401.468992 process_s=  10.147 gate=PASS digits=4.017
+round 1 threads 10 astra-xhigh/strict elapsed_ms= 7068.765402 process_s=  11.824 gate=PASS digits=4.22
+round 1 threads 10 astra-max/economy elapsed_ms=    3937.639 process_s=   8.815 gate=PASS digits=2.279
+round 1 threads 10 astra-max/fast3 elapsed_ms=    6618.896 process_s=  11.231 gate=PASS digits=3.263
+round 1 threads 10 astra-max/balanced elapsed_ms=    8047.514 process_s=  12.699 gate=PASS digits=3.54
+round 1 threads 10 astra-max/conservative elapsed_ms=   12961.510 process_s=  17.599 gate=PASS digits=3.96
+round 1 threads 10 micm/L2      elapsed_ms=   19269.579 process_s=  22.671 gate=PASS digits=2.793
+round 1 threads 10 micm/L3      elapsed_ms=   26202.462 process_s=  29.534 gate=PASS digits=3.508
+round 1 threads 10 micm/L3b     elapsed_ms=   26957.816 process_s=  30.284 gate=PASS digits=3.587
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   18485.785 process_s=  23.189 gate=PASS digits=5.231
+round 2 threads 10 sol-max/fast elapsed_ms=    2754.418 process_s=   7.467 gate=PASS digits=2.183
+round 2 threads 10 sol-max/balanced elapsed_ms=    3198.443 process_s=   7.998 gate=PASS digits=2.337
+round 2 threads 10 sol-max/accurate elapsed_ms=    7930.435 process_s=  12.976 gate=PASS digits=3.609
+round 2 threads 10 sol-max/recommended elapsed_ms=    9947.656 process_s=  14.682 gate=PASS digits=3.926
+round 2 threads 10 sol-max/precise elapsed_ms=   14768.909 process_s=  19.682 gate=PASS digits=4.369
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2249.236822 process_s=   7.159 gate=PASS digits=2.19
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 3429.942846 process_s=   8.328 gate=PASS digits=2.538
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 4469.972372 process_s=   9.428 gate=PASS digits=3.681
+round 2 threads 10 astra-xhigh/recommended elapsed_ms= 5414.364338 process_s=  10.438 gate=PASS digits=4.017
+round 2 threads 10 astra-xhigh/strict elapsed_ms= 7097.094536 process_s=  11.842 gate=PASS digits=4.22
+round 2 threads 10 astra-max/economy elapsed_ms=    3974.975 process_s=   8.434 gate=PASS digits=2.279
+round 2 threads 10 astra-max/fast3 elapsed_ms=    6679.022 process_s=  11.322 gate=PASS digits=3.263
+round 2 threads 10 astra-max/balanced elapsed_ms=    8125.117 process_s=  12.719 gate=PASS digits=3.54
+round 2 threads 10 astra-max/conservative elapsed_ms=   13082.739 process_s=  17.783 gate=PASS digits=3.96
+round 2 threads 10 micm/L2      elapsed_ms=   19302.548 process_s=  22.841 gate=PASS digits=2.793
+round 2 threads 10 micm/L3      elapsed_ms=   26127.666 process_s=  29.472 gate=PASS digits=3.508
+round 2 threads 10 micm/L3b     elapsed_ms=   26484.140 process_s=  29.908 gate=PASS digits=3.587
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    3624.323 process_s=   8.449 gate=PASS digits=2.531
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    4755.899 process_s=   9.459 gate=PASS digits=2.877
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    6814.473 process_s=  11.515 gate=PASS digits=3.619
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=    9009.946 process_s=  13.606 gate=PASS digits=4.064
+round 3 threads 10 sol-max/recommended elapsed_ms=    9949.878 process_s=  14.696 gate=PASS digits=3.926
+round 3 threads 10 sol-max/precise elapsed_ms=   14810.467 process_s=  19.856 gate=PASS digits=4.369
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2240.396738 process_s=   7.255 gate=PASS digits=2.19
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 3430.138588 process_s=   8.410 gate=PASS digits=2.538
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 4484.347820 process_s=   9.360 gate=PASS digits=3.681
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 5430.353165 process_s=  10.463 gate=PASS digits=4.017
+round 3 threads 10 astra-xhigh/strict elapsed_ms= 7160.623312 process_s=  12.204 gate=PASS digits=4.22
+round 3 threads 10 astra-max/economy elapsed_ms=    3971.941 process_s=   8.492 gate=PASS digits=2.279
+round 3 threads 10 astra-max/fast3 elapsed_ms=    6688.536 process_s=  11.204 gate=PASS digits=3.263
+round 3 threads 10 astra-max/balanced elapsed_ms=    8134.106 process_s=  12.712 gate=PASS digits=3.54
+round 3 threads 10 astra-max/conservative elapsed_ms=   13112.366 process_s=  17.943 gate=PASS digits=3.96
+round 3 threads 10 micm/L2      elapsed_ms=   19467.686 process_s=  22.874 gate=PASS digits=2.793
+round 3 threads 10 micm/L3      elapsed_ms=   25977.350 process_s=  29.387 gate=PASS digits=3.508
+round 3 threads 10 micm/L3b     elapsed_ms=   27093.396 process_s=  30.401 gate=PASS digits=3.587
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    3627.840 process_s=   8.360 gate=PASS digits=2.531
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    4778.236 process_s=   9.286 gate=PASS digits=2.877
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    6860.631 process_s=  11.319 gate=PASS digits=3.619
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=    8999.329 process_s=  13.564 gate=PASS digits=4.064
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   18846.571 process_s=  23.487 gate=PASS digits=5.231
+round 3 threads 10 sol-max/fast elapsed_ms=    2782.607 process_s=   7.839 gate=PASS digits=2.183
+round 3 threads 10 sol-max/balanced elapsed_ms=    3217.440 process_s=   8.060 gate=PASS digits=2.337
+round 3 threads 10 sol-max/accurate elapsed_ms=    8024.638 process_s=  12.938 gate=PASS digits=3.609
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 5503.010273 process_s=  10.456 gate=PASS digits=4.017
+round 4 threads 10 astra-xhigh/strict elapsed_ms= 7160.464048 process_s=  12.097 gate=PASS digits=4.22
+round 4 threads 10 astra-max/economy elapsed_ms=    3978.021 process_s=   8.665 gate=PASS digits=2.279
+round 4 threads 10 astra-max/fast3 elapsed_ms=    6686.604 process_s=  11.179 gate=PASS digits=3.263
+round 4 threads 10 astra-max/balanced elapsed_ms=    8151.618 process_s=  12.652 gate=PASS digits=3.54
+round 4 threads 10 astra-max/conservative elapsed_ms=   13117.557 process_s=  17.968 gate=PASS digits=3.96
+round 4 threads 10 micm/L2      elapsed_ms=   19449.094 process_s=  22.803 gate=PASS digits=2.793
+round 4 threads 10 micm/L3      elapsed_ms=   25682.895 process_s=  29.042 gate=PASS digits=3.508
+round 4 threads 10 micm/L3b     elapsed_ms=   26409.626 process_s=  29.748 gate=PASS digits=3.587
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    3632.596 process_s=   8.213 gate=PASS digits=2.531
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    4759.894 process_s=   9.437 gate=PASS digits=2.877
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=    6841.019 process_s=  11.319 gate=PASS digits=3.619
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=    9022.560 process_s=  13.500 gate=PASS digits=4.064
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   18783.849 process_s=  23.623 gate=PASS digits=5.231
+round 4 threads 10 sol-max/fast elapsed_ms=    2783.830 process_s=   7.556 gate=PASS digits=2.183
+round 4 threads 10 sol-max/balanced elapsed_ms=    3223.240 process_s=   7.942 gate=PASS digits=2.337
+round 4 threads 10 sol-max/accurate elapsed_ms=    7999.509 process_s=  12.931 gate=PASS digits=3.609
+round 4 threads 10 sol-max/recommended elapsed_ms=    9978.193 process_s=  14.872 gate=PASS digits=3.926
+round 4 threads 10 sol-max/precise elapsed_ms=   14775.735 process_s=  19.848 gate=PASS digits=4.369
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 2241.798162 process_s=   7.230 gate=PASS digits=2.19
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 3427.632809 process_s=   8.498 gate=PASS digits=2.538
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 4481.687546 process_s=   9.219 gate=PASS digits=3.681
+round 5 threads 10 astra-max/balanced elapsed_ms=    8090.554 process_s=  12.698 gate=PASS digits=3.54
+round 5 threads 10 astra-max/conservative elapsed_ms=   13038.522 process_s=  17.968 gate=PASS digits=3.96
+round 5 threads 10 micm/L2      elapsed_ms=   19360.099 process_s=  22.796 gate=PASS digits=2.793
+round 5 threads 10 micm/L3      elapsed_ms=   26055.282 process_s=  29.415 gate=PASS digits=3.508
+round 5 threads 10 micm/L3b     elapsed_ms=   26368.536 process_s=  29.724 gate=PASS digits=3.587
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    3624.272 process_s=   8.142 gate=PASS digits=2.531
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    4755.438 process_s=   9.547 gate=PASS digits=2.877
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=    6845.177 process_s=  11.437 gate=PASS digits=3.619
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=    9011.570 process_s=  13.620 gate=PASS digits=4.064
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   18763.166 process_s=  23.827 gate=PASS digits=5.231
+round 5 threads 10 sol-max/fast elapsed_ms=    2789.080 process_s=   7.411 gate=PASS digits=2.183
+round 5 threads 10 sol-max/balanced elapsed_ms=    3229.194 process_s=   7.864 gate=PASS digits=2.337
+round 5 threads 10 sol-max/accurate elapsed_ms=    8017.778 process_s=  12.772 gate=PASS digits=3.609
+round 5 threads 10 sol-max/recommended elapsed_ms=   10015.364 process_s=  14.861 gate=PASS digits=3.926
+round 5 threads 10 sol-max/precise elapsed_ms=   14803.076 process_s=  19.719 gate=PASS digits=4.369
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 2247.285128 process_s=   7.233 gate=PASS digits=2.19
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 3435.076237 process_s=   8.770 gate=PASS digits=2.538
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 4482.323408 process_s=   9.140 gate=PASS digits=3.681
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 5431.180716 process_s=  10.104 gate=PASS digits=4.017
+round 5 threads 10 astra-xhigh/strict elapsed_ms= 7156.111002 process_s=  11.834 gate=PASS digits=4.22
+round 5 threads 10 astra-max/economy elapsed_ms=    3970.710 process_s=   8.527 gate=PASS digits=2.279
+round 5 threads 10 astra-max/fast3 elapsed_ms=    6680.224 process_s=  11.374 gate=PASS digits=3.263
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 3,627.8 | 3,624.3–3,651.0 | 8.2 | 2.53 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 4,759.9 | 4,755.4–4,790.2 | 9.4 | 2.88 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 6,841.0 | 6,812.3–6,860.6 | 11.3 | 3.62 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 9,009.9 | 8,933.8–9,022.6 | 13.6 | 4.06 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 18,763.2 | 18,485.8–18,846.6 | 23.5 | 5.23 |
+| sol-max/fast | 10 | 5 of 5 | 2,782.6 | 2,754.4–2,789.1 | 7.6 | 2.18 |
+| sol-max/balanced | 10 | 5 of 5 | 3,217.4 | 3,198.4–3,229.2 | 7.9 | 2.34 |
+| sol-max/accurate | 10 | 5 of 5 | 7,999.5 | 7,930.4–8,024.6 | 12.9 | 3.61 |
+| sol-max/recommended | 10 | 5 of 5 | 9,949.9 | 9,846.3–10,015.4 | 14.7 | 3.93 |
+| sol-max/precise | 10 | 5 of 5 | 14,775.7 | 14,628.9–14,810.5 | 19.7 | 4.37 |
+| astra-xhigh/fast | 10 | 5 of 5 | 2,241.8 | 2,240.4–2,249.2 | 7.2 | 2.19 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 3,429.9 | 3,414.5–3,435.1 | 8.4 | 2.54 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 4,481.7 | 4,470.0–4,484.3 | 9.3 | 3.68 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 5,430.4 | 5,401.5–5,503.0 | 10.4 | 4.02 |
+| astra-xhigh/strict | 10 | 5 of 5 | 7,156.1 | 7,068.8–7,160.6 | 11.8 | 4.22 |
+| astra-max/economy | 10 | 5 of 5 | 3,971.9 | 3,937.6–3,978.0 | 8.5 | 2.28 |
+| astra-max/fast3 | 10 | 5 of 5 | 6,680.2 | 6,618.9–6,688.5 | 11.2 | 3.26 |
+| astra-max/balanced | 10 | 5 of 5 | 8,125.1 | 8,047.5–8,151.6 | 12.7 | 3.54 |
+| astra-max/conservative | 10 | 5 of 5 | 13,082.7 | 12,961.5–13,117.6 | 17.9 | 3.96 |
+| micm/L2 | 10 | 5 of 5 | 19,360.1 | 19,269.6–19,467.7 | 22.8 | 2.79 |
+| micm/L3 | 10 | 5 of 5 | 26,055.3 | 25,682.9–26,202.5 | 29.4 | 3.51 |
+| micm/L3b | 10 | 5 of 5 | 26,484.1 | 26,368.5–27,093.4 | 29.9 | 3.59 |
+== heldout-10000/winter60-10min: 05:05:14
+round 1 threads 10 sol-xhigh/L2 elapsed_ms=    4849.223 process_s=   9.360 gate=PASS digits=2.675
+round 1 threads 10 sol-xhigh/L2_margin elapsed_ms=    6122.565 process_s=  10.600 gate=PASS digits=2.981
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    7972.388 process_s=  12.427 gate=PASS digits=3.706
+round 1 threads 10 sol-xhigh/recommended elapsed_ms=   10042.071 process_s=  14.622 gate=PASS digits=4.133
+round 1 threads 10 sol-xhigh/L4 elapsed_ms=   19270.759 process_s=  23.966 gate=PASS digits=5.479
+round 1 threads 10 sol-max/fast elapsed_ms=    3447.102 process_s=   8.153 gate=PASS digits=2.277
+round 1 threads 10 sol-max/balanced elapsed_ms=    3901.556 process_s=   8.652 gate=PASS digits=2.473
+round 1 threads 10 sol-max/accurate elapsed_ms=    8677.744 process_s=  13.389 gate=PASS digits=3.665
+round 1 threads 10 sol-max/recommended elapsed_ms=   10498.501 process_s=  15.283 gate=PASS digits=3.949
+round 1 threads 10 sol-max/precise elapsed_ms=   15136.463 process_s=  19.997 gate=PASS digits=4.439
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2878.450632 process_s=   7.675 gate=PASS digits=2.27
+round 1 threads 10 astra-xhigh/balanced elapsed_ms= 4145.326614 process_s=   8.953 gate=PASS digits=2.674
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 6405.752182 process_s=  11.192 gate=PASS digits=3.944
+round 1 threads 10 astra-xhigh/recommended elapsed_ms= 7465.094805 process_s=  12.217 gate=PASS digits=4.125
+round 1 threads 10 astra-xhigh/strict elapsed_ms= 9087.368965 process_s=  13.803 gate=PASS digits=4.271
+round 1 threads 10 astra-max/economy elapsed_ms=    5078.146 process_s=   9.723 gate=PASS digits=2.425
+round 1 threads 10 astra-max/fast3 elapsed_ms=    7350.821 process_s=  11.971 gate=PASS digits=2.94
+round 1 threads 10 astra-max/balanced elapsed_ms=    8832.822 process_s=  13.479 gate=PASS digits=3.274
+round 1 threads 10 astra-max/conservative elapsed_ms=   13636.775 process_s=  18.367 gate=PASS digits=3.776
+round 1 threads 10 micm/L2      elapsed_ms=   36010.971 process_s=  39.365 gate=PASS digits=3.162
+round 1 threads 10 micm/L3      elapsed_ms=   41144.264 process_s=  44.419 gate=PASS digits=3.736
+round 1 threads 10 micm/L3b     elapsed_ms=   42192.564 process_s=  45.446 gate=PASS digits=3.823
+round 2 threads 10 sol-xhigh/L4 elapsed_ms=   18562.883 process_s=  23.109 gate=PASS digits=5.479
+round 2 threads 10 sol-max/fast elapsed_ms=    3339.523 process_s=   8.063 gate=PASS digits=2.277
+round 2 threads 10 sol-max/balanced elapsed_ms=    3825.006 process_s=   8.469 gate=PASS digits=2.473
+round 2 threads 10 sol-max/accurate elapsed_ms=    8455.460 process_s=  13.265 gate=PASS digits=3.665
+round 2 threads 10 sol-max/recommended elapsed_ms=   10374.122 process_s=  15.288 gate=PASS digits=3.949
+round 2 threads 10 sol-max/precise elapsed_ms=   15099.822 process_s=  20.123 gate=PASS digits=4.439
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2897.172451 process_s=   7.794 gate=PASS digits=2.27
+round 2 threads 10 astra-xhigh/balanced elapsed_ms= 4159.879684 process_s=   9.303 gate=PASS digits=2.674
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 6496.218920 process_s=  11.266 gate=PASS digits=3.944
+round 2 threads 10 astra-xhigh/recommended elapsed_ms= 7603.635550 process_s=  12.409 gate=PASS digits=4.125
+round 2 threads 10 astra-xhigh/strict elapsed_ms= 9242.170572 process_s=  14.070 gate=PASS digits=4.271
+round 2 threads 10 astra-max/economy elapsed_ms=    5186.997 process_s=   9.814 gate=PASS digits=2.425
+round 2 threads 10 astra-max/fast3 elapsed_ms=    7498.260 process_s=  12.145 gate=PASS digits=2.94
+round 2 threads 10 astra-max/balanced elapsed_ms=    8927.730 process_s=  13.823 gate=PASS digits=3.274
+round 2 threads 10 astra-max/conservative elapsed_ms=   13964.581 process_s=  18.801 gate=PASS digits=3.776
+round 2 threads 10 micm/L2      elapsed_ms=   37053.167 process_s=  40.465 gate=PASS digits=3.162
+round 2 threads 10 micm/L3      elapsed_ms=   42544.321 process_s=  45.849 gate=PASS digits=3.736
+round 2 threads 10 micm/L3b     elapsed_ms=   41362.626 process_s=  44.756 gate=PASS digits=3.823
+round 2 threads 10 sol-xhigh/L2 elapsed_ms=    4736.852 process_s=   9.182 gate=PASS digits=2.675
+round 2 threads 10 sol-xhigh/L2_margin elapsed_ms=    6086.452 process_s=  10.609 gate=PASS digits=2.981
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    7847.635 process_s=  12.450 gate=PASS digits=3.706
+round 2 threads 10 sol-xhigh/recommended elapsed_ms=    9840.078 process_s=  14.444 gate=PASS digits=4.133
+round 3 threads 10 sol-max/recommended elapsed_ms=   10384.721 process_s=  15.486 gate=PASS digits=3.949
+round 3 threads 10 sol-max/precise elapsed_ms=   15105.130 process_s=  20.169 gate=PASS digits=4.439
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2902.592182 process_s=   7.785 gate=PASS digits=2.27
+round 3 threads 10 astra-xhigh/balanced elapsed_ms= 4153.269053 process_s=   8.882 gate=PASS digits=2.674
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 6475.601435 process_s=  11.374 gate=PASS digits=3.944
+round 3 threads 10 astra-xhigh/recommended elapsed_ms= 7532.846689 process_s=  12.293 gate=PASS digits=4.125
+round 3 threads 10 astra-xhigh/strict elapsed_ms= 9061.125278 process_s=  13.870 gate=PASS digits=4.271
+round 3 threads 10 astra-max/economy elapsed_ms=    5101.943 process_s=   9.700 gate=PASS digits=2.425
+round 3 threads 10 astra-max/fast3 elapsed_ms=    7413.213 process_s=  12.066 gate=PASS digits=2.94
+round 3 threads 10 astra-max/balanced elapsed_ms=    8824.567 process_s=  13.526 gate=PASS digits=3.274
+round 3 threads 10 astra-max/conservative elapsed_ms=   13720.295 process_s=  18.626 gate=PASS digits=3.776
+round 3 threads 10 micm/L2      elapsed_ms=   36990.397 process_s=  40.341 gate=PASS digits=3.162
+round 3 threads 10 micm/L3      elapsed_ms=   41025.687 process_s=  44.291 gate=PASS digits=3.736
+round 3 threads 10 micm/L3b     elapsed_ms=   40851.770 process_s=  44.107 gate=PASS digits=3.823
+round 3 threads 10 sol-xhigh/L2 elapsed_ms=    4708.601 process_s=   9.243 gate=PASS digits=2.675
+round 3 threads 10 sol-xhigh/L2_margin elapsed_ms=    5953.958 process_s=  10.396 gate=PASS digits=2.981
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    7742.765 process_s=  12.148 gate=PASS digits=3.706
+round 3 threads 10 sol-xhigh/recommended elapsed_ms=    9752.598 process_s=  14.205 gate=PASS digits=4.133
+round 3 threads 10 sol-xhigh/L4 elapsed_ms=   18776.133 process_s=  23.435 gate=PASS digits=5.479
+round 3 threads 10 sol-max/fast elapsed_ms=    3397.585 process_s=   8.114 gate=PASS digits=2.277
+round 3 threads 10 sol-max/balanced elapsed_ms=    3862.506 process_s=   8.655 gate=PASS digits=2.473
+round 3 threads 10 sol-max/accurate elapsed_ms=    8647.345 process_s=  13.493 gate=PASS digits=3.665
+round 4 threads 10 astra-xhigh/recommended elapsed_ms= 7554.831505 process_s=  12.471 gate=PASS digits=4.125
+round 4 threads 10 astra-xhigh/strict elapsed_ms= 9077.996016 process_s=  13.970 gate=PASS digits=4.271
+round 4 threads 10 astra-max/economy elapsed_ms=    5093.378 process_s=   9.871 gate=PASS digits=2.425
+round 4 threads 10 astra-max/fast3 elapsed_ms=    7365.707 process_s=  12.122 gate=PASS digits=2.94
+round 4 threads 10 astra-max/balanced elapsed_ms=    8767.245 process_s=  13.407 gate=PASS digits=3.274
+round 4 threads 10 astra-max/conservative elapsed_ms=   13713.931 process_s=  18.503 gate=PASS digits=3.776
+round 4 threads 10 micm/L2      elapsed_ms=   36626.127 process_s=  40.141 gate=PASS digits=3.162
+round 4 threads 10 micm/L3      elapsed_ms=   42054.402 process_s=  45.306 gate=PASS digits=3.736
+round 4 threads 10 micm/L3b     elapsed_ms=   41257.264 process_s=  44.563 gate=PASS digits=3.823
+round 4 threads 10 sol-xhigh/L2 elapsed_ms=    4761.795 process_s=   9.188 gate=PASS digits=2.675
+round 4 threads 10 sol-xhigh/L2_margin elapsed_ms=    5984.670 process_s=  10.400 gate=PASS digits=2.981
+round 4 threads 10 sol-xhigh/L3 elapsed_ms=    7752.225 process_s=  12.591 gate=PASS digits=3.706
+round 4 threads 10 sol-xhigh/recommended elapsed_ms=    9797.314 process_s=  14.270 gate=PASS digits=4.133
+round 4 threads 10 sol-xhigh/L4 elapsed_ms=   18899.817 process_s=  23.520 gate=PASS digits=5.479
+round 4 threads 10 sol-max/fast elapsed_ms=    3405.482 process_s=   8.130 gate=PASS digits=2.277
+round 4 threads 10 sol-max/balanced elapsed_ms=    3881.369 process_s=   8.730 gate=PASS digits=2.473
+round 4 threads 10 sol-max/accurate elapsed_ms=    8664.441 process_s=  13.508 gate=PASS digits=3.665
+round 4 threads 10 sol-max/recommended elapsed_ms=   10533.066 process_s=  15.339 gate=PASS digits=3.949
+round 4 threads 10 sol-max/precise elapsed_ms=   15063.204 process_s=  19.938 gate=PASS digits=4.439
+round 4 threads 10 astra-xhigh/fast elapsed_ms= 2887.918949 process_s=   7.869 gate=PASS digits=2.27
+round 4 threads 10 astra-xhigh/balanced elapsed_ms= 4123.821259 process_s=   8.918 gate=PASS digits=2.674
+round 4 threads 10 astra-xhigh/accurate elapsed_ms= 6534.502745 process_s=  11.256 gate=PASS digits=3.944
+round 5 threads 10 astra-max/balanced elapsed_ms=    8829.420 process_s=  13.438 gate=PASS digits=3.274
+round 5 threads 10 astra-max/conservative elapsed_ms=   13800.960 process_s=  18.552 gate=PASS digits=3.776
+round 5 threads 10 micm/L2      elapsed_ms=   36914.455 process_s=  40.265 gate=PASS digits=3.162
+round 5 threads 10 micm/L3      elapsed_ms=   41650.144 process_s=  44.894 gate=PASS digits=3.736
+round 5 threads 10 micm/L3b     elapsed_ms=   41080.062 process_s=  44.329 gate=PASS digits=3.823
+round 5 threads 10 sol-xhigh/L2 elapsed_ms=    4687.254 process_s=   9.253 gate=PASS digits=2.675
+round 5 threads 10 sol-xhigh/L2_margin elapsed_ms=    5932.182 process_s=  10.324 gate=PASS digits=2.981
+round 5 threads 10 sol-xhigh/L3 elapsed_ms=    7725.936 process_s=  12.401 gate=PASS digits=3.706
+round 5 threads 10 sol-xhigh/recommended elapsed_ms=    9769.866 process_s=  14.240 gate=PASS digits=4.133
+round 5 threads 10 sol-xhigh/L4 elapsed_ms=   18795.880 process_s=  23.577 gate=PASS digits=5.479
+round 5 threads 10 sol-max/fast elapsed_ms=    3420.928 process_s=   8.160 gate=PASS digits=2.277
+round 5 threads 10 sol-max/balanced elapsed_ms=    3910.473 process_s=   8.556 gate=PASS digits=2.473
+round 5 threads 10 sol-max/accurate elapsed_ms=    8673.599 process_s=  13.417 gate=PASS digits=3.665
+round 5 threads 10 sol-max/recommended elapsed_ms=   10573.969 process_s=  15.346 gate=PASS digits=3.949
+round 5 threads 10 sol-max/precise elapsed_ms=   15081.119 process_s=  19.896 gate=PASS digits=4.439
+round 5 threads 10 astra-xhigh/fast elapsed_ms= 2886.006355 process_s=   7.752 gate=PASS digits=2.27
+round 5 threads 10 astra-xhigh/balanced elapsed_ms= 4146.430731 process_s=   9.106 gate=PASS digits=2.674
+round 5 threads 10 astra-xhigh/accurate elapsed_ms= 6429.894447 process_s=  11.252 gate=PASS digits=3.944
+round 5 threads 10 astra-xhigh/recommended elapsed_ms= 7530.190468 process_s=  12.474 gate=PASS digits=4.125
+round 5 threads 10 astra-xhigh/strict elapsed_ms= 9104.439259 process_s=  13.951 gate=PASS digits=4.271
+round 5 threads 10 astra-max/economy elapsed_ms=    5102.331 process_s=   9.834 gate=PASS digits=2.425
+round 5 threads 10 astra-max/fast3 elapsed_ms=    7361.031 process_s=  12.012 gate=PASS digits=2.94
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L2 | 10 | 5 of 5 | 4,736.9 | 4,687.3–4,849.2 | 9.2 | 2.67 |
+| sol-xhigh/L2_margin | 10 | 5 of 5 | 5,984.7 | 5,932.2–6,122.6 | 10.4 | 2.98 |
+| sol-xhigh/L3 | 10 | 5 of 5 | 7,752.2 | 7,725.9–7,972.4 | 12.4 | 3.71 |
+| sol-xhigh/recommended | 10 | 5 of 5 | 9,797.3 | 9,752.6–10,042.1 | 14.3 | 4.13 |
+| sol-xhigh/L4 | 10 | 5 of 5 | 18,795.9 | 18,562.9–19,270.8 | 23.5 | 5.48 |
+| sol-max/fast | 10 | 5 of 5 | 3,405.5 | 3,339.5–3,447.1 | 8.1 | 2.28 |
+| sol-max/balanced | 10 | 5 of 5 | 3,881.4 | 3,825.0–3,910.5 | 8.7 | 2.47 |
+| sol-max/accurate | 10 | 5 of 5 | 8,664.4 | 8,455.5–8,677.7 | 13.4 | 3.67 |
+| sol-max/recommended | 10 | 5 of 5 | 10,498.5 | 10,374.1–10,574.0 | 15.3 | 3.95 |
+| sol-max/precise | 10 | 5 of 5 | 15,099.8 | 15,063.2–15,136.5 | 20.0 | 4.44 |
+| astra-xhigh/fast | 10 | 5 of 5 | 2,887.9 | 2,878.5–2,902.6 | 7.8 | 2.27 |
+| astra-xhigh/balanced | 10 | 5 of 5 | 4,146.4 | 4,123.8–4,159.9 | 9.0 | 2.67 |
+| astra-xhigh/accurate | 10 | 5 of 5 | 6,475.6 | 6,405.8–6,534.5 | 11.3 | 3.94 |
+| astra-xhigh/recommended | 10 | 5 of 5 | 7,532.8 | 7,465.1–7,603.6 | 12.4 | 4.12 |
+| astra-xhigh/strict | 10 | 5 of 5 | 9,087.4 | 9,061.1–9,242.2 | 14.0 | 4.27 |
+| astra-max/economy | 10 | 5 of 5 | 5,101.9 | 5,078.1–5,187.0 | 9.8 | 2.42 |
+| astra-max/fast3 | 10 | 5 of 5 | 7,365.7 | 7,350.8–7,498.3 | 12.1 | 2.94 |
+| astra-max/balanced | 10 | 5 of 5 | 8,829.4 | 8,767.2–8,927.7 | 13.5 | 3.27 |
+| astra-max/conservative | 10 | 5 of 5 | 13,720.3 | 13,636.8–13,964.6 | 18.6 | 3.78 |
+| micm/L2 | 10 | 5 of 5 | 36,914.5 | 36,011.0–37,053.2 | 40.3 | 3.16 |
+| micm/L3 | 10 | 5 of 5 | 41,650.1 | 41,025.7–42,544.3 | 44.9 | 3.74 |
+| micm/L3b | 10 | 5 of 5 | 41,257.3 | 40,851.8–42,192.6 | 44.6 | 3.82 |
+== done: 05:46:43
+exit 0 2026-10-19 05:46:43

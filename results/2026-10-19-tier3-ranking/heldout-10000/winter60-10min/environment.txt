@@ -1,0 +1,31 @@
+date: 2026-10-19T05:05:14
+host: Gemini.local
+platform: macOS-27.0.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,2 | Apple M5 | 4 | 6
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=23461987)	80%; AC attached; not charging present: true
+uptime: 5:05  up  9:47, 2 users, load averages: 6.78 6.80 6.94
+scenario: /Users/fillmore/NSF-NCAR/.tier3-heldout/heldout-10000/winter60-10min/scenario.txt
+reference: /Users/fillmore/NSF-NCAR/.tier3-heldout/heldout/winter60-10min/reference_snapshots.csv (scores ts1_snapshots.csv)
+threads: 10; rounds: 5
+program sol-xhigh/L2: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario --method rodas31 --option rtol=0.002 --option atol=1e-18 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+program sol-xhigh/L2_margin: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario --method rodas31 --option rtol=0.001 --option atol=1e-18 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+program sol-xhigh/L3: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario --method rodas31 --option rtol=0.0003 --option atol=1e-16 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+program sol-xhigh/recommended: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario --method rodas31 --option rtol=0.0003 --option atol=1e-18 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+program sol-xhigh/L4: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario --method rodas4 --option rtol=0.0001 --option atol=1e-18 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+program sol-max/fast: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario --method rodas3 --option rtol=0.01 --option group=16 --option schedule=dynamic
+program sol-max/balanced: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario --method rodas3 --option rtol=0.005 --option group=16 --option schedule=dynamic
+program sol-max/accurate: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario --method rodas3 --option rtol=0.0005 --option group=16 --option schedule=dynamic
+program sol-max/recommended: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario --method rodas3 --option rtol=0.0003 --option group=16 --option schedule=dynamic
+program sol-max/precise: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario --method rodas3 --option rtol=0.0001 --option group=16 --option schedule=dynamic
+program astra-xhigh/fast: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario --method rodas3 --option rtol=0.01 --option atol=1e-18 --option group-size=32 --option rate-cache=1 --option step-block=4 --option schedule=dynamic --option chunk=0 --option jacobian-age=1 --option controller=0 --option norm=1 --option warm-start=1 --option reuse-window=0 --option clip-stages=0
+program astra-xhigh/balanced: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario --method rodas3 --option rtol=0.003 --option atol=1e-18 --option group-size=32 --option rate-cache=1 --option step-block=4 --option schedule=dynamic --option chunk=0 --option jacobian-age=1 --option controller=0 --option norm=1 --option warm-start=1 --option reuse-window=0 --option clip-stages=0
+program astra-xhigh/accurate: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario --method extrap --option rtol=0.004 --option atol=1e-18 --option group-size=32 --option order=4 --option rate-cache=1 --option step-block=4 --option schedule=dynamic --option chunk=0 --option jacobian-age=1 --option controller=0 --option norm=1 --option warm-start=1 --option reuse-window=0 --option clip-stages=0
+program astra-xhigh/recommended: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario --method extrap --option rtol=0.002 --option atol=1e-18 --option group-size=32 --option order=4 --option rate-cache=1 --option step-block=4 --option schedule=dynamic --option chunk=0 --option jacobian-age=1 --option controller=0 --option norm=1 --option warm-start=1 --option reuse-window=0 --option clip-stages=0
+program astra-xhigh/strict: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario --method extrap --option rtol=0.001 --option atol=1e-18 --option group-size=32 --option order=4 --option rate-cache=1 --option step-block=4 --option schedule=dynamic --option chunk=0 --option jacobian-age=1 --option controller=0 --option norm=1 --option warm-start=1 --option reuse-window=0 --option clip-stages=0
+program astra-max/economy: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario --method rodas3 --option rtol=0.003 --option atol=1e-16 --option h_max=0 --option group_size=32
+program astra-max/fast3: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario --method rodas3 --option rtol=0.003 --option atol=1e-18 --option h_max=300 --option group_size=32
+program astra-max/balanced: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario --method rodas3 --option rtol=0.003 --option atol=1e-18 --option h_max=200 --option group_size=32
+program astra-max/conservative: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-max/clang/astra-max/bin/ts1_scenario --method rodas3 --option rtol=0.003 --option atol=1e-18 --option h_max=100 --option group_size=32
+program micm/L2: /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 1e-2 --atol 1e-15
+program micm/L3: /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 3e-4 --atol 1e-15
+program micm/L3b: /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 2e-4 --atol 1e-15
