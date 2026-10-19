@@ -1,7 +1,21 @@
 # Tier 3 handoff, 2026-10-18
 
+**State on 2026-10-18 at 21:30:** the SSE decided at 19:32 to finish on the
+same laptop, and steps 1 to 6 below are done or running there: the inputs
+checked (step 2), the entries re-verified with identical results into
+`~/NSF-NCAR/tier3-work/verify/` (step 3), the MICM scan run and its baselines
+chosen (step 4; `micm/L2` rtol 1e-2 atol 1e-15, `micm/L3` 3e-4 and 1e-15,
+plus `micm/L3b` 2e-4 and 1e-15 as insurance for L3's thin isoprene margin),
+the programs file written (step 5; `~/NSF-NCAR/tier3-work/programs.txt`, 22
+programs), the blind review done (step 8; `results/2026-10-18-tier3-blind-review/`),
+and the timing session started at 21:19 in tmux session `tier3-timing` on
+socket `turbomicm` (step 6; `~/NSF-NCAR/tier3-work/run-timing.sh`, output in
+`~/NSF-NCAR/tier3-work/timing/`, a load audit beside it). Remaining: step 7
+(rank) when it ends, and step 9 (publish). The text below is the original
+handoff, kept for the record.
+
 All four Tier 3 runs are done: collected, archived, and verified on the SSE's
-Apple M5 laptop. The rest moves to another machine:
+Apple M5 laptop. The rest was to move to another machine:
 - the MICM baselines;
 - the timing session;
 - the ranking;
