@@ -755,6 +755,15 @@ SCANS.md has the tables and DECISIONS.md the choices.
   `~/NSF-NCAR/tier3-work/programs-fable-vs-contest.txt` (Fable's binary from
   the verification worktree `tier3-work/verify/fable-max-2/clang/fable-max/`),
   then `admin/rank_tier3.py <out> --threads 10`; idle machine, AC power.
+- 08:25: a **provisional placement** from the verification runs alone
+  (single runs, 1,000 cells, 10 threads; the contest's points from their
+  verifications of 2026-10-18, Fable's from 2026-10-19, so different
+  sessions): at level 2, L2 1,429 ms on the five held-out scenarios against
+  astra-xhigh/fast 2,110 and sol-max/fast 2,230 (disclosed: 1,196 against
+  1,681 and 1,914); at level 3, L3r 2,942 ms against astra-xhigh/accurate
+  4,519 and sol-xhigh/L3 5,551 (disclosed: 2,358 against 3,608 and 4,730),
+  about 1.4 to 1.6 times faster at each level. The deferred session is the
+  measurement; this is the estimate, on the wiki page with its caveat.
 - Transcripts: this session and the six research sessions are on the
   `transcripts` branch under `transcripts/tier3/fable-max*`.
 
