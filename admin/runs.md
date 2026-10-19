@@ -567,6 +567,55 @@ Launch changes
   timing session, the ranking, the blind review, and publishing. The steps,
   and the decisions already made, are in `tier3/HANDOFF.md`.
 
+## Tier 3: the rest, on the same machine (2026-10-18 evening)
+
+The SSE decided on 2026-10-18 at 19:32 to finish Tier 3 on the same laptop
+after all, following `tier3/HANDOFF.md` step by step; no other machine was
+set up. All times MDT.
+
+- 19:40–19:55: **re-verification** of the four entries with
+  `admin/verify_tier3.py`, both compilers, disclosed and held-out scenarios,
+  into `~/NSF-NCAR/tier3-work/verify/`. Every table row of the regenerated
+  reports (builds, the 680 cases, the TS1 gate, every point's digits, worst
+  species, gate, and levels on all 11 scenarios) is identical to the
+  committed reports apart from times; the clang binaries the timing uses
+  are those builds.
+- 19:43–20:03: **blind review**. The anonymized copies were made with
+  `admin/anonymize_tier3.py` (letters drawn with `secrets`; the one
+  leftover it found was bytes in a PNG), and two fresh Claude Code sessions
+  were started from the review folder with `claude -p` at effort max, one
+  with model opus reading A to D and one with model fable reading D to A,
+  with the tools limited to Read, Grep, Glob, and Bash restricted to `wc`,
+  `grep`, `head`, `tail`, and `cat`, and no web. Opus finished at 20:03:21
+  after 159 turns, Fable at 20:01:06 after 180. The reports, the session
+  records, the launch scripts, the key, and a README with the decoded
+  scores and ranks are in `results/2026-10-18-tier3-blind-review/`.
+  Decoded: A sol-xhigh, B astra-xhigh, C astra-max, D sol-max. Both
+  reviewers rank astra-max first for code and sol-max last for research;
+  Opus ranks astra-xhigh first for research and Fable astra-max.
+- 20:13–: **MICM's baseline scan**, `admin/time_tier3.sh` with
+  `admin/tier3_micm_scan.txt` (18 tolerance settings of the three-stage
+  Rosenbrock, 32-cell groups) on the 11 scenarios at 1,000 cells, 10
+  threads, one round, in a detached tmux session under `caffeinate`, into
+  `~/NSF-NCAR/tier3-work/micm-scan/`. Nothing else ran on the machine
+  during it. The baselines it picks go into the timing session's programs
+  file (`~/NSF-NCAR/tier3-work/programs.txt`, built by `make_programs.sh`).
+- 19:38 on: **Fable's Tier 3 reference solution**, commissioned by the SSE
+  ("while the codex entrants work, you may also begin the Fable Tier 3
+  reference solution, begin your own web search (use Sonnet researchers and
+  review yourself, follow up yourself), then your structure scans";
+  "structure scans are Fable at max effort"; goal "work until you judge you
+  have arrived at the best algorithm, commit, push"). Set up like the
+  contest runs: the Tier 1 slot `benchmarks/fable-max` received the
+  history of TurboMICM's `fable/` (`git subtree split`, 47 commits, head
+  6d2fcde), `tier3/prompts/make_prompts.py fable-max` wrote its prompt
+  ("You are Fable."), and `tier3/admin/setup_runs.py fable-max` cloned it
+  into `benchmarks/tier3/fable-max` with PROMPT.md (ODE 94ac532; the prompt
+  mirrored in `tier3/prompts/`). Six Sonnet literature reviews ran in
+  parallel (19:48–20:16) and are filed in the entry's `research/`. The
+  entry is not a contestant; its collection branch will be
+  `tier3/fable/max`.
+
 # Disk space
 
 - 2026-10-18, 10:02, while astra-max ran, on the SSE's go-ahead to clean up the

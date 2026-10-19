@@ -1,0 +1,4 @@
+A	sol-xhigh
+B	astra-xhigh
+C	astra-max
+D	sol-max
