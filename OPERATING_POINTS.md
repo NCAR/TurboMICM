@@ -27,7 +27,7 @@ are in RESULTS.md.
 All five share the carried step quantized to the interval (`quantize=1`),
 32-cell groups, the group RMS error norm, and photolysis rate constants
 recomputed only when the custom parameters change. The option names are
-explained in DESIGN.md ("Options of the Tier 3 loops"); `controller=micm`
+explained in DESIGN.md (Tier 3, "Options"); `controller=micm`
 is MICM's elementary step-size controller and `controller=h211b` the
 digital-filter controller H211b with b = 4.
 
