@@ -16,6 +16,7 @@ import argparse, csv, datetime, hashlib, json, re, subprocess, sys, tempfile, ti
 from pathlib import Path
 
 ENTRY = Path(__file__).resolve().parents[1]
+ROOT = ENTRY.parent  # the Tier 3 run root: scenarios/ and the scorer live there
 SETTINGS = [("micm-L2", "1e-2", "1e-15"), ("micm-L3", "3e-4", "1e-15")]
 FIELDS = ["label", "rtol", "atol", "scenario", "cells", "round", "threads", "elapsed_ms", "process_s",
           "internal_steps", "accepted", "rejected", "function_calls", "jacobian_updates", "decompositions", "solves",
@@ -36,7 +37,7 @@ def main():
     parser.add_argument("--rounds", type=int, default=3)
     parser.add_argument("--threads", type=int, default=10)
     parser.add_argument("--binary", type=Path, default=ENTRY / "bin" / "micm_scenario")
-    parser.add_argument("--score", type=Path, default=ENTRY / "scenarios" / "score.py")
+    parser.add_argument("--score", type=Path, default=ROOT / "scenarios" / "score.py")
     parser.add_argument("--out", type=Path, default=ENTRY / "scans" / "MICM-baselines.csv")
     parser.add_argument("--pause", type=float, default=1.0)
     args = parser.parse_args()
