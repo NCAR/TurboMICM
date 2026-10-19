@@ -1,0 +1,55 @@
+# S4b: the smoothed H211b controller (b = 4 unless stated, k = the estimator order), safety against tolerance; atol 1e-18, warm start, MICM's norm.
+rodas3-r1e-2-h211b-s0.7	rodas3	rtol=1e-2 atol=1e-18 controller=h211b safety=0.7
+rodas3-r5e-3-h211b-s0.7	rodas3	rtol=5e-3 atol=1e-18 controller=h211b safety=0.7
+rodas3-r3e-3-h211b-s0.7	rodas3	rtol=3e-3 atol=1e-18 controller=h211b safety=0.7
+rodas3-r2e-3-h211b-s0.7	rodas3	rtol=2e-3 atol=1e-18 controller=h211b safety=0.7
+rodas3-r1e-3-h211b-s0.7	rodas3	rtol=1e-3 atol=1e-18 controller=h211b safety=0.7
+rodas3-r5e-4-h211b-s0.7	rodas3	rtol=5e-4 atol=1e-18 controller=h211b safety=0.7
+rodas3-r3e-4-h211b-s0.7	rodas3	rtol=3e-4 atol=1e-18 controller=h211b safety=0.7
+rodas3-r2e-4-h211b-s0.7	rodas3	rtol=2e-4 atol=1e-18 controller=h211b safety=0.7
+rodas3-r1e-2-h211b-s0.8	rodas3	rtol=1e-2 atol=1e-18 controller=h211b safety=0.8
+rodas3-r5e-3-h211b-s0.8	rodas3	rtol=5e-3 atol=1e-18 controller=h211b safety=0.8
+rodas3-r3e-3-h211b-s0.8	rodas3	rtol=3e-3 atol=1e-18 controller=h211b safety=0.8
+rodas3-r2e-3-h211b-s0.8	rodas3	rtol=2e-3 atol=1e-18 controller=h211b safety=0.8
+rodas3-r1e-3-h211b-s0.8	rodas3	rtol=1e-3 atol=1e-18 controller=h211b safety=0.8
+rodas3-r5e-4-h211b-s0.8	rodas3	rtol=5e-4 atol=1e-18 controller=h211b safety=0.8
+rodas3-r3e-4-h211b-s0.8	rodas3	rtol=3e-4 atol=1e-18 controller=h211b safety=0.8
+rodas3-r2e-4-h211b-s0.8	rodas3	rtol=2e-4 atol=1e-18 controller=h211b safety=0.8
+rodas3-r1e-2-h211b-s0.9	rodas3	rtol=1e-2 atol=1e-18 controller=h211b safety=0.9
+rodas3-r5e-3-h211b-s0.9	rodas3	rtol=5e-3 atol=1e-18 controller=h211b safety=0.9
+rodas3-r3e-3-h211b-s0.9	rodas3	rtol=3e-3 atol=1e-18 controller=h211b safety=0.9
+rodas3-r2e-3-h211b-s0.9	rodas3	rtol=2e-3 atol=1e-18 controller=h211b safety=0.9
+rodas3-r1e-3-h211b-s0.9	rodas3	rtol=1e-3 atol=1e-18 controller=h211b safety=0.9
+rodas3-r5e-4-h211b-s0.9	rodas3	rtol=5e-4 atol=1e-18 controller=h211b safety=0.9
+rodas3-r3e-4-h211b-s0.9	rodas3	rtol=3e-4 atol=1e-18 controller=h211b safety=0.9
+rodas3-r2e-4-h211b-s0.9	rodas3	rtol=2e-4 atol=1e-18 controller=h211b safety=0.9
+rodas3-r1e-2-h211b-s1.0	rodas3	rtol=1e-2 atol=1e-18 controller=h211b safety=1.0
+rodas3-r5e-3-h211b-s1.0	rodas3	rtol=5e-3 atol=1e-18 controller=h211b safety=1.0
+rodas3-r3e-3-h211b-s1.0	rodas3	rtol=3e-3 atol=1e-18 controller=h211b safety=1.0
+rodas3-r2e-3-h211b-s1.0	rodas3	rtol=2e-3 atol=1e-18 controller=h211b safety=1.0
+rodas3-r1e-3-h211b-s1.0	rodas3	rtol=1e-3 atol=1e-18 controller=h211b safety=1.0
+rodas3-r5e-4-h211b-s1.0	rodas3	rtol=5e-4 atol=1e-18 controller=h211b safety=1.0
+rodas3-r3e-4-h211b-s1.0	rodas3	rtol=3e-4 atol=1e-18 controller=h211b safety=1.0
+rodas3-r2e-4-h211b-s1.0	rodas3	rtol=2e-4 atol=1e-18 controller=h211b safety=1.0
+rodas3-r1e-2-h211b_b3-s0.9	rodas3	rtol=1e-2 atol=1e-18 controller=h211b h211_b=3 safety=0.9
+rodas3-r5e-3-h211b_b3-s0.9	rodas3	rtol=5e-3 atol=1e-18 controller=h211b h211_b=3 safety=0.9
+rodas3-r3e-3-h211b_b3-s0.9	rodas3	rtol=3e-3 atol=1e-18 controller=h211b h211_b=3 safety=0.9
+rodas3-r2e-3-h211b_b3-s0.9	rodas3	rtol=2e-3 atol=1e-18 controller=h211b h211_b=3 safety=0.9
+rodas3-r1e-3-h211b_b3-s0.9	rodas3	rtol=1e-3 atol=1e-18 controller=h211b h211_b=3 safety=0.9
+rodas3-r5e-4-h211b_b3-s0.9	rodas3	rtol=5e-4 atol=1e-18 controller=h211b h211_b=3 safety=0.9
+rodas3-r3e-4-h211b_b3-s0.9	rodas3	rtol=3e-4 atol=1e-18 controller=h211b h211_b=3 safety=0.9
+rodas3-r2e-4-h211b_b3-s0.9	rodas3	rtol=2e-4 atol=1e-18 controller=h211b h211_b=3 safety=0.9
+rodas3-r1e-2-h211b_b6-s0.9	rodas3	rtol=1e-2 atol=1e-18 controller=h211b h211_b=6 safety=0.9
+rodas3-r5e-3-h211b_b6-s0.9	rodas3	rtol=5e-3 atol=1e-18 controller=h211b h211_b=6 safety=0.9
+rodas3-r3e-3-h211b_b6-s0.9	rodas3	rtol=3e-3 atol=1e-18 controller=h211b h211_b=6 safety=0.9
+rodas3-r2e-3-h211b_b6-s0.9	rodas3	rtol=2e-3 atol=1e-18 controller=h211b h211_b=6 safety=0.9
+rodas3-r1e-3-h211b_b6-s0.9	rodas3	rtol=1e-3 atol=1e-18 controller=h211b h211_b=6 safety=0.9
+rodas3-r5e-4-h211b_b6-s0.9	rodas3	rtol=5e-4 atol=1e-18 controller=h211b h211_b=6 safety=0.9
+rodas3-r3e-4-h211b_b6-s0.9	rodas3	rtol=3e-4 atol=1e-18 controller=h211b h211_b=6 safety=0.9
+rodas3-r2e-4-h211b_b6-s0.9	rodas3	rtol=2e-4 atol=1e-18 controller=h211b h211_b=6 safety=0.9
+extrap4-r5e-3-h211b-s0.9	extrap	rtol=5e-3 atol=1e-18 order=4 controller=h211b safety=0.9
+extrap4-r2e-3-h211b-s0.9	extrap	rtol=2e-3 atol=1e-18 order=4 controller=h211b safety=0.9
+extrap4-r1e-3-h211b-s0.9	extrap	rtol=1e-3 atol=1e-18 order=4 controller=h211b safety=0.9
+extrap4-r5e-4-h211b-s0.9	extrap	rtol=5e-4 atol=1e-18 order=4 controller=h211b safety=0.9
+rodas3-r3e-3-h211b-s0.9-filtered	rodas3	rtol=3e-3 atol=1e-18 controller=h211b safety=0.9 filter_error=1
+rodas3-r1e-3-h211b-s0.9-filtered	rodas3	rtol=1e-3 atol=1e-18 controller=h211b safety=0.9 filter_error=1
