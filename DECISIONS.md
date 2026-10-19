@@ -368,6 +368,14 @@ Tier 1 decisions above stand.
   at 5e-3 / 1e-20 (2.42 and 1.29 in 1.16 s): S13b showed every loose H211b
   setting at safety 1.0 to 1.2 meeting the same 2.04-digit floor on
   diurnal-5min.
+- **S15 and S15b, the questions left open:** ROS3 and ROS4 under H211b had
+  never been scanned. ROS4 is never on the frontier. ROS3 with H211b moves
+  it on the 10-minute scenarios but is held by the 30-minute one, and on all
+  six it gives the cheapest configuration that meets the level-3 margin
+  rule: 8e-3 / 1e-20, 3.27 digits and 2.37 for the worst species in 2.34 s.
+  It is declared as L3r in place of the balanced point (RODAS3 with H211b at
+  2e-3 / 1e-20), which had 0.17 of margin and was declared for level 2 only.
+  The intermediate RODAS3 tolerances fill the curve without moving it.
 - **The order of the remaining scans** followed from the cost picture: the
   fastest configurations take one to five RODAS3 steps per interval, and
   the step count is set by the worst species (isoprene) reaching L - 1
@@ -377,6 +385,40 @@ Tier 1 decisions above stand.
   size and scheduling (S9), clamping (S7), the extrapolation's sequences
   (S8), and the generic kernels (S10); precision (S11) last, if the
   algorithmic levers leave it worth the generator work.
+
+## The judgment
+
+The search is finished: the operating points are the best configurations
+found for the ranking's two levels and for an accurate reference, and the
+levers that remain untried are either measured not to pay here or are
+outside this entry's scope.
+
+- **What was tried:** ten tableaus and extrapolation orders 2 to 8 across
+  tolerances (S2, S8); four controllers with their safeties and exponents
+  (S4, S4b, S4c, S15); three norms (S5); six absolute tolerances (S3, S12);
+  factorization reuse in three forms (S6a); clamping (S7); the first step
+  (S1); grouping and scheduling at both thread counts (S9); generic
+  against generated kernels (S10, S16); 21 candidates confirmed on all six
+  scenarios in three rounds (S13), plus the loose H211b points (S13b) and
+  ROS3 under H211b (S15b): about 620 configurations, 2,300 runs.
+- **What moved the frontier:** the carried quantized step, the H211b
+  controller, the absolute tolerance, and the shifted substep sequence; and,
+  with them, ROS3 at three digits. Nothing else did, and each lever's
+  alternatives were measured, not assumed.
+- **What was not tried, and why:** single-precision kernels (S11), because
+  the algorithmic levers left the kernels at three quarters of the time and
+  the generator work would have been a day for at most 1.3 times on that
+  share, with an accuracy risk at the species near the floor; mechanism
+  reduction and surrogates, excluded by the rules; SDIRK and exponential
+  methods, whose literature (research/R3) puts them behind Rosenbrock at
+  these tolerances for this stiffness, and which the contest's agents that
+  tried SDIRK confirmed slower; W-methods with reused factorizations beyond
+  ROS34PW2, because S6a showed the matrix changes every daytime interval.
+- **What would change the result:** a host model whose photolysis changes
+  more slowly than every interval (reuse becomes a lever); a score that did
+  not count species down to 1e-14 mol m-3 (the absolute tolerance would
+  loosen and RODAS3 at 1e-2 would be the two-digit point, as the contest's
+  winners have it); or a machine where the kernels' share differs.
 
 ## Prototypes
 

@@ -10,8 +10,9 @@ laptop (10 cores) with Apple clang 21, built with `-O3 -DNDEBUG`. Accuracy
 is `scenarios/score.py`'s: digits overall and for the worst species, with
 the gate (no NaN or infinity, nothing below -1e-20 mol m-3). Times are
 medians of three runs at 10 threads in one session (scan S13, 06:27 to 06:39
-on 2026-10-19, idle machine, AC power; `scans/S13-confirmation.csv`), and
-one run at one thread (S14). The experimenter's ranking times 10,000-cell
+on 2026-10-19, and S15b, 07:54 to 07:59, for L3r; idle machine, AC power;
+`scans/S13-confirmation.csv`, `scans/S15b-ros3-confirmation.csv`), and one
+run at one thread (S14, S16). The experimenter's ranking times 10,000-cell
 scenarios, median of five, in its own session; those numbers are the
 ranking's, not these.
 
@@ -24,7 +25,7 @@ overall (worst species and its digits), median elapsed ms at 10 threads.
 | Point | clean-10min | diurnal-10min | diurnal-30min | diurnal-5min | polluted-10min | tier1-30s | Lowest (worst) | Level | Time, s |
 |---|---|---|---|---|---|---|---|---|---:|
 | L2 | 2.58 (ISOP 1.52) 175 | 2.56 (ISOP 1.39) 205 | 2.52 (ISOP 1.37) 162 | 2.73 (NO 1.87) 281 | 2.42 (ISOP 1.29) 247 | 5.09 (C6H5O2 4.40) 89 | 2.42 (1.29) | 2 | 1.160 |
-| balanced | 3.26 (ISOP 2.26) 365 | 3.25 (ISOP 2.17) 410 | 3.30 (ISOP 2.32) 335 | 3.75 (ISOP 2.89) 488 | 3.17 (ISOP 2.17) 482 | 5.80 (ISOP 5.02) 128 | 3.17 (2.17) | 3 (declared 2) | 2.208 |
+| L3r | 3.56 (ISOP 2.82) 412 | 3.51 (HYDRALD 2.81) 430 | 3.27 (ISOP 2.37) 365 | 3.47 (HYDRALD 2.76) 508 | 3.43 (MVK 2.74) 531 | 5.77 (ISOP 4.95) 92 | 3.27 (2.37) | 3 | 2.337 |
 | L3 | 3.61 (ISOP 2.49) 399 | 3.84 (ISOP 2.58) 449 | 3.65 (ISOP 2.52) 387 | 4.12 (ISOP 3.00) 644 | 3.95 (ISOP 2.85) 550 | 5.87 (ISOPO2 5.32) 217 | 3.61 (2.49) | 3 | 2.647 |
 | recommended | 3.62 (MALO2 2.87) 467 | 3.65 (OClO 2.69) 471 | 4.24 (ISOP 3.10) 372 | 3.87 (BrO 3.00) 830 | 4.52 (ISOP 3.40) 599 | 6.53 (MEKO2 5.86) 303 | 3.62 (2.69) | 3 | 3.041 |
 | accurate | 4.81 (ISOP 3.66) 530 | 4.72 (ISOP 3.49) 556 | 4.57 (ISOP 3.54) 488 | 3.87 (BrO 3.00) 870 | 4.54 (ISOP 3.41) 701 | 6.84 (MEKO2 6.30) 303 | 3.87 (3.00) | 3 | 3.449 |
@@ -36,7 +37,7 @@ rejections, forcing evaluations, Jacobians, factorizations, solves.
 | Point | Steps | Rejected | Forcings | Jacobians | Factorizations | Solves |
 |---|---:|---:|---:|---:|---:|---:|
 | L2 | 2.12 | 0.21 | 6.2 | 2.1 | 2.1 | 8.5 |
-| balanced | 4.16 | 0.35 | 12.1 | 4.2 | 4.2 | 16.6 |
+| L3r | 5.87 | 0.83 | 10.9 | 5.9 | 5.9 | 17.6 |
 | L3 | 2.11 | 0.10 | 14.7 | 2.0 | 6.3 | 19.0 |
 | recommended | 1.62 | 0.06 | 17.7 | 1.6 | 6.5 | 22.6 |
 | accurate | 1.91 | 0.11 | 21.0 | 1.8 | 7.7 | 26.8 |
@@ -73,7 +74,7 @@ between the two settings) or on the interval length.
 | Point | Time, s | Speedup over MICM at level 2 | Speedup over MICM at level 3 |
 |---|---:|---:|---:|
 | L2 | 1.160 | 21.2 | |
-| balanced | 2.208 | 11.1 | 13.1 (if its three digits hold on the undisclosed scenarios) |
+| L3r | 2.337 | | 12.4 |
 | L3 | 2.647 | | 11.0 |
 | recommended | 3.041 | | 9.5 |
 | accurate | 3.449 | | 8.4 |
@@ -83,8 +84,8 @@ one session on the M5; the ranking's numbers (10,000 cells, 11 scenarios,
 its own session) will differ, and MICM's level-2 setting here gives 3.3 to
 3.5 digits on four of the six scenarios where L2 gives 2.4 to 2.7, so the
 comparison is at the level, not at equal digits. At equal digits the
-nearest pairs are balanced (3.17 overall at the lowest, 2.21 s) against
-MICM's level-3 setting (3.29, 29.0 s), 13 times, and accurate (3.87, 3.45 s)
+nearest pairs are L3r (3.27 overall at the lowest, 2.34 s) against MICM's
+level-3 setting (3.29, 29.0 s), 12.4 times, and accurate (3.87, 3.45 s)
 against the same setting, 8.4 times with 0.6 digit more.
 
 ## Work-precision plots
@@ -94,9 +95,10 @@ scenarios against the lowest digits over them, the ranking's view; dashed
 lines at the levels):
 
 - `wp-S13-confirmation-overall.png` and `-worst.png`: the 21 candidates of
-  S13 on the six disclosed scenarios, the five operating points starred.
-  The frontier is RODAS3 with the elementary controller up to 1.3 digits
-  per species, RODAS3 with H211b from 1.9 to 2.2, and extrapolation above.
+  S13 and the nine of S15b on the six disclosed scenarios, the five
+  operating points starred. The frontier is RODAS3 with the elementary
+  controller up to 1.3 digits per species, RODAS3 and ROS3 with H211b from
+  1.9 to 2.4, and extrapolation above.
 - `wp-S12-joint-grid-overall.png` and `-worst.png`: the joint grid of
   tolerances and controller on diurnal-10min and polluted-10min, one curve
   per method, controller, and absolute tolerance. The H211b curves sit
@@ -115,9 +117,10 @@ lines at the levels):
 
 ## Where the time goes
 
-The five points at one thread (S14, one run per scenario,
-`scans/S14-finals-1thread.csv`), the time summed over the six scenarios,
-the speedup at 10 threads from S10's generated runs in the same session,
+The five points at one thread (S14 and, for L3r, S16; one run per scenario,
+`scans/S14-finals-1thread.csv`, `scans/S16-L3r-1thread.csv`), the time
+summed over the six scenarios, the speedup at 10 threads from S10's and
+S16's generated runs in the same session,
 and the kernel cost model's share: the model multiplies the operation
 counts by the per-cell kernel costs measured with `bin/kernel_bench` at
 32-cell groups (forcing 225 ns, Jacobian 438 ns, factorization 676 ns,
@@ -127,7 +130,7 @@ cell and interval.
 | Point | 1 thread, s | 10 threads, s | Speedup | Model / measured, range over the scenarios |
 |---|---:|---:|---:|---|
 | L2 | 5.96 | 1.17 | 5.1 | 0.70 to 0.79 |
-| balanced | 10.96 | 2.24 | 4.9 | 0.75 to 0.78 |
+| L3r | 11.90 | 2.33 | 5.1 | 0.80 to 0.83 |
 | L3 | 12.78 | 2.76 | 4.6 | 0.76 to 0.78 |
 | recommended | 15.02 | 3.12 | 4.8 | 0.74 to 0.78 |
 | accurate | 17.11 | 3.53 | 4.8 | 0.75 to 0.79 |
@@ -146,14 +149,14 @@ cell and interval.
 
 ## Generated against generic kernels
 
-S10 (`scans/S10-generic.csv`): each point once on the six scenarios with
-the generated kernels and with the generic (index-driven) kernels of the
-same library, 10 threads, in one session.
+S10 (`scans/S10-generic.csv`; S16 for L3r): each point once on the six
+scenarios with the generated kernels and with the generic (index-driven)
+kernels of the same library, 10 threads, in one session.
 
 | Point | Generated, s | Generic, s | Ratio |
 |---|---:|---:|---:|
 | L2 | 1.17 | 6.46 | 5.5 |
-| balanced | 2.24 | 12.55 | 5.6 |
+| L3r | 2.33 | 13.37 | 5.7 |
 | L3 | 2.76 | 14.70 | 5.3 |
 | recommended | 3.12 | 18.28 | 5.9 |
 | accurate | 3.53 | 19.53 | 5.5 |

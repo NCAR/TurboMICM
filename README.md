@@ -38,10 +38,11 @@ in SCANS.md and `scans/`; the design and the decisions in DESIGN.md and
 DECISIONS.md; the sources in REFERENCES.md. In short: RODAS3 with the step
 carried from one interval to the next and quantized to the interval is the
 two-digit method (its elementary controller at relative 5e-3, absolute
-1e-20); the same method with the digital-filter controller H211b reaches
-three digits at relative 2e-3; and extrapolated linearly implicit Euler with
-the substep sequence 2, 3, 4, ... is the three-digit and the accurate method
-(orders 3 and 4 at relative 1e-3 to 2e-4, absolute 1e-20 to 1e-22). A tight
+1e-20); ROS3 under the digital-filter controller H211b is the cheapest
+three-digit method (relative 8e-3, absolute 1e-20); and extrapolated
+linearly implicit Euler with the substep sequence 2, 3, 4, ... is the
+three-digit method with the larger margin and the accurate method (orders
+3 and 4 at relative 1e-3 to 2e-4, absolute 1e-20 to 1e-22). A tight
 absolute tolerance matters because the species that set the score sit near
 the 1e-14 mol m-3 floor it counts from.
 

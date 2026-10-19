@@ -108,14 +108,14 @@ Two consequences for the design:
 
 ## What the measurements show
 
-The five operating points on the six disclosed scenarios (S13 in SCANS.md;
-1,000 cells; every run passes the gate, and every configuration's output is
-identical across rounds):
+The five operating points on the six disclosed scenarios (S13 and S15b in
+SCANS.md; 1,000 cells; every run passes the gate, and every configuration's
+output is identical across rounds):
 
 | Point | Lowest overall (scenario) | Lowest per species (species, scenario) | Margin to level 2 (overall / species) | Margin to level 3 |
 |---|---|---|---|---|
 | L2 | 2.42 (polluted-10min) | 1.29 (isoprene, polluted-10min) | 0.42 / 0.29 | below |
-| balanced | 3.17 (polluted-10min) | 2.17 (isoprene, polluted-10min) | 1.17 / 1.17 | 0.17 / 0.17 |
+| L3r | 3.27 (diurnal-30min) | 2.37 (isoprene, diurnal-30min) | 1.27 / 1.37 | 0.27 / 0.37 |
 | L3 | 3.61 (clean-10min) | 2.49 (isoprene, clean-10min) | 1.61 / 1.49 | 0.61 / 0.49 |
 | recommended | 3.62 (clean-10min) | 2.69 (OClO, diurnal-10min) | 1.62 / 1.69 | 0.62 / 0.69 |
 | accurate | 3.87 (diurnal-5min) | 3.00 (BrO, diurnal-5min) | 1.87 / 2.00 | 0.87 / 1.00 |
@@ -157,5 +157,7 @@ measured accuracy follows the tolerance as expected: halving the relative
 tolerance adds 0.1 to 0.3 digit, and the safety factor 0.9 is kept for the
 elementary controller (S4). The H211b controller's smoother step sequence
 gives 0.4 to 0.5 more digits for the worst species than the elementary
-controller at the same tolerance (S4b, S12), which is how the balanced
-point reaches three digits at a level-2 cost.
+controller at the same tolerance (S4b, S12); under it ROS3, with two
+forcing evaluations per step against RODAS3's three, reaches three digits
+with the margin at 12 % less time than the extrapolation point (S15, S15b),
+which is the L3r point.

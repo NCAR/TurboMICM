@@ -704,12 +704,12 @@ scenarios, three rounds, beside S13's elementary candidates:
 
 ### The operating points
 
-From S13 and S13b, under ACCURACY.md's margin rule:
+From S13, S13b, and S15b, under ACCURACY.md's margin rule (RODAS3 with H211b at 2e-3 / 1e-20, the "balanced" candidate declared for level 2 before S15, was replaced by L3r, which meets the level-3 margin):
 
 | Point | Method | Declared level | Lowest (worst) over the six | Time, s |
 |---|---|---|---|---:|
 | L2 | RODAS3, elementary controller, 5e-3 / 1e-20 | 2 | 2.42 (ISOP 1.29) | 1.160 |
-| balanced | RODAS3, H211b, 2e-3 / 1e-20 | 2 (reaches 3 on all six with 0.17 of margin) | 3.17 (ISOP 2.17) | 2.208 |
+| L3r | ROS3, H211b, 8e-3 / 1e-20 (S15b) | 3 | 3.27 (ISOP 2.37) | 2.337 |
 | L3 | extrapolation order 3, shifted, 1e-3 / 1e-20 | 3 | 3.61 (ISOP 2.49) | 2.647 |
 | recommended | extrapolation order 4, shifted, 5e-4 / 1e-22 | 3 | 3.62 (OClO 2.69) | 3.041 |
 | accurate | extrapolation order 4, shifted, 2e-4 / 1e-20 | 3 (3.87 overall, 3.00 per species) | 3.87 (BrO 3.00) | 3.449 |
@@ -759,4 +759,38 @@ in 1.02 s at 1e-20; at 1.2e-3: 3.25 (2.33) in 0.96 s and 3.34 (2.52) in 1.15 s.
 - **S15b** confirms ROS3 with H211b on all six scenarios, three rounds, at
   rtol 1e-2 to 3e-3 and atol 1e-18 and 1e-20, beside RODAS3 at 1.2e-3, to
   decide whether a point changes.
+
+### S15b: ROS3 under H211b on all six scenarios (`scans/S15b-ros3-confirmation.csv`)
+
+Three rounds, final conventions; the declared points from S13 for
+comparison. Lowest digits (worst species) over the six, time summed:
+
+| Configuration | Lowest (worst) | Time, s | Level-3 margin (overall / species) | diurnal-30min |
+|---|---|---:|---|---|
+| ROS3, H211b, 1e-2 / 1e-18 | 2.92 (2.09) | 1.90 | below | 2.92 (ISOP 2.09) |
+| ROS3, H211b, 1e-2 / 1e-20 | 3.14 (2.17) | 2.06 | 0.14 / 0.17 | 3.14 (ISOP 2.17) |
+| ROS3, H211b, 8e-3 / 1e-18 | 3.23 (2.15) | 2.12 | 0.23 / 0.15 | 3.23 (ISOP 2.15) |
+| RODAS3, H211b, 2e-3 / 1e-20 (balanced, S13) | 3.17 (2.17) | 2.21 | 0.17 / 0.17 | 3.30 (ISOP 2.32) |
+| **ROS3, H211b, 8e-3 / 1e-20** | 3.27 (2.37) | 2.34 | 0.27 / 0.37 | 3.27 (ISOP 2.37) |
+| RODAS3, H211b, 1.2e-3 / 1e-18 | 3.25 (2.29) | 2.39 | 0.25 / 0.29 | 3.28 (ISOP 2.36) |
+| RODAS3, H211b, 1e-3 / 1e-18 (S13) | 3.29 (2.32) | 2.58 | 0.29 / 0.32 | 3.43 (ISOP 2.33) |
+| extrapolation 3, shifted, 1e-3 / 1e-20 (L3, S13) | 3.61 (2.49) | 2.65 | 0.61 / 0.49 | 3.65 (ISOP 2.52) |
+| ROS3, H211b, 5e-3 / 1e-18 | 3.39 (2.37) | 2.74 | 0.39 / 0.37 | 3.39 (ISOP 2.37) |
+| ROS3, H211b, 5e-3 / 1e-20 | 3.50 (2.40) | 3.05 | 0.50 / 0.40 | 3.50 (ISOP 2.40) |
+| ROS3, H211b, 3e-3 / 1e-18 | 3.64 (2.41) | 3.67 | 0.64 / 0.41 | 3.64 (ISOP 2.41) |
+
+- **On all six scenarios the 30-minute one holds ROS3 back**, as it holds
+  everything: the two-scenario advantage of S15 (3.35 (2.64) at 1e-2) does
+  not survive diurnal-30min (2.92 (2.09)), where ROS3 needs 12 steps per
+  interval. The frontier at level 3 is therefore: ROS3 with H211b at 8e-3 /
+  1e-20 meets the margin rule (0.27 overall, 0.37 for the worst species) at
+  2.34 s, 12 % under the extrapolation point L3 (2.65 s, margins 0.61 and
+  0.49) and 9 % under RODAS3 with H211b at 1e-3 / 1e-18 (2.58 s); the
+  balanced candidate (RODAS3 at 2e-3 / 1e-20, 2.21 s) never met it.
+- **Decision:** ROS3 with H211b at 8e-3 / 1e-20 is declared for level 3 as
+  **L3r** and replaces the balanced point; L3 (extrapolation) stays as the
+  level-3 point with the larger margin and a second method family. S16
+  measured L3r with the generic kernels (5.7 times slower, same steps and
+  digits) and at one thread (11.9 s, 5.1 times at 10 threads, the kernel
+  model 80 to 83 % of the time).
 

@@ -1,0 +1,3 @@
+# S16: the L3r point (ROS3, H211b, 8e-3 / 1e-20) with generic kernels and at one thread, as S10 and S14 did for the other points.
+L3r-ros3-r8e-3-a1e-20-generated	ros3	rtol=8e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9
+L3r-ros3-r8e-3-a1e-20-generic	ros3	rtol=8e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9 generic=1

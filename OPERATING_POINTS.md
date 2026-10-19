@@ -13,13 +13,13 @@ directory.
 | Point | Command | Declared level | Lowest overall / worst species over the six disclosed scenarios | Expected on an undisclosed scenario |
 |---|---|---|---|---|
 | L2 | `bin/ts1_scenario --threads N --method rodas3 --option rtol=5e-3 --option atol=1e-20 --option quantize=1 --option controller=micm --option safety=0.9 SCENARIO` | 2 | 2.42 / isoprene 1.29 (polluted-10min); 2.42 to 2.73 overall and 1.29 to 1.87 per species on the day-night scenarios | 2 digits overall and 1 per species, with 0.3 to spare |
-| balanced | `bin/ts1_scenario --threads N --method rodas3 --option rtol=2e-3 --option atol=1e-20 --option quantize=1 --option controller=h211b --option safety=0.9 SCENARIO` | 2 | 3.17 / isoprene 2.17 (polluted-10min); 3.17 to 3.75 and 2.17 to 2.89 | 3 digits overall and 2 per species on most scenarios, with 0.17 to spare on the disclosed ones; declared for level 2 because that margin is below the 0.2 the rule asks |
+| L3r | `bin/ts1_scenario --threads N --method ros3 --option rtol=8e-3 --option atol=1e-20 --option quantize=1 --option controller=h211b --option safety=0.9 SCENARIO` | 3 | 3.27 / isoprene 2.37 (diurnal-30min); 3.27 to 3.56 and 2.37 to 2.82 | 3 digits overall and 2 per species, with 0.3 to spare |
 | L3 | `bin/ts1_scenario --threads N --method extrap --option order=3 --option sequence=shifted --option rtol=1e-3 --option atol=1e-20 --option quantize=1 --option controller=micm --option safety=0.9 SCENARIO` | 3 | 3.61 / isoprene 2.49 (clean-10min); 3.61 to 4.12 and 2.49 to 3.00 | 3 digits overall and 2 per species, with 0.5 to spare |
 | recommended | `bin/ts1_scenario --threads N --method extrap --option order=4 --option sequence=shifted --option rtol=5e-4 --option atol=1e-22 --option quantize=1 --option controller=micm --option safety=0.9 SCENARIO` | 3 | 3.62 / OClO 2.69 (diurnal-10min); 3.62 to 4.52 and 2.69 to 3.40 | 3 digits overall and 2 per species, with 0.6 to spare; 2.5 per species on most scenarios |
 | accurate | `bin/ts1_scenario --threads N --method extrap --option order=4 --option sequence=shifted --option rtol=2e-4 --option atol=1e-20 --option quantize=1 --option controller=micm --option safety=0.9 SCENARIO` | 3 | 3.87 / BrO 3.00 (diurnal-5min); 3.87 to 4.81 and 3.00 to 3.66 | 3 digits overall and 2 per species with 0.9 to spare; about 4 overall and 3 per species on most scenarios |
 
 Times (sums over the six disclosed scenarios of the median of three runs at
-1,000 cells and 10 threads, S13): L2 1.16 s, balanced 2.21 s, L3 2.65 s,
+1,000 cells and 10 threads, S13 and S15b): L2 1.16 s, L3r 2.34 s, L3 2.65 s,
 recommended 3.04 s, accurate 3.45 s. MICM's three-stage Rosenbrock at the
 tolerances that reach each level on the same scenarios, and the speedups,
 are in RESULTS.md.
@@ -48,7 +48,11 @@ tolerance that gives MICM the same level (9.5 times faster on the six
 disclosed scenarios; RESULTS.md).
 
 For a model that needs only two digits, **L2** is the choice at a third of
-the recommended point's time; **balanced** sits between them and will
-usually deliver three digits. **accurate** is for reference runs: nearly
+the recommended point's time; **L3r**, ROS3 under the H211b controller, is
+the cheapest point with three digits and the rule's margin, 12 % under L3,
+with a different method family as insurance for the ranking at level 3.
+(RODAS3 with H211b at 2e-3 and 1e-20, "balanced" in the scans, reaches three
+digits on the six disclosed scenarios by 0.17 and was replaced by L3r, which
+meets the margin at 6 % more time.) **accurate** is for reference runs: nearly
 four digits everywhere, three per species, at 1.13 times the recommended
 point's time.
