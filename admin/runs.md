@@ -600,6 +600,25 @@ set up. All times MDT.
   `~/NSF-NCAR/tier3-work/micm-scan/`. Nothing else ran on the machine
   during it. The baselines it picks go into the timing session's programs
   file (`~/NSF-NCAR/tier3-work/programs.txt`, built by `make_programs.sh`).
+- 20:13–20:41: the **MICM scan** finished (198 runs; `ranking.md` in
+  `results/2026-10-19-tier3-ranking/micm-scan/`). Every setting reaches
+  level 2 on all 11 scenarios; the fastest is rtol 1e-2, atol 1e-15 (52.5 s
+  summed, worst species isoprene 1.24 digits). Level 3 on all 11 is reached
+  from rtol 3e-4 at atol 1e-15 (61.3 s; 3.29 digits, isoprene 2.05) and
+  from 1e-3 at 1e-18 (70.3 s); the next setting, rtol 2e-4 at 1e-15
+  (63.5 s, isoprene 2.21), is within one round's noise of it. MICM's time
+  barely depends on the tolerance (52 to 97 s across the 18 settings)
+  because its loop restarts every interval at 1e-6 of the step.
+- 21:19: the **timing session** started (`~/NSF-NCAR/tier3-work/
+  run-timing.sh` in tmux under `caffeinate`, with a load audit every
+  minute): the 19 declared points and three MICM programs, `micm/L2`
+  (rtol 1e-2, atol 1e-15), `micm/L3` (3e-4, 1e-15), and `micm/L3b` (2e-4,
+  1e-15, so that a level-3 baseline survives if L3's 0.05-digit margin on
+  isoprene does not hold at 10,000 cells; the ranking takes the fastest
+  MICM point that reaches each level), on the 10,000-cell versions of the
+  11 scenarios, 5 rounds, 10 threads: 1,210 runs. Between 20:41 and 21:19
+  the machine built and tested the Fable entry (next item), which is why
+  the session did not start at 20:41.
 - 19:38 on: **Fable's Tier 3 reference solution**, commissioned by the SSE
   ("while the codex entrants work, you may also begin the Fable Tier 3
   reference solution, begin your own web search (use Sonnet researchers and
