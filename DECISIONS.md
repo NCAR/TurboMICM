@@ -305,7 +305,34 @@ Tier 1 decisions above stand.
   18 % and loses up to half a digit, RODAS3 (not a W-method) loses its
   order, and ROS34PW2 with reuse remains slower than RODAS3 without. The
   mechanism stays in the code, tested, for rates that change more slowly.
-- **The order of the remaining scans** follows from the cost picture: the
+- **S4, the controller:** H211b with b = 4 and k = p at safety 0.9 is the
+  candidate for RODAS3, because it is the one controller above the
+  elementary controller's work-precision curve (7 to 17 % less time at
+  equal worst-species digits, from a smoother step sequence with half the
+  rejections and a third more steps per tolerance). The predictive
+  controller only trades rejections for smaller steps; Dreger's (1, 1.7)
+  setting acts like the elementary controller on this problem; safety
+  above 1 and a larger growth limit gain nothing; the filtered error
+  estimate lands on the same curve as a looser tolerance and costs a solve
+  per step. The candidate is confirmed under the final conventions in S12
+  before it enters an operating point; the elementary controller stays for
+  extrapolation.
+- **S5, the norm:** MICM's group RMS norm stays. The per-cell and maximum
+  norms are the same curve at a rescaled tolerance (by 2.5 and 20), and
+  controlling the worst component directly does not help the species that
+  sets the score.
+- **S3, the absolute tolerance:** 1e-18 for the level-2 points, where the
+  gain saturates; for level 3 the absolute tolerance is a lever (at rtol
+  5e-4, 1e-20 and 1e-22 each add 0.2 digit for the worst species for 10 to
+  15 % more time, cheaper than the same digits through rtol), because the
+  species that set the score live near the 1e-14 floor the score counts
+  from. The level-3 points come from the joint grid S12.
+- **S7, clamping:** off, as in MICM; every run passes the gate without it,
+  and it changes nothing measurable.
+- **S9, grouping:** 32-cell groups and dynamic scheduling, as in Tier 1;
+  8 to 32 are equal within noise at 10 threads, 64 and 128 cost 15 to
+  30 %, static scheduling 5 to 10 %.
+- **The order of the remaining scans** followed from the cost picture: the
   fastest configurations take one to five RODAS3 steps per interval, and
   the step count is set by the worst species (isoprene) reaching L - 1
   digits while the overall error is a digit better. So: the controller and
