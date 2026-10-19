@@ -50,6 +50,9 @@ def main():
             for scenario in args.scenarios:
                 scenario = scenario.resolve()
                 reference = scenario / "reference_snapshots.csv"
+                if not reference.exists():
+                    reference = scenario / "reference_final.csv"
+                output_name = "ts1_snapshots.csv" if reference.name.startswith("reference_snapshots") else "ts1_final.csv"
                 cells = sum(1 for _ in open(scenario / "cells.csv")) - 1
                 order = SETTINGS[(round_number - 1) % len(SETTINGS):] + SETTINGS[:(round_number - 1) % len(SETTINGS)]
                 for label, rtol, atol in order:
@@ -68,7 +71,7 @@ def main():
                                     "round": round_number, "threads": args.threads, "process_s": f"{process_s:.3f}",
                                     "status": status, "started": started, "digits": "", "worst_species": "",
                                     "worst_digits": "", "gate": "FAIL", "output_sha256": ""})
-                        result = work / "ts1_snapshots.csv"
+                        result = work / output_name
                         if status == "ok" and result.exists():
                             sha = sha256(result)
                             row["output_sha256"] = sha
