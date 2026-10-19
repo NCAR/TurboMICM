@@ -608,3 +608,67 @@ Extrapolation of order 4, elementary controller: rtol 2e-3, 2.91 (1.62) in
   for the accurate end on all six disclosed scenarios, three rounds, under
   the final conventions; the operating points are chosen from it.
 
+### S13: confirmation on all six disclosed scenarios (`scans/S13-confirmation.csv`)
+
+21 candidates from S12, S8, and S4b on the six disclosed scenarios, 1,000
+cells, 10 threads, three rounds (medians; every configuration's output was
+identical across rounds, so the digits are exact), final conventions. Time
+is the sum over the six scenarios of the median elapsed time. Per scenario:
+digits overall (worst species and its digits), median ms.
+
+| Candidate | Time, s | Lowest (worst) | clean-10min | diurnal-10min | diurnal-30min | diurnal-5min | polluted-10min | tier1-30s |
+|---|---:|---|---|---|---|---|---|---|
+| RODAS3 elementary 1e-2 / 1e-20 | 1.005 | 2.04 (1.10) | 2.54 (ISOP 1.51) 154 | 2.51 (ISOP 1.36) 164 | 2.04 (ISOP 1.10) 131 | 2.04 (BrO 1.15) 268 | 2.39 (ISOP 1.28) 203 | 4.87 (C6H5O2 4.17) 85 |
+| RODAS3 elementary 5e-3 / 1e-18 | 1.103 | 2.04 (1.15) | 2.56 (ISOP 1.52) 170 | 2.53 (ISOP 1.39) 190 | 2.30 (ISOP 1.19) 155 | 2.04 (BrO 1.15) 273 | 2.39 (ISOP 1.28) 227 | 5.10 (C6H5O2 4.41) 88 |
+| RODAS3 elementary 5e-3 / 1e-20 | 1.160 | 2.42 (1.29) | 2.58 (ISOP 1.52) 175 | 2.56 (ISOP 1.39) 205 | 2.52 (ISOP 1.37) 162 | 2.73 (NO 1.87) 281 | 2.42 (ISOP 1.29) 247 | 5.09 (C6H5O2 4.40) 89 |
+| RODAS3 elementary 3e-3 / 1e-18 | 1.263 | 2.50 (1.42) | 2.61 (ISOP 1.54) 203 | 2.59 (ISOP 1.45) 225 | 2.56 (ISOP 1.43) 172 | 3.06 (ISOP 2.09) 301 | 2.50 (ISOP 1.42) 271 | 5.25 (C6H5O2 4.55) 90 |
+| RODAS3 elementary 3e-3 / 1e-20 | 1.395 | 2.62 (1.54) | 2.62 (ISOP 1.55) 215 | 2.67 (ISOP 1.54) 260 | 2.71 (ISOP 1.70) 197 | 3.16 (ISOP 2.09) 315 | 2.68 (ISOP 2.00) 315 | 5.26 (C6H5O2 4.58) 92 |
+| RODAS3 H211b 1e-2 / 1e-20 | 1.376 | 2.04 (1.15) | 2.90 (PHENO 2.16) 230 | 3.03 (ISOP 2.17) 251 | 2.50 (ISOP 1.49) 177 | 2.04 (BrO 1.15) 316 | 3.00 (ISOP 2.06) 298 | 5.53 (C6H5O2 4.87) 104 |
+| RODAS3 H211b 5e-3 / 1e-20 | 1.615 | 2.75 (1.87) | 3.18 (ISOP 2.24) 258 | 3.19 (ISOP 2.29) 321 | 2.76 (ISOP 1.91) 219 | 2.75 (NO 1.87) 359 | 3.06 (ISOP 2.05) 345 | 5.67 (ISOP 4.98) 113 |
+| RODAS3 H211b 3e-3 / 1e-20 | 1.876 | 3.03 (2.09) | 3.23 (ISOP 2.25) 305 | 3.19 (ISOP 2.13) 352 | 3.03 (ISOP 2.11) 275 | 3.46 (HYDRALD 2.82) 415 | 3.11 (ISOP 2.09) 409 | 5.75 (ISOP 5.00) 121 |
+| RODAS3 H211b 2e-3 / 1e-20 | 2.208 | 3.17 (2.17) | 3.26 (ISOP 2.26) 365 | 3.25 (ISOP 2.17) 410 | 3.30 (ISOP 2.32) 335 | 3.75 (ISOP 2.89) 488 | 3.17 (ISOP 2.17) 482 | 5.80 (ISOP 5.02) 128 |
+| RODAS3 H211b 1e-3 / 1e-18 | 2.577 | 3.29 (2.32) | 3.33 (ISOP 2.32) 428 | 3.36 (ISOP 2.40) 493 | 3.43 (ISOP 2.33) 384 | 3.82 (ISOP 2.87) 567 | 3.29 (ISOP 2.51) 585 | 5.83 (ISOP 5.01) 120 |
+| RODAS3 H211b 1e-3 / 1e-20 | 2.950 | 3.38 (2.41) | 3.38 (ISOP 2.41) 499 | 3.42 (ISOP 2.62) 562 | 3.71 (ISOP 2.58) 433 | 3.83 (ISOP 2.89) 620 | 3.39 (ISOP 2.54) 691 | 5.87 (ISOP 5.05) 145 |
+| RODAS3 H211b 1e-3 / 1e-22 | 3.216 | 3.41 (2.44) | 3.41 (ISOP 2.44) 559 | 3.45 (ISOP 2.63) 609 | 3.93 (ISOP 2.71) 477 | 3.83 (ISOP 2.87) 652 | 3.50 (ISOP 2.60) 750 | 5.91 (ISOP 5.09) 168 |
+| RODAS3 elementary 5e-4 / 1e-18 | 2.504 | 3.04 (2.21) | 3.06 (ISOP 2.27) 446 | 3.04 (ISOP 2.30) 488 | 3.51 (ISOP 2.24) 331 | 3.32 (ISOP 2.22) 551 | 3.21 (ISOP 2.21) 584 | 5.75 (ISOP 4.97) 104 |
+| RODAS3 elementary 5e-4 / 1e-20 | 2.945 | 3.39 (2.35) | 3.40 (ISOP 2.44) 525 | 3.39 (ISOP 2.42) 566 | 3.75 (ISOP 2.46) 417 | 3.39 (ISOP 2.35) 633 | 3.50 (ISOP 2.53) 683 | 5.77 (ISOP 4.99) 120 |
+| extrapolation 3, shifted, 1e-3 / 1e-20 | 2.647 | 3.61 (2.49) | 3.61 (ISOP 2.49) 399 | 3.84 (ISOP 2.58) 449 | 3.65 (ISOP 2.52) 387 | 4.12 (ISOP 3.00) 644 | 3.95 (ISOP 2.85) 550 | 5.87 (ISOPO2 5.32) 217 |
+| extrapolation 3, even, 1e-3 / 1e-20 | 2.536 | 3.30 (2.47) | 3.30 (BrO 2.56) 397 | 3.32 (OClO 2.47) 401 | 3.61 (ISOP 2.50) 325 | 3.52 (BrO 2.59) 685 | 3.60 (ISOP 2.54) 483 | 5.95 (C3H7O2 5.40) 246 |
+| extrapolation 4, shifted, 1e-3 / 1e-22 | 2.830 | 3.08 (2.39) | 3.62 (MALO2 2.87) 443 | 3.65 (OClO 2.71) 436 | 4.10 (ISOP 3.09) 309 | 3.87 (BrO 3.00) 811 | 3.08 (MACRO2 2.39) 533 | 6.39 (MEKO2 5.78) 298 |
+| extrapolation 4, shifted, 5e-4 / 1e-22 | 3.041 | 3.62 (2.69) | 3.62 (MALO2 2.87) 467 | 3.65 (OClO 2.69) 471 | 4.24 (ISOP 3.10) 372 | 3.87 (BrO 3.00) 830 | 4.52 (ISOP 3.40) 599 | 6.53 (MEKO2 5.86) 303 |
+| extrapolation 4, shifted, 2e-4 / 1e-20 | 3.449 | 3.87 (3.00) | 4.81 (ISOP 3.66) 530 | 4.72 (ISOP 3.49) 556 | 4.57 (ISOP 3.54) 488 | 3.87 (BrO 3.00) 870 | 4.54 (ISOP 3.41) 701 | 6.84 (MEKO2 6.30) 303 |
+| extrapolation 4, shifted, 2e-4 / 1e-22 | 3.598 | 3.92 (3.05) | 4.82 (ISOP 3.67) 561 | 4.72 (ISOP 3.50) 585 | 4.66 (ISOP 3.54) 521 | 3.92 (BrO 3.05) 890 | 4.55 (ISOP 3.41) 729 | 6.90 (MEKO2 6.34) 312 |
+| RODAS3 H211b 3e-4 / 1e-22 | 5.718 | 4.10 (3.23) | 4.23 (ISOP 3.27) 1035 | 4.26 (ISOP 3.40) 1110 | 4.52 (ISOP 3.23) 804 | 4.10 (ISOP 3.25) 1190 | 4.43 (ISOP 3.36) 1366 | 6.01 (ISOP 5.18) 212 |
+
+- **The 5-minute scenario sets a floor at rtol 1e-2.** With steps quantized
+  to the interval, RODAS3 at 1e-2 does nearly every 5-minute interval in
+  one step whatever the controller, and the two loose points share the same
+  2.04 digits (BrO 1.15) there; diurnal-30min holds the elementary
+  controller at 1e-2 to 2.04 (isoprene 1.10) as well. These are the same
+  numbers the contest's fastest points reach (2.04 overall, isoprene 1.03
+  to 1.06). Below 5e-3 with atol 1e-20 the floor lifts (2.73 on
+  diurnal-5min, 2.52 on diurnal-30min).
+- **Level 2 with the 0.2-digit margin** (ACCURACY.md) is first reached by
+  the elementary controller at 5e-3 with 1e-20: 2.42 (1.29) in 1.160 s,
+  15 % more than the thin point at 1e-2. H211b's advantage starts above
+  that: at 5e-3 with 1e-20 it gives 2.75 (1.87) in 1.615 s. S13b adds the
+  H211b points at safety 1.0 to 1.2.
+- **Level 3 with the margin** is reached first by extrapolation: order 3
+  with the even sequence at 1e-3 / 1e-20, 3.30 (2.47) in 2.536 s, and with
+  the shifted sequence, 3.61 (2.49) in 2.647 s; RODAS3 with H211b at
+  1e-3 / 1e-18 gives 3.29 (2.32) in 2.577 s, and the elementary controller
+  needs 5e-4 / 1e-20 and 2.945 s for 3.39 (2.35). RODAS3 with H211b at
+  2e-3 / 1e-20 (3.17 (2.17) in 2.208 s) misses the margin by 0.03. On all
+  six scenarios, with the shifted sequence and the tight absolute
+  tolerance, the extrapolation's weakness on the 30-minute scenario is gone
+  (3.65 (2.52) there).
+- **Above three digits** extrapolation of order 4 with the shifted sequence
+  leads: 3.62 (2.69) in 3.04 s at 5e-4 / 1e-22, and 3.87 (3.00) in 3.45 s at
+  2e-4 / 1e-20, where BrO on diurnal-5min is the last species below 3.
+  RODAS3 with H211b needs 5.7 s for 4.10 (3.23).
+- **Where the time goes:** tier1-30s is cheap for RODAS3 (85 to 170 ms, 1.4
+  steps per 30-second interval) and dear for extrapolation (217 to 312 ms:
+  the shifted sequence costs 2 + 3 + 4 = 9 substeps per step and the
+  30-second interval allows one step); diurnal-5min is dear for
+  extrapolation for the same reason.
+
