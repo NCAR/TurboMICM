@@ -1,0 +1,7 @@
+# S14: the final points at one thread (time), generated kernels.
+L2-elem-r5e-3-a1e-20	rodas3	rtol=5e-3 atol=1e-20 quantize=1 controller=micm safety=0.9
+L2-h211b-r8e-3-a1e-20-s1.1	rodas3	rtol=8e-3 atol=1e-20 quantize=1 controller=h211b safety=1.1
+balanced-h211b-r2e-3-a1e-20	rodas3	rtol=2e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9
+L3-x3s-r1e-3-a1e-20	extrap	rtol=1e-3 atol=1e-20 quantize=1 order=3 sequence=shifted controller=micm safety=0.9
+recommended-x4s-r5e-4-a1e-22	extrap	rtol=5e-4 atol=1e-22 quantize=1 order=4 sequence=shifted controller=micm safety=0.9
+accurate-x4s-r2e-4-a1e-20	extrap	rtol=2e-4 atol=1e-20 quantize=1 order=4 sequence=shifted controller=micm safety=0.9

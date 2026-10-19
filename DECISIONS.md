@@ -341,6 +341,31 @@ Tier 1 decisions above stand.
   non-finite output on the 30-minute scenario.
 - **S9 at one thread:** 32-cell groups confirmed (64 equal, 16 costs 40 %
   more, 8 up to 90 % more).
+- **S12, the joint grid:** the absolute tolerance is 1e-20 for every
+  operating point but the accurate end's alternative at 1e-22. At rtol
+  1e-2 the phenol floor of 1e-18 (2.06 digits on diurnal-10min) lifts to
+  2.5 with the elementary controller and 3.0 with H211b; at level 3 the
+  tighter absolute tolerance buys digits for the worst species more cheaply
+  than the relative one.
+- **S13, the confirmation on all six scenarios:** the operating points come
+  from this scan, under ACCURACY.md's rule (declared for a level only with
+  0.2 digit of margin for the worst species on every disclosed scenario).
+  Level 3 goes to extrapolation of order 3 with the shifted sequence at
+  rtol 1e-3 and atol 1e-20 (3.61 digits, 2.49 for the worst species, in
+  2.65 s over the six scenarios), ahead of RODAS3 with H211b at 1e-3 / 1e-18
+  (3.29 and 2.32 in 2.58 s) on margin and of the elementary controller at
+  5e-4 / 1e-20 (3.39 and 2.35 in 2.95 s) on time; the recommended point is
+  order 4 at 5e-4 / 1e-22 (3.62 and 2.69 in 3.04 s), and the accurate point
+  order 4 at 2e-4 / 1e-20 (3.87 and 3.00 in 3.45 s). RODAS3 with H211b at
+  2e-3 / 1e-20 is declared for level 2 as the balanced point: it reaches
+  three digits with 0.17 of margin on all six (3.17 and 2.17 in 2.21 s),
+  which the ranking credits at level 3 if it holds on the undisclosed
+  scenarios, and it is the fastest configuration above 2.5 digits. The
+  loose RODAS3 points at rtol 1e-2 reach 2.04 digits (BrO 1.15) on
+  diurnal-5min whatever the controller, the contest's floor; they are
+  reported, not declared. The level-2 point is chosen from the elementary
+  controller at 5e-3 / 1e-20 (2.42 and 1.29 in 1.16 s) and S13b's H211b
+  points at safety above 1.
 - **The order of the remaining scans** followed from the cost picture: the
   fastest configurations take one to five RODAS3 steps per interval, and
   the step count is set by the worst species (isoprene) reaching L - 1
