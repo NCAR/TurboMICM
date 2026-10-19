@@ -290,6 +290,64 @@ RODAS3 at rtol 5e-4:
   under the final conventions (quantized step, joint with the absolute
   tolerance) in S12; the elementary controller stays for extrapolation.
 
+### S4b: the H211b grid (`scans/S4b-controller-grid.csv`)
+
+54 configurations on the same two scenarios, unquantized as S4: RODAS3 with
+H211b (b = 4, k = p) at safety 0.7, 0.8, 0.9, 1.0 and rtol 1e-2 to 2e-4;
+b = 3 and 6 at safety 0.9; extrapolation of order 4 with H211b at 0.9; and
+the filtered estimate with H211b. Time summed over the two scenarios; steps
+and the rejection share per interval, the mean of the two.
+
+| Controller | rtol 1e-2 | 5e-3 | 3e-3 | 2e-3 | 1e-3 | 5e-4 | 3e-4 | 2e-4 |
+|---|---|---|---|---|---|---|---|---|
+| elementary 0.9 (S2) | 2.05 (1.26) 0.38 s | 2.40 (1.29) 0.48 | | 2.60 (1.55) 0.62 | 2.76 (1.82) 0.81 | 3.04 (2.07) 1.12 | | 3.68 (2.54) 1.63 |
+| H211b b4, 0.7 | 2.85 (1.97) 0.60 | 3.00 (2.21) 0.73 | 3.11 (2.44) 0.84 | 3.23 (2.52) 1.04 | 3.56 (2.74) 1.40 | 3.85 (3.02) 1.86 | 4.09 (3.20) 2.43 | 4.49 (3.41) 2.95 |
+| H211b b4, 0.8 | 2.77 (1.89) 0.55 | 2.88 (1.95) 0.64 | 2.97 (2.03) 0.73 | 3.08 (2.22) 0.86 | 3.26 (2.51) 1.16 | 3.50 (2.72) 1.64 | 3.97 (2.95) 2.07 | 4.26 (3.15) 2.51 |
+| H211b b4, 0.9 | 2.06 (1.25) 0.51 | 2.83 (1.88) 0.59 | 2.90 (1.93) 0.68 | 2.97 (2.00) 0.78 | 3.14 (2.29) 1.05 | 3.37 (2.52) 1.44 | 3.65 (2.70) 1.82 | 4.04 (2.91) 2.21 |
+| H211b b4, 1.0 | 2.08 (1.26) 0.44 | 2.71 (1.81) 0.55 | 2.85 (1.86) 0.64 | 2.91 (1.91) 0.76 | 3.02 (2.01) 0.95 | 3.28 (2.36) 1.29 | 3.56 (2.59) 1.66 | 3.87 (2.75) 2.00 |
+| H211b b3, 0.9 | 2.04 (1.24) 0.44 | 2.66 (1.74) 0.55 | 2.81 (1.82) 0.65 | 2.87 (1.89) 0.74 | 3.02 (2.06) 1.01 | 3.27 (2.35) 1.31 | 3.56 (2.59) 1.68 | 3.93 (2.78) 2.01 |
+| H211b b6, 0.9 | 2.82 (1.95) 0.57 | 2.92 (1.98) 0.67 | 3.01 (2.09) 0.77 | 3.13 (2.45) 0.96 | 3.31 (2.58) 1.23 | 3.64 (2.80) 1.78 | 4.07 (3.04) 2.22 | 4.33 (3.19) 2.62 |
+
+Steps per interval and the rejection share, H211b b4 at safety 0.9: 2.3
+(6 %), 2.7 (8 %), 3.1 (10 %), 3.6 (11 %), 4.9 (12 %), 6.7 (13 %), 8.5
+(13 %), 10.2 (13 %); the elementary controller: 1.7 (9 %), 2.0 (12 %), 2.8
+(16 %), 3.7 (17 %), 5.0 (17 %), 7.4 (18 %).
+
+- **Above about 1.5 digits for the worst species, H211b dominates the
+  elementary controller by 30 to 35 % in time** at equal digits: 2.71 (1.81)
+  in 0.55 s at 5e-3 and safety 1.0 against 2.76 (1.82) in 0.81 s at 1e-3;
+  3.00 (2.21) in 0.73 s at 5e-3 and safety 0.7 against 3.04 (2.07) in 1.12 s
+  at 5e-4; 3.13 (2.45) in 0.96 s (b = 6, 2e-3) against 3.68 (2.54) in 1.63 s
+  at 2e-4. At equal step counts it gets more digits (2.83 (1.88) from 2.7
+  steps per interval against the elementary's 2.60 (1.55) from 2.8): the
+  smooth sequence spends its steps where the error is, and a rejection
+  share of 6 to 13 % instead of 12 to 18 % wastes less. Safety and the
+  smoothing exponent are interchangeable with the tolerance along one
+  curve: b = 6 at 0.9 lies on b = 4 at 0.7 to 0.8, b = 3 on b = 4 at 1.0.
+- **At the loose end the curve breaks.** At rtol 1e-2 and safety 0.9 or
+  above, diurnal-10min stays at 2.06 digits (BrO or phenol 1.25), as with
+  the elementary controller at the same tolerance, while polluted-10min
+  reaches 2.73 (1.82); one halving of the tolerance lifts diurnal-10min to
+  2.90 (1.92). Both controllers let one step cover most of an interval at
+  1e-2, and the error that step makes on the halogen and phenol transients
+  is not what the embedded estimate measures. For the level-2 point, where
+  that floor sits, H211b at 1e-2 costs 15 % more than the elementary
+  controller for the same 2.05 digits; the first point with a margin on
+  both scenarios is H211b at 5e-3 (2.71 (1.81) in 0.55 s, safety 1.0).
+  S4c maps the tolerances between 1e-2 and 3e-3 at safeties 0.9 to 1.2
+  under the final conventions.
+- **Extrapolation with H211b** takes 1.5 to 2.6 steps per interval instead
+  of 1.1 to 1.7, which removes the blind spot on polluted-10min (3.88 (2.77)
+  at 2e-3 against 2.91 (1.62) with the elementary controller), but the
+  result sits on the extrapolation curve at a tighter tolerance: 4.12 (2.68)
+  in 1.31 s at 1e-3, against 4.02 (2.83) in 1.30 s for order 4 at 2e-4 with
+  the elementary controller. No change for extrapolation.
+- **The filtered estimate with H211b** (2.60 (1.92) in 0.57 s at 3e-3)
+  lands on the H211b curve (2.71 (1.81) in 0.55 s at 5e-3); not adopted.
+- **Decision:** H211b, b = 4, k = p, for RODAS3 at every level-3 point and
+  as the candidate for level 2; the safety is a tuning knob equivalent to
+  the tolerance and stays at 0.9 unless S4c and S12 show otherwise.
+
 ### S5: the error norm (`scans/S5-norm.csv`)
 
 21 configurations on diurnal-10min and polluted-10min, quantized step,
