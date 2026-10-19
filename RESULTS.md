@@ -60,11 +60,55 @@ when the rerun ends.)*
 
 ## Where the time goes
 
-*(the one-thread times of S14 against the cost model.)*
+The five points at one thread (S14, one run per scenario,
+`scans/S14-finals-1thread.csv`), the time summed over the six scenarios,
+the speedup at 10 threads from S10's generated runs in the same session,
+and the kernel cost model's share: the model multiplies the operation
+counts by the per-cell kernel costs measured with `bin/kernel_bench` at
+32-cell groups (forcing 225 ns, Jacobian 438 ns, factorization 676 ns,
+triangular solve 279 ns) and compares with the measured nanoseconds per
+cell and interval.
+
+| Point | 1 thread, s | 10 threads, s | Speedup | Model / measured, range over the scenarios |
+|---|---:|---:|---:|---|
+| L2 | 5.96 | 1.17 | 5.1 | 0.70 to 0.79 |
+| balanced | 10.96 | 2.24 | 4.9 | 0.75 to 0.78 |
+| L3 | 12.78 | 2.76 | 4.6 | 0.76 to 0.78 |
+| recommended | 15.02 | 3.12 | 4.8 | 0.74 to 0.78 |
+| accurate | 17.11 | 3.53 | 4.8 | 0.75 to 0.79 |
+
+- The four kernels account for about three quarters of the time at every
+  point; the rest is the loop's own work (the error norm and the step
+  control, the stage combinations, the extrapolation table, the rate
+  constant updates, and copying the states in and out of the vector
+  layout). The share is the same for the Rosenbrock and the extrapolation
+  loops, so neither has an overhead worth attacking before the kernels.
+- Ten threads buy 4.6 to 5.1 times on the M5's four performance and six
+  efficiency cores, the same ratio Tier 1's benchmark showed.
+- Per cell and interval at one thread, L2 costs 5.0 to 8.4 microseconds on
+  the 10-minute and 5-minute scenarios and 18 on the 30-minute one; the
+  recommended point 14 to 21 and 39.
 
 ## Generated against generic kernels
 
-*(S10: the same points with `generic=1`.)*
+S10 (`scans/S10-generic.csv`): each point once on the six scenarios with
+the generated kernels and with the generic (index-driven) kernels of the
+same library, 10 threads, in one session.
+
+| Point | Generated, s | Generic, s | Ratio |
+|---|---:|---:|---:|
+| L2 | 1.17 | 6.46 | 5.5 |
+| balanced | 2.24 | 12.55 | 5.6 |
+| L3 | 2.76 | 14.70 | 5.3 |
+| recommended | 3.12 | 18.28 | 5.9 |
+| accurate | 3.53 | 19.53 | 5.5 |
+
+The two paths take exactly the same steps (identical internal step counts
+on every scenario) and reach the same digits to the third decimal; the
+outputs differ at roundoff (the generated kernels sum in a different
+order), so their SHA-256 differ. The generic path is the fallback for a
+mechanism without generated kernels, as in Tier 1; the Tier 3 loops do not
+change the ratio between them.
 
 ## Build and run times
 
