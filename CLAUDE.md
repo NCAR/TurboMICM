@@ -254,11 +254,12 @@ Tier-2-Results.
   as `tier3/fable/max`. Its levers: the step carried across intervals and
   quantized to them, the H211b controller (b = 4), an absolute tolerance of
   1e-20 (isoprene and phenol sit near the score's 1e-14 floor), RODAS3 for
-  two digits, extrapolated linearly implicit Euler with the shifted substep
-  sequence for three and more. Five declared points with 0.2 digit of
-  margin per species on the disclosed scenarios (OPERATING_POINTS.md in the
-  entry); 21 times MICM at level 2 and 9.5 to 11 times at level 3 on the
-  six disclosed scenarios at 1,000 cells in its own session.
+  two digits, ROS3 under H211b for the cheapest three, extrapolated linearly
+  implicit Euler with the shifted substep sequence for three with margin and
+  more. Five declared points with 0.2 digit of margin per species on the
+  disclosed scenarios (OPERATING_POINTS.md in the entry); 21 times MICM at
+  level 2 and 8.4 to 12.4 times at level 3 on the six disclosed scenarios at
+  1,000 cells in its own session.
 - **Ranking (2026-10-19):** astra-xhigh first at both levels: fast (RODAS3,
   relative 1e-2) at 34.7 s summed over the 11 scenarios, 13.4 times MICM;
   accurate (extrapolated linearly implicit Euler, order 4, 4e-3) at 74.5 s,

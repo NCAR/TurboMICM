@@ -728,6 +728,18 @@ SCANS.md has the tables and DECISIONS.md the choices.
 - 07:35: the SSE's other agent renamed the task force on the wiki (Agentic
   Coding Task Force); pulled before the wiki commit, and CLAUDE.md renamed
   to match at the SSE's request.
+- 07:49–08:01: the goal's Stop hook asked for the judgment that the best
+  algorithm had been reached; a **closing scan** (S15) tried what the
+  search had left open, ROS3 and ROS4 under H211b and the tolerances between
+  the Rosenbrock points, on two scenarios, then ROS3 on all six in three
+  rounds (S15b). ROS3 under H211b at rtol 8e-3 and atol 1e-20 is the
+  cheapest configuration meeting the level-3 margin rule (3.27 digits,
+  isoprene 2.37, 2.34 s over the six, 12 % under the extrapolation point);
+  it replaced the balanced point as **L3r**, declared for level 3. S16
+  measured it with generic kernels and at one thread. The judgment is
+  written in the entry's DECISIONS.md. Final commit `cb0f8a3` (28 commits
+  after the Tier 1 head), re-collected as `tier3/fable/max` at 08:09 and
+  re-verified (next line).
 - Transcripts: this session and the six research sessions are on the
   `transcripts` branch under `transcripts/tier3/fable-max*`.
 
