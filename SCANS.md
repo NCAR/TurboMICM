@@ -528,3 +528,55 @@ over the three scenarios and the time summed over them:
   order 4 shifted at 2e-4 the candidate for the accurate end; both go to
   the confirmation scan on all six scenarios against RODAS3 with H211b.
 
+### S12: the joint grid of tolerances and controller (`scans/S12-joint-grid.csv`)
+
+60 configurations on diurnal-10min and polluted-10min under the final
+conventions (carried quantized step, 32-cell groups, group RMS norm, safety
+0.9): RODAS3 at rtol 1e-2 to 2e-4 and atol 1e-18, 1e-20, 1e-22 with the
+elementary and the H211b (b = 4) controllers, and extrapolation of order 4
+(harmonic sequence) with the elementary controller. Lowest digits (worst
+species), time summed over the two scenarios, steps per interval:
+
+| rtol | elementary, 1e-18 | 1e-20 | 1e-22 | H211b, 1e-18 | 1e-20 | 1e-22 |
+|---|---|---|---|---|---|---|
+| 1e-2 | 2.06 (1.26) 0.35 s, 1.6 | 2.39 (1.28) 0.36, 1.7 | 2.39 (1.28) 0.38, 1.7 | 2.31 (1.50) 0.54, 2.4 | 3.00 (2.06) 0.57, 2.5 | 3.03 (2.06) 0.56, 2.5 |
+| 5e-3 | 2.39 (1.28) 0.42, 1.9 | 2.42 (1.29) 0.44, 2.0 | 2.46 (1.33) 0.49, 2.1 | 3.01 (2.05) 0.62, 2.8 | 3.06 (2.05) 0.65, 3.0 | 3.07 (2.05) 0.66, 3.1 |
+| 3e-3 | 2.50 (1.42) 0.50, 2.3 | 2.67 (1.54) 0.57, 2.6 | 2.71 (1.78) 0.60, 2.8 | 3.07 (2.07) 0.70, 3.2 | 3.11 (2.09) 0.76, 3.5 | 3.13 (2.10) 0.80, 3.7 |
+| 2e-3 | 2.67 (1.56) 0.59, 2.7 | 2.74 (1.90) 0.66, 3.0 | 2.81 (2.05) 0.71, 3.3 | 3.10 (2.07) 0.74, 3.6 | 3.17 (2.17) 0.90, 4.1 | 3.18 (2.14) 0.90, 4.4 |
+| 1e-3 | 2.79 (2.00) 0.77, 3.6 | 2.90 (2.15) 0.91, 4.2 | 3.02 (2.28) 1.01, 4.6 | 3.29 (2.40) 1.08, 5.0 | 3.39 (2.54) 1.29, 5.8 | 3.45 (2.60) 1.37, 6.3 |
+| 5e-4 | 3.04 (2.21) 1.06, 5.0 | 3.39 (2.42) 1.25, 5.8 | 3.58 (2.60) 1.38, 6.4 | 3.48 (2.58) 1.47, 6.8 | 3.61 (2.80) 1.85, 8.1 | 3.84 (3.05) 2.01, 9.1 |
+| 3e-4 | 3.54 (2.46) 1.36, 6.3 | 3.77 (2.68) 1.53, 7.3 | 3.92 (2.92) 1.72, 8.2 | 3.73 (2.83) 2.05, 8.7 | 4.12 (3.08) 2.22, 10.3 | 4.26 (3.36) 2.51, 11.5 |
+| 2e-4 | 3.81 (2.64) 1.58, 7.5 | 4.08 (2.92) 1.87, 8.7 | 4.28 (3.07) 2.03, 9.8 | 4.16 (2.98) 2.40, 10.5 | 4.43 (3.30) 2.69, 12.4 | 4.64 (3.52) 2.96, 13.7 |
+
+Extrapolation of order 4, elementary controller: rtol 2e-3, 2.91 (1.62) in
+0.83 s at every atol; 1e-3, 2.91 (1.62) 0.95, 3.13 (1.74) 0.89, 3.21 (2.39)
+0.92; 5e-4, 3.21 (2.35) 0.96, 3.91 (2.77) 1.03, 3.92 (2.77) 1.03; 2e-4,
+3.95 (2.79) 1.20, 4.30 (3.13) 1.43, 4.62 (3.45) 1.54.
+
+- **The loose-end floor of S4b was the absolute tolerance, not a blind
+  spot.** At rtol 1e-2 diurnal-10min stops at 2.06 digits with phenol as
+  the worst species at atol 1e-18 (2.31 (1.50) with H211b); at 1e-20 the
+  same tolerance gives 2.51 (isoprene 1.36) with the elementary controller
+  and 3.03 (2.17) with H211b. Phenol's concentration crosses the score's
+  1e-14 floor, and at 1e-18 the absolute tolerance still sets its weight
+  there.
+- **H211b with atol 1e-20 reaches three digits (2.06 for the worst species)
+  on both scenarios at rtol 1e-2 in 0.57 s**, where the elementary
+  controller needs rtol 5e-4 and 1.06 s for 3.04 (2.21): the two levers
+  together halve the time of the level-3 point on these scenarios. Above
+  that, H211b's curve continues: 3.29 (2.40) in 1.08 s at 1e-3 and 1e-18,
+  3.45 (2.60) in 1.37 s at 1e-3 and 1e-22, 3.84 (3.05) in 2.0 s at 5e-4
+  and 1e-22.
+- **For extrapolation the absolute tolerance matters from 1e-3 down**:
+  5e-4 with 1e-22 gives 3.92 (2.77) in 1.03 s against 3.21 (2.35) at 1e-18,
+  and 2e-4 with 1e-22 gives 4.62 (3.45) in 1.54 s; on these two scenarios
+  that is the best point above 2.6 digits per species. (These runs used the
+  harmonic sequence; S8's shifted sequence adds to it.)
+- **Level 2's candidates** on these scenarios are the elementary controller
+  at 1e-2 with 1e-20 (2.39 (1.28) in 0.36 s), 5e-3 with 1e-18 (2.39 (1.28)
+  in 0.42 s), and 3e-3 with 1e-18 (2.50 (1.42) in 0.50 s); H211b's cheapest
+  point costs 0.54 s and S4c looks for a cheaper one at safety above 0.9.
+- **The confirmation scan (S13)** runs the candidates for both levels and
+  for the accurate end on all six disclosed scenarios, three rounds, under
+  the final conventions; the operating points are chosen from it.
+

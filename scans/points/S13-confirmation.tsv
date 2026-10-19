@@ -1,0 +1,22 @@
+# S13: confirmation of the candidate operating points on all six disclosed scenarios (3 rounds); final conventions.
+L2-r1e-2-a1e-20-elem	rodas3	rtol=1e-2 atol=1e-20 quantize=1 controller=micm safety=0.9
+L2-r5e-3-a1e-18-elem	rodas3	rtol=5e-3 atol=1e-18 quantize=1 controller=micm safety=0.9
+L2-r5e-3-a1e-20-elem	rodas3	rtol=5e-3 atol=1e-20 quantize=1 controller=micm safety=0.9
+L2-r3e-3-a1e-18-elem	rodas3	rtol=3e-3 atol=1e-18 quantize=1 controller=micm safety=0.9
+L2-r3e-3-a1e-20-elem	rodas3	rtol=3e-3 atol=1e-20 quantize=1 controller=micm safety=0.9
+L23-r1e-2-a1e-20-h211b	rodas3	rtol=1e-2 atol=1e-20 quantize=1 controller=h211b safety=0.9
+L3-r5e-3-a1e-20-h211b	rodas3	rtol=5e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9
+L3-r3e-3-a1e-20-h211b	rodas3	rtol=3e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9
+L3-r2e-3-a1e-20-h211b	rodas3	rtol=2e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9
+L3-r1e-3-a1e-18-h211b	rodas3	rtol=1e-3 atol=1e-18 quantize=1 controller=h211b safety=0.9
+L3-r1e-3-a1e-20-h211b	rodas3	rtol=1e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9
+L3-r1e-3-a1e-22-h211b	rodas3	rtol=1e-3 atol=1e-22 quantize=1 controller=h211b safety=0.9
+L3-r5e-4-a1e-18-elem	rodas3	rtol=5e-4 atol=1e-18 quantize=1 controller=micm safety=0.9
+L3-r5e-4-a1e-20-elem	rodas3	rtol=5e-4 atol=1e-20 quantize=1 controller=micm safety=0.9
+L3-x3s-r1e-3-a1e-20	extrap	rtol=1e-3 atol=1e-20 quantize=1 order=3 sequence=shifted controller=micm safety=0.9
+L3-x3e-r1e-3-a1e-20	extrap	rtol=1e-3 atol=1e-20 quantize=1 order=3 sequence=even controller=micm safety=0.9
+L3-x4s-r1e-3-a1e-22	extrap	rtol=1e-3 atol=1e-22 quantize=1 order=4 sequence=shifted controller=micm safety=0.9
+L3-x4s-r5e-4-a1e-22	extrap	rtol=5e-4 atol=1e-22 quantize=1 order=4 sequence=shifted controller=micm safety=0.9
+L4-x4s-r2e-4-a1e-20	extrap	rtol=2e-4 atol=1e-20 quantize=1 order=4 sequence=shifted controller=micm safety=0.9
+L4-x4s-r2e-4-a1e-22	extrap	rtol=2e-4 atol=1e-22 quantize=1 order=4 sequence=shifted controller=micm safety=0.9
+L4-r3e-4-a1e-22-h211b	rodas3	rtol=3e-4 atol=1e-22 quantize=1 controller=h211b safety=0.9
