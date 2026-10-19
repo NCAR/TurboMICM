@@ -1,0 +1,5 @@
+# S7: clamping negative concentrations after every accepted step.
+L2-clamp0	rodas3	rtol=5e-3 atol=1e-18 quantize=1 clamp=0
+L2-clamp1	rodas3	rtol=5e-3 atol=1e-18 quantize=1 clamp=1
+L3-clamp0	rodas3	rtol=5e-4 atol=1e-18 quantize=1 clamp=0
+L3-clamp1	rodas3	rtol=5e-4 atol=1e-18 quantize=1 clamp=1

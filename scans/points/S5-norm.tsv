@@ -1,0 +1,22 @@
+# S5: the error norm, around the S2 winners and one tolerance looser (the max norm controls the worst species directly).
+rodas3-r1e-2-rms	rodas3	rtol=1e-2 atol=1e-18 quantize=1 norm=rms
+rodas3-r1e-2-cellmax	rodas3	rtol=1e-2 atol=1e-18 quantize=1 norm=cellmax
+rodas3-r1e-2-max	rodas3	rtol=1e-2 atol=1e-18 quantize=1 norm=max
+rodas3-r5e-3-rms	rodas3	rtol=5e-3 atol=1e-18 quantize=1 norm=rms
+rodas3-r5e-3-cellmax	rodas3	rtol=5e-3 atol=1e-18 quantize=1 norm=cellmax
+rodas3-r5e-3-max	rodas3	rtol=5e-3 atol=1e-18 quantize=1 norm=max
+rodas3-r2e-3-rms	rodas3	rtol=2e-3 atol=1e-18 quantize=1 norm=rms
+rodas3-r2e-3-cellmax	rodas3	rtol=2e-3 atol=1e-18 quantize=1 norm=cellmax
+rodas3-r2e-3-max	rodas3	rtol=2e-3 atol=1e-18 quantize=1 norm=max
+rodas3-r1e-3-rms	rodas3	rtol=1e-3 atol=1e-18 quantize=1 norm=rms
+rodas3-r1e-3-cellmax	rodas3	rtol=1e-3 atol=1e-18 quantize=1 norm=cellmax
+rodas3-r1e-3-max	rodas3	rtol=1e-3 atol=1e-18 quantize=1 norm=max
+rodas3-r5e-4-rms	rodas3	rtol=5e-4 atol=1e-18 quantize=1 norm=rms
+rodas3-r5e-4-cellmax	rodas3	rtol=5e-4 atol=1e-18 quantize=1 norm=cellmax
+rodas3-r5e-4-max	rodas3	rtol=5e-4 atol=1e-18 quantize=1 norm=max
+extrap4-r2e-3-rms	extrap	rtol=2e-3 atol=1e-18 quantize=1 order=4 norm=rms
+extrap4-r2e-3-max	extrap	rtol=2e-3 atol=1e-18 quantize=1 order=4 norm=max
+extrap4-r1e-3-rms	extrap	rtol=1e-3 atol=1e-18 quantize=1 order=4 norm=rms
+extrap4-r1e-3-max	extrap	rtol=1e-3 atol=1e-18 quantize=1 order=4 norm=max
+extrap4-r5e-4-rms	extrap	rtol=5e-4 atol=1e-18 quantize=1 order=4 norm=rms
+extrap4-r5e-4-max	extrap	rtol=5e-4 atol=1e-18 quantize=1 order=4 norm=max

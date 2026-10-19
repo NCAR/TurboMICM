@@ -1,0 +1,17 @@
+# S9: group size and scheduling, at both levels (times at 10 threads here; 1 thread by hand).
+L2-g8	rodas3	rtol=5e-3 atol=1e-18 quantize=1 group_size=8
+L2-g16	rodas3	rtol=5e-3 atol=1e-18 quantize=1 group_size=16
+L2-g32	rodas3	rtol=5e-3 atol=1e-18 quantize=1 group_size=32
+L2-g64	rodas3	rtol=5e-3 atol=1e-18 quantize=1 group_size=64
+L2-g128	rodas3	rtol=5e-3 atol=1e-18 quantize=1 group_size=128
+L2-g32-static	rodas3	rtol=5e-3 atol=1e-18 quantize=1 group_size=32 schedule=static
+L2-g32-guided	rodas3	rtol=5e-3 atol=1e-18 quantize=1 group_size=32 schedule=guided
+L2-g32-dynamic4	rodas3	rtol=5e-3 atol=1e-18 quantize=1 group_size=32 schedule=dynamic chunk=4
+L3-g8	rodas3	rtol=5e-4 atol=1e-18 quantize=1 group_size=8
+L3-g16	rodas3	rtol=5e-4 atol=1e-18 quantize=1 group_size=16
+L3-g32	rodas3	rtol=5e-4 atol=1e-18 quantize=1 group_size=32
+L3-g64	rodas3	rtol=5e-4 atol=1e-18 quantize=1 group_size=64
+L3-g128	rodas3	rtol=5e-4 atol=1e-18 quantize=1 group_size=128
+L3-g32-static	rodas3	rtol=5e-4 atol=1e-18 quantize=1 group_size=32 schedule=static
+L3-g32-guided	rodas3	rtol=5e-4 atol=1e-18 quantize=1 group_size=32 schedule=guided
+L3-g32-dynamic4	rodas3	rtol=5e-4 atol=1e-18 quantize=1 group_size=32 schedule=dynamic chunk=4

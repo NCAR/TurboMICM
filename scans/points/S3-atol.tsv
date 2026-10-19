@@ -1,0 +1,19 @@
+# S3: absolute tolerance, around the S2 winners; warm start, quantized steps.
+L2-atol1e-14	rodas3	rtol=5e-3 atol=1e-14 quantize=1
+L2-atol1e-15	rodas3	rtol=5e-3 atol=1e-15 quantize=1
+L2-atol1e-16	rodas3	rtol=5e-3 atol=1e-16 quantize=1
+L2-atol1e-18	rodas3	rtol=5e-3 atol=1e-18 quantize=1
+L2-atol1e-20	rodas3	rtol=5e-3 atol=1e-20 quantize=1
+L2-atol1e-22	rodas3	rtol=5e-3 atol=1e-22 quantize=1
+L3-atol1e-14	rodas3	rtol=5e-4 atol=1e-14 quantize=1
+L3-atol1e-15	rodas3	rtol=5e-4 atol=1e-15 quantize=1
+L3-atol1e-16	rodas3	rtol=5e-4 atol=1e-16 quantize=1
+L3-atol1e-18	rodas3	rtol=5e-4 atol=1e-18 quantize=1
+L3-atol1e-20	rodas3	rtol=5e-4 atol=1e-20 quantize=1
+L3-atol1e-22	rodas3	rtol=5e-4 atol=1e-22 quantize=1
+r1e-2-atol1e-15	rodas3	rtol=1e-2 atol=1e-15 quantize=1
+r1e-2-atol1e-16	rodas3	rtol=1e-2 atol=1e-16 quantize=1
+r1e-2-atol1e-18	rodas3	rtol=1e-2 atol=1e-18 quantize=1
+r2e-3-atol1e-15	rodas3	rtol=2e-3 atol=1e-15 quantize=1
+r2e-3-atol1e-16	rodas3	rtol=2e-3 atol=1e-16 quantize=1
+r2e-3-atol1e-18	rodas3	rtol=2e-3 atol=1e-18 quantize=1

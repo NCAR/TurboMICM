@@ -289,6 +289,32 @@ Tier 1 decisions above stand.
   (`filter_error`, one extra solve, RADAU5's first-step device) was added
   as an arm for it.
 
+- **S2, the tableau:** RODAS3 is the base method for both levels, as the
+  1997 benchmarks found for one to three digits: at the tolerances that
+  reach each level on all six disclosed scenarios it is the fastest, with
+  ROS3 and ROS4 close. Extrapolated linearly implicit Euler is kept as the
+  method for the accurate end (from about 3.5 digits it is the fastest, and
+  it reaches four digits where RODAS3 would need rtol 1e-4 and many steps),
+  not for the ranking levels: at loose tolerances it takes one large step
+  per interval whose error its estimate does not see on the 30-minute and
+  polluted scenarios. ROS2, RODAS4, and ROS34PW2 are kept as options and
+  used in no operating point.
+- **S6a, factorization reuse:** not pursued for the operating points. By
+  day the photolysis rates change by more than a few percent every interval,
+  so a kept factorization lasts an interval or two; the extrapolation gains
+  18 % and loses up to half a digit, RODAS3 (not a W-method) loses its
+  order, and ROS34PW2 with reuse remains slower than RODAS3 without. The
+  mechanism stays in the code, tested, for rates that change more slowly.
+- **The order of the remaining scans** follows from the cost picture: the
+  fastest configurations take one to five RODAS3 steps per interval, and
+  the step count is set by the worst species (isoprene) reaching L - 1
+  digits while the overall error is a digit better. So: the controller and
+  the safety factor (S4), then the error norm, whose maximum form controls
+  the worst species directly (S5), the absolute tolerance (S3), the group
+  size and scheduling (S9), clamping (S7), the extrapolation's sequences
+  (S8), and the generic kernels (S10); precision (S11) last, if the
+  algorithmic levers leave it worth the generator work.
+
 ## Prototypes
 
 - **The prototypes use the library's linear algebra.** A Python mirror of
