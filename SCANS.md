@@ -528,6 +528,34 @@ over the three scenarios and the time summed over them:
   order 4 shifted at 2e-4 the candidate for the accurate end; both go to
   the confirmation scan on all six scenarios against RODAS3 with H211b.
 
+### S4c: the loose end of the H211b curve (`scans/S4c-loose-end.csv`)
+
+30 configurations on diurnal-10min and polluted-10min, quantized step, atol
+1e-18: RODAS3 with H211b (b = 4) at safety 0.9, 1.0, 1.1, 1.2 and the
+elementary controller, at rtol 1e-2, 8e-3, 6e-3, 5e-3, 4e-3, 3e-3. Lowest
+digits (worst species), time summed over the two scenarios, steps per
+interval:
+
+| Controller | 1e-2 | 8e-3 | 6e-3 | 5e-3 | 4e-3 | 3e-3 |
+|---|---|---|---|---|---|---|
+| elementary 0.9 | 2.06 (1.26) 0.34 s, 1.6 | 2.37 (1.28) 0.36, 1.7 | 2.38 (1.28) 0.39, 1.8 | 2.39 (1.28) 0.41, 1.9 | 2.41 (1.30) 0.45, 2.0 | 2.50 (1.42) 0.50, 2.3 |
+| H211b 0.9 | 2.31 (1.50) 0.52, 2.4 | 2.85 (2.06) 0.54, 2.5 | 2.87 (2.05) 0.57, 2.7 | 3.01 (2.05) 0.61, 2.8 | 3.04 (2.06) 0.65, 2.9 | 3.07 (2.07) 0.69, 3.2 |
+| H211b 1.0 | 2.08 (1.26) 0.45, 2.0 | 2.68 (2.00) 0.49, 2.2 | 2.64 (1.97) 0.51, 2.4 | 2.80 (2.05) 0.56, 2.6 | 3.04 (2.05) 0.60, 2.7 | 3.06 (2.05) 0.64, 3.0 |
+| H211b 1.1 | 2.08 (1.26) 0.43, 1.9 | 2.58 (1.76) 0.45, 2.0 | 2.59 (1.88) 0.50, 2.2 | 2.65 (1.99) 0.50, 2.3 | 2.71 (2.05) 0.53, 2.5 | 2.76 (2.05) 0.61, 2.8 |
+| H211b 1.2 | 2.07 (1.26) 0.40, 1.8 | 2.51 (1.55) 0.43, 1.9 | 2.57 (1.65) 0.46, 2.1 | 2.61 (1.71) 0.48, 2.2 | 2.62 (1.80) 0.50, 2.3 | 2.65 (1.93) 0.56, 2.6 |
+
+- **Safety trades along the H211b curve, and the curve stays above the
+  elementary controller's from about 0.43 s on**: at equal time H211b at
+  safety 1.1 and rtol 8e-3 gives 2.58 (1.76) against the elementary
+  controller's 2.41 (1.30) at 4e-3 (0.45 s), and at safety 1.0 and 8e-3
+  2.68 (2.00) against 2.50 (1.42) at 3e-3 (0.49 s). Below 0.43 s only the
+  elementary controller exists (2.06 to 2.38 digits), and at rtol 1e-2 every
+  setting meets the phenol floor of atol 1e-18 (S12 lifts it with 1e-20).
+- **Decision:** the level-2 operating point is an H211b point at safety
+  1.0 to 1.1 and rtol 8e-3 to 1e-2 with atol 1e-20, confirmed on all six
+  scenarios in S13b beside S13's elementary candidates; the fastest point
+  that keeps 0.2 digit of margin on every scenario is declared.
+
 ### S12: the joint grid of tolerances and controller (`scans/S12-joint-grid.csv`)
 
 60 configurations on diurnal-10min and polluted-10min under the final

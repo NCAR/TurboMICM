@@ -1,0 +1,9 @@
+# S13b: the loose H211b points for level 2 (safety 1.0 to 1.2, atol 1e-20) on all six disclosed scenarios, 3 rounds.
+L2-r1e-2-a1e-20-h211b-s1.0	rodas3	rtol=1e-2 atol=1e-20 quantize=1 controller=h211b safety=1.0
+L2-r8e-3-a1e-20-h211b-s1.0	rodas3	rtol=8e-3 atol=1e-20 quantize=1 controller=h211b safety=1.0
+L2-r1e-2-a1e-20-h211b-s1.1	rodas3	rtol=1e-2 atol=1e-20 quantize=1 controller=h211b safety=1.1
+L2-r8e-3-a1e-20-h211b-s1.1	rodas3	rtol=8e-3 atol=1e-20 quantize=1 controller=h211b safety=1.1
+L2-r1e-2-a1e-20-h211b-s1.2	rodas3	rtol=1e-2 atol=1e-20 quantize=1 controller=h211b safety=1.2
+L2-r8e-3-a1e-20-h211b-s1.2	rodas3	rtol=8e-3 atol=1e-20 quantize=1 controller=h211b safety=1.2
+L2-r6e-3-a1e-20-h211b-s1.1	rodas3	rtol=6e-3 atol=1e-20 quantize=1 controller=h211b safety=1.1
+L2-r8e-3-a1e-18-h211b-s1.1	rodas3	rtol=8e-3 atol=1e-18 quantize=1 controller=h211b safety=1.1
