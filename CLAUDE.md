@@ -276,10 +276,12 @@ Tier-2-Results.
 - Tier 3: Luna's arm, if its Tier 1 passes (it needs new held-out scenarios,
   since `tier3/heldout/` is public). Fable's reference solution (not a
   contestant) is done and collected as `tier3/fable/max`, verified in
-  `results/2026-10-19-tier3-fable-max-verification/`; its five operating
-  points could be timed beside the contestants' in a new session with
-  `admin/time_tier3.sh` (the 2026-10-19 session's numbers are not
-  comparable across sessions).
+  `results/2026-10-19-tier3-fable-max-verification/`. Deferred by the SSE on
+  2026-10-19: timing its five points beside the contest's level winners and
+  MICM's baselines in one session (`~/NSF-NCAR/tier3-work/run-timing-fable.sh`
+  and `programs-fable-vs-contest.txt`, 3 rounds, about 1 h 45 min, then
+  `admin/rank_tier3.py`; the recipe is in `admin/runs.md`). Numbers from
+  different sessions are not comparable.
 - Verification worktrees of `runs/*` are built in a session scratchpad. If it is
   gone, `git worktree prune` and rebuild per "Verify an entry".
 - Time each new entry with all the others in one session (`admin/time_entries.py`,

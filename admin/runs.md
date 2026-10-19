@@ -740,6 +740,21 @@ SCANS.md has the tables and DECISIONS.md the choices.
   written in the entry's DECISIONS.md. Final commit `cb0f8a3` (28 commits
   after the Tier 1 head), re-collected as `tier3/fable/max` at 08:09 and
   re-verified (next line).
+- 08:04–08:13: **re-verification** of `cb0f8a3` with both compilers on the
+  disclosed and held-out scenarios: no warnings; 673 PASS, 7 N/A; TS1 gate
+  1.04e-13 and 9.97e-14; all five points at their declared levels on all 11
+  scenarios, L3r's held-out lowest 3.18 digits (HYDRALD 2.42 on
+  tropics-20min). The results folder now holds this verification; the first
+  one, with the balanced point, is recorded above.
+- 08:15–08:19: a **comparison session** was started
+  (`~/NSF-NCAR/tier3-work/run-timing-fable.sh`: Fable's five points, the
+  contest's two fastest level-2 and two fastest level-3 points, and MICM's
+  two baselines on the 10,000-cell scenarios, 3 rounds, 10 threads, 363
+  runs, about 1 h 45 min) and stopped after five runs at the SSE's request,
+  deferred to a follow-up session. To run it: that launcher, with
+  `~/NSF-NCAR/tier3-work/programs-fable-vs-contest.txt` (Fable's binary from
+  the verification worktree `tier3-work/verify/fable-max-2/clang/fable-max/`),
+  then `admin/rank_tier3.py <out> --threads 10`; idle machine, AC power.
 - Transcripts: this session and the six research sessions are on the
   `transcripts` branch under `transcripts/tier3/fable-max*`.
 
