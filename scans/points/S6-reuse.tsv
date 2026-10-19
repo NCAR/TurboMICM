@@ -1,0 +1,81 @@
+# S6: factorization reuse: age, rate-change threshold, freeze band, quantization; atol 1e-18, warm start.
+ros2-r3e-3-noreuse	ros2	rtol=3e-3 atol=1e-18
+ros2-r3e-3-quantize	ros2	rtol=3e-3 atol=1e-18 quantize=1
+ros2-r3e-3-age5-ch0.05-band1	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.05 freeze_band=1
+ros2-r3e-3-age5-ch0.05-band1.5	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.05 freeze_band=1.5
+ros2-r3e-3-age5-ch0.2-band1	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.2 freeze_band=1
+ros2-r3e-3-age5-ch0.2-band1.5	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.2 freeze_band=1.5
+ros2-r3e-3-age5-ch1-band1	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=1 freeze_band=1
+ros2-r3e-3-age5-ch1-band1.5	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=1 freeze_band=1.5
+ros2-r3e-3-age20-ch0.05-band1	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.05 freeze_band=1
+ros2-r3e-3-age20-ch0.05-band1.5	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.05 freeze_band=1.5
+ros2-r3e-3-age20-ch0.2-band1	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.2 freeze_band=1
+ros2-r3e-3-age20-ch0.2-band1.5	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.2 freeze_band=1.5
+ros2-r3e-3-age20-ch1-band1	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=1 freeze_band=1
+ros2-r3e-3-age20-ch1-band1.5	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=1 freeze_band=1.5
+ros2-r3e-3-age100-ch0.05-band1	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.05 freeze_band=1
+ros2-r3e-3-age100-ch0.05-band1.5	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.05 freeze_band=1.5
+ros2-r3e-3-age100-ch0.2-band1	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1
+ros2-r3e-3-age100-ch0.2-band1.5	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1.5
+ros2-r3e-3-age100-ch1-band1	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=1 freeze_band=1
+ros2-r3e-3-age100-ch1-band1.5	ros2	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=1 freeze_band=1.5
+ros34pw2-r1e-2-noreuse	ros34pw2	rtol=1e-2 atol=1e-18
+ros34pw2-r1e-2-quantize	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1
+ros34pw2-r1e-2-age5-ch0.05-band1	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.05 freeze_band=1
+ros34pw2-r1e-2-age5-ch0.05-band1.5	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.05 freeze_band=1.5
+ros34pw2-r1e-2-age5-ch0.2-band1	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.2 freeze_band=1
+ros34pw2-r1e-2-age5-ch0.2-band1.5	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.2 freeze_band=1.5
+ros34pw2-r1e-2-age5-ch1-band1	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=5 reuse_change=1 freeze_band=1
+ros34pw2-r1e-2-age5-ch1-band1.5	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=5 reuse_change=1 freeze_band=1.5
+ros34pw2-r1e-2-age20-ch0.05-band1	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.05 freeze_band=1
+ros34pw2-r1e-2-age20-ch0.05-band1.5	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.05 freeze_band=1.5
+ros34pw2-r1e-2-age20-ch0.2-band1	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.2 freeze_band=1
+ros34pw2-r1e-2-age20-ch0.2-band1.5	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.2 freeze_band=1.5
+ros34pw2-r1e-2-age20-ch1-band1	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=20 reuse_change=1 freeze_band=1
+ros34pw2-r1e-2-age20-ch1-band1.5	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=20 reuse_change=1 freeze_band=1.5
+ros34pw2-r1e-2-age100-ch0.05-band1	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.05 freeze_band=1
+ros34pw2-r1e-2-age100-ch0.05-band1.5	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.05 freeze_band=1.5
+ros34pw2-r1e-2-age100-ch0.2-band1	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1
+ros34pw2-r1e-2-age100-ch0.2-band1.5	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1.5
+ros34pw2-r1e-2-age100-ch1-band1	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=100 reuse_change=1 freeze_band=1
+ros34pw2-r1e-2-age100-ch1-band1.5	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=100 reuse_change=1 freeze_band=1.5
+ros34pw2-r1e-3-noreuse	ros34pw2	rtol=1e-3 atol=1e-18
+ros34pw2-r1e-3-quantize	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1
+ros34pw2-r1e-3-age5-ch0.05-band1	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.05 freeze_band=1
+ros34pw2-r1e-3-age5-ch0.05-band1.5	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.05 freeze_band=1.5
+ros34pw2-r1e-3-age5-ch0.2-band1	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.2 freeze_band=1
+ros34pw2-r1e-3-age5-ch0.2-band1.5	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.2 freeze_band=1.5
+ros34pw2-r1e-3-age5-ch1-band1	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=1 freeze_band=1
+ros34pw2-r1e-3-age5-ch1-band1.5	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=1 freeze_band=1.5
+ros34pw2-r1e-3-age20-ch0.05-band1	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.05 freeze_band=1
+ros34pw2-r1e-3-age20-ch0.05-band1.5	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.05 freeze_band=1.5
+ros34pw2-r1e-3-age20-ch0.2-band1	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.2 freeze_band=1
+ros34pw2-r1e-3-age20-ch0.2-band1.5	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.2 freeze_band=1.5
+ros34pw2-r1e-3-age20-ch1-band1	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=1 freeze_band=1
+ros34pw2-r1e-3-age20-ch1-band1.5	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=1 freeze_band=1.5
+ros34pw2-r1e-3-age100-ch0.05-band1	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.05 freeze_band=1
+ros34pw2-r1e-3-age100-ch0.05-band1.5	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.05 freeze_band=1.5
+ros34pw2-r1e-3-age100-ch0.2-band1	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1
+ros34pw2-r1e-3-age100-ch0.2-band1.5	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1.5
+ros34pw2-r1e-3-age100-ch1-band1	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=1 freeze_band=1
+ros34pw2-r1e-3-age100-ch1-band1.5	ros34pw2	rtol=1e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=1 freeze_band=1.5
+rodas3-r3e-3-noreuse	rodas3	rtol=3e-3 atol=1e-18
+rodas3-r3e-3-quantize	rodas3	rtol=3e-3 atol=1e-18 quantize=1
+rodas3-r3e-3-age5-ch0.05-band1	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.05 freeze_band=1
+rodas3-r3e-3-age5-ch0.05-band1.5	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.05 freeze_band=1.5
+rodas3-r3e-3-age5-ch0.2-band1	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.2 freeze_band=1
+rodas3-r3e-3-age5-ch0.2-band1.5	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=0.2 freeze_band=1.5
+rodas3-r3e-3-age5-ch1-band1	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=1 freeze_band=1
+rodas3-r3e-3-age5-ch1-band1.5	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=5 reuse_change=1 freeze_band=1.5
+rodas3-r3e-3-age20-ch0.05-band1	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.05 freeze_band=1
+rodas3-r3e-3-age20-ch0.05-band1.5	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.05 freeze_band=1.5
+rodas3-r3e-3-age20-ch0.2-band1	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.2 freeze_band=1
+rodas3-r3e-3-age20-ch0.2-band1.5	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=0.2 freeze_band=1.5
+rodas3-r3e-3-age20-ch1-band1	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=1 freeze_band=1
+rodas3-r3e-3-age20-ch1-band1.5	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=20 reuse_change=1 freeze_band=1.5
+rodas3-r3e-3-age100-ch0.05-band1	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.05 freeze_band=1
+rodas3-r3e-3-age100-ch0.05-band1.5	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.05 freeze_band=1.5
+rodas3-r3e-3-age100-ch0.2-band1	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1
+rodas3-r3e-3-age100-ch0.2-band1.5	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1.5
+rodas3-r3e-3-age100-ch1-band1	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=1 freeze_band=1
+rodas3-r3e-3-age100-ch1-band1.5	rodas3	rtol=3e-3 atol=1e-18 quantize=1 reuse_age=100 reuse_change=1 freeze_band=1.5

@@ -4,12 +4,21 @@
  * the Jacobian evaluated once at Y and the matrix n_j / H I - J factored once
  * per entry, and combines the results by Aitken-Neville extrapolation in
  * powers of H. The error estimate is the difference of the last two entries
- * of the tableau's last row. The step-size rules are the ROW loop's. */
+ * of the tableau's last row. The step-size rules are the ROW loop's.
+ *
+ * With max_matrix_age > 0 the entries' factorizations are kept in the state
+ * and reused, across steps and solves, while the step is unchanged, their
+ * age is below the limit, and the rate constants have changed by less than
+ * matrix_rate_change since they were made: the linearly implicit Euler
+ * method is consistent with any matrix in place of the Jacobian (LIMEX takes
+ * "the Jacobian at the start of the macro step or a good approximation"),
+ * and a reused step then costs only its solves and forcing evaluations. */
 #include "internal.h"
 
 #include <math.h>
 
 static const double H_MIN_FRACTION = 1.0e-15;
+static const double SAME_STEP = 1.0e-12;
 
 static int sequence_entry(int kind, int j)
 {
@@ -31,16 +40,36 @@ static void assemble_jacobian(const tmc_solver *s, tmc_state *st, const tmc_dens
   stats->jacobian_updates += 1;
 }
 
-/* alpha I - J from the copy, factored in place. */
-static void factor_shifted(const tmc_solver *s, tmc_state *st, double alpha, tmc_stats *stats)
+/* alpha I - J from the copy into `lu`, factored in place, reciprocals into `recip`. */
+static void factor_shifted(const tmc_solver *s, tmc_state *st, double alpha, tmc_sparse *lu, double *recip, tmc_stats *stats)
 {
-  memcpy(st->jacobian->data, st->jacobian_copy->data, st->jacobian->size * sizeof(double));
-  tmc_rosenbrock_alpha_minus_jacobian(s, st, alpha);
+  memcpy(lu->data, st->jacobian_copy->data, lu->size * sizeof(double));
+  const int L = st->L, nnz = lu->nnz;
+  for (int g = 0; g < lu->n_groups; ++g)
+  {
+    double *J = lu->data + (size_t)g * (size_t)nnz * L;
+    for (int i = 0; i < st->n_vars; ++i)
+    {
+      const double scaled_alpha = alpha * s->mass_diagonal[i];
+      double *d = J + (size_t)s->lu->mz_diag[i] * L;
+      for (int c = 0; c < L; ++c)
+        d[c] += scaled_alpha;
+    }
+  }
   if (s->kernels)
-    s->kernels->lu_decompose(st->jacobian->data, st->reciprocals, st->n_blocks);
+    s->kernels->lu_decompose(lu->data, recip, st->n_blocks);
   else
-    tmc_lu_decompose_in_place(s->lu, st->jacobian, st->reciprocals);
+    tmc_lu_decompose_in_place(s->lu, lu, recip);
   stats->decompositions += 1;
+}
+
+static void solve_with(const tmc_solver *s, tmc_state *st, const tmc_sparse *lu, const double *recip, tmc_dense *x, tmc_stats *stats)
+{
+  if (s->kernels)
+    s->kernels->lu_solve(x->data, lu->data, recip, st->n_blocks);
+  else
+    tmc_lu_solve_in_place(s->lu, lu, recip, x);
+  stats->solves += 1;
 }
 
 /* y += x */
@@ -64,6 +93,7 @@ tmc_result tmc_extrapolation_solve(const tmc_solver *s, double time_step, tmc_st
   const int k = p->extrapolation_order < 2 ? 2 : (p->extrapolation_order > TMC_MAX_EXTRAPOLATION ? TMC_MAX_EXTRAPOLATION : p->extrapolation_order);
   tmc_dense *Y = st->variables, *Ynew = st->ynew, *Yerror = st->yerror, *F0 = st->initial_forcing, *rhs = st->K[0];
   tmc_dense **prev = st->extrap_prev, **cur = st->extrap_cur;
+  const bool kept = p->max_matrix_age > 0 && st->extrap_lu[0] != NULL; /* factorizations live in the state */
 
   const double h_min = p->h_min == 0.0 ? H_MIN_FRACTION * time_step : p->h_min;
   const double h_max = p->h_max == 0.0 ? time_step : fmin(time_step, p->h_max);
@@ -88,7 +118,12 @@ tmc_result tmc_extrapolation_solve(const tmc_solver *s, double time_step, tmc_st
 
     tmc_rosenbrock_forcing(s, st, Y, F0);
     stats->function_calls += 1;
-    assemble_jacobian(s, st, Y, stats);
+    bool reuse = kept && st->lu_h > 0.0 && fabs(st->lu_h - H) <= SAME_STEP * H &&
+                 st->lu_age < p->max_matrix_age && st->rc_change <= p->matrix_rate_change;
+    if (reuse)
+      stats->matrix_reuses += 1;
+    else
+      assemble_jacobian(s, st, Y, stats);
 
     bool accepted = false;
     while (!accepted)
@@ -96,7 +131,10 @@ tmc_result tmc_extrapolation_solve(const tmc_solver *s, double time_step, tmc_st
       for (int j = 0; j < k; ++j)
       {
         const int n_j = sequence_entry(p->extrapolation_sequence, j);
-        factor_shifted(s, st, (double)n_j / H, stats);
+        tmc_sparse *lu = kept ? st->extrap_lu[j] : st->jacobian;
+        double *recip = kept ? st->extrap_recip[j] : st->reciprocals;
+        if (!reuse)
+          factor_shifted(s, st, (double)n_j / H, lu, recip, stats);
         /* n_j linearly implicit Euler substeps: y += (alpha I - J)^-1 F(y), alpha = n_j / H */
         tmc_dense_copy_into(Ynew, Y);
         for (int m = 0; m < n_j; ++m)
@@ -108,7 +146,7 @@ tmc_result tmc_extrapolation_solve(const tmc_solver *s, double time_step, tmc_st
             tmc_rosenbrock_forcing(s, st, Ynew, rhs);
             stats->function_calls += 1;
           }
-          tmc_rosenbrock_linear_solve(s, st, rhs, stats);
+          solve_with(s, st, lu, recip, rhs, stats);
           add_into(Ynew, rhs);
         }
         /* the tableau's row j: T_j0 = Ynew, T_jl = T_j,l-1 + (T_j,l-1 - T_j-1,l-1) / (n_j / n_j-l - 1) */
@@ -127,6 +165,12 @@ tmc_result tmc_extrapolation_solve(const tmc_solver *s, double time_step, tmc_st
         if (j < k - 1)
           for (int l = 0; l <= j; ++l)
             tmc_dense_swap(cur[l], prev[l]);
+      }
+      if (!reuse)
+      {
+        st->lu_h = H;
+        st->lu_age = 0;
+        st->rc_change = 0.0;
       }
       /* the result and its error estimate: the last row's last two entries */
       tmc_dense_copy_into(Ynew, cur[k - 1]);
@@ -158,11 +202,14 @@ tmc_result tmc_extrapolation_solve(const tmc_solver *s, double time_step, tmc_st
         tmc_dense_swap(Y, Ynew);
         if (p->clamp_internal)
           tmc_dense_max(Y, 0.0);
+        st->lu_age += 1;
         st->err_prev = error;
         st->h_prev = H;
         double Hnew = H * fac;
         if (reject_last)
           Hnew = fmin(Hnew, H);
+        if (kept && p->freeze_band > 1.0 && Hnew < H * p->freeze_band && Hnew > H / p->freeze_band)
+          Hnew = H; /* keep the step, and with it the factorizations */
         Hnew = fmax(h_min, fmin(Hnew, h_max));
         if (p->quantize)
           Hnew = tmc_row_quantize(Hnew, time_step);
@@ -182,6 +229,13 @@ tmc_result tmc_extrapolation_solve(const tmc_solver *s, double time_step, tmc_st
           Hnew = tmc_row_quantize(Hnew, time_step);
         H = Hnew;
         stats->rejected += 1;
+        /* the factorizations are for the old step: the retry refactors (the Jacobian copy still holds -J of Y) */
+        if (reuse)
+        {
+          reuse = false;
+          assemble_jacobian(s, st, Y, stats);
+        }
+        st->lu_h = 0.0;
       }
     }
   }
@@ -189,7 +243,8 @@ tmc_result tmc_extrapolation_solve(const tmc_solver *s, double time_step, tmc_st
   if (result.state == TMC_RUNNING)
     result.state = TMC_CONVERGED;
   st->h_next = proposed;
-  st->lu_h = 0.0; /* the factorization in the state is a substep's, not reusable */
+  if (!kept)
+    st->lu_h = 0.0; /* the state's single matrix holds a substep's factorization, not reusable */
   stats->final_time = t;
   return result;
 }

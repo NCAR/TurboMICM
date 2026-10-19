@@ -98,6 +98,8 @@ class Library:
         L.proto_factor.argtypes = [P, dp, D]
         L.proto_solve.argtypes = [P, dp]
         L.proto_dense_jacobian.argtypes = [P, I, dp, dp]
+        L.proto_factor_slot.argtypes = [P, I, dp, D]
+        L.proto_solve_slot.argtypes = [P, I, dp]
         L.proto_tableau.restype = I
         L.proto_tableau.argtypes = [S, ctypes.POINTER(I), dp, dp, dp, dp, dp, np.ctypeslib.ndpointer(dtype=np.int32, flags="C_CONTIGUOUS"), ctypes.POINTER(D)]
         L.proto_loop_constants.argtypes = [ctypes.POINTER(D)] * 4 + [ctypes.POINTER(I), ctypes.POINTER(D)]
@@ -202,6 +204,14 @@ class State:
     def solve(self, b):
         x = np.array(b, dtype=np.float64, order="C", copy=True)
         self.lib._lib.proto_solve(self._state, x)
+        return x
+
+    def factor_slot(self, slot, y, alpha):
+        self.lib._lib.proto_factor_slot(self._state, slot, np.ascontiguousarray(y, dtype=np.float64), alpha)
+
+    def solve_slot(self, slot, b):
+        x = np.array(b, dtype=np.float64, order="C", copy=True)
+        self.lib._lib.proto_solve_slot(self._state, slot, x)
         return x
 
     def dense_jacobian(self, cell, y):

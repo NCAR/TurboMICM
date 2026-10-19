@@ -1,0 +1,107 @@
+# S4: step-size controller and safety factor; atol 1e-18, warm start, MICM's norm.
+rodas3-r3e-3-micm-s0.9	rodas3	rtol=3e-3 atol=1e-18 controller=micm safety=0.9
+rodas3-r3e-3-micm-s1.2	rodas3	rtol=3e-3 atol=1e-18 controller=micm safety=1.2
+rodas3-r3e-3-micm-s1.4	rodas3	rtol=3e-3 atol=1e-18 controller=micm safety=1.4
+rodas3-r3e-3-predictive-s0.9	rodas3	rtol=3e-3 atol=1e-18 controller=predictive safety=0.9
+rodas3-r3e-3-predictive-s1.2	rodas3	rtol=3e-3 atol=1e-18 controller=predictive safety=1.2
+rodas3-r3e-3-predictive-s1.4	rodas3	rtol=3e-3 atol=1e-18 controller=predictive safety=1.4
+rodas3-r3e-3-h211b-s0.9	rodas3	rtol=3e-3 atol=1e-18 controller=h211b safety=0.9
+rodas3-r3e-3-h211b-s1.2	rodas3	rtol=3e-3 atol=1e-18 controller=h211b safety=1.2
+rodas3-r3e-3-h211b-s1.4	rodas3	rtol=3e-3 atol=1e-18 controller=h211b safety=1.4
+rodas3-r3e-3-h211b_h211_b1_h211_k1.7-s0.9	rodas3	rtol=3e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9
+rodas3-r3e-3-h211b_h211_b1_h211_k1.7-s1.2	rodas3	rtol=3e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.2
+rodas3-r3e-3-h211b_h211_b1_h211_k1.7-s1.4	rodas3	rtol=3e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.4
+rodas3-r3e-3-h211b_h211_b2-s0.9	rodas3	rtol=3e-3 atol=1e-18 controller=h211b h211_b=2 safety=0.9
+rodas3-r3e-3-h211b_h211_b2-s1.2	rodas3	rtol=3e-3 atol=1e-18 controller=h211b h211_b=2 safety=1.2
+rodas3-r3e-3-h211b_h211_b2-s1.4	rodas3	rtol=3e-3 atol=1e-18 controller=h211b h211_b=2 safety=1.4
+rodas3-r3e-3-micm-facmax10	rodas3	rtol=3e-3 atol=1e-18 fac_max=10
+rodas3-r5e-4-micm-s0.9	rodas3	rtol=5e-4 atol=1e-18 controller=micm safety=0.9
+rodas3-r5e-4-micm-s1.2	rodas3	rtol=5e-4 atol=1e-18 controller=micm safety=1.2
+rodas3-r5e-4-micm-s1.4	rodas3	rtol=5e-4 atol=1e-18 controller=micm safety=1.4
+rodas3-r5e-4-predictive-s0.9	rodas3	rtol=5e-4 atol=1e-18 controller=predictive safety=0.9
+rodas3-r5e-4-predictive-s1.2	rodas3	rtol=5e-4 atol=1e-18 controller=predictive safety=1.2
+rodas3-r5e-4-predictive-s1.4	rodas3	rtol=5e-4 atol=1e-18 controller=predictive safety=1.4
+rodas3-r5e-4-h211b-s0.9	rodas3	rtol=5e-4 atol=1e-18 controller=h211b safety=0.9
+rodas3-r5e-4-h211b-s1.2	rodas3	rtol=5e-4 atol=1e-18 controller=h211b safety=1.2
+rodas3-r5e-4-h211b-s1.4	rodas3	rtol=5e-4 atol=1e-18 controller=h211b safety=1.4
+rodas3-r5e-4-h211b_h211_b1_h211_k1.7-s0.9	rodas3	rtol=5e-4 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9
+rodas3-r5e-4-h211b_h211_b1_h211_k1.7-s1.2	rodas3	rtol=5e-4 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.2
+rodas3-r5e-4-h211b_h211_b1_h211_k1.7-s1.4	rodas3	rtol=5e-4 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.4
+rodas3-r5e-4-h211b_h211_b2-s0.9	rodas3	rtol=5e-4 atol=1e-18 controller=h211b h211_b=2 safety=0.9
+rodas3-r5e-4-h211b_h211_b2-s1.2	rodas3	rtol=5e-4 atol=1e-18 controller=h211b h211_b=2 safety=1.2
+rodas3-r5e-4-h211b_h211_b2-s1.4	rodas3	rtol=5e-4 atol=1e-18 controller=h211b h211_b=2 safety=1.4
+rodas3-r5e-4-micm-facmax10	rodas3	rtol=5e-4 atol=1e-18 fac_max=10
+ros34pw2-r1e-2-micm-s0.9	ros34pw2	rtol=1e-2 atol=1e-18 controller=micm safety=0.9
+ros34pw2-r1e-2-micm-s1.2	ros34pw2	rtol=1e-2 atol=1e-18 controller=micm safety=1.2
+ros34pw2-r1e-2-micm-s1.4	ros34pw2	rtol=1e-2 atol=1e-18 controller=micm safety=1.4
+ros34pw2-r1e-2-predictive-s0.9	ros34pw2	rtol=1e-2 atol=1e-18 controller=predictive safety=0.9
+ros34pw2-r1e-2-predictive-s1.2	ros34pw2	rtol=1e-2 atol=1e-18 controller=predictive safety=1.2
+ros34pw2-r1e-2-predictive-s1.4	ros34pw2	rtol=1e-2 atol=1e-18 controller=predictive safety=1.4
+ros34pw2-r1e-2-h211b-s0.9	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b safety=0.9
+ros34pw2-r1e-2-h211b-s1.2	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b safety=1.2
+ros34pw2-r1e-2-h211b-s1.4	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b safety=1.4
+ros34pw2-r1e-2-h211b_h211_b1_h211_k1.7-s0.9	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9
+ros34pw2-r1e-2-h211b_h211_b1_h211_k1.7-s1.2	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.2
+ros34pw2-r1e-2-h211b_h211_b1_h211_k1.7-s1.4	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.4
+ros34pw2-r1e-2-h211b_h211_b2-s0.9	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b h211_b=2 safety=0.9
+ros34pw2-r1e-2-h211b_h211_b2-s1.2	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b h211_b=2 safety=1.2
+ros34pw2-r1e-2-h211b_h211_b2-s1.4	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b h211_b=2 safety=1.4
+ros34pw2-r1e-2-micm-facmax10	ros34pw2	rtol=1e-2 atol=1e-18 fac_max=10
+ros34pw2-r1e-3-micm-s0.9	ros34pw2	rtol=1e-3 atol=1e-18 controller=micm safety=0.9
+ros34pw2-r1e-3-micm-s1.2	ros34pw2	rtol=1e-3 atol=1e-18 controller=micm safety=1.2
+ros34pw2-r1e-3-micm-s1.4	ros34pw2	rtol=1e-3 atol=1e-18 controller=micm safety=1.4
+ros34pw2-r1e-3-predictive-s0.9	ros34pw2	rtol=1e-3 atol=1e-18 controller=predictive safety=0.9
+ros34pw2-r1e-3-predictive-s1.2	ros34pw2	rtol=1e-3 atol=1e-18 controller=predictive safety=1.2
+ros34pw2-r1e-3-predictive-s1.4	ros34pw2	rtol=1e-3 atol=1e-18 controller=predictive safety=1.4
+ros34pw2-r1e-3-h211b-s0.9	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b safety=0.9
+ros34pw2-r1e-3-h211b-s1.2	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b safety=1.2
+ros34pw2-r1e-3-h211b-s1.4	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b safety=1.4
+ros34pw2-r1e-3-h211b_h211_b1_h211_k1.7-s0.9	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9
+ros34pw2-r1e-3-h211b_h211_b1_h211_k1.7-s1.2	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.2
+ros34pw2-r1e-3-h211b_h211_b1_h211_k1.7-s1.4	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.4
+ros34pw2-r1e-3-h211b_h211_b2-s0.9	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b h211_b=2 safety=0.9
+ros34pw2-r1e-3-h211b_h211_b2-s1.2	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b h211_b=2 safety=1.2
+ros34pw2-r1e-3-h211b_h211_b2-s1.4	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b h211_b=2 safety=1.4
+ros34pw2-r1e-3-micm-facmax10	ros34pw2	rtol=1e-3 atol=1e-18 fac_max=10
+ros2-r3e-3-micm-s0.9	ros2	rtol=3e-3 atol=1e-18 controller=micm safety=0.9
+ros2-r3e-3-micm-s1.2	ros2	rtol=3e-3 atol=1e-18 controller=micm safety=1.2
+ros2-r3e-3-micm-s1.4	ros2	rtol=3e-3 atol=1e-18 controller=micm safety=1.4
+ros2-r3e-3-predictive-s0.9	ros2	rtol=3e-3 atol=1e-18 controller=predictive safety=0.9
+ros2-r3e-3-predictive-s1.2	ros2	rtol=3e-3 atol=1e-18 controller=predictive safety=1.2
+ros2-r3e-3-predictive-s1.4	ros2	rtol=3e-3 atol=1e-18 controller=predictive safety=1.4
+ros2-r3e-3-h211b-s0.9	ros2	rtol=3e-3 atol=1e-18 controller=h211b safety=0.9
+ros2-r3e-3-h211b-s1.2	ros2	rtol=3e-3 atol=1e-18 controller=h211b safety=1.2
+ros2-r3e-3-h211b-s1.4	ros2	rtol=3e-3 atol=1e-18 controller=h211b safety=1.4
+ros2-r3e-3-h211b_h211_b1_h211_k1.7-s0.9	ros2	rtol=3e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9
+ros2-r3e-3-h211b_h211_b1_h211_k1.7-s1.2	ros2	rtol=3e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.2
+ros2-r3e-3-h211b_h211_b1_h211_k1.7-s1.4	ros2	rtol=3e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.4
+ros2-r3e-3-h211b_h211_b2-s0.9	ros2	rtol=3e-3 atol=1e-18 controller=h211b h211_b=2 safety=0.9
+ros2-r3e-3-h211b_h211_b2-s1.2	ros2	rtol=3e-3 atol=1e-18 controller=h211b h211_b=2 safety=1.2
+ros2-r3e-3-h211b_h211_b2-s1.4	ros2	rtol=3e-3 atol=1e-18 controller=h211b h211_b=2 safety=1.4
+ros2-r3e-3-micm-facmax10	ros2	rtol=3e-3 atol=1e-18 fac_max=10
+extrap-r2e-3-micm-s0.9	extrap	rtol=2e-3 atol=1e-18 controller=micm safety=0.9 order=4
+extrap-r2e-3-micm-s1.2	extrap	rtol=2e-3 atol=1e-18 controller=micm safety=1.2 order=4
+extrap-r2e-3-micm-s1.4	extrap	rtol=2e-3 atol=1e-18 controller=micm safety=1.4 order=4
+extrap-r2e-3-predictive-s0.9	extrap	rtol=2e-3 atol=1e-18 controller=predictive safety=0.9 order=4
+extrap-r2e-3-predictive-s1.2	extrap	rtol=2e-3 atol=1e-18 controller=predictive safety=1.2 order=4
+extrap-r2e-3-predictive-s1.4	extrap	rtol=2e-3 atol=1e-18 controller=predictive safety=1.4 order=4
+extrap-r2e-3-h211b-s0.9	extrap	rtol=2e-3 atol=1e-18 controller=h211b safety=0.9 order=4
+extrap-r2e-3-h211b-s1.2	extrap	rtol=2e-3 atol=1e-18 controller=h211b safety=1.2 order=4
+extrap-r2e-3-h211b-s1.4	extrap	rtol=2e-3 atol=1e-18 controller=h211b safety=1.4 order=4
+extrap-r2e-3-h211b_h211_b1_h211_k1.7-s0.9	extrap	rtol=2e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9 order=4
+extrap-r2e-3-h211b_h211_b1_h211_k1.7-s1.2	extrap	rtol=2e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.2 order=4
+extrap-r2e-3-h211b_h211_b1_h211_k1.7-s1.4	extrap	rtol=2e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=1.4 order=4
+extrap-r2e-3-h211b_h211_b2-s0.9	extrap	rtol=2e-3 atol=1e-18 controller=h211b h211_b=2 safety=0.9 order=4
+extrap-r2e-3-h211b_h211_b2-s1.2	extrap	rtol=2e-3 atol=1e-18 controller=h211b h211_b=2 safety=1.2 order=4
+extrap-r2e-3-h211b_h211_b2-s1.4	extrap	rtol=2e-3 atol=1e-18 controller=h211b h211_b=2 safety=1.4 order=4
+extrap-r2e-3-micm-facmax10	extrap	rtol=2e-3 atol=1e-18 fac_max=10 order=4
+rodas3-r3e-3-micm-s0.9-filtered	rodas3	rtol=3e-3 atol=1e-18 controller=micm safety=0.9 filter_error=1
+rodas3-r3e-3-h211b_h211_b1_h211_k1.7-s0.9-filtered	rodas3	rtol=3e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9 filter_error=1
+rodas3-r5e-4-micm-s0.9-filtered	rodas3	rtol=5e-4 atol=1e-18 controller=micm safety=0.9 filter_error=1
+rodas3-r5e-4-h211b_h211_b1_h211_k1.7-s0.9-filtered	rodas3	rtol=5e-4 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9 filter_error=1
+ros34pw2-r1e-2-micm-s0.9-filtered	ros34pw2	rtol=1e-2 atol=1e-18 controller=micm safety=0.9 filter_error=1
+ros34pw2-r1e-2-h211b_h211_b1_h211_k1.7-s0.9-filtered	ros34pw2	rtol=1e-2 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9 filter_error=1
+ros34pw2-r1e-3-micm-s0.9-filtered	ros34pw2	rtol=1e-3 atol=1e-18 controller=micm safety=0.9 filter_error=1
+ros34pw2-r1e-3-h211b_h211_b1_h211_k1.7-s0.9-filtered	ros34pw2	rtol=1e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9 filter_error=1
+ros2-r3e-3-micm-s0.9-filtered	ros2	rtol=3e-3 atol=1e-18 controller=micm safety=0.9 filter_error=1
+ros2-r3e-3-h211b_h211_b1_h211_k1.7-s0.9-filtered	ros2	rtol=3e-3 atol=1e-18 controller=h211b h211_b=1 h211_k=1.7 safety=0.9 filter_error=1

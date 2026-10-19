@@ -45,6 +45,7 @@ class Options:
     fac_max: float = 0.0          # 0: MICM's 6
     h211_b: float = 0.0           # 0: 4
     h211_k: float = 0.0           # 0: the estimator order
+    filter_error: bool = False    # ROW: judge (alpha I - J)^-1 alpha e
 
 
 @dataclass
@@ -238,6 +239,9 @@ class RowSolver(Loop):
                     state.reset_rate_change()
                 factored = False
                 ynew, yerr = self.stages(state, y, F0, H, counts)
+                if o.filter_error:
+                    yerr = state.solve(yerr) * (1.0 / (H * t.gamma))
+                    counts.solves += 1
                 error = self.error_norm(y, ynew, yerr, atol)
                 counts.steps += 1
                 if np.isnan(error):
@@ -279,20 +283,22 @@ class ExtrapolationSolver(Loop):
         self.k = options.order
         self.order = float(self.k)
 
-    def attempt(self, state, y, F0, H, counts):
-        """One attempt: the tableau's rows for the sequence, the last two entries of the last row."""
+    def attempt(self, state, y, F0, H, counts, reuse):
+        """One attempt: the tableau's rows for the sequence, the last two entries of the last row.
+        Entry j's factorization lives in slot j; with `reuse` the slots are kept from before."""
         o, k = self.o, self.k
         prev = []
         for j in range(k):
             n_j = sequence_entry(o.sequence, j)
-            state.factor(y, n_j / H)      # the C loop assembles J once and shifts; same numbers
-            counts.decompositions += 1
+            if not reuse:
+                state.factor_slot(j, y, n_j / H)   # the C loop assembles J once and shifts; same numbers
+                counts.decompositions += 1
             yj = y.copy()
             for m in range(n_j):
                 rhs = F0 if m == 0 else state.forcing(yj)
                 if m > 0:
                     counts.function_calls += 1
-                yj = yj + state.solve(rhs)
+                yj = yj + state.solve_slot(j, rhs)
                 counts.solves += 1
             row = [yj]
             for l in range(1, j + 1):
@@ -303,6 +309,7 @@ class ExtrapolationSolver(Loop):
 
     def solve(self, state, y, interval):
         o = self.o
+        kept = o.reuse_age > 0
         counts = Counts()
         atol = state.absolute_tolerances()
         h_min = H_MIN_FRACTION * interval
@@ -323,9 +330,17 @@ class ExtrapolationSolver(Loop):
             H = min(H, abs(interval - time))
             F0 = state.forcing(y)
             counts.function_calls += 1
-            counts.jacobian_updates += 1
+            reuse = (kept and self.lu_h > 0.0 and abs(self.lu_h - H) <= SAME_STEP * H
+                     and self.lu_age < o.reuse_age and state.rate_change() <= o.reuse_change)
+            if reuse:
+                counts.matrix_reuses += 1
+            else:
+                counts.jacobian_updates += 1
             while True:
-                ynew, yerr = self.attempt(state, y, F0, H, counts)
+                ynew, yerr = self.attempt(state, y, F0, H, counts, reuse)
+                if not reuse:
+                    self.lu_h, self.lu_age = H, 0
+                    state.reset_rate_change()
                 error = self.error_norm(y, ynew, yerr, atol)
                 counts.steps += 1
                 if np.isnan(error):
@@ -338,17 +353,23 @@ class ExtrapolationSolver(Loop):
                     counts.accepted += 1
                     time += H
                     y = np.maximum(ynew, 0.0) if o.clamp else ynew
-                    Hnew = self.accept(error, H, interval, h_min, h_max, reject_last, keep_matrix=False)
+                    self.lu_age += 1
+                    Hnew = self.accept(error, H, interval, h_min, h_max, reject_last, keep_matrix=kept)
                     reject_last = reject_more = False
                     proposed = H = Hnew
                     break
                 H = self.reject(error, H, interval, reject_more)
                 reject_more, reject_last = reject_last, True
                 counts.rejected += 1
+                if reuse:
+                    reuse = False
+                    counts.jacobian_updates += 1
+                self.lu_h = 0.0
         if status == "running":
             status = "converged"
         self.h_next = proposed
-        self.lu_h = 0.0
+        if not kept:
+            self.lu_h = 0.0
         return Result(y, counts, status, time)
 
 

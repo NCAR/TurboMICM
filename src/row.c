@@ -169,6 +169,18 @@ tmc_result tmc_row_solve(const tmc_solver *s, double time_step, tmc_state *st)
       factored = false;
       tmc_rosenbrock_stages(s, st, p, H, stats);
       tmc_rosenbrock_combine_solution_and_error(Ynew, Yerror, Y, p->stages, p->m, p->e, st->K);
+      if (p->filter_error)
+      {
+        /* the estimate seen through the step's own matrix, as RADAU5 filters its
+         * first-step estimate: damps the stiff components a transient excites */
+        const double alpha = 1.0 / (H * p->gamma[0]);
+        tmc_rosenbrock_linear_solve(s, st, Yerror, stats);
+        double *restrict e = Yerror->data;
+        const size_t len = Yerror->size;
+#pragma omp simd
+        for (size_t i = 0; i < len; ++i)
+          e[i] *= alpha;
+      }
       const double error = tmc_row_error_norm(st, Y, Ynew, Yerror, p->norm);
       stats->number_of_steps += 1;
       if (isnan(error))

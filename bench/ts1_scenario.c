@@ -37,13 +37,13 @@ static const char *USAGE =
     "         warm_start=0|1 h_start=SECONDS h_start_factor=F h_max=SECONDS max_steps=M\n"
     "         norm=rms|cellmax|max controller=micm|predictive|h211b clamp=0|1 quantize=0|1\n"
     "         reuse_age=STEPS reuse_change=FRACTION freeze_band=FACTOR\n"
-    "         safety=DELTA fac_min=Q fac_max=Q h211_b=B h211_k=K\n"
+    "         safety=DELTA fac_min=Q fac_max=Q h211_b=B h211_k=K filter_error=0|1\n"
     "         order=K sequence=harmonic|shifted|even (extrap)\n";
 
 typedef struct
 {
   double rtol, atol, h_start, h_start_factor, h_max, reuse_change, freeze_band, safety, fac_min, fac_max, h211_b, h211_k;
-  int group_size, chunk, generic, warm_start, norm, controller, clamp, quantize, reuse_age, order, sequence, max_steps;
+  int group_size, chunk, generic, warm_start, norm, controller, clamp, quantize, reuse_age, order, sequence, max_steps, filter_error;
   omp_sched_t schedule;
 } options;
 
@@ -158,6 +158,8 @@ static void option(options *o, const char *key, const char *value)
     o->h211_b = atof(value);
   else if (!strcmp(key, "h211_k"))
     o->h211_k = atof(value);
+  else if (!strcmp(key, "filter_error"))
+    o->filter_error = parse_bool(value);
   else if (!strcmp(key, "sequence"))
   {
     if (!strcmp(value, "harmonic"))
@@ -176,7 +178,7 @@ static void option(options *o, const char *key, const char *value)
   }
   b = 0;
   (void)b;
-  if (o->generic < 0 || o->warm_start < -1 || o->clamp < 0 || o->quantize < 0)
+  if (o->generic < 0 || o->warm_start < -1 || o->clamp < 0 || o->quantize < 0 || o->filter_error < 0)
     fail("a 0/1 option was given another value");
 }
 
@@ -338,7 +340,7 @@ static void add_stats(tmc_stats *total, const tmc_stats *part)
 int main(int argc, char **argv)
 {
   tmc_program = "ts1_scenario";
-  options o = { -1.0, -1.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, TMC_DEFAULT_GROUP_SIZE, 1, 0, -1, TMC_NORM_RMS, TMC_CONTROLLER_MICM, 0, 0, 0, 4, TMC_SEQUENCE_HARMONIC, 0, omp_sched_dynamic };
+  options o = { -1.0, -1.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, TMC_DEFAULT_GROUP_SIZE, 1, 0, -1, TMC_NORM_RMS, TMC_CONTROLLER_MICM, 0, 0, 0, 4, TMC_SEQUENCE_HARMONIC, 0, 0, omp_sched_dynamic };
   const char *method = "micm3";
   int threads = 0;
   int i = 1;
@@ -408,6 +410,7 @@ int main(int argc, char **argv)
     p.factor_max = o.fac_max;
   p.h211_b = o.h211_b;
   p.h211_k = o.h211_k;
+  p.filter_error = o.filter_error;
   if (p.loop == TMC_LOOP_EXTRAPOLATION)
   {
     if (o.order < 2 || o.order > TMC_MAX_EXTRAPOLATION)

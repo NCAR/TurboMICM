@@ -558,6 +558,7 @@ typedef struct tmc_rosenbrock_parameters
   int extrapolation_order;    /* extrapolation: entries of the step-number sequence (2 to TMC_MAX_EXTRAPOLATION) */
   int extrapolation_sequence; /* TMC_SEQUENCE_HARMONIC, TMC_SEQUENCE_SHIFTED, or TMC_SEQUENCE_EVEN */
   double h211_b, h211_k;      /* H211b's b and k (0: b = 4 and k = the estimator order, Soderlind's choice) */
+  int filter_error;           /* ROW loop: judge the step by (alpha I - J)^-1 alpha e instead of e (one more solve) */
 } tmc_rosenbrock_parameters;
 
 enum { TMC_LOOP_MICM = 0, TMC_LOOP_ROW = 1, TMC_LOOP_EXTRAPOLATION = 2 };

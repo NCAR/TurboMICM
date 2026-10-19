@@ -37,6 +37,12 @@ tmc_state *tmc_solver_create_state(const tmc_solver *s, int n_cells)
       {
         st->extrap_prev[i] = tmc_dense_create(n_cells, s->n_vars, L, 0.0);
         st->extrap_cur[i] = tmc_dense_create(n_cells, s->n_vars, L, 0.0);
+        if (s->ros.max_matrix_age > 0)
+        {
+          st->extrap_lu[i] = tmc_lu_matrix(s->lu, n_cells, 0.0);
+          st->extrap_recip[i] = tmc_alloc_doubles((size_t)st->n_blocks * (size_t)L * (size_t)s->n_vars);
+          memset(st->extrap_recip[i], 0, (size_t)st->n_blocks * (size_t)L * (size_t)s->n_vars * sizeof(double));
+        }
       }
     }
   }
@@ -73,6 +79,8 @@ void tmc_state_free(tmc_state *st)
   {
     tmc_dense_free(st->extrap_prev[i]);
     tmc_dense_free(st->extrap_cur[i]);
+    tmc_sparse_free(st->extrap_lu[i]);
+    tmc_free_doubles(st->extrap_recip[i]);
   }
   free(st);
 }

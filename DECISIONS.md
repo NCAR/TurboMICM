@@ -278,6 +278,17 @@ Tier 1 decisions above stand.
   once after the solve; clamping after each accepted step changes the
   trajectory slightly and is measured, not assumed.
 
+## What the scans settled (in the order they ran)
+
+- **S1, the first step:** the carried step with quantization is the
+  default for the new loops (35 % less time than MICM's restart at equal
+  accuracy; SCANS.md). The scan also showed that at rtol 1e-3 the loop
+  rejects a quarter of its attempts once the step is carried, because
+  MICM's controller lets the step grow six-fold after every success; the
+  controller scan addresses it, and a filtered error estimate
+  (`filter_error`, one extra solve, RADAU5's first-step device) was added
+  as an arm for it.
+
 ## Prototypes
 
 - **The prototypes use the library's linear algebra.** A Python mirror of

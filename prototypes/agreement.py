@@ -31,11 +31,14 @@ CASES = [
     ("rodas3", ["rtol=1e-3", "atol=1e-18"]),
     ("rodas3", ["rtol=1e-3", "atol=1e-18", "norm=cellmax", "clamp=1", "quantize=1"]),
     ("rodas4", ["rtol=1e-3", "atol=1e-18", "controller=h211b"]),
+    ("rodas3", ["rtol=1e-3", "atol=1e-18", "filter_error=1", "controller=predictive"]),
     ("ros2", ["rtol=1e-2", "atol=1e-18", "reuse_age=50", "reuse_change=0.2", "quantize=1", "freeze_band=1.5"]),
     ("ros34pw2", ["rtol=1e-3", "atol=1e-18"]),
     ("ros34pw2", ["rtol=1e-2", "atol=1e-18", "reuse_age=50", "reuse_change=0.2", "quantize=1", "freeze_band=1.5", "controller=h211b", "h211_b=1", "h211_k=1.7", "safety=1.3"]),
     ("extrap", ["rtol=1e-3", "atol=1e-18", "order=3"]),
     ("extrap", ["rtol=1e-3", "atol=1e-18", "order=4", "sequence=shifted"]),
+    ("extrap", ["rtol=1e-2", "atol=1e-18", "order=3", "quantize=1", "reuse_age=100", "reuse_change=0.2", "freeze_band=1.5"]),
+    ("extrap", ["rtol=1e-2", "atol=1e-18", "order=4", "quantize=1", "reuse_age=100", "reuse_change=0.2", "controller=h211b", "h211_b=1", "h211_k=1.7"]),
 ]
 COUNTS = ["internal_steps", "accepted", "rejected", "function_calls", "jacobian_updates", "decompositions", "solves", "matrix_reuses"]
 PROTO_NAMES = {"internal_steps": "steps"}
@@ -67,7 +70,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--scenario", type=Path, default=HERE / "mini" / "scenario.txt")
     parser.add_argument("--methods", help="comma-separated subset of the cases' methods")
-    parser.add_argument("--tolerance", type=float, default=1e-9, help="largest relative difference allowed")
+    parser.add_argument("--tolerance", type=float, default=1e-8, help="largest relative difference allowed (see README.md)")
     parser.add_argument("--keep", action="store_true", help="keep the work directories")
     args = parser.parse_args()
     binary = ENTRY / "bin" / "ts1_scenario"

@@ -180,6 +180,8 @@ struct tmc_state
   double err_prev, h_prev;   /* the last accepted step's error and size (0: none) */
   tmc_sparse *jacobian_copy; /* extrapolation: -J unshifted, refactored for each substep size */
   tmc_dense *extrap_prev[TMC_MAX_EXTRAPOLATION], *extrap_cur[TMC_MAX_EXTRAPOLATION]; /* the tableau's last two rows */
+  tmc_sparse *extrap_lu[TMC_MAX_EXTRAPOLATION]; /* with reuse: the factorization of n_j / H I - J for each entry */
+  double *extrap_recip[TMC_MAX_EXTRAPOLATION];  /* and its pivot reciprocals */
 };
 
 /* ---- Internal kernels (process.c) --------------------------------------- */

@@ -21,6 +21,8 @@ typedef struct
   const proto_solver *owner;
   tmc_state *state;
   tmc_dense *y, *f; /* scratch, vector ordered */
+  tmc_sparse *lu[TMC_MAX_EXTRAPOLATION]; /* stored factorizations (slots), made on demand */
+  double *recip[TMC_MAX_EXTRAPOLATION];
 } proto_state;
 
 proto_solver *proto_open(int generic)
@@ -82,6 +84,11 @@ void proto_state_free(proto_state *s)
   tmc_state_free(s->state);
   tmc_dense_free(s->y);
   tmc_dense_free(s->f);
+  for (int i = 0; i < TMC_MAX_EXTRAPOLATION; ++i)
+  {
+    tmc_sparse_free(s->lu[i]);
+    tmc_free_doubles(s->recip[i]);
+  }
   free(s);
 }
 
@@ -152,6 +159,36 @@ void proto_solve(proto_state *s, double *x)
   memset(&stats, 0, sizeof stats);
   load(s->f, x);
   tmc_rosenbrock_linear_solve(s->owner->solver, s->state, s->f, &stats);
+  store(s->f, x);
+}
+
+/* alpha I - J(y) factored into slot `slot` (0 to 7), kept until overwritten:
+ * the state's own matrix is factored as proto_factor does, then copied. */
+void proto_factor_slot(proto_state *s, int slot, const double *y, double alpha)
+{
+  const tmc_solver *sv = s->owner->solver;
+  const size_t n_recip = (size_t)s->state->n_blocks * (size_t)s->state->L * (size_t)sv->n_vars;
+  if (!s->lu[slot])
+  {
+    s->lu[slot] = tmc_lu_matrix(sv->lu, s->state->n_cells, 0.0);
+    s->recip[slot] = tmc_alloc_doubles(n_recip);
+  }
+  proto_factor(s, y, alpha);
+  memcpy(s->lu[slot]->data, s->state->jacobian->data, s->state->jacobian->size * sizeof(double));
+  memcpy(s->recip[slot], s->state->reciprocals, n_recip * sizeof(double));
+}
+
+/* x = (alpha I - J)^-1 x with slot `slot`'s factorization */
+void proto_solve_slot(proto_state *s, int slot, double *x)
+{
+  const tmc_solver *sv = s->owner->solver;
+  tmc_stats stats;
+  memset(&stats, 0, sizeof stats);
+  load(s->f, x);
+  if (sv->kernels)
+    sv->kernels->lu_solve(s->f->data, s->lu[slot]->data, s->recip[slot], s->state->n_blocks);
+  else
+    tmc_lu_solve_in_place(sv->lu, s->lu[slot], s->recip[slot], s->f);
   store(s->f, x);
 }
 

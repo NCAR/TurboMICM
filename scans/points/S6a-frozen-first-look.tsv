@@ -1,0 +1,15 @@
+# S6a: frozen matrices, a first look. atol 1e-18, warm start, quantized steps.
+extrap3-r1e-2	extrap	rtol=1e-2 atol=1e-18 order=3 quantize=1
+extrap3-r1e-2-age100-ch0.05	extrap	rtol=1e-2 atol=1e-18 order=3 quantize=1 reuse_age=100 reuse_change=0.05
+extrap3-r1e-2-age100-ch0.2	extrap	rtol=1e-2 atol=1e-18 order=3 quantize=1 reuse_age=100 reuse_change=0.2
+extrap3-r1e-2-age100-ch1	extrap	rtol=1e-2 atol=1e-18 order=3 quantize=1 reuse_age=100 reuse_change=1
+extrap4-r1e-2	extrap	rtol=1e-2 atol=1e-18 order=4 quantize=1
+extrap4-r1e-2-age100-ch0.05	extrap	rtol=1e-2 atol=1e-18 order=4 quantize=1 reuse_age=100 reuse_change=0.05
+extrap4-r1e-2-age100-ch0.2	extrap	rtol=1e-2 atol=1e-18 order=4 quantize=1 reuse_age=100 reuse_change=0.2
+extrap4-r1e-2-age100-ch1	extrap	rtol=1e-2 atol=1e-18 order=4 quantize=1 reuse_age=100 reuse_change=1
+extrap4-r1e-2-age20-ch0.2	extrap	rtol=1e-2 atol=1e-18 order=4 quantize=1 reuse_age=20 reuse_change=0.2
+extrap4-r2e-4-age100-ch0.2	extrap	rtol=2e-4 atol=1e-18 order=4 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1.5
+rodas3-r1e-2	rodas3	rtol=1e-2 atol=1e-18 quantize=1
+rodas3-r1e-2-age100-ch0.2	rodas3	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1.5
+rodas3-r1e-2-age100-ch0.05	rodas3	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.05 freeze_band=1.5
+ros34pw2-r1e-2-age100-ch0.2	ros34pw2	rtol=1e-2 atol=1e-18 quantize=1 reuse_age=100 reuse_change=0.2 freeze_band=1.5

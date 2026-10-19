@@ -70,7 +70,8 @@ def parse_options(items, defaults=None):
              "h_start_factor": float, "h_max": float, "norm": str, "controller": str,
              "clamp": lambda v: v in ("1", "yes", "true"), "quantize": lambda v: v in ("1", "yes", "true"),
              "reuse_age": int, "reuse_change": float, "freeze_band": float, "max_steps": int, "order": int, "sequence": str,
-             "safety": float, "fac_min": float, "fac_max": float, "h211_b": float, "h211_k": float}
+             "safety": float, "fac_min": float, "fac_max": float, "h211_b": float, "h211_k": float,
+             "filter_error": lambda v: v in ("1", "yes", "true")}
     for item in items or []:
         key, _, value = item.partition("=")
         if key not in kinds:
