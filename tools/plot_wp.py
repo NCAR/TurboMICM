@@ -8,7 +8,7 @@
 One curve per series, by default the method (the label up to the first
 '-'); --series gives a regular expression whose capture groups, joined by
 spaces, name the series (for example '^(\\w+)-.*-(micm|h211b)$' separates
-the controllers). --mark draws the named configurations, the operating
+the controllers; labels the expression does not match are left out). --mark draws the named configurations, the operating
 points, with large markers and their labels. One point per configuration: x is the median elapsed time summed over the scenarios (or the
 summed operation count), y is the lowest overall digits (or the lowest worst-
 species digits) over the scenarios, so a point's y is what the ranking's
@@ -60,7 +60,9 @@ def main():
                 xs += statistics.median(float(r[key]) for r in rs)
             ys.append(min(float(r["digits"] if args.y == "digits" else r["worst_digits"]) for r in rs))
         m = pattern.search(label)
-        name = " ".join(g for g in m.groups() if g) if m else label
+        if not m:
+            continue  # --series also selects: labels it does not match are left out
+        name = " ".join(g for g in m.groups() if g) or label
         series[name].append((xs, min(ys), label))
     fig, ax = plt.subplots(figsize=(7.5, 5))
     for method, pts in sorted(series.items()):
