@@ -708,9 +708,28 @@ SCANS.md has the tables and DECISIONS.md the choices.
   order 4 at 2e-4 and 1e-20 (3.87 / 3.00, 3.45 s, 8.4 times). The loose
   RODAS3 points at rtol 1e-2 reach the contest's 2.04-digit floor on
   diurnal-5min and are reported, not declared.
-- 07:03: the gcc-15 and clang gates with build timings, then the final
-  commit, the collection as `tier3/fable/max`, and its verification with
-  `admin/verify_tier3.py` on the 11 scenarios (next item).
+- 07:04–07:33: the gcc-15 and clang gates with build timings; two gcc
+  warnings fixed (a const-qualified array parameter, a truncating snprintf)
+  and a Makefile race (an object compiled in the same second as the flags
+  file's rewrite passed as current after a compiler switch; the rule now
+  removes every object when the flags change). Final commit `ec34c99`
+  (26 commits after the Tier 1 head `6d2fcde`), collected as
+  `tier3/fable/max` and pushed at 07:34.
+- 07:34–07:44: **verification** with `admin/verify_tier3.py`, both
+  compilers, disclosed then held-out
+  (`results/2026-10-19-tier3-fable-max-verification/`): no warnings; 673
+  PASS, 0 FAIL, 7 N/A on the 680 ids with each compiler; TS1 gate 1.04e-13
+  and 9.97e-14; every point passes the gate on all 11 scenarios and reaches
+  its declared level on all 11 (L2's thinnest held-out margin: isoprene 1.16
+  on winter60-10min); balanced reaches three digits on 10 of 11 (not on
+  clean-48h-5min: 2.71, phenol 1.79), as its level-2 declaration
+  anticipated. Published: the wiki page Fable-Tier-3-Reference-Solution, a
+  section on Tier-3-Results, Home; CLAUDE.md's Tier 3 notes and open items.
+- 07:35: the SSE's other agent renamed the task force on the wiki (Agentic
+  Coding Task Force); pulled before the wiki commit, and CLAUDE.md renamed
+  to match at the SSE's request.
+- Transcripts: this session and the six research sessions are on the
+  `transcripts` branch under `transcripts/tier3/fable-max*`.
 
 # Disk space
 

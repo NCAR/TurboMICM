@@ -1,0 +1,7 @@
+# fable-max's declared operating points, from OPERATING_POINTS.md
+# NAME<TAB>bin/ts1_scenario options before the scenario
+L2	--method rodas3 --option rtol=5e-3 --option atol=1e-20 --option quantize=1 --option controller=micm --option safety=0.9
+balanced	--method rodas3 --option rtol=2e-3 --option atol=1e-20 --option quantize=1 --option controller=h211b --option safety=0.9
+L3	--method extrap --option order=3 --option sequence=shifted --option rtol=1e-3 --option atol=1e-20 --option quantize=1 --option controller=micm --option safety=0.9
+recommended	--method extrap --option order=4 --option sequence=shifted --option rtol=5e-4 --option atol=1e-22 --option quantize=1 --option controller=micm --option safety=0.9
+accurate	--method extrap --option order=4 --option sequence=shifted --option rtol=2e-4 --option atol=1e-20 --option quantize=1 --option controller=micm --option safety=0.9
