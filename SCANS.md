@@ -672,3 +672,50 @@ digits overall (worst species and its digits), median ms.
   30-second interval allows one step); diurnal-5min is dear for
   extrapolation for the same reason.
 
+### S13b: the loose H211b points for level 2 (`scans/S13b-loose-h211b.csv`)
+
+Eight RODAS3 configurations with H211b at safety 1.0, 1.1, 1.2 on all six
+scenarios, three rounds, beside S13's elementary candidates:
+
+| Candidate | Time, s | Lowest (worst) | diurnal-30min | diurnal-5min | polluted-10min |
+|---|---:|---|---|---|---|
+| H211b 1.0, 1e-2 / 1e-20 | 1.229 | 2.04 (1.15) | 2.48 (ISOP 1.47) | 2.04 (BrO 1.15) | 3.00 (ISOP 2.06) |
+| H211b 1.0, 8e-3 / 1e-20 | 1.314 | 2.04 (1.15) | 2.52 (ISOP 1.54) | 2.04 (BrO 1.15) | 3.03 (ISOP 2.06) |
+| H211b 1.1, 1e-2 / 1e-20 | 1.165 | 2.04 (1.13) | 2.33 (ISOP 1.13) | 2.04 (BrO 1.15) | 2.61 (HYDRALD 1.96) |
+| H211b 1.1, 8e-3 / 1e-20 | 1.219 | 2.04 (1.12) | 2.34 (ISOP 1.12) | 2.04 (BrO 1.15) | 2.62 (HYDRALD 1.97) |
+| H211b 1.1, 6e-3 / 1e-20 | 1.307 | 2.10 (1.22) | 2.56 (ISOP 1.45) | 2.10 (BrO 1.22) | 3.05 (ISOP 2.05) |
+| H211b 1.1, 8e-3 / 1e-18 | 1.144 | 2.02 (1.08) | 2.30 (ISOP 1.08) | 2.04 (BrO 1.15) | 2.58 (HOBr 1.95) |
+| H211b 1.2, 1e-2 / 1e-20 | 1.100 | 2.04 (1.13) | 2.33 (ISOP 1.13) | 2.04 (BrO 1.15) | 2.49 (ISOP 1.45) |
+| H211b 1.2, 8e-3 / 1e-20 | 1.157 | 2.04 (1.15) | 2.37 (ISOP 1.17) | 2.04 (BrO 1.15) | 2.61 (HYDRALD 1.97) |
+| elementary 0.9, 5e-3 / 1e-20 (S13) | 1.160 | 2.42 (1.29) | 2.52 (ISOP 1.37) | 2.73 (NO 1.87) | 2.42 (ISOP 1.29) |
+
+- Every H211b setting down to rtol 6e-3 meets the diurnal-5min floor
+  (2.04 to 2.10 digits, BrO 1.15 to 1.22): with one step per 5-minute
+  interval the controller has nothing to decide, and the smoothing that
+  makes H211b better on 10-minute intervals does not apply. The elementary
+  controller at 5e-3 with 1e-20 breaks the floor (2.73 on diurnal-5min)
+  because its first step after the sunrise and sunset transients is
+  rejected and halved where H211b's filtered response accepts it.
+- **Decision:** the level-2 operating point is RODAS3 with the elementary
+  controller at rtol 5e-3 and atol 1e-20: 2.42 (1.29) in 1.160 s, margins
+  0.42 overall and 0.29 for the worst species, 15 % more time than the
+  thin point at 1e-2. H211b takes over from the balanced point (2e-3, 1e-20)
+  on.
+
+### The operating points
+
+From S13 and S13b, under ACCURACY.md's margin rule:
+
+| Point | Method | Declared level | Lowest (worst) over the six | Time, s |
+|---|---|---|---|---:|
+| L2 | RODAS3, elementary controller, 5e-3 / 1e-20 | 2 | 2.42 (ISOP 1.29) | 1.160 |
+| balanced | RODAS3, H211b, 2e-3 / 1e-20 | 2 (reaches 3 on all six with 0.17 of margin) | 3.17 (ISOP 2.17) | 2.208 |
+| L3 | extrapolation order 3, shifted, 1e-3 / 1e-20 | 3 | 3.61 (ISOP 2.49) | 2.647 |
+| recommended | extrapolation order 4, shifted, 5e-4 / 1e-22 | 3 | 3.62 (OClO 2.69) | 3.041 |
+| accurate | extrapolation order 4, shifted, 2e-4 / 1e-20 | 3 (3.87 overall, 3.00 per species) | 3.87 (BrO 3.00) | 3.449 |
+
+S10 compares the generated and generic kernels at these points, S14 times
+them at one thread, and `scans/MICM-baselines.csv` (`tools/micm_baseline.py`)
+has MICM's three-stage Rosenbrock at the ranking's baseline settings on the
+same six scenarios in the same session; RESULTS.md has those tables.
+

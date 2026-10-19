@@ -108,8 +108,54 @@ Two consequences for the design:
 
 ## What the measurements show
 
-*(Filled from the scans: a table of the operating points with their lowest
-overall and per-species digits on the six scenarios, the worst species, the
-gate, and the margin to each level; then the day-night structure of the
-error, where the error is made, and how the error estimate relates to the
-true error, which sets the safety factor.)*
+The five operating points on the six disclosed scenarios (S13 in SCANS.md;
+1,000 cells; every run passes the gate, and every configuration's output is
+identical across rounds):
+
+| Point | Lowest overall (scenario) | Lowest per species (species, scenario) | Margin to level 2 (overall / species) | Margin to level 3 |
+|---|---|---|---|---|
+| L2 | 2.42 (polluted-10min) | 1.29 (isoprene, polluted-10min) | 0.42 / 0.29 | below |
+| balanced | 3.17 (polluted-10min) | 2.17 (isoprene, polluted-10min) | 1.17 / 1.17 | 0.17 / 0.17 |
+| L3 | 3.61 (clean-10min) | 2.49 (isoprene, clean-10min) | 1.61 / 1.49 | 0.61 / 0.49 |
+| recommended | 3.62 (clean-10min) | 2.69 (OClO, diurnal-10min) | 1.62 / 1.69 | 0.62 / 0.69 |
+| accurate | 3.87 (diurnal-5min) | 3.00 (BrO, diurnal-5min) | 1.87 / 2.00 | 0.87 / 1.00 |
+
+Tier 1's 30-second scenario gives every point 5.1 to 6.8 digits; the
+day-night scenarios set all the lowest scores.
+
+**Where the error is.** Isoprene sets the per-species score for the RODAS3
+points on nearly every scenario and for the extrapolation points on most:
+it is emitted by day and consumed by night, and by night its concentration
+falls through the 1e-14 mol m-3 floor the score counts from, where a step's
+relative error is largest. That is why the absolute tolerance is a lever
+(S3, S12): at 1e-18 a species at 1e-15 is weighted a hundred times less than
+the relative tolerance asks, and the tightening to 1e-20 or 1e-22 restores
+its control at little cost. The halogen radicals BrO and OClO, phenol, and
+the organic peroxy radicals take over on the clean and short-step scenarios
+at sunrise and sunset, where the photolysis update at the start of an
+interval makes a fast transient. The overall digits run about one above the
+worst species for every point and scenario: the error concentrates in a few
+species.
+
+**Where the error is made.** The first steps after each photolysis update.
+RODAS3 at the level-2 point takes 1.2 to 2.2 steps per 10-minute interval
+and 4.7 per 30-minute interval; at rtol 1e-2 it takes one step per 5-minute
+interval, and then every controller gives the same 2.04 digits (BrO 1.15) on
+diurnal-5min, the floor the contest's fastest points also reach. The
+30-minute scenario needs three to five times the steps per interval of the
+10-minute ones and sets the lowest score for most configurations.
+
+**The estimate against the true error.** The embedded estimate of RODAS3
+measures the error of a step well once two or more steps resolve an
+interval; across a step that spans an interval with a transient inside it,
+it under-reports (the 2.04-digit floor at rtol 1e-2 on diurnal-5min is
+reached at every safety factor and with the filtered estimate). For the
+extrapolation the difference of the last two tableau entries misses the
+error of the single-substep entry on stiff transients, which the shifted
+sequence removes (S2, S8). With steps that resolve the transients, the
+measured accuracy follows the tolerance as expected: halving the relative
+tolerance adds 0.1 to 0.3 digit, and the safety factor 0.9 is kept for the
+elementary controller (S4). The H211b controller's smoother step sequence
+gives 0.4 to 0.5 more digits for the worst species than the elementary
+controller at the same tolerance (S4b, S12), which is how the balanced
+point reaches three digits at a level-2 cost.
