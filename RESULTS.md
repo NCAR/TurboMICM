@@ -89,7 +89,29 @@ against the same setting, 8.4 times with 0.6 digit more.
 
 ## Work-precision plots
 
-*(figures in `plots/`, from `tools/plot_wp.py`.)*
+Figures in `plots/`, from `tools/plot_wp.py` (time summed over the
+scenarios against the lowest digits over them, the ranking's view; dashed
+lines at the levels):
+
+- `wp-S13-confirmation-overall.png` and `-worst.png`: the 21 candidates of
+  S13 on the six disclosed scenarios, the five operating points starred.
+  The frontier is RODAS3 with the elementary controller up to 1.3 digits
+  per species, RODAS3 with H211b from 1.9 to 2.2, and extrapolation above.
+- `wp-S12-joint-grid-overall.png` and `-worst.png`: the joint grid of
+  tolerances and controller on diurnal-10min and polluted-10min, one curve
+  per method, controller, and absolute tolerance. The H211b curves sit
+  above the elementary ones from two digits per species on, the tighter
+  absolute tolerances above the looser, and extrapolation of order 4 rises
+  from 1.6 to 2.8 digits per species within 15 % of time once its
+  tolerance makes it take two steps per interval.
+- `wp-S2-tableaus-overall.png` and `-worst.png`: the ten methods of S2
+  against tolerance on the six scenarios (unquantized step, elementary
+  controller): RODAS3 leads to three digits, extrapolation beyond.
+- `wp-S8-extrapolation-worst.png`: orders 3 to 6 with the three substep
+  sequences on three scenarios; the shifted and even sequences above the
+  harmonic one.
+- `wp-S4b-controllers-worst.png`: H211b's safety factors and smoothing
+  exponents on two scenarios; one curve, moved along by the safety.
 
 ## Where the time goes
 
