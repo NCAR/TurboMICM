@@ -1,6 +1,6 @@
 # TurboMICM
 
-Controlled experiment, for the NSF NCAR Agentic AI Task Force: OpenAI's coding agents
+Controlled experiment, for the NSF NCAR Agentic Coding Task Force: OpenAI's coding agents
 (Codex CLI) each port MICM's CPU solver to portable C (C11, libm, OpenMP) from the
 same prompt. Anthropic's Claude Opus and Claude Fable, at max reasoning effort,
 design the experiment, orchestrate the runs, and validate, evaluate, and judge the
@@ -249,6 +249,16 @@ Tier-2-Results.
   - MICM's baselines: 32-cell groups, relative 1e-2 with absolute 1e-15 for
     level 2 and 3e-4 with 1e-15 for level 3, the loosest settings of an
     18-setting scan that reach the level on all 11 scenarios.
+- **Fable's reference solution (2026-10-18/19, not a contestant):** built in
+  `ODE/benchmarks/tier3/fable-max` from the Tier 1 `fable/` entry, collected
+  as `tier3/fable/max`. Its levers: the step carried across intervals and
+  quantized to them, the H211b controller (b = 4), an absolute tolerance of
+  1e-20 (isoprene and phenol sit near the score's 1e-14 floor), RODAS3 for
+  two digits, extrapolated linearly implicit Euler with the shifted substep
+  sequence for three and more. Five declared points with 0.2 digit of
+  margin per species on the disclosed scenarios (OPERATING_POINTS.md in the
+  entry); 21 times MICM at level 2 and 9.5 to 11 times at level 3 on the
+  six disclosed scenarios at 1,000 cells in its own session.
 - **Ranking (2026-10-19):** astra-xhigh first at both levels: fast (RODAS3,
   relative 1e-2) at 34.7 s summed over the 11 scenarios, 13.4 times MICM;
   accurate (extrapolated linearly implicit Euler, order 4, 4e-3) at 74.5 s,
@@ -263,9 +273,12 @@ Tier-2-Results.
 - Rank with an undisclosed seed, and run the blind review.
 - Time the entries on an x86-64 Linux machine.
 - Tier 3: Luna's arm, if its Tier 1 passes (it needs new held-out scenarios,
-  since `tier3/heldout/` is public); Fable's reference solution, not a
-  contestant, in `ODE/benchmarks/tier3/fable-max` (to be collected as
-  `tier3/fable/max`; see `admin/runs.md`, 2026-10-18 evening).
+  since `tier3/heldout/` is public). Fable's reference solution (not a
+  contestant) is done and collected as `tier3/fable/max`, verified in
+  `results/2026-10-19-tier3-fable-max-verification/`; its five operating
+  points could be timed beside the contestants' in a new session with
+  `admin/time_tier3.sh` (the 2026-10-19 session's numbers are not
+  comparable across sessions).
 - Verification worktrees of `runs/*` are built in a session scratchpad. If it is
   gone, `git worktree prune` and rebuild per "Verify an entry".
 - Time each new entry with all the others in one session (`admin/time_entries.py`,
