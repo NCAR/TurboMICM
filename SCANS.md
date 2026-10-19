@@ -719,3 +719,44 @@ them at one thread, and `scans/MICM-baselines.csv` (`tools/micm_baseline.py`)
 has MICM's three-stage Rosenbrock at the ranking's baseline settings on the
 same six scenarios in the same session; RESULTS.md has those tables.
 
+### S15: the questions left open before the judgment (`scans/S15-closing.csv`)
+
+Before calling the search finished, three things the earlier scans had not
+tried, on diurnal-10min and polluted-10min under the final conventions:
+ROS3 and ROS4 under the H211b controller (S4 had tried H211b with RODAS3,
+ROS2, ROS34PW2, and extrapolation only), and RODAS3 with H211b at the
+tolerances between the balanced point's 2e-3 and the 1e-3 of S12. Lowest
+digits (worst species), time summed over the two scenarios, steps per
+interval:
+
+| Method, H211b | rtol 1e-2 | 5e-3 | 3e-3 | 2e-3 | 1e-3 | 5e-4 |
+|---|---|---|---|---|---|---|
+| ROS3, 1e-18 | 3.35 (2.64) 0.75 s, 4.7 | 3.60 (2.89) 1.15, 7.1 | 3.85 (3.05) 1.58, 9.6 | 4.07 (3.05) 1.89, 11.9 | 4.44 (3.40) 2.61, 16.1 | 4.72 (3.49) 3.19, 19.9 |
+| ROS3, 1e-20 | 3.37 (2.68) 0.86, 5.1 | 3.67 (2.94) 1.30, 7.8 | 3.89 (3.09) 1.74, 10.7 | 4.12 (3.33) 2.11, 13.2 | 4.62 (3.44) 2.87, 17.7 | 4.82 (3.62) 3.53, 21.9 |
+| ROS4, 1e-18 | 3.28 (2.50) 1.09, 5.2 | 3.48 (2.63) 1.72, 8.1 | 3.84 (2.88) 2.31, 10.9 | 3.99 (3.00) 2.86, 13.6 | 4.15 (3.17) 3.87, 18.0 | 4.49 (3.49) 4.76, 21.7 |
+| ROS4, 1e-20 | 3.29 (2.54) 1.23, 5.8 | 3.64 (2.79) 1.90, 9.0 | 3.91 (2.93) 2.63, 12.2 | 4.00 (3.04) 3.11, 14.9 | 4.23 (3.24) 4.16, 19.6 | 4.83 (3.95) 5.19, 23.7 |
+| RODAS3, 1e-18 (S12, S15) | 2.31 (1.50) 0.54, 2.4 | 3.01 (2.05) 0.62, 2.8 | 3.07 (2.07) 0.70, 3.2 | 3.10 (2.07) 0.74, 3.6 | 3.29 (2.40) 1.08, 5.0 | 3.48 (2.58) 1.47, 6.8 |
+
+RODAS3 with H211b at 1.5e-3: 3.18 (2.21) in 0.92 s at 1e-18 and 3.27 (2.40)
+in 1.02 s at 1e-20; at 1.2e-3: 3.25 (2.33) in 0.96 s and 3.34 (2.52) in 1.15 s.
+
+- **ROS3 under H211b is the one result that moves the frontier.** At rtol
+  1e-2 and atol 1e-18 it reaches 3.35 (2.64) in 0.75 s, where RODAS3 with
+  the same controller needs 1e-3 and 1.08 s for 3.29 (2.40), and the
+  declared L3 point (extrapolation of order 3) takes 1.00 s on these two
+  scenarios for 3.84 (2.58). ROS3 takes twice RODAS3's steps per interval
+  at the same tolerance (its embedded estimate is of order 2 against a
+  third-order solution, and H211b's exponent follows the estimate's order),
+  but each step has three stages and two forcing evaluations against four
+  and three, and the smooth sequence of many small steps buys more digits
+  for the worst species per unit of work than fewer larger ones. The
+  elementary controller did not show this in S2 (ROS3 at 1e-2 gave 2.69
+  (1.86) in 0.62 s there): the controller is what changed.
+- **ROS4 under H211b** is never on the frontier: its four stages and four
+  forcing evaluations cost more than its order returns at these tolerances.
+- **The intermediate RODAS3 tolerances** fill the curve between the balanced
+  point and 1e-3 without moving it.
+- **S15b** confirms ROS3 with H211b on all six scenarios, three rounds, at
+  rtol 1e-2 to 3e-3 and atol 1e-18 and 1e-20, beside RODAS3 at 1.2e-3, to
+  decide whether a point changes.
+

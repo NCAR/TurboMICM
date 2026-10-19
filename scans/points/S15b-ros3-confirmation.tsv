@@ -1,0 +1,10 @@
+# S15b: ROS3 under H211b, and the intermediate RODAS3 point, on all six disclosed scenarios, 3 rounds; final conventions.
+ros3-r1e-2-a1e-18-h211b	ros3	rtol=1e-2 atol=1e-18 quantize=1 controller=h211b safety=0.9
+ros3-r1e-2-a1e-20-h211b	ros3	rtol=1e-2 atol=1e-20 quantize=1 controller=h211b safety=0.9
+ros3-r8e-3-a1e-18-h211b	ros3	rtol=8e-3 atol=1e-18 quantize=1 controller=h211b safety=0.9
+ros3-r8e-3-a1e-20-h211b	ros3	rtol=8e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9
+ros3-r5e-3-a1e-18-h211b	ros3	rtol=5e-3 atol=1e-18 quantize=1 controller=h211b safety=0.9
+ros3-r5e-3-a1e-20-h211b	ros3	rtol=5e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9
+ros3-r3e-3-a1e-18-h211b	ros3	rtol=3e-3 atol=1e-18 quantize=1 controller=h211b safety=0.9
+ros3-r3e-3-a1e-20-h211b	ros3	rtol=3e-3 atol=1e-20 quantize=1 controller=h211b safety=0.9
+rodas3-r1.2e-3-a1e-18-h211b	rodas3	rtol=1.2e-3 atol=1e-18 quantize=1 controller=h211b safety=0.9

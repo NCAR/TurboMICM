@@ -314,9 +314,10 @@ Tier 1 decisions above stand.
   setting acts like the elementary controller on this problem; safety
   above 1 and a larger growth limit gain nothing; the filtered error
   estimate lands on the same curve as a looser tolerance and costs a solve
-  per step. The candidate is confirmed under the final conventions in S12
-  before it enters an operating point; the elementary controller stays for
-  extrapolation.
+  per step. S12 confirmed it under the final conventions (quantized step,
+  absolute tolerance 1e-20), and it is the controller of the balanced point;
+  the elementary controller stays for extrapolation and, by S13b, for the
+  level-2 point.
 - **S5, the norm:** MICM's group RMS norm stays. The per-cell and maximum
   norms are the same curve at a rescaled tolerance (by 2.5 and 20), and
   controlling the worst component directly does not help the species that
@@ -363,9 +364,10 @@ Tier 1 decisions above stand.
   scenarios, and it is the fastest configuration above 2.5 digits. The
   loose RODAS3 points at rtol 1e-2 reach 2.04 digits (BrO 1.15) on
   diurnal-5min whatever the controller, the contest's floor; they are
-  reported, not declared. The level-2 point is chosen from the elementary
-  controller at 5e-3 / 1e-20 (2.42 and 1.29 in 1.16 s) and S13b's H211b
-  points at safety above 1.
+  reported, not declared. The level-2 point is the elementary controller
+  at 5e-3 / 1e-20 (2.42 and 1.29 in 1.16 s): S13b showed every loose H211b
+  setting at safety 1.0 to 1.2 meeting the same 2.04-digit floor on
+  diurnal-5min.
 - **The order of the remaining scans** followed from the cost picture: the
   fastest configurations take one to five RODAS3 steps per interval, and
   the step count is set by the worst species (isoprene) reaching L - 1
