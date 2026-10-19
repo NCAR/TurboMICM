@@ -332,6 +332,15 @@ Tier 1 decisions above stand.
 - **S9, grouping:** 32-cell groups and dynamic scheduling, as in Tier 1;
   8 to 32 are equal within noise at 10 threads, 64 and 128 cost 15 to
   30 %, static scheduling 5 to 10 %.
+- **S8, extrapolation sequences:** the shifted sequence (2, 3, 4, ...
+  substeps) replaces the harmonic one for the extrapolation points: it
+  skips the single-substep entry whose error the estimate misses, gains 0.2
+  to 0.4 digit for the worst species at equal tolerance, and dominates on
+  the frontier. Orders above 4 are not used (the step cannot grow into
+  them within an interval), and the even sequence at orders 5 and 6 gave
+  non-finite output on the 30-minute scenario.
+- **S9 at one thread:** 32-cell groups confirmed (64 equal, 16 costs 40 %
+  more, 8 up to 90 % more).
 - **The order of the remaining scans** followed from the cost picture: the
   fastest configurations take one to five RODAS3 steps per interval, and
   the step count is set by the worst species (isoprene) reaching L - 1

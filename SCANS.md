@@ -465,3 +465,66 @@ time summed over diurnal-10min and polluted-10min:
   where the kernels were tuned at 32. The 1-thread run of the same matrix
   (`scans/S9-grouping-1thread.csv`) follows below.
 
+#### S9 at one thread (`scans/S9-grouping-1thread.csv`)
+
+The same matrix at one thread, time summed over the two scenarios:
+
+| Groups | 8 cells | 16 | 32 | 64 | 128 |
+|---|---:|---:|---:|---:|---:|
+| Level 2, s | 3.71 | 2.96 | 2.15 | 2.14 | 2.31 |
+| Level 3, s | 10.19 | 7.81 | 5.34 | 5.41 | 5.84 |
+
+- At one thread the kernels' efficiency shows: 32 and 64 are equal, 16
+  costs 40 % more and 8 costs 70 to 90 % more (per-group work that does
+  not shrink with the group: the step control, the rate constants, the
+  loop overheads; and the generated kernels' vector width of two cells
+  wants full groups). Scheduling is irrelevant at one thread (within 3 %).
+- **Decision confirmed:** 32-cell groups at both thread counts.
+
+### S8: extrapolation sequences and orders (`scans/S8-extrapolation.csv`)
+
+36 configurations on diurnal-10min, polluted-10min, and diurnal-30min
+(extrapolation's weak scenario), quantized step, elementary controller,
+atol 1e-18: orders 3 to 6 with the harmonic sequence (1, 2, 3, ...
+substeps), the shifted sequence (2, 3, 4, ...), and the even sequence
+(2, 4, 6, ...), at rtol 1e-3, 5e-4, 2e-4. Lowest digits (worst species)
+over the three scenarios and the time summed over them:
+
+| Order, sequence | rtol 1e-3 | 5e-4 | 2e-4 |
+|---|---|---|---|
+| 3, harmonic | 3.16 (2.06) 1.22 s | 3.41 (2.30) 1.67 | 3.78 (2.62) 2.70 |
+| 3, shifted | 3.42 (2.32) 1.18 | 3.73 (2.63) 1.66 | 4.08 (2.94) 2.49 |
+| 3, even | 3.32 (2.39) 1.16 | 3.67 (2.58) 1.40 | 4.06 (2.97) 2.15 |
+| 4, harmonic | 2.87 (1.62) 1.12 | 3.21 (2.35) 1.28 | 3.95 (2.79) 1.64 |
+| 4, shifted | 3.00 (1.71) 1.24 | 3.41 (2.69) 1.37 | 4.31 (3.24) 1.62 |
+| 4, even | 3.24 (2.00) 1.38 | 3.24 (2.00) 1.44 | 3.67 (2.99) 1.59 |
+| 5, harmonic | 2.99 (1.73) 1.38 | 2.99 (1.73) 1.46 | 3.73 (2.81) 1.65 |
+| 5, shifted | 3.24 (2.04) 1.54 | 3.24 (2.06) 1.61 | 4.08 (3.04) 1.80 |
+| 5, even | non-finite output on diurnal-30min | the same | 3.91 (3.17) 1.98 |
+| 6, harmonic | 3.25 (2.13) 1.67 | 3.30 (2.13) 1.80 | 3.32 (2.18) 1.88 |
+| 6, shifted | 3.55 (2.45) 1.96 | 3.69 (2.50) 1.99 | 3.80 (3.12) 2.13 |
+| 6, even | non-finite output on diurnal-30min | the same | the same |
+
+- **Sequences that skip the single-substep entry win.** The shifted and
+  even sequences give 0.2 to 0.4 more digits for the worst species than
+  the harmonic one at the same tolerance, for 5 to 20 % more time, and
+  dominate it on the frontier: at order 3 and 1e-3 the even sequence
+  reaches 3.32 (2.39) in 1.16 s where the harmonic order 4 at 5e-4 takes
+  1.28 s for 3.21 (2.35); at order 4 and 2e-4 the shifted sequence reaches
+  4.31 (3.24) in 1.62 s where the harmonic one gives 3.95 (2.79) in 1.64 s.
+  The first entry of the harmonic sequence, one linearly implicit Euler
+  step over the whole step, is the entry whose error the estimate misses
+  on stiff transients (S2); starting at two substeps halves that error
+  and the extrapolation table's error constants with it, so the controller
+  takes larger steps and the extra substeps mostly pay for themselves.
+- **Orders 5 and 6 buy nothing here**: with 1.2 to 1.7 steps per interval
+  the step cannot grow to use the order, and the harmonic and even
+  sequences at these orders stall between 1e-3 and 5e-4 (the same digits at
+  both tolerances). The even sequence at orders 5 and 6 produced non-finite
+  output on diurnal-30min (gate FAIL in the CSV; 10 to 12 substeps per
+  step; not investigated further, since those orders are not used).
+- **Decision:** the shifted sequence for the extrapolation points; order 3
+  at 1e-3 (shifted or even) is the extrapolation candidate for level 3 and
+  order 4 shifted at 2e-4 the candidate for the accurate end; both go to
+  the confirmation scan on all six scenarios against RODAS3 with H211b.
+
