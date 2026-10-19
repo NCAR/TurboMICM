@@ -259,9 +259,13 @@ factorizations, 10 solves, and 7 forcing evaluations.
 | `controller=micm|predictive|h211b` | micm | MICM's bounded safety-factor rule; Gustafsson's predictive controller, the smaller of the elementary and predicted factors as RODAS and RADAU5 take it; Soderlind's H211b filter |
 | `clamp=1` | 0 | clamp negative concentrations to zero after every accepted internal step (MICM clamps once, after the solve) |
 | `quantize=1` | 0 | round every step to a divisor of the solve interval, so steps tile it and repeat from one interval to the next |
-| `reuse_age=N` | 0 | a factorization may serve up to N accepted steps, including across solves, while the step is unchanged and the rate constants have not changed by more than `reuse_change` (default 0.1); valid without loss of order for W-methods (ros2), an approximation for the others |
+| `reuse_age=N` | 0 | a factorization may serve up to N accepted steps, including across solves, while the step is unchanged and the rate constants have not changed by more than `reuse_change` (default 0.1); valid without loss of order for W-methods (ros2, ros34pw2) and for the linearly implicit Euler substeps of `extrap` (which then keeps one factorization per sequence entry in the state), an approximation for the other tableaus |
 | `freeze_band=F` | 0 | keep the step when the controller's factor lies in [1/F, F], which keeps the factorization |
 | `max_steps=M` | MICM's 1000 | attempts per solve |
+| `safety=D`, `fac_min=Q`, `fac_max=Q` | MICM's 0.9, 0.2, 6 | the controller's safety factor and bounds on the step ratio; Dreger et al. (2025) found the embedded estimate conservative and `safety` 1.3 to 1.5 worth 10 to 30 % of the evaluations |
+| `h211_b=B`, `h211_k=K` | 4, the estimator order | H211b's filter parameters; Dreger et al. used b = 1, k = 1.7 |
+| `h_start_factor=F` | MICM's 1e-6 | the first step of a solve as a fraction of the interval, when not warm-started |
+| `filter_error=1` | 0 | ROW loop: the error estimate is passed through the step's own matrix, (alpha I - J)^-1 alpha e, before the norm (one more solve per step), RADAU5's device against estimates excited by a stiff transient |
 | `order=K`, `sequence=harmonic|shifted|even` | 4, harmonic | extrapolation: the number of entries, and the sequence 1,2,3,...; 2,3,4,...; or 2,4,6,... |
 
 Every option value gives a valid run; the operating points in
