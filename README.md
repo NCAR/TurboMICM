@@ -55,6 +55,33 @@ JSON lines, with the model's reasoning as the harness records it; the
 subagents' briefs are their first user messages. Each subagent's
 `.meta.json` sits beside its transcript.
 
+## Tier 3: Fable's reference solution (not a contest run)
+
+The Claude Code session in which Claude Fable 5.1 built its own solution to
+the Tier 3 prompt outside the contest (branch `tier3/fable/max`; wiki:
+Tier-3-Results), and the six literature-research sessions it started on
+2026-10-18 at 19:48 local time with Claude Sonnet 5.5, whose reports are
+`research/R1` to `R6` in the entry. Nothing is redacted, as for the Tier 1
+reference entry. The main session also carried the contest's own Tier 3
+work that evening and night (the re-verification, the blind review, the
+timing session, the ranking, and their publication), since the SSE asked
+for the reference solution while the timing session ran; its id is
+`3b43ec7e-eef6-4039-b6da-5097df839d0b`.
+
+| File | Role | Harness | Original size |
+|---|---|---|---:|
+| `transcripts/tier3/fable-max.jsonl.gz` | the main session, from 19:31 on 2026-10-18 to its archiving on 2026-10-19 | Claude Code 2.1.303 | see below |
+| `transcripts/tier3/fable-max-agents/R1-rosenbrock-w-methods.jsonl.gz` | brief R1: Rosenbrock and Rosenbrock-W methods | Claude Code session, Claude Sonnet 5.5 | 6.1 MB |
+| `transcripts/tier3/fable-max-agents/R2-accuracy-requirements.jsonl.gz` | brief R2: accuracy requirements of atmospheric chemistry solvers | Claude Code session, Claude Sonnet 5.5 | 18.9 MB |
+| `transcripts/tier3/fable-max-agents/R3-extrapolation-exponential-sdirk.jsonl.gz` | brief R3: extrapolation, exponential, and SDIRK methods | Claude Code session, Claude Sonnet 5.5 | 7.0 MB |
+| `transcripts/tier3/fable-max-agents/R4-controllers-norms-reuse-positivity.jsonl.gz` | brief R4: step-size controllers, error norms, factorization reuse, positivity | Claude Code session, Claude Sonnet 5.5 | 10.4 MB |
+| `transcripts/tier3/fable-max-agents/R5-alternative-schemes-precision.jsonl.gz` | brief R5: alternative schemes and reduced precision | Claude Code session, Claude Sonnet 5.5 | 8.7 MB |
+| `transcripts/tier3/fable-max-agents/R6-ts1-camchem-musica-sda.jsonl.gz` | brief R6: TS1 in CAM-chem and MUSICA, and the solver's use there | Claude Code session, Claude Sonnet 5.5 | 15.1 MB |
+
+Each research session's `.meta.json` beside it has the session id, the
+model, and the start and end times (UTC); the sessions ran in parallel from
+01:48 to 02:17 UTC on 2026-10-19 (19:48 to 20:17 local on 2026-10-18).
+
 ## Contest runs
 
 Each line is one JSON event:
