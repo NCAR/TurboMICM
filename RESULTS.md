@@ -167,7 +167,26 @@ change the ratio between them.
 
 ## Build and run times
 
-*(make env, make bench, make test-cpu with clang and gcc-15.)*
+On the M5, measured on 2026-10-19 at 07:04 to 07:19 with the final code,
+`-O3 -DNDEBUG`, each a full rebuild after a compiler switch (`make` rebuilds
+everything when the compiler or flags change):
+
+| Step | Apple clang 21 | gcc 15.2 |
+|---|---:|---:|
+| `make env` (conda, packages cached) | 15 s | |
+| `make bench` (library, generated TS1 kernels, both drivers) | 126 s | 54 s |
+| `make proto` after it (the library again with -fPIC, the shim) | 120 s | 52 s |
+| `make test-cpu` (MICM's 680 cases, the test mechanisms' generated kernels, then test-methods) | 8 s after the above; 129 s when the test objects come from the other compiler's build | 14 s after the above; 67 s likewise |
+| `make test-methods` (the tableau check, the 15 agreement cases) | 2 s | |
+
+Both compilers build without warnings; both give 673 PASS, 0 FAIL, and
+7 N/A (C++-only cases) on MICM's 680 cases, each id once, and every method
+test passes. The generated TS1 kernels (generated/ts1.c, compiled once for
+the benchmark and once with -fPIC for the prototypes) dominate the build
+time: clang's -O3 takes about two minutes on them, gcc's about 50 s. When
+the compiler or the flags change, `make` removes every object (the flags
+file is a prerequisite of all of them, and an object compiled in the same
+second as the change would otherwise pass as current).
 
 # Tier 1
 

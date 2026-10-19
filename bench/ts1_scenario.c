@@ -81,7 +81,6 @@ static int parse_bool(const char *v)
 
 static void option(options *o, const char *key, const char *value)
 {
-  char message[512];
   int b;
   if (!strcmp(key, "rtol"))
     o->rtol = atof(value);
@@ -173,8 +172,8 @@ static void option(options *o, const char *key, const char *value)
   }
   else
   {
-    snprintf(message, sizeof message, "unknown option '%s'\n%s", key, USAGE);
-    fail(message);
+    fprintf(stderr, "%s: unknown option '%s'\n", tmc_program, key);
+    fail(USAGE);
   }
   b = 0;
   (void)b;

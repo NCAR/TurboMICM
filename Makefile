@@ -74,11 +74,13 @@ env-recreate:
 cpu: bin/ts1_bench_cpu
 bench: cpu bin/ts1_scenario
 
-# Rebuild everything when the compiler or flags change.
+# Rebuild everything when the compiler or flags change: the objects depend on
+# build/flags.txt, and when it changes every object is removed as well, so that
+# an object compiled in the same second as the change cannot pass as current.
 build/flags.txt: FORCE
 	@mkdir -p build
 	@printf '%s\n' "$(CC)" "$(CFLAGS)" "$(LDLIBS)" > build/flags.tmp
-	@cmp -s build/flags.tmp $@ && rm build/flags.tmp || mv build/flags.tmp $@
+	@if cmp -s build/flags.tmp $@; then rm build/flags.tmp; else mv build/flags.tmp $@; rm -f build/*.o build/proto/*.o build/*.a build/*.dylib build/*.so generated/*.o generated/tests/*.o; fi
 .PHONY: FORCE
 FORCE:
 

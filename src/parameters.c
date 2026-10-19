@@ -223,8 +223,11 @@ tmc_rosenbrock_parameters tmc_rosenbrock_six_stage_dae(void)
  * A stage whose alpha row repeats the previous row's reuses that forcing.
  * The rows of alpha and gamma_ij hold the entries j < i; estimator_order is
  * the order of the embedded pair plus one, as MICM's constructors set it. */
-static tmc_rosenbrock_parameters from_standard_form(int stages, const double alpha[TMC_MAX_STAGES][TMC_MAX_STAGES],
-                                                     const double gamma_ij[TMC_MAX_STAGES][TMC_MAX_STAGES], double gamma,
+/* alpha and gamma_ij are read only; they are not declared const because C before
+ * C23 does not convert a pointer to an array of double into a pointer to an
+ * array of const double (gcc -Wpedantic warns). */
+static tmc_rosenbrock_parameters from_standard_form(int stages, double alpha[TMC_MAX_STAGES][TMC_MAX_STAGES],
+                                                     double gamma_ij[TMC_MAX_STAGES][TMC_MAX_STAGES], double gamma,
                                                      const double *b, const double *bhat, double estimator_order)
 {
   tmc_rosenbrock_parameters p = base();
