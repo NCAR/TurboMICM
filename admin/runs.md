@@ -656,6 +656,62 @@ set up. All times MDT.
 - 05:52: the Fable entry's S4 scan (controllers) started, the first work on
   the machine after the session.
 
+## Fable's Tier 3 reference solution: scans and operating points (2026-10-19 morning)
+
+Continuation of the 2026-10-18 evening item above, in
+`~/NSF-NCAR/ODE/benchmarks/tier3/fable-max/` (collected afterwards as
+`tier3/fable/max`). Every scan ran with `tools/scan.py` on 1,000-cell
+scenarios at 10 threads with nothing else timing on the machine; the entry's
+SCANS.md has the tables and DECISIONS.md the choices.
+
+- 20:41–21:19 on 2026-10-18 (before the timing session): S1 (the first
+  step: the carried, quantized step is 35 % cheaper than MICM's restart),
+  S2 (ten methods against tolerance on the six scenarios: RODAS3 leads to
+  three digits, extrapolation beyond), S6a (factorization reuse: not a
+  lever, the photolysis changes the matrix every daytime interval).
+- 05:52–06:02: S4, the step-size controller (106 points on diurnal-10min
+  and polluted-10min): H211b with b = 4 is the one controller above the
+  elementary controller's work-precision curve.
+- 06:02–06:08: S5 (the error norm: a tolerance rescaling, MICM's group RMS
+  kept), S3 (the absolute tolerance: a lever at level 3, since isoprene
+  and phenol sit near the 1e-14 floor the score counts from), S7
+  (clamping: no effect, kept off), S9 (grouping at 10 threads: 32 kept).
+- 06:07–06:12: S4b, the H211b grid over safety and tolerance: 30 to 35 %
+  less time than the elementary controller above 1.5 digits per species;
+  06:12–06:19: S8 (extrapolation sequences: the shifted sequence 2, 3, 4,
+  ... beats the harmonic one; orders above 4 useless; the even sequence
+  fails at orders 5 and 6) and S9 at one thread (32 confirmed).
+- 06:19–06:27: S12, the joint grid rtol x atol x controller under the
+  final conventions (quantized step), and S4c, the loose end of the H211b
+  curve: the S4b floor at rtol 1e-2 was the absolute tolerance's.
+- 06:27–06:39: S13, 21 candidates on all six disclosed scenarios, three
+  rounds; 06:39–06:43: S13b, the loose H211b points for level 2 (all meet
+  a 2.04-digit floor on diurnal-5min, BrO 1.15, the contest's floor:
+  one step per 5-minute interval, so the controller cannot act).
+- 06:47–06:53: S10 (generated against generic kernels at the final points:
+  5.3 to 5.9 times, identical steps and digits, roundoff-different outputs)
+  and S14 (the final points at one thread: 10 threads buy 4.6 to 5.1
+  times; the kernel cost model explains about three quarters of the time).
+- 06:53–07:01: MICM's three-stage Rosenbrock at the ranking's baseline
+  settings on the six scenarios, three rounds (`tools/micm_baseline.py`;
+  two reruns after a path and a snapshot-file fix in the runner): 24.6 s at
+  level 2 and 29.0 s at level 3 against the five points' 1.16 to 3.45 s.
+- **Operating points** (OPERATING_POINTS.md, with ACCURACY.md's rule of
+  0.2 digit of margin for the worst species on every disclosed scenario):
+  L2, RODAS3 with MICM's elementary controller at rtol 5e-3 and atol 1e-20
+  (2.42 digits, isoprene 1.29, 1.16 s over the six scenarios, 21 times
+  MICM at level 2); balanced, RODAS3 with H211b at 2e-3 and 1e-20
+  (3.17 / 2.17, 2.21 s, declared for level 2, three digits with 0.17 of
+  margin); L3, extrapolation of order 3 with the shifted sequence at 1e-3
+  and 1e-20 (3.61 / 2.49, 2.65 s, 11 times MICM at level 3); recommended,
+  order 4 at 5e-4 and 1e-22 (3.62 / 2.69, 3.04 s, 9.5 times); accurate,
+  order 4 at 2e-4 and 1e-20 (3.87 / 3.00, 3.45 s, 8.4 times). The loose
+  RODAS3 points at rtol 1e-2 reach the contest's 2.04-digit floor on
+  diurnal-5min and are reported, not declared.
+- 07:03: the gcc-15 and clang gates with build timings, then the final
+  commit, the collection as `tier3/fable/max`, and its verification with
+  `admin/verify_tier3.py` on the 11 scenarios (next item).
+
 # Disk space
 
 - 2026-10-18, 10:02, while astra-max ran, on the SSE's go-ahead to clean up the
