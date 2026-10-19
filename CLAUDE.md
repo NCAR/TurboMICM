@@ -101,7 +101,10 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - **Timing:**
   `admin/time_entries.py --input cells.csv --reference micm_final.csv --out DIR micm=… "micm-g32=… --group-size 32" <run>=<dir>/bin/ts1_bench_cpu …`.
   - It runs 5 rotating rounds at 10 and 1 threads, and checks every run against MICM.
-  - Run it on an idle machine on AC power, with no agent running.
+  - Run it on an idle machine on AC power, with no agent running. Check
+    `pmset -g batt` first: after a reboot the laptop may be on battery; a
+    launcher can wait for the adapter, as `tier3-work/run-timing-fable-on-ac.sh`
+    did on 2026-10-19.
 - **Inputs:** `reference/make_cells_csv.py 10000 <seed>` writes the cells file;
   `reference/compare_final.py YOURS MICM` applies the gate.
 
@@ -259,7 +262,11 @@ Tier-2-Results.
   more. Five declared points with 0.2 digit of margin per species on the
   disclosed scenarios (OPERATING_POINTS.md in the entry); 21 times MICM at
   level 2 and 8.4 to 12.4 times at level 3 on the six disclosed scenarios at
-  1,000 cells in its own session.
+  1,000 cells in its own session. Beside the contest's winners under the
+  ranking's protocol (2026-10-19, `results/2026-10-19-tier3-fable-vs-contest/`):
+  L2 24.6 s over the 11 scenarios against astra-xhigh/fast 34.1 s, and L3r
+  49.1 s against astra-xhigh/accurate 73.5 s (1.4 and 1.5 times faster, 18.9
+  and 11.2 times MICM); the contest's ranking stands.
 - **Ranking (2026-10-19):** astra-xhigh first at both levels: fast (RODAS3,
   relative 1e-2) at 34.7 s summed over the 11 scenarios, 13.4 times MICM;
   accurate (extrapolated linearly implicit Euler, order 4, 4e-3) at 74.5 s,
@@ -276,10 +283,8 @@ Tier-2-Results.
 - Tier 3: Luna's arm, if its Tier 1 passes (it needs new held-out scenarios,
   since `tier3/heldout/` is public). Fable's reference solution (not a
   contestant) is done and collected as `tier3/fable/max`, verified in
-  `results/2026-10-19-tier3-fable-max-verification/`. Deferred by the SSE on
-  2026-10-19: timing its five points beside the contest's level winners and
-  MICM's baselines in one session, about 1 h 45 min; the steps are in
-  `tier3/FOLLOW-UP.md`. Numbers from different sessions are not comparable.
+  `results/2026-10-19-tier3-fable-max-verification/` and timed beside the
+  contest's winners in `results/2026-10-19-tier3-fable-vs-contest/`.
 - Verification worktrees of `runs/*` are built in a session scratchpad. If it is
   gone, `git worktree prune` and rebuild per "Verify an entry".
 - Time each new entry with all the others in one session (`admin/time_entries.py`,

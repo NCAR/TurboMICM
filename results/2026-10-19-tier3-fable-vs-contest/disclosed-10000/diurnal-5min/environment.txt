@@ -1,0 +1,20 @@
+date: 2026-10-19T13:05:12
+host: Gemini.local
+platform: macOS-27.0.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,2 | Apple M5 | 4 | 6
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=23330915)	97%; charging; 0:13 remaining present: true
+uptime: 13:05  up  1:32, 3 users, load averages: 6.10 7.62 7.80
+scenario: /Users/fillmore/NSF-NCAR/.tier3-heldout/disclosed-10000/diurnal-5min/scenario.txt
+reference: /Users/fillmore/NSF-NCAR/ODE/benchmarks/tier3/scenarios/diurnal-5min/reference_snapshots.csv (scores ts1_snapshots.csv)
+threads: 10; rounds: 3
+program sol-xhigh/L3: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_scenario --method rodas31 --option rtol=0.0003 --option atol=1e-16 --option group_size=32 --option schedule=2 --option schedule_chunk=1
+program sol-max/fast: /Users/fillmore/NSF-NCAR/tier3-work/verify/sol-max/clang/sol-max/bin/ts1_scenario --method rodas3 --option rtol=0.01 --option group=16 --option schedule=dynamic
+program astra-xhigh/fast: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario --method rodas3 --option rtol=0.01 --option atol=1e-18 --option group-size=32 --option rate-cache=1 --option step-block=4 --option schedule=dynamic --option chunk=0 --option jacobian-age=1 --option controller=0 --option norm=1 --option warm-start=1 --option reuse-window=0 --option clip-stages=0
+program astra-xhigh/accurate: /Users/fillmore/NSF-NCAR/tier3-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_scenario --method extrap --option rtol=0.004 --option atol=1e-18 --option group-size=32 --option order=4 --option rate-cache=1 --option step-block=4 --option schedule=dynamic --option chunk=0 --option jacobian-age=1 --option controller=0 --option norm=1 --option warm-start=1 --option reuse-window=0 --option clip-stages=0
+program fable-max/L2: /Users/fillmore/NSF-NCAR/tier3-work/verify/fable-max-2/clang/fable-max/bin/ts1_scenario --method rodas3 --option rtol=5e-3 --option atol=1e-20 --option quantize=1 --option controller=micm --option safety=0.9
+program fable-max/L3r: /Users/fillmore/NSF-NCAR/tier3-work/verify/fable-max-2/clang/fable-max/bin/ts1_scenario --method ros3 --option rtol=8e-3 --option atol=1e-20 --option quantize=1 --option controller=h211b --option safety=0.9
+program fable-max/L3: /Users/fillmore/NSF-NCAR/tier3-work/verify/fable-max-2/clang/fable-max/bin/ts1_scenario --method extrap --option order=3 --option sequence=shifted --option rtol=1e-3 --option atol=1e-20 --option quantize=1 --option controller=micm --option safety=0.9
+program fable-max/recommended: /Users/fillmore/NSF-NCAR/tier3-work/verify/fable-max-2/clang/fable-max/bin/ts1_scenario --method extrap --option order=4 --option sequence=shifted --option rtol=5e-4 --option atol=1e-22 --option quantize=1 --option controller=micm --option safety=0.9
+program fable-max/accurate: /Users/fillmore/NSF-NCAR/tier3-work/verify/fable-max-2/clang/fable-max/bin/ts1_scenario --method extrap --option order=4 --option sequence=shifted --option rtol=2e-4 --option atol=1e-20 --option quantize=1 --option controller=micm --option safety=0.9
+program micm/L2: /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 1e-2 --atol 1e-15
+program micm/L3: /Users/fillmore/NSF-NCAR/.tier3-heldout/bin/micm_scenario --group-size 32 --rtol 3e-4 --atol 1e-15

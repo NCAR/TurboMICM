@@ -764,6 +764,34 @@ SCANS.md has the tables and DECISIONS.md the choices.
   4,519 and sol-xhigh/L3 5,551 (disclosed: 2,358 against 3,608 and 4,730),
   about 1.4 to 1.6 times faster at each level. The deferred session is the
   measurement; this is the estimate, on the wiki page with its caveat.
+- 11:42–14:50: the **comparison session**, resumed at the SSE's request
+  ("resume our deferred Tier 3 work") in a fresh Claude Code session. The
+  laptop was on battery after a reboot, so the launcher was armed at 11:42
+  behind a gate that waited for the adapter
+  (`~/NSF-NCAR/tier3-work/run-timing-fable-on-ac.sh`); the adapter was
+  attached at 12:33 and the session ran from 12:34:06 to 14:50:42: the 11
+  programs of `programs-fable-vs-contest.txt` (Fable's five points from the
+  `cb0f8a3` build in `verify/fable-max-2/`, astra-xhigh/fast, sol-max/fast,
+  astra-xhigh/accurate, sol-xhigh/L3, and MICM's two baselines) on the
+  10,000-cell versions of the 11 scenarios, 3 rounds, 10 threads, 363 runs,
+  every one through the gate, every output deterministic
+  (`results/2026-10-19-tier3-fable-vs-contest/`). Sums over the 11
+  scenarios of the median elapsed time: at level 2, L2 24.55 s against
+  astra-xhigh/fast 34.10 and sol-max/fast 39.45 (MICM 464.74), 1.39 and 1.61
+  times faster and 18.9 times MICM; at level 3, L3r 49.08 s against
+  astra-xhigh/accurate 73.46 and sol-xhigh/L3 95.69 (MICM 549.07), 1.50 and
+  1.95 times faster and 11.2 times MICM; L3 54.60, recommended 62.14,
+  accurate 71.91. L2 clears level 2 by 0.27 digit overall and 0.16 per
+  species (the winners by 0.04 to 0.06); L3r clears level 3 by 0.18 and
+  0.33 (astra-xhigh/accurate by 0.20 and 0.39). The contest's points and
+  MICM's baselines reproduced their ranking-session sums within 2.2 % with
+  identical scores, so the contest's ranking stands as published. Spread
+  2.7 % of the median on average, 14.3 % at most; the gaps between adjacent
+  places 16 % or more. Load audit: 137 samples, AC attached throughout, the
+  usual Spotlight and media-analysis daemons, this session's status checks.
+  Published: the measured table replaces the provisional one on
+  Fable-Tier-3-Reference-Solution; the sentence on Tier-3-Results; Home.
+  `tier3/FOLLOW-UP.md` deleted; CLAUDE.md's open item closed.
 - Transcripts: this session and the six research sessions are on the
   `transcripts` branch under `transcripts/tier3/fable-max*`.
 

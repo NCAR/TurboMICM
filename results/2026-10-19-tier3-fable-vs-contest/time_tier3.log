@@ -1,0 +1,520 @@
+start 2026-10-19 12:34:06
+== disclosed-10000/clean-10min: 12:34:06
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    8308.264 process_s=  12.772 gate=PASS digits=3.527
+round 1 threads 10 sol-max/fast elapsed_ms=    3131.737 process_s=   7.748 gate=PASS digits=2.423
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2450.546026 process_s=   7.118 gate=PASS digits=2.556
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 4935.854197 process_s=   9.616 gate=PASS digits=3.201
+round 1 threads 10 fable-max/L2 elapsed_ms=    1668.018 process_s=   4.617 gate=PASS digits=2.585
+round 1 threads 10 fable-max/L3r elapsed_ms=    3851.325 process_s=   6.805 gate=PASS digits=3.561
+round 1 threads 10 fable-max/L3 elapsed_ms=    3666.814 process_s=   6.612 gate=PASS digits=3.612
+round 1 threads 10 fable-max/recommended elapsed_ms=    4251.605 process_s=   7.286 gate=PASS digits=3.619
+round 1 threads 10 fable-max/accurate elapsed_ms=    4840.965 process_s=   7.948 gate=PASS digits=4.809
+round 1 threads 10 micm/L2      elapsed_ms=   34212.419 process_s=  37.639 gate=PASS digits=3.423
+round 1 threads 10 micm/L3      elapsed_ms=   41834.555 process_s=  45.121 gate=PASS digits=3.988
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 5057.425976 process_s=   9.765 gate=PASS digits=3.201
+round 2 threads 10 fable-max/L2 elapsed_ms=    1684.531 process_s=   4.597 gate=PASS digits=2.585
+round 2 threads 10 fable-max/L3r elapsed_ms=    3867.265 process_s=   6.790 gate=PASS digits=3.561
+round 2 threads 10 fable-max/L3 elapsed_ms=    3684.939 process_s=   6.635 gate=PASS digits=3.612
+round 2 threads 10 fable-max/recommended elapsed_ms=    4318.002 process_s=   7.335 gate=PASS digits=3.619
+round 2 threads 10 fable-max/accurate elapsed_ms=    4960.344 process_s=   7.955 gate=PASS digits=4.809
+round 2 threads 10 micm/L2      elapsed_ms=   35405.623 process_s=  38.678 gate=PASS digits=3.423
+round 2 threads 10 micm/L3      elapsed_ms=   42699.372 process_s=  46.003 gate=PASS digits=3.988
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    7419.959 process_s=  11.839 gate=PASS digits=3.527
+round 2 threads 10 sol-max/fast elapsed_ms=    2940.425 process_s=   7.743 gate=PASS digits=2.423
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2450.988770 process_s=   7.363 gate=PASS digits=2.556
+round 3 threads 10 fable-max/recommended elapsed_ms=    4423.273 process_s=   7.478 gate=PASS digits=3.619
+round 3 threads 10 fable-max/accurate elapsed_ms=    4931.072 process_s=   7.979 gate=PASS digits=4.809
+round 3 threads 10 micm/L2      elapsed_ms=   36342.091 process_s=  39.733 gate=PASS digits=3.423
+round 3 threads 10 micm/L3      elapsed_ms=   44224.845 process_s=  47.586 gate=PASS digits=3.988
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    7533.271 process_s=  12.221 gate=PASS digits=3.527
+round 3 threads 10 sol-max/fast elapsed_ms=    2995.140 process_s=   7.704 gate=PASS digits=2.423
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2485.150337 process_s=   7.270 gate=PASS digits=2.556
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 5067.426682 process_s=   9.894 gate=PASS digits=3.201
+round 3 threads 10 fable-max/L2 elapsed_ms=    1711.419 process_s=   4.701 gate=PASS digits=2.585
+round 3 threads 10 fable-max/L3r elapsed_ms=    4008.412 process_s=   6.978 gate=PASS digits=3.561
+round 3 threads 10 fable-max/L3 elapsed_ms=    3841.076 process_s=   6.836 gate=PASS digits=3.612
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 7,533.3 | 7,420.0–8,308.3 | 12.2 | 3.53 |
+| sol-max/fast | 10 | 3 of 3 | 2,995.1 | 2,940.4–3,131.7 | 7.7 | 2.42 |
+| astra-xhigh/fast | 10 | 3 of 3 | 2,451.0 | 2,450.5–2,485.2 | 7.3 | 2.56 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 5,057.4 | 4,935.9–5,067.4 | 9.8 | 3.20 |
+| fable-max/L2 | 10 | 3 of 3 | 1,684.5 | 1,668.0–1,711.4 | 4.6 | 2.58 |
+| fable-max/L3r | 10 | 3 of 3 | 3,867.3 | 3,851.3–4,008.4 | 6.8 | 3.56 |
+| fable-max/L3 | 10 | 3 of 3 | 3,684.9 | 3,666.8–3,841.1 | 6.6 | 3.61 |
+| fable-max/recommended | 10 | 3 of 3 | 4,318.0 | 4,251.6–4,423.3 | 7.3 | 3.62 |
+| fable-max/accurate | 10 | 3 of 3 | 4,931.1 | 4,841.0–4,960.3 | 8.0 | 4.81 |
+| micm/L2 | 10 | 3 of 3 | 35,405.6 | 34,212.4–36,342.1 | 38.7 | 3.42 |
+| micm/L3 | 10 | 3 of 3 | 42,699.4 | 41,834.6–44,224.8 | 46.0 | 3.99 |
+== disclosed-10000/diurnal-10min: 12:45:10
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    8298.473 process_s=  12.801 gate=PASS digits=3.502
+round 1 threads 10 sol-max/fast elapsed_ms=    3226.820 process_s=   7.932 gate=PASS digits=2.509
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 3006.627083 process_s=   7.971 gate=PASS digits=2.527
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 5606.229305 process_s=  10.454 gate=PASS digits=3.213
+round 1 threads 10 fable-max/L2 elapsed_ms=    1997.153 process_s=   4.942 gate=PASS digits=2.559
+round 1 threads 10 fable-max/L3r elapsed_ms=    4141.361 process_s=   7.180 gate=PASS digits=3.506
+round 1 threads 10 fable-max/L3 elapsed_ms=    4437.854 process_s=   7.451 gate=PASS digits=3.842
+round 1 threads 10 fable-max/recommended elapsed_ms=    4883.808 process_s=   8.043 gate=PASS digits=3.649
+round 1 threads 10 fable-max/accurate elapsed_ms=    5496.481 process_s=   8.560 gate=PASS digits=4.716
+round 1 threads 10 micm/L2      elapsed_ms=   39839.368 process_s=  43.248 gate=PASS digits=3.432
+round 1 threads 10 micm/L3      elapsed_ms=   43887.046 process_s=  47.193 gate=PASS digits=4.007
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 5506.996870 process_s=  10.299 gate=PASS digits=3.213
+round 2 threads 10 fable-max/L2 elapsed_ms=    1941.997 process_s=   4.857 gate=PASS digits=2.559
+round 2 threads 10 fable-max/L3r elapsed_ms=    4003.974 process_s=   6.952 gate=PASS digits=3.506
+round 2 threads 10 fable-max/L3 elapsed_ms=    4190.593 process_s=   7.137 gate=PASS digits=3.842
+round 2 threads 10 fable-max/recommended elapsed_ms=    4453.009 process_s=   7.461 gate=PASS digits=3.649
+round 2 threads 10 fable-max/accurate elapsed_ms=    5258.024 process_s=   8.296 gate=PASS digits=4.716
+round 2 threads 10 micm/L2      elapsed_ms=   36854.026 process_s=  40.223 gate=PASS digits=3.432
+round 2 threads 10 micm/L3      elapsed_ms=   44554.419 process_s=  47.907 gate=PASS digits=4.007
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    8269.957 process_s=  12.951 gate=PASS digits=3.502
+round 2 threads 10 sol-max/fast elapsed_ms=    3165.107 process_s=   7.834 gate=PASS digits=2.509
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2640.326262 process_s=   7.271 gate=PASS digits=2.527
+round 3 threads 10 fable-max/recommended elapsed_ms=    4514.223 process_s=   7.592 gate=PASS digits=3.649
+round 3 threads 10 fable-max/accurate elapsed_ms=    5328.646 process_s=   8.330 gate=PASS digits=4.716
+round 3 threads 10 micm/L2      elapsed_ms=   36464.893 process_s=  39.901 gate=PASS digits=3.432
+round 3 threads 10 micm/L3      elapsed_ms=   44275.592 process_s=  47.653 gate=PASS digits=4.007
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    8186.120 process_s=  12.766 gate=PASS digits=3.502
+round 3 threads 10 sol-max/fast elapsed_ms=    3192.080 process_s=   7.948 gate=PASS digits=2.509
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2643.505573 process_s=   7.449 gate=PASS digits=2.527
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 5446.697712 process_s=  10.174 gate=PASS digits=3.213
+round 3 threads 10 fable-max/L2 elapsed_ms=    1945.635 process_s=   4.858 gate=PASS digits=2.559
+round 3 threads 10 fable-max/L3r elapsed_ms=    4077.301 process_s=   7.000 gate=PASS digits=3.506
+round 3 threads 10 fable-max/L3 elapsed_ms=    4332.238 process_s=   7.276 gate=PASS digits=3.842
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 8,270.0 | 8,186.1–8,298.5 | 12.8 | 3.50 |
+| sol-max/fast | 10 | 3 of 3 | 3,192.1 | 3,165.1–3,226.8 | 7.9 | 2.51 |
+| astra-xhigh/fast | 10 | 3 of 3 | 2,643.5 | 2,640.3–3,006.6 | 7.4 | 2.53 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 5,507.0 | 5,446.7–5,606.2 | 10.3 | 3.21 |
+| fable-max/L2 | 10 | 3 of 3 | 1,945.6 | 1,942.0–1,997.2 | 4.9 | 2.56 |
+| fable-max/L3r | 10 | 3 of 3 | 4,077.3 | 4,004.0–4,141.4 | 7.0 | 3.51 |
+| fable-max/L3 | 10 | 3 of 3 | 4,332.2 | 4,190.6–4,437.9 | 7.3 | 3.84 |
+| fable-max/recommended | 10 | 3 of 3 | 4,514.2 | 4,453.0–4,883.8 | 7.6 | 3.65 |
+| fable-max/accurate | 10 | 3 of 3 | 5,328.6 | 5,258.0–5,496.5 | 8.3 | 4.72 |
+| micm/L2 | 10 | 3 of 3 | 36,854.0 | 36,464.9–39,839.4 | 40.2 | 3.43 |
+| micm/L3 | 10 | 3 of 3 | 44,275.6 | 43,887.0–44,554.4 | 47.7 | 4.01 |
+== disclosed-10000/diurnal-30min: 12:56:37
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    6210.576 process_s=  10.754 gate=PASS digits=3.617
+round 1 threads 10 sol-max/fast elapsed_ms=    2535.697 process_s=   7.243 gate=PASS digits=2.123
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 1990.701199 process_s=   6.653 gate=PASS digits=2.103
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 4055.153847 process_s=   8.843 gate=PASS digits=3.67
+round 1 threads 10 fable-max/L2 elapsed_ms=    1558.530 process_s=   4.479 gate=PASS digits=2.515
+round 1 threads 10 fable-max/L3r elapsed_ms=    3472.643 process_s=   6.386 gate=PASS digits=3.269
+round 1 threads 10 fable-max/L3 elapsed_ms=    3642.252 process_s=   6.607 gate=PASS digits=3.646
+round 1 threads 10 fable-max/recommended elapsed_ms=    3567.757 process_s=   6.562 gate=PASS digits=4.237
+round 1 threads 10 fable-max/accurate elapsed_ms=    4657.841 process_s=   7.637 gate=PASS digits=4.57
+round 1 threads 10 micm/L2      elapsed_ms=   13508.054 process_s=  16.766 gate=PASS digits=2.487
+round 1 threads 10 micm/L3      elapsed_ms=   18852.263 process_s=  22.278 gate=PASS digits=3.288
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 4255.167484 process_s=   9.051 gate=PASS digits=3.67
+round 2 threads 10 fable-max/L2 elapsed_ms=    1609.330 process_s=   4.535 gate=PASS digits=2.515
+round 2 threads 10 fable-max/L3r elapsed_ms=    3529.550 process_s=   6.458 gate=PASS digits=3.269
+round 2 threads 10 fable-max/L3 elapsed_ms=    3721.551 process_s=   6.671 gate=PASS digits=3.646
+round 2 threads 10 fable-max/recommended elapsed_ms=    3653.930 process_s=   6.732 gate=PASS digits=4.237
+round 2 threads 10 fable-max/accurate elapsed_ms=    4826.082 process_s=   7.830 gate=PASS digits=4.57
+round 2 threads 10 micm/L2      elapsed_ms=   13512.550 process_s=  16.880 gate=PASS digits=2.487
+round 2 threads 10 micm/L3      elapsed_ms=   19466.833 process_s=  22.876 gate=PASS digits=3.288
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    6499.693 process_s=  11.263 gate=PASS digits=3.617
+round 2 threads 10 sol-max/fast elapsed_ms=    2611.475 process_s=   7.382 gate=PASS digits=2.123
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2025.312901 process_s=   7.233 gate=PASS digits=2.103
+round 3 threads 10 fable-max/recommended elapsed_ms=    3679.328 process_s=   6.653 gate=PASS digits=4.237
+round 3 threads 10 fable-max/accurate elapsed_ms=    4726.916 process_s=   7.739 gate=PASS digits=4.57
+round 3 threads 10 micm/L2      elapsed_ms=   13691.090 process_s=  17.004 gate=PASS digits=2.487
+round 3 threads 10 micm/L3      elapsed_ms=   19604.341 process_s=  22.993 gate=PASS digits=3.288
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    6444.172 process_s=  11.018 gate=PASS digits=3.617
+round 3 threads 10 sol-max/fast elapsed_ms=    2587.376 process_s=   7.297 gate=PASS digits=2.123
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2011.997223 process_s=   6.817 gate=PASS digits=2.103
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 4144.880772 process_s=   8.895 gate=PASS digits=3.67
+round 3 threads 10 fable-max/L2 elapsed_ms=    1588.250 process_s=   4.517 gate=PASS digits=2.515
+round 3 threads 10 fable-max/L3r elapsed_ms=    3484.946 process_s=   6.418 gate=PASS digits=3.269
+round 3 threads 10 fable-max/L3 elapsed_ms=    3668.133 process_s=   6.628 gate=PASS digits=3.646
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 6,444.2 | 6,210.6–6,499.7 | 11.0 | 3.62 |
+| sol-max/fast | 10 | 3 of 3 | 2,587.4 | 2,535.7–2,611.5 | 7.3 | 2.12 |
+| astra-xhigh/fast | 10 | 3 of 3 | 2,012.0 | 1,990.7–2,025.3 | 6.8 | 2.10 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 4,144.9 | 4,055.2–4,255.2 | 8.9 | 3.67 |
+| fable-max/L2 | 10 | 3 of 3 | 1,588.2 | 1,558.5–1,609.3 | 4.5 | 2.52 |
+| fable-max/L3r | 10 | 3 of 3 | 3,484.9 | 3,472.6–3,529.6 | 6.4 | 3.27 |
+| fable-max/L3 | 10 | 3 of 3 | 3,668.1 | 3,642.3–3,721.6 | 6.6 | 3.65 |
+| fable-max/recommended | 10 | 3 of 3 | 3,653.9 | 3,567.8–3,679.3 | 6.7 | 4.24 |
+| fable-max/accurate | 10 | 3 of 3 | 4,726.9 | 4,657.8–4,826.1 | 7.7 | 4.57 |
+| micm/L2 | 10 | 3 of 3 | 13,512.5 | 13,508.1–13,691.1 | 16.9 | 2.49 |
+| micm/L3 | 10 | 3 of 3 | 19,466.8 | 18,852.3–19,604.3 | 22.9 | 3.29 |
+== disclosed-10000/diurnal-5min: 13:05:12
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=   10260.712 process_s=  14.780 gate=PASS digits=3.697
+round 1 threads 10 sol-max/fast elapsed_ms=    4680.828 process_s=   9.472 gate=PASS digits=2.041
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 4078.029871 process_s=   8.798 gate=PASS digits=2.041
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 9181.057930 process_s=  13.992 gate=PASS digits=3.448
+round 1 threads 10 fable-max/L2 elapsed_ms=    2778.950 process_s=   5.772 gate=PASS digits=2.734
+round 1 threads 10 fable-max/L3r elapsed_ms=    4831.898 process_s=   7.789 gate=PASS digits=3.471
+round 1 threads 10 fable-max/L3 elapsed_ms=    6164.996 process_s=   9.149 gate=PASS digits=4.121
+round 1 threads 10 fable-max/recommended elapsed_ms=    8010.598 process_s=  11.086 gate=PASS digits=3.865
+round 1 threads 10 fable-max/accurate elapsed_ms=    8415.858 process_s=  11.442 gate=PASS digits=3.867
+round 1 threads 10 micm/L2      elapsed_ms=   72556.027 process_s=  75.885 gate=PASS digits=3.513
+round 1 threads 10 micm/L3      elapsed_ms=   81643.087 process_s=  84.938 gate=PASS digits=4.292
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 8995.531559 process_s=  13.698 gate=PASS digits=3.448
+round 2 threads 10 fable-max/L2 elapsed_ms=    2678.917 process_s=   5.610 gate=PASS digits=2.734
+round 2 threads 10 fable-max/L3r elapsed_ms=    4730.453 process_s=   7.664 gate=PASS digits=3.471
+round 2 threads 10 fable-max/L3 elapsed_ms=    6116.305 process_s=   9.075 gate=PASS digits=4.121
+round 2 threads 10 fable-max/recommended elapsed_ms=    7776.129 process_s=  10.807 gate=PASS digits=3.865
+round 2 threads 10 fable-max/accurate elapsed_ms=    8280.864 process_s=  11.311 gate=PASS digits=3.867
+round 2 threads 10 micm/L2      elapsed_ms=   71228.320 process_s=  74.531 gate=PASS digits=3.513
+round 2 threads 10 micm/L3      elapsed_ms=   78608.421 process_s=  81.918 gate=PASS digits=4.292
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=   10151.955 process_s=  14.609 gate=PASS digits=3.697
+round 2 threads 10 sol-max/fast elapsed_ms=    4647.243 process_s=   9.421 gate=PASS digits=2.041
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 4018.066883 process_s=   8.774 gate=PASS digits=2.041
+round 3 threads 10 fable-max/recommended elapsed_ms=    7800.104 process_s=  10.792 gate=PASS digits=3.865
+round 3 threads 10 fable-max/accurate elapsed_ms=    8253.097 process_s=  11.277 gate=PASS digits=3.867
+round 3 threads 10 micm/L2      elapsed_ms=   71052.548 process_s=  74.327 gate=PASS digits=3.513
+round 3 threads 10 micm/L3      elapsed_ms=   77681.719 process_s=  80.957 gate=PASS digits=4.292
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=   10105.157 process_s=  14.593 gate=PASS digits=3.697
+round 3 threads 10 sol-max/fast elapsed_ms=    4713.726 process_s=   9.464 gate=PASS digits=2.041
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 4078.284502 process_s=   8.802 gate=PASS digits=2.041
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 9043.553352 process_s=  13.736 gate=PASS digits=3.448
+round 3 threads 10 fable-max/L2 elapsed_ms=    2684.625 process_s=   5.621 gate=PASS digits=2.734
+round 3 threads 10 fable-max/L3r elapsed_ms=    4729.729 process_s=   7.675 gate=PASS digits=3.471
+round 3 threads 10 fable-max/L3 elapsed_ms=    6129.036 process_s=   9.180 gate=PASS digits=4.121
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 10,152.0 | 10,105.2–10,260.7 | 14.6 | 3.70 |
+| sol-max/fast | 10 | 3 of 3 | 4,680.8 | 4,647.2–4,713.7 | 9.5 | 2.04 |
+| astra-xhigh/fast | 10 | 3 of 3 | 4,078.0 | 4,018.1–4,078.3 | 8.8 | 2.04 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 9,043.6 | 8,995.5–9,181.1 | 13.7 | 3.45 |
+| fable-max/L2 | 10 | 3 of 3 | 2,684.6 | 2,678.9–2,778.9 | 5.6 | 2.73 |
+| fable-max/L3r | 10 | 3 of 3 | 4,730.5 | 4,729.7–4,831.9 | 7.7 | 3.47 |
+| fable-max/L3 | 10 | 3 of 3 | 6,129.0 | 6,116.3–6,165.0 | 9.1 | 4.12 |
+| fable-max/recommended | 10 | 3 of 3 | 7,800.1 | 7,776.1–8,010.6 | 10.8 | 3.87 |
+| fable-max/accurate | 10 | 3 of 3 | 8,280.9 | 8,253.1–8,415.9 | 11.3 | 3.87 |
+| micm/L2 | 10 | 3 of 3 | 71,228.3 | 71,052.5–72,556.0 | 74.5 | 3.51 |
+| micm/L3 | 10 | 3 of 3 | 78,608.4 | 77,681.7–81,643.1 | 81.9 | 4.29 |
+== disclosed-10000/polluted-10min: 13:20:57
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    9867.542 process_s=  14.530 gate=PASS digits=3.343
+round 1 threads 10 sol-max/fast elapsed_ms=    3750.338 process_s=   8.420 gate=PASS digits=2.401
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 3268.669367 process_s=   8.032 gate=PASS digits=2.401
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 6910.046577 process_s=  11.598 gate=PASS digits=3.927
+round 1 threads 10 fable-max/L2 elapsed_ms=    2305.502 process_s=   5.224 gate=PASS digits=2.423
+round 1 threads 10 fable-max/L3r elapsed_ms=    4921.971 process_s=   7.868 gate=PASS digits=3.434
+round 1 threads 10 fable-max/L3 elapsed_ms=    5190.338 process_s=   8.158 gate=PASS digits=3.946
+round 1 threads 10 fable-max/recommended elapsed_ms=    5711.955 process_s=   8.844 gate=PASS digits=4.521
+round 1 threads 10 fable-max/accurate elapsed_ms=    6688.159 process_s=   9.717 gate=PASS digits=4.545
+round 1 threads 10 micm/L2      elapsed_ms=   36974.794 process_s=  40.332 gate=PASS digits=3.288
+round 1 threads 10 micm/L3      elapsed_ms=   47116.253 process_s=  50.374 gate=PASS digits=3.888
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 6898.163557 process_s=  11.584 gate=PASS digits=3.927
+round 2 threads 10 fable-max/L2 elapsed_ms=    2297.623 process_s=   5.229 gate=PASS digits=2.423
+round 2 threads 10 fable-max/L3r elapsed_ms=    4925.636 process_s=   7.887 gate=PASS digits=3.434
+round 2 threads 10 fable-max/L3 elapsed_ms=    5073.803 process_s=   8.046 gate=PASS digits=3.946
+round 2 threads 10 fable-max/recommended elapsed_ms=    5757.193 process_s=   8.762 gate=PASS digits=4.521
+round 2 threads 10 fable-max/accurate elapsed_ms=    6680.297 process_s=   9.695 gate=PASS digits=4.545
+round 2 threads 10 micm/L2      elapsed_ms=   37598.478 process_s=  40.900 gate=PASS digits=3.288
+round 2 threads 10 micm/L3      elapsed_ms=   46443.443 process_s=  49.718 gate=PASS digits=3.888
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    9590.815 process_s=  14.109 gate=PASS digits=3.343
+round 2 threads 10 sol-max/fast elapsed_ms=    3713.922 process_s=   8.393 gate=PASS digits=2.401
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 3274.217367 process_s=   8.042 gate=PASS digits=2.401
+round 3 threads 10 fable-max/recommended elapsed_ms=    5742.962 process_s=   8.738 gate=PASS digits=4.521
+round 3 threads 10 fable-max/accurate elapsed_ms=    6699.482 process_s=   9.698 gate=PASS digits=4.545
+round 3 threads 10 micm/L2      elapsed_ms=   38461.463 process_s=  41.853 gate=PASS digits=3.288
+round 3 threads 10 micm/L3      elapsed_ms=   46995.334 process_s=  50.288 gate=PASS digits=3.888
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=   10141.549 process_s=  14.726 gate=PASS digits=3.343
+round 3 threads 10 sol-max/fast elapsed_ms=    3726.548 process_s=   8.576 gate=PASS digits=2.401
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 3247.129202 process_s=   7.979 gate=PASS digits=2.401
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 6881.196976 process_s=  11.512 gate=PASS digits=3.927
+round 3 threads 10 fable-max/L2 elapsed_ms=    2321.235 process_s=   5.267 gate=PASS digits=2.423
+round 3 threads 10 fable-max/L3r elapsed_ms=    5030.059 process_s=   7.989 gate=PASS digits=3.434
+round 3 threads 10 fable-max/L3 elapsed_ms=    5199.179 process_s=   8.187 gate=PASS digits=3.946
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 9,867.5 | 9,590.8–10,141.5 | 14.5 | 3.34 |
+| sol-max/fast | 10 | 3 of 3 | 3,726.5 | 3,713.9–3,750.3 | 8.4 | 2.40 |
+| astra-xhigh/fast | 10 | 3 of 3 | 3,268.7 | 3,247.1–3,274.2 | 8.0 | 2.40 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 6,898.2 | 6,881.2–6,910.0 | 11.6 | 3.93 |
+| fable-max/L2 | 10 | 3 of 3 | 2,305.5 | 2,297.6–2,321.2 | 5.2 | 2.42 |
+| fable-max/L3r | 10 | 3 of 3 | 4,925.6 | 4,922.0–5,030.1 | 7.9 | 3.43 |
+| fable-max/L3 | 10 | 3 of 3 | 5,190.3 | 5,073.8–5,199.2 | 8.2 | 3.95 |
+| fable-max/recommended | 10 | 3 of 3 | 5,743.0 | 5,712.0–5,757.2 | 8.8 | 4.52 |
+| fable-max/accurate | 10 | 3 of 3 | 6,688.2 | 6,680.3–6,699.5 | 9.7 | 4.54 |
+| micm/L2 | 10 | 3 of 3 | 37,598.5 | 36,974.8–38,461.5 | 40.9 | 3.29 |
+| micm/L3 | 10 | 3 of 3 | 46,995.3 | 46,443.4–47,116.3 | 50.3 | 3.89 |
+== disclosed-10000/tier1-30s: 13:32:56
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    2379.635 process_s=   4.624 gate=PASS digits=5.935
+round 1 threads 10 sol-max/fast elapsed_ms=    1581.670 process_s=   4.064 gate=PASS digits=5.062
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 1412.604332 process_s=   3.942 gate=PASS digits=5.029
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 3302.763224 process_s=   5.760 gate=PASS digits=6.085
+round 1 threads 10 fable-max/L2 elapsed_ms=     850.916 process_s=   1.616 gate=PASS digits=5.091
+round 1 threads 10 fable-max/L3r elapsed_ms=     874.467 process_s=   1.639 gate=PASS digits=5.774
+round 1 threads 10 fable-max/L3 elapsed_ms=    2163.002 process_s=   2.950 gate=PASS digits=5.866
+round 1 threads 10 fable-max/recommended elapsed_ms=    2826.316 process_s=   3.607 gate=PASS digits=6.525
+round 1 threads 10 fable-max/accurate elapsed_ms=    2883.813 process_s=   3.675 gate=PASS digits=6.845
+round 1 threads 10 micm/L2      elapsed_ms=   23432.854 process_s=  24.447 gate=PASS digits=5.546
+round 1 threads 10 micm/L3      elapsed_ms=   24233.296 process_s=  25.244 gate=PASS digits=6.394
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 3460.240364 process_s=   5.982 gate=PASS digits=6.085
+round 2 threads 10 fable-max/L2 elapsed_ms=     874.392 process_s=   1.641 gate=PASS digits=5.091
+round 2 threads 10 fable-max/L3r elapsed_ms=     919.062 process_s=   1.672 gate=PASS digits=5.774
+round 2 threads 10 fable-max/L3 elapsed_ms=    2088.991 process_s=   2.872 gate=PASS digits=5.866
+round 2 threads 10 fable-max/recommended elapsed_ms=    2881.568 process_s=   3.690 gate=PASS digits=6.525
+round 2 threads 10 fable-max/accurate elapsed_ms=    3304.436 process_s=   4.206 gate=PASS digits=6.845
+round 2 threads 10 micm/L2      elapsed_ms=   23850.665 process_s=  24.909 gate=PASS digits=5.546
+round 2 threads 10 micm/L3      elapsed_ms=   25236.969 process_s=  26.292 gate=PASS digits=6.394
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    2443.176 process_s=   4.797 gate=PASS digits=5.935
+round 2 threads 10 sol-max/fast elapsed_ms=    1556.679 process_s=   4.057 gate=PASS digits=5.062
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 1406.604767 process_s=   3.930 gate=PASS digits=5.029
+round 3 threads 10 fable-max/recommended elapsed_ms=    2848.131 process_s=   3.633 gate=PASS digits=6.525
+round 3 threads 10 fable-max/accurate elapsed_ms=    2935.809 process_s=   3.724 gate=PASS digits=6.845
+round 3 threads 10 micm/L2      elapsed_ms=   23772.941 process_s=  24.780 gate=PASS digits=5.546
+round 3 threads 10 micm/L3      elapsed_ms=   24010.313 process_s=  25.066 gate=PASS digits=6.394
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    2430.403 process_s=   4.756 gate=PASS digits=5.935
+round 3 threads 10 sol-max/fast elapsed_ms=    1516.463 process_s=   4.101 gate=PASS digits=5.062
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 1400.367022 process_s=   4.015 gate=PASS digits=5.029
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 3340.380430 process_s=   6.295 gate=PASS digits=6.085
+round 3 threads 10 fable-max/L2 elapsed_ms=     861.016 process_s=   1.669 gate=PASS digits=5.091
+round 3 threads 10 fable-max/L3r elapsed_ms=     875.128 process_s=   1.646 gate=PASS digits=5.774
+round 3 threads 10 fable-max/L3 elapsed_ms=    2064.706 process_s=   2.860 gate=PASS digits=5.866
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 2,430.4 | 2,379.6–2,443.2 | 4.8 | 5.93 |
+| sol-max/fast | 10 | 3 of 3 | 1,556.7 | 1,516.5–1,581.7 | 4.1 | 5.06 |
+| astra-xhigh/fast | 10 | 3 of 3 | 1,406.6 | 1,400.4–1,412.6 | 3.9 | 5.03 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 3,340.4 | 3,302.8–3,460.2 | 6.0 | 6.08 |
+| fable-max/L2 | 10 | 3 of 3 | 861.0 | 850.9–874.4 | 1.6 | 5.09 |
+| fable-max/L3r | 10 | 3 of 3 | 875.1 | 874.5–919.1 | 1.6 | 5.77 |
+| fable-max/L3 | 10 | 3 of 3 | 2,089.0 | 2,064.7–2,163.0 | 2.9 | 5.87 |
+| fable-max/recommended | 10 | 3 of 3 | 2,848.1 | 2,826.3–2,881.6 | 3.6 | 6.53 |
+| fable-max/accurate | 10 | 3 of 3 | 2,935.8 | 2,883.8–3,304.4 | 3.7 | 6.84 |
+| micm/L2 | 10 | 3 of 3 | 23,772.9 | 23,432.9–23,850.7 | 24.8 | 5.55 |
+| micm/L3 | 10 | 3 of 3 | 24,233.3 | 24,010.3–25,237.0 | 25.2 | 6.39 |
+== heldout-10000/clean-48h-5min: 13:39:58
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=   17481.751 process_s=  24.254 gate=PASS digits=3.825
+round 1 threads 10 sol-max/fast elapsed_ms=    8126.406 process_s=  15.515 gate=PASS digits=2.304
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 7637.049198 process_s=  14.680 gate=PASS digits=2.334
+round 1 threads 10 astra-xhigh/accurate elapsed_ms=17649.225235 process_s=  24.787 gate=PASS digits=3.663
+round 1 threads 10 fable-max/L2 elapsed_ms=    5115.394 process_s=  10.280 gate=PASS digits=2.462
+round 1 threads 10 fable-max/L3r elapsed_ms=    9126.921 process_s=  14.303 gate=PASS digits=3.593
+round 1 threads 10 fable-max/L3 elapsed_ms=   11594.642 process_s=  16.821 gate=PASS digits=3.684
+round 1 threads 10 fable-max/recommended elapsed_ms=   15152.727 process_s=  20.378 gate=PASS digits=4.059
+round 1 threads 10 fable-max/accurate elapsed_ms=   16006.808 process_s=  21.247 gate=PASS digits=4.266
+round 1 threads 10 micm/L2      elapsed_ms=  141758.068 process_s= 147.392 gate=PASS digits=3.678
+round 1 threads 10 micm/L3      elapsed_ms=  155518.565 process_s= 161.148 gate=PASS digits=4.28
+round 2 threads 10 astra-xhigh/accurate elapsed_ms=17091.979980 process_s=  24.078 gate=PASS digits=3.663
+round 2 threads 10 fable-max/L2 elapsed_ms=    5032.228 process_s=  10.226 gate=PASS digits=2.462
+round 2 threads 10 fable-max/L3r elapsed_ms=    8892.511 process_s=  14.056 gate=PASS digits=3.593
+round 2 threads 10 fable-max/L3 elapsed_ms=   11333.669 process_s=  16.546 gate=PASS digits=3.684
+round 2 threads 10 fable-max/recommended elapsed_ms=   14906.969 process_s=  20.200 gate=PASS digits=4.059
+round 2 threads 10 fable-max/accurate elapsed_ms=   15742.031 process_s=  21.099 gate=PASS digits=4.266
+round 2 threads 10 micm/L2      elapsed_ms=  140283.633 process_s= 145.973 gate=PASS digits=3.678
+round 2 threads 10 micm/L3      elapsed_ms=  156398.334 process_s= 162.101 gate=PASS digits=4.28
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=   17402.329 process_s=  24.131 gate=PASS digits=3.825
+round 2 threads 10 sol-max/fast elapsed_ms=    8072.850 process_s=  15.310 gate=PASS digits=2.304
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 7460.696459 process_s=  14.475 gate=PASS digits=2.334
+round 3 threads 10 fable-max/recommended elapsed_ms=   14804.124 process_s=  20.101 gate=PASS digits=4.059
+round 3 threads 10 fable-max/accurate elapsed_ms=   15632.011 process_s=  20.883 gate=PASS digits=4.266
+round 3 threads 10 micm/L2      elapsed_ms=  135503.488 process_s= 141.160 gate=PASS digits=3.678
+round 3 threads 10 micm/L3      elapsed_ms=  155632.857 process_s= 161.322 gate=PASS digits=4.28
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=   17433.893 process_s=  24.100 gate=PASS digits=3.825
+round 3 threads 10 sol-max/fast elapsed_ms=    8078.369 process_s=  15.283 gate=PASS digits=2.304
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 7488.656998 process_s=  14.453 gate=PASS digits=2.334
+round 3 threads 10 astra-xhigh/accurate elapsed_ms=17174.534798 process_s=  24.177 gate=PASS digits=3.663
+round 3 threads 10 fable-max/L2 elapsed_ms=    5009.761 process_s=  10.364 gate=PASS digits=2.462
+round 3 threads 10 fable-max/L3r elapsed_ms=    8921.181 process_s=  14.095 gate=PASS digits=3.593
+round 3 threads 10 fable-max/L3 elapsed_ms=   11379.311 process_s=  16.584 gate=PASS digits=3.684
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 17,433.9 | 17,402.3–17,481.8 | 24.1 | 3.83 |
+| sol-max/fast | 10 | 3 of 3 | 8,078.4 | 8,072.9–8,126.4 | 15.3 | 2.30 |
+| astra-xhigh/fast | 10 | 3 of 3 | 7,488.7 | 7,460.7–7,637.0 | 14.5 | 2.33 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 17,174.5 | 17,092.0–17,649.2 | 24.2 | 3.66 |
+| fable-max/L2 | 10 | 3 of 3 | 5,032.2 | 5,009.8–5,115.4 | 10.3 | 2.46 |
+| fable-max/L3r | 10 | 3 of 3 | 8,921.2 | 8,892.5–9,126.9 | 14.1 | 3.59 |
+| fable-max/L3 | 10 | 3 of 3 | 11,379.3 | 11,333.7–11,594.6 | 16.6 | 3.68 |
+| fable-max/recommended | 10 | 3 of 3 | 14,907.0 | 14,804.1–15,152.7 | 20.2 | 4.06 |
+| fable-max/accurate | 10 | 3 of 3 | 15,742.0 | 15,632.0–16,006.8 | 21.1 | 4.27 |
+| micm/L2 | 10 | 3 of 3 | 140,283.6 | 135,503.5–141,758.1 | 146.0 | 3.68 |
+| micm/L3 | 10 | 3 of 3 | 155,632.9 | 155,518.6–156,398.3 | 161.3 | 4.28 |
+== heldout-10000/polluted-48h-30min: 14:07:11
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=   11539.402 process_s=  18.172 gate=PASS digits=3.43
+round 1 threads 10 sol-max/fast elapsed_ms=    4115.491 process_s=  10.791 gate=PASS digits=2.215
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 3614.227772 process_s=  10.384 gate=PASS digits=2.21
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 7045.058727 process_s=  13.959 gate=PASS digits=3.559
+round 1 threads 10 fable-max/L2 elapsed_ms=    2918.612 process_s=   7.887 gate=PASS digits=2.608
+round 1 threads 10 fable-max/L3r elapsed_ms=    6564.386 process_s=  11.729 gate=PASS digits=3.522
+round 1 threads 10 fable-max/L3 elapsed_ms=    5973.739 process_s=  11.205 gate=PASS digits=3.555
+round 1 threads 10 fable-max/recommended elapsed_ms=    5897.377 process_s=  11.215 gate=PASS digits=3.92
+round 1 threads 10 fable-max/accurate elapsed_ms=    7693.037 process_s=  13.019 gate=PASS digits=4.482
+round 1 threads 10 micm/L2      elapsed_ms=   26152.389 process_s=  31.755 gate=PASS digits=2.592
+round 1 threads 10 micm/L3      elapsed_ms=   36642.603 process_s=  42.349 gate=PASS digits=3.512
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 7052.260637 process_s=  14.133 gate=PASS digits=3.559
+round 2 threads 10 fable-max/L2 elapsed_ms=    2969.195 process_s=   8.050 gate=PASS digits=2.608
+round 2 threads 10 fable-max/L3r elapsed_ms=    6710.778 process_s=  11.984 gate=PASS digits=3.522
+round 2 threads 10 fable-max/L3 elapsed_ms=    6055.039 process_s=  11.307 gate=PASS digits=3.555
+round 2 threads 10 fable-max/recommended elapsed_ms=    6007.690 process_s=  11.284 gate=PASS digits=3.92
+round 2 threads 10 fable-max/accurate elapsed_ms=    7685.089 process_s=  12.995 gate=PASS digits=4.482
+round 2 threads 10 micm/L2      elapsed_ms=   25988.705 process_s=  31.546 gate=PASS digits=2.592
+round 2 threads 10 micm/L3      elapsed_ms=   36927.188 process_s=  42.506 gate=PASS digits=3.512
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=   11345.752 process_s=  18.550 gate=PASS digits=3.43
+round 2 threads 10 sol-max/fast elapsed_ms=    4145.784 process_s=  11.021 gate=PASS digits=2.215
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 3624.903202 process_s=  10.514 gate=PASS digits=2.21
+round 3 threads 10 fable-max/recommended elapsed_ms=    5985.955 process_s=  11.307 gate=PASS digits=3.92
+round 3 threads 10 fable-max/accurate elapsed_ms=    7673.505 process_s=  12.956 gate=PASS digits=4.482
+round 3 threads 10 micm/L2      elapsed_ms=   26194.318 process_s=  31.772 gate=PASS digits=2.592
+round 3 threads 10 micm/L3      elapsed_ms=   37488.726 process_s=  43.067 gate=PASS digits=3.512
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=   11367.974 process_s=  18.109 gate=PASS digits=3.43
+round 3 threads 10 sol-max/fast elapsed_ms=    4111.972 process_s=  10.941 gate=PASS digits=2.215
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 3616.104126 process_s=  10.476 gate=PASS digits=2.21
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 7048.745632 process_s=  14.143 gate=PASS digits=3.559
+round 3 threads 10 fable-max/L2 elapsed_ms=    2964.335 process_s=   7.948 gate=PASS digits=2.608
+round 3 threads 10 fable-max/L3r elapsed_ms=    6684.880 process_s=  11.906 gate=PASS digits=3.522
+round 3 threads 10 fable-max/L3 elapsed_ms=    6063.692 process_s=  11.245 gate=PASS digits=3.555
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 11,368.0 | 11,345.8–11,539.4 | 18.2 | 3.43 |
+| sol-max/fast | 10 | 3 of 3 | 4,115.5 | 4,112.0–4,145.8 | 10.9 | 2.21 |
+| astra-xhigh/fast | 10 | 3 of 3 | 3,616.1 | 3,614.2–3,624.9 | 10.5 | 2.21 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 7,048.7 | 7,045.1–7,052.3 | 14.1 | 3.56 |
+| fable-max/L2 | 10 | 3 of 3 | 2,964.3 | 2,918.6–2,969.2 | 7.9 | 2.61 |
+| fable-max/L3r | 10 | 3 of 3 | 6,684.9 | 6,564.4–6,710.8 | 11.9 | 3.52 |
+| fable-max/L3 | 10 | 3 of 3 | 6,055.0 | 5,973.7–6,063.7 | 11.2 | 3.56 |
+| fable-max/recommended | 10 | 3 of 3 | 5,986.0 | 5,897.4–6,007.7 | 11.3 | 3.92 |
+| fable-max/accurate | 10 | 3 of 3 | 7,685.1 | 7,673.5–7,693.0 | 13.0 | 4.48 |
+| micm/L2 | 10 | 3 of 3 | 26,152.4 | 25,988.7–26,194.3 | 31.8 | 2.59 |
+| micm/L3 | 10 | 3 of 3 | 36,927.2 | 36,642.6–37,488.7 | 42.5 | 3.51 |
+== heldout-10000/summer-15min: 14:20:12
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    7221.864 process_s=  11.781 gate=PASS digits=3.388
+round 1 threads 10 sol-max/fast elapsed_ms=    2440.096 process_s=   7.183 gate=PASS digits=2.341
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2138.212681 process_s=   6.954 gate=PASS digits=2.304
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 4413.397789 process_s=   9.185 gate=PASS digits=3.934
+round 1 threads 10 fable-max/L2 elapsed_ms=    1693.821 process_s=   4.646 gate=PASS digits=2.482
+round 1 threads 10 fable-max/L3r elapsed_ms=    3928.512 process_s=   6.873 gate=PASS digits=3.308
+round 1 threads 10 fable-max/L3 elapsed_ms=    3554.732 process_s=   6.550 gate=PASS digits=3.738
+round 1 threads 10 fable-max/recommended elapsed_ms=    3426.388 process_s=   6.435 gate=PASS digits=4.335
+round 1 threads 10 fable-max/accurate elapsed_ms=    4630.751 process_s=   7.682 gate=PASS digits=4.46
+round 1 threads 10 micm/L2      elapsed_ms=   24756.279 process_s=  28.151 gate=PASS digits=3.262
+round 1 threads 10 micm/L3      elapsed_ms=   32661.324 process_s=  36.297 gate=PASS digits=3.757
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 4490.245581 process_s=   9.256 gate=PASS digits=3.934
+round 2 threads 10 fable-max/L2 elapsed_ms=    1712.747 process_s=   4.644 gate=PASS digits=2.482
+round 2 threads 10 fable-max/L3r elapsed_ms=    3934.458 process_s=   6.903 gate=PASS digits=3.308
+round 2 threads 10 fable-max/L3 elapsed_ms=    3595.736 process_s=   6.590 gate=PASS digits=3.738
+round 2 threads 10 fable-max/recommended elapsed_ms=    3476.045 process_s=   6.506 gate=PASS digits=4.335
+round 2 threads 10 fable-max/accurate elapsed_ms=    4649.320 process_s=   7.690 gate=PASS digits=4.46
+round 2 threads 10 micm/L2      elapsed_ms=   24868.172 process_s=  28.298 gate=PASS digits=3.262
+round 2 threads 10 micm/L3      elapsed_ms=   32851.047 process_s=  36.249 gate=PASS digits=3.757
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    7378.216 process_s=  12.054 gate=PASS digits=3.388
+round 2 threads 10 sol-max/fast elapsed_ms=    2456.692 process_s=   7.470 gate=PASS digits=2.341
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2162.329197 process_s=   7.102 gate=PASS digits=2.304
+round 3 threads 10 fable-max/recommended elapsed_ms=    3553.514 process_s=   6.588 gate=PASS digits=4.335
+round 3 threads 10 fable-max/accurate elapsed_ms=    4643.649 process_s=   7.707 gate=PASS digits=4.46
+round 3 threads 10 micm/L2      elapsed_ms=   25085.547 process_s=  28.531 gate=PASS digits=3.262
+round 3 threads 10 micm/L3      elapsed_ms=   32338.806 process_s=  35.737 gate=PASS digits=3.757
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    7335.152 process_s=  12.178 gate=PASS digits=3.388
+round 3 threads 10 sol-max/fast elapsed_ms=    2469.337 process_s=   7.208 gate=PASS digits=2.341
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2144.313335 process_s=   7.015 gate=PASS digits=2.304
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 4443.320751 process_s=   9.127 gate=PASS digits=3.934
+round 3 threads 10 fable-max/L2 elapsed_ms=    1718.084 process_s=   4.651 gate=PASS digits=2.482
+round 3 threads 10 fable-max/L3r elapsed_ms=    3899.641 process_s=   6.878 gate=PASS digits=3.308
+round 3 threads 10 fable-max/L3 elapsed_ms=    3591.353 process_s=   6.573 gate=PASS digits=3.738
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 7,335.2 | 7,221.9–7,378.2 | 12.1 | 3.39 |
+| sol-max/fast | 10 | 3 of 3 | 2,456.7 | 2,440.1–2,469.3 | 7.2 | 2.34 |
+| astra-xhigh/fast | 10 | 3 of 3 | 2,144.3 | 2,138.2–2,162.3 | 7.0 | 2.30 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 4,443.3 | 4,413.4–4,490.2 | 9.2 | 3.93 |
+| fable-max/L2 | 10 | 3 of 3 | 1,712.7 | 1,693.8–1,718.1 | 4.6 | 2.48 |
+| fable-max/L3r | 10 | 3 of 3 | 3,928.5 | 3,899.6–3,934.5 | 6.9 | 3.31 |
+| fable-max/L3 | 10 | 3 of 3 | 3,591.4 | 3,554.7–3,595.7 | 6.6 | 3.74 |
+| fable-max/recommended | 10 | 3 of 3 | 3,476.0 | 3,426.4–3,553.5 | 6.5 | 4.33 |
+| fable-max/accurate | 10 | 3 of 3 | 4,643.6 | 4,630.8–4,649.3 | 7.7 | 4.46 |
+| micm/L2 | 10 | 3 of 3 | 24,868.2 | 24,756.3–25,085.5 | 28.3 | 3.26 |
+| micm/L3 | 10 | 3 of 3 | 32,661.3 | 32,338.8–32,851.0 | 36.2 | 3.76 |
+== heldout-10000/tropics-20min: 14:30:07
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    6905.818 process_s=  11.381 gate=PASS digits=3.619
+round 1 threads 10 sol-max/fast elapsed_ms=    2711.690 process_s=   7.349 gate=PASS digits=2.183
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2172.967196 process_s=   6.846 gate=PASS digits=2.19
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 4404.602528 process_s=   9.140 gate=PASS digits=3.681
+round 1 threads 10 fable-max/L2 elapsed_ms=    1732.449 process_s=   4.642 gate=PASS digits=2.304
+round 1 threads 10 fable-max/L3r elapsed_ms=    3654.833 process_s=   6.583 gate=PASS digits=3.183
+round 1 threads 10 fable-max/L3 elapsed_ms=    3698.397 process_s=   7.069 gate=PASS digits=3.662
+round 1 threads 10 fable-max/recommended elapsed_ms=    3909.308 process_s=   6.903 gate=PASS digits=4.426
+round 1 threads 10 fable-max/accurate elapsed_ms=    4823.139 process_s=   7.833 gate=PASS digits=4.55
+round 1 threads 10 micm/L2      elapsed_ms=   18922.339 process_s=  22.296 gate=PASS digits=2.793
+round 1 threads 10 micm/L3      elapsed_ms=   25459.152 process_s=  28.840 gate=PASS digits=3.508
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 4534.441233 process_s=   9.363 gate=PASS digits=3.681
+round 2 threads 10 fable-max/L2 elapsed_ms=    1774.666 process_s=   4.705 gate=PASS digits=2.304
+round 2 threads 10 fable-max/L3r elapsed_ms=    3717.423 process_s=   6.649 gate=PASS digits=3.183
+round 2 threads 10 fable-max/L3 elapsed_ms=    3776.712 process_s=   6.745 gate=PASS digits=3.662
+round 2 threads 10 fable-max/recommended elapsed_ms=    3951.357 process_s=   6.962 gate=PASS digits=4.426
+round 2 threads 10 fable-max/accurate elapsed_ms=    4842.708 process_s=   7.867 gate=PASS digits=4.55
+round 2 threads 10 micm/L2      elapsed_ms=   19167.440 process_s=  22.551 gate=PASS digits=2.793
+round 2 threads 10 micm/L3      elapsed_ms=   25558.437 process_s=  29.001 gate=PASS digits=3.508
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    6961.539 process_s=  11.746 gate=PASS digits=3.619
+round 2 threads 10 sol-max/fast elapsed_ms=    2729.121 process_s=   7.514 gate=PASS digits=2.183
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2184.869051 process_s=   6.924 gate=PASS digits=2.19
+round 3 threads 10 fable-max/recommended elapsed_ms=    3984.469 process_s=   6.977 gate=PASS digits=4.426
+round 3 threads 10 fable-max/accurate elapsed_ms=    4847.856 process_s=   7.871 gate=PASS digits=4.55
+round 3 threads 10 micm/L2      elapsed_ms=   19153.843 process_s=  22.512 gate=PASS digits=2.793
+round 3 threads 10 micm/L3      elapsed_ms=   25546.410 process_s=  28.992 gate=PASS digits=3.508
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    6975.865 process_s=  11.407 gate=PASS digits=3.619
+round 3 threads 10 sol-max/fast elapsed_ms=    2726.964 process_s=   7.604 gate=PASS digits=2.183
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2192.960024 process_s=   6.955 gate=PASS digits=2.19
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 4433.947802 process_s=   9.192 gate=PASS digits=3.681
+round 3 threads 10 fable-max/L2 elapsed_ms=    1750.136 process_s=   4.661 gate=PASS digits=2.304
+round 3 threads 10 fable-max/L3r elapsed_ms=    3702.927 process_s=   6.623 gate=PASS digits=3.183
+round 3 threads 10 fable-max/L3 elapsed_ms=    3715.705 process_s=   6.685 gate=PASS digits=3.662
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 6,961.5 | 6,905.8–6,975.9 | 11.4 | 3.62 |
+| sol-max/fast | 10 | 3 of 3 | 2,727.0 | 2,711.7–2,729.1 | 7.5 | 2.18 |
+| astra-xhigh/fast | 10 | 3 of 3 | 2,184.9 | 2,173.0–2,193.0 | 6.9 | 2.19 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 4,433.9 | 4,404.6–4,534.4 | 9.2 | 3.68 |
+| fable-max/L2 | 10 | 3 of 3 | 1,750.1 | 1,732.4–1,774.7 | 4.7 | 2.30 |
+| fable-max/L3r | 10 | 3 of 3 | 3,702.9 | 3,654.8–3,717.4 | 6.6 | 3.18 |
+| fable-max/L3 | 10 | 3 of 3 | 3,715.7 | 3,698.4–3,776.7 | 6.7 | 3.66 |
+| fable-max/recommended | 10 | 3 of 3 | 3,951.4 | 3,909.3–3,984.5 | 7.0 | 4.43 |
+| fable-max/accurate | 10 | 3 of 3 | 4,842.7 | 4,823.1–4,847.9 | 7.9 | 4.55 |
+| micm/L2 | 10 | 3 of 3 | 19,153.8 | 18,922.3–19,167.4 | 22.5 | 2.79 |
+| micm/L3 | 10 | 3 of 3 | 25,546.4 | 25,459.2–25,558.4 | 29.0 | 3.51 |
+== heldout-10000/winter60-10min: 14:39:23
+round 1 threads 10 sol-xhigh/L3 elapsed_ms=    7863.413 process_s=  12.283 gate=PASS digits=3.706
+round 1 threads 10 sol-max/fast elapsed_ms=    3330.504 process_s=   7.937 gate=PASS digits=2.277
+round 1 threads 10 astra-xhigh/fast elapsed_ms= 2802.387238 process_s=   7.456 gate=PASS digits=2.27
+round 1 threads 10 astra-xhigh/accurate elapsed_ms= 6339.848280 process_s=  11.006 gate=PASS digits=3.944
+round 1 threads 10 fable-max/L2 elapsed_ms=    2019.692 process_s=   4.906 gate=PASS digits=2.273
+round 1 threads 10 fable-max/L3r elapsed_ms=    3859.142 process_s=   6.744 gate=PASS digits=3.419
+round 1 threads 10 fable-max/L3 elapsed_ms=    4858.272 process_s=   7.761 gate=PASS digits=3.725
+round 1 threads 10 fable-max/recommended elapsed_ms=    5037.530 process_s=   8.025 gate=PASS digits=4.336
+round 1 threads 10 fable-max/accurate elapsed_ms=    6109.799 process_s=   9.090 gate=PASS digits=4.669
+round 1 threads 10 micm/L2      elapsed_ms=   36023.984 process_s=  39.440 gate=PASS digits=3.162
+round 1 threads 10 micm/L3      elapsed_ms=   42196.251 process_s=  45.523 gate=PASS digits=3.736
+round 2 threads 10 astra-xhigh/accurate elapsed_ms= 6367.580652 process_s=  11.068 gate=PASS digits=3.944
+round 2 threads 10 fable-max/L2 elapsed_ms=    2016.649 process_s=   4.898 gate=PASS digits=2.273
+round 2 threads 10 fable-max/L3r elapsed_ms=    3878.954 process_s=   6.761 gate=PASS digits=3.419
+round 2 threads 10 fable-max/L3 elapsed_ms=    4715.625 process_s=   7.659 gate=PASS digits=3.725
+round 2 threads 10 fable-max/recommended elapsed_ms=    4922.593 process_s=   7.948 gate=PASS digits=4.336
+round 2 threads 10 fable-max/accurate elapsed_ms=    6254.836 process_s=   9.223 gate=PASS digits=4.669
+round 2 threads 10 micm/L2      elapsed_ms=   35913.943 process_s=  39.232 gate=PASS digits=3.162
+round 2 threads 10 micm/L3      elapsed_ms=   41499.834 process_s=  44.720 gate=PASS digits=3.736
+round 2 threads 10 sol-xhigh/L3 elapsed_ms=    7897.794 process_s=  12.368 gate=PASS digits=3.706
+round 2 threads 10 sol-max/fast elapsed_ms=    3321.981 process_s=   7.960 gate=PASS digits=2.277
+round 2 threads 10 astra-xhigh/fast elapsed_ms= 2795.235157 process_s=   8.761 gate=PASS digits=2.27
+round 3 threads 10 fable-max/recommended elapsed_ms=    4945.599 process_s=   7.922 gate=PASS digits=4.336
+round 3 threads 10 fable-max/accurate elapsed_ms=    6097.602 process_s=   9.081 gate=PASS digits=4.669
+round 3 threads 10 micm/L2      elapsed_ms=   35337.409 process_s=  38.659 gate=PASS digits=3.162
+round 3 threads 10 micm/L3      elapsed_ms=   42025.240 process_s=  45.385 gate=PASS digits=3.736
+round 3 threads 10 sol-xhigh/L3 elapsed_ms=    8088.571 process_s=  12.653 gate=PASS digits=3.706
+round 3 threads 10 sol-max/fast elapsed_ms=    3441.514 process_s=   8.019 gate=PASS digits=2.277
+round 3 threads 10 astra-xhigh/fast elapsed_ms= 2821.963549 process_s=   7.539 gate=PASS digits=2.27
+round 3 threads 10 astra-xhigh/accurate elapsed_ms= 6374.452114 process_s=  11.042 gate=PASS digits=3.944
+round 3 threads 10 fable-max/L2 elapsed_ms=    2172.154 process_s=   5.093 gate=PASS digits=2.273
+round 3 threads 10 fable-max/L3r elapsed_ms=    3926.514 process_s=   6.820 gate=PASS digits=3.419
+round 3 threads 10 fable-max/L3 elapsed_ms=    4768.889 process_s=   7.682 gate=PASS digits=3.725
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| sol-xhigh/L3 | 10 | 3 of 3 | 7,897.8 | 7,863.4–8,088.6 | 12.4 | 3.71 |
+| sol-max/fast | 10 | 3 of 3 | 3,330.5 | 3,322.0–3,441.5 | 8.0 | 2.28 |
+| astra-xhigh/fast | 10 | 3 of 3 | 2,802.4 | 2,795.2–2,822.0 | 7.5 | 2.27 |
+| astra-xhigh/accurate | 10 | 3 of 3 | 6,367.6 | 6,339.8–6,374.5 | 11.0 | 3.94 |
+| fable-max/L2 | 10 | 3 of 3 | 2,019.7 | 2,016.6–2,172.2 | 4.9 | 2.27 |
+| fable-max/L3r | 10 | 3 of 3 | 3,879.0 | 3,859.1–3,926.5 | 6.8 | 3.42 |
+| fable-max/L3 | 10 | 3 of 3 | 4,768.9 | 4,715.6–4,858.3 | 7.7 | 3.73 |
+| fable-max/recommended | 10 | 3 of 3 | 4,945.6 | 4,922.6–5,037.5 | 7.9 | 4.34 |
+| fable-max/accurate | 10 | 3 of 3 | 6,109.8 | 6,097.6–6,254.8 | 9.1 | 4.67 |
+| micm/L2 | 10 | 3 of 3 | 35,913.9 | 35,337.4–36,024.0 | 39.2 | 3.16 |
+| micm/L3 | 10 | 3 of 3 | 42,025.2 | 41,499.8–42,196.3 | 45.4 | 3.74 |
+== done: 14:50:42
+exit 0 2026-10-19 14:50:42
