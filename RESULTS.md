@@ -50,9 +50,42 @@ are dearest there (644 to 870 ms on diurnal-5min against 281 for L2).
 
 ## Against MICM's three-stage Rosenbrock
 
-*(MICM at the ranking's baseline tolerances on the same six scenarios in the
-same session, `scans/MICM-baselines.csv`, and each point's speedup: filled
-when the rerun ends.)*
+MICM's own scenario driver (`bin/micm_scenario`, MICM e15898ce, three-stage
+Rosenbrock, 32-cell groups, its loop restarting every interval at one
+millionth of the step) at the tolerances the ranking uses as its baselines,
+the loosest of an 18-setting scan that reach each level on all 11
+scenarios: relative 1e-2 with absolute 1e-15 for level 2 and 3e-4 with
+1e-15 for level 3. Same six scenarios, 1,000 cells, 10 threads, three
+rounds in one session right after S13 (`tools/micm_baseline.py`,
+`scans/MICM-baselines.csv`; identical output across rounds, every run
+passing the gate).
+
+| MICM setting | clean-10min | diurnal-10min | diurnal-30min | diurnal-5min | polluted-10min | tier1-30s | Lowest (worst) | Time, s |
+|---|---|---|---|---|---|---|---|---:|
+| level 2: 1e-2 / 1e-15 | 3.42 (ISOP 2.43) 4112 | 3.43 (ISOP 2.34) 4134 | 2.49 (ISOP 1.24) 1529 | 3.51 (BrO 2.62) 7921 | 3.29 (ISOP 2.12) 4244 | 5.55 (MEKO2 4.91) 2655 | 2.49 (1.24) | 24.60 |
+| level 3: 3e-4 / 1e-15 | 3.99 (ISOP 2.85) 4867 | 4.01 (ISOP 2.75) 4996 | 3.29 (ISOP 2.05) 2126 | 4.29 (BrO 3.43) 9077 | 3.89 (ISOP 2.70) 5255 | 6.39 (ISOP 5.62) 2694 | 3.29 (2.05) | 29.02 |
+
+MICM takes 9.4 to 11 internal steps per interval at level 2 and 10.7 to
+15.5 at level 3 on every scenario, including the 30-second one, because of
+the restart; its time therefore hardly depends on the tolerance (18 %
+between the two settings) or on the interval length.
+
+| Point | Time, s | Speedup over MICM at level 2 | Speedup over MICM at level 3 |
+|---|---:|---:|---:|
+| L2 | 1.160 | 21.2 | |
+| balanced | 2.208 | 11.1 | 13.1 (if its three digits hold on the undisclosed scenarios) |
+| L3 | 2.647 | | 11.0 |
+| recommended | 3.041 | | 9.5 |
+| accurate | 3.449 | | 8.4 |
+
+Two cautions. These are 1,000-cell runs on the six disclosed scenarios in
+one session on the M5; the ranking's numbers (10,000 cells, 11 scenarios,
+its own session) will differ, and MICM's level-2 setting here gives 3.3 to
+3.5 digits on four of the six scenarios where L2 gives 2.4 to 2.7, so the
+comparison is at the level, not at equal digits. At equal digits the
+nearest pairs are balanced (3.17 overall at the lowest, 2.21 s) against
+MICM's level-3 setting (3.29, 29.0 s), 13 times, and accurate (3.87, 3.45 s)
+against the same setting, 8.4 times with 0.6 digit more.
 
 ## Work-precision plots
 

@@ -43,8 +43,9 @@ two for every species keep the solver's error one to two orders of magnitude
 below the other errors of an atmospheric model; this point keeps that with
 a margin that the spread among the disclosed scenarios (0.1 to 0.2 digit)
 does not consume, and it reaches four digits on the polluted and 30-minute
-scenarios. Its cost is 7 % of MICM's three-stage method at the tolerances
-that give MICM the same level (RESULTS.md).
+scenarios. Its cost is a tenth of MICM's three-stage method's at the
+tolerance that gives MICM the same level (9.5 times faster on the six
+disclosed scenarios; RESULTS.md).
 
 For a model that needs only two digits, **L2** is the choice at a third of
 the recommended point's time; **balanced** sits between them and will
