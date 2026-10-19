@@ -278,10 +278,8 @@ Tier-2-Results.
   contestant) is done and collected as `tier3/fable/max`, verified in
   `results/2026-10-19-tier3-fable-max-verification/`. Deferred by the SSE on
   2026-10-19: timing its five points beside the contest's level winners and
-  MICM's baselines in one session (`~/NSF-NCAR/tier3-work/run-timing-fable.sh`
-  and `programs-fable-vs-contest.txt`, 3 rounds, about 1 h 45 min, then
-  `admin/rank_tier3.py`; the recipe is in `admin/runs.md`). Numbers from
-  different sessions are not comparable.
+  MICM's baselines in one session, about 1 h 45 min; the steps are in
+  `tier3/FOLLOW-UP.md`. Numbers from different sessions are not comparable.
 - Verification worktrees of `runs/*` are built in a session scratchpad. If it is
   gone, `git worktree prune` and rebuild per "Verify an entry".
 - Time each new entry with all the others in one session (`admin/time_entries.py`,
