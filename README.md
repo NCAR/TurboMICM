@@ -70,7 +70,7 @@ for the reference solution while the timing session ran; its id is
 
 | File | Role | Harness | Original size |
 |---|---|---|---:|
-| `transcripts/tier3/fable-max.jsonl.gz` | the main session, from 19:31 on 2026-10-18 to its archiving at 07:52 on 2026-10-19 | Claude Code 2.1.303 | 25.7 MB |
+| `transcripts/tier3/fable-max.jsonl.gz` | the main session, from 19:31 on 2026-10-18 to its archiving at 08:22 on 2026-10-19 | Claude Code 2.1.303 | 31.1 MB |
 | `transcripts/tier3/fable-max-agents/R1-rosenbrock-w-methods.jsonl.gz` | brief R1: Rosenbrock and Rosenbrock-W methods | Claude Code session, Claude Sonnet 5.5 | 6.1 MB |
 | `transcripts/tier3/fable-max-agents/R2-accuracy-requirements.jsonl.gz` | brief R2: accuracy requirements of atmospheric chemistry solvers | Claude Code session, Claude Sonnet 5.5 | 18.9 MB |
 | `transcripts/tier3/fable-max-agents/R3-extrapolation-exponential-sdirk.jsonl.gz` | brief R3: extrapolation, exponential, and SDIRK methods | Claude Code session, Claude Sonnet 5.5 | 7.0 MB |
