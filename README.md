@@ -1,4 +1,37 @@
-# A C port of MICM's CPU chemistry solver
+# A C port of MICM's CPU chemistry solver, and faster integrators for it
+
+Tier 1 (the sections after the next) ported MICM's CPU solver to ISO C11
+with generated straight-line kernels for a frozen mechanism. Tier 3 adds
+`bin/ts1_scenario`, which runs TS1 through day-night scenarios with
+MICM's three-stage Rosenbrock (the default) or with the integrators added
+here: MICM's five Rosenbrock parameter sets and ROS34PW2 in a new
+Rosenbrock-Wanner loop with a carried step, a choice of controllers and
+norms, and factorization reuse, and extrapolated linearly implicit Euler.
+The research behind them is in REFERENCES.md and `research/`, the scans in
+SCANS.md and `scans/`, the accuracy argument in ACCURACY.md, the declared
+operating points in OPERATING_POINTS.md, and their results in RESULTS.md.
+
+## Tier 3 in brief
+
+```
+make bench                      # cpu, plus bin/ts1_scenario
+bin/ts1_scenario [--threads N] [--method NAME] [--option KEY=VALUE ...] SCENARIO
+bin/ts1_scenario --help         # the methods and options (documented in DESIGN.md)
+make proto                      # the library as a shared object, for the Python prototypes
+make micm-scenario              # MICM's scenario driver, for small references
+make test-methods               # each C method against its prototype; the tableaus against their standard form
+tools/scan.py NAME --points scans/points/NAME.tsv --scenarios ../scenarios/*/   # a structure scan
+```
+
+For example, the recommended operating point on a disclosed scenario:
+
+```
+cd <a work directory>
+<entry>/bin/ts1_scenario --method rodas3 --option rtol=1e-3 --option atol=1e-18 <root>/scenarios/diurnal-10min/scenario.txt
+python3 <root>/scenarios/score.py ts1_snapshots.csv <root>/scenarios/diurnal-10min/reference_snapshots.csv --level 3
+```
+
+## Tier 1: the port
 
 `libtmc.a` (header `include/tmc.h`) reproduces MICM's CPU solver in ISO C11
 with OpenMP: species, reactions, and all of MICM's rate-constant types; a

@@ -1177,6 +1177,10 @@ tmc_result tmc_solver_solve(const tmc_solver *s, double time_step, tmc_state *st
   tmc_result r;
   if (s->method == TMC_METHOD_BACKWARD_EULER)
     r = tmc_backward_euler_solve(s, time_step, state);
+  else if (s->ros.loop == TMC_LOOP_ROW)
+    r = tmc_row_solve(s, time_step, state);
+  else if (s->ros.loop == TMC_LOOP_EXTRAPOLATION)
+    r = tmc_extrapolation_solve(s, time_step, state);
   else
     r = tmc_rosenbrock_solve(s, time_step, state);
   tmc_state_clamp(state);

@@ -212,6 +212,99 @@ tmc_rosenbrock_parameters tmc_rosenbrock_six_stage_dae(void)
   return p;
 }
 
+/* A Rosenbrock or W tableau in the standard form of Hairer and Wanner (IV.7):
+ *   (I - h gamma J) k_i = h f(y0 + sum_j alpha_ij k_j) + h J sum_j gamma_ij k_j,
+ *   y1 = y0 + sum_i b_i k_i, the embedded solution with bhat,
+ * converted to MICM's form with the stage vectors u = Gamma k (Gamma lower
+ * triangular, gamma on its diagonal): a = alpha Gamma^-1, c_ij = -(Gamma^-1)_ij
+ * for i > j, m = b Gamma^-1, and e = (b - bhat) Gamma^-1, so that
+ *   (I / (h gamma) - J) u_i = f(y0 + sum_j a_ij u_j) + sum_j (c_ij / h) u_j,
+ *   y1 = y0 + sum_i m_i u_i, and the error estimate is sum_i e_i u_i.
+ * A stage whose alpha row repeats the previous row's reuses that forcing.
+ * The rows of alpha and gamma_ij hold the entries j < i; estimator_order is
+ * the order of the embedded pair plus one, as MICM's constructors set it. */
+static tmc_rosenbrock_parameters from_standard_form(int stages, const double alpha[TMC_MAX_STAGES][TMC_MAX_STAGES],
+                                                     const double gamma_ij[TMC_MAX_STAGES][TMC_MAX_STAGES], double gamma,
+                                                     const double *b, const double *bhat, double estimator_order)
+{
+  tmc_rosenbrock_parameters p = base();
+  double inverse[TMC_MAX_STAGES][TMC_MAX_STAGES]; /* Gamma^-1, lower triangular */
+  p.stages = stages;
+  for (int l = 0; l < stages; ++l)
+    for (int i = 0; i < stages; ++i)
+    {
+      double value = i == l ? 1.0 : 0.0;
+      for (int j = l; j < i; ++j)
+        value -= gamma_ij[i][j] * inverse[j][l];
+      inverse[i][l] = i < l ? 0.0 : value / gamma;
+    }
+  for (int i = 0; i < stages; ++i)
+  {
+    const int offset = i * (i - 1) / 2;
+    for (int j = 0; j < i; ++j)
+    {
+      double a = 0.0;
+      for (int l = j; l < i; ++l)
+        a += alpha[i][l] * inverse[l][j];
+      p.a[offset + j] = a;
+      p.c[offset + j] = -inverse[i][j];
+    }
+    bool same_argument = i > 0;
+    for (int j = 0; j < i && same_argument; ++j)
+      same_argument = alpha[i][j] == alpha[i - 1][j];
+    if (i > 0 && alpha[i][i - 1] != 0.0)
+      same_argument = false;
+    p.new_function_evaluation[i] = !same_argument;
+    double row_alpha = 0.0, row_gamma = gamma;
+    for (int j = 0; j < i; ++j)
+    {
+      row_alpha += alpha[i][j];
+      row_gamma += gamma_ij[i][j];
+    }
+    p.alpha[i] = row_alpha;
+    p.gamma[i] = row_gamma;
+  }
+  p.gamma[0] = gamma;
+  for (int j = 0; j < stages; ++j)
+  {
+    double m = 0.0, e = 0.0;
+    for (int i = j; i < stages; ++i)
+    {
+      m += b[i] * inverse[i][j];
+      e += (b[i] - bhat[i]) * inverse[i][j];
+    }
+    p.m[j] = m;
+    p.e[j] = e;
+  }
+  p.estimator_of_local_order = estimator_order;
+  return p;
+}
+
+tmc_rosenbrock_parameters tmc_rosenbrock_ros34pw2(void)
+{
+  /* ROS34PW2 (Rang and Angermann, 2005): a four-stage, third-order, L-stable
+   * Rosenbrock-W method with an embedded second-order method; it keeps its
+   * order with an approximate Jacobian, so a factorization can be reused.
+   * Coefficients as printed by Blom et al. (2016, Table 7). */
+  const double g = 4.3586652150845900e-01;
+  double alpha[TMC_MAX_STAGES][TMC_MAX_STAGES] = { { 0 } }, gamma_ij[TMC_MAX_STAGES][TMC_MAX_STAGES] = { { 0 } };
+  alpha[1][0] = 8.7173304301691801e-01;
+  alpha[2][0] = 8.4457060015369423e-01;
+  alpha[2][1] = -1.1299064236484185e-01;
+  alpha[3][0] = 0.0;
+  alpha[3][1] = 0.0;
+  alpha[3][2] = 1.0;
+  gamma_ij[1][0] = -8.7173304301691801e-01;
+  gamma_ij[2][0] = -9.0338057013044082e-01;
+  gamma_ij[2][1] = 5.4180672388095326e-02;
+  gamma_ij[3][0] = 2.4212380706095346e-01;
+  gamma_ij[3][1] = -1.2232505839045147e+00;
+  gamma_ij[3][2] = 5.4526025533510214e-01;
+  const double b[TMC_MAX_STAGES] = { 2.4212380706095346e-01, -1.2232505839045147e+00, 1.5452602553351020e+00, 4.3586652150845900e-01, 0, 0 };
+  const double bhat[TMC_MAX_STAGES] = { 3.7810903145819369e-01, -9.6042292212423178e-02, 5.0000000000000000e-01, 2.1793326075422950e-01, 0, 0 };
+  return from_standard_form(4, alpha, gamma_ij, g, b, bhat, 3.0);
+}
+
 tmc_backward_euler_parameters tmc_backward_euler_defaults(void)
 {
   tmc_backward_euler_parameters p;

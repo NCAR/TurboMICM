@@ -32,6 +32,7 @@ extern "C" {
 #define TMC_MAX_PROPERTIES 16
 #define TMC_MAX_STAGES 6
 #define TMC_MAX_TAYLOR_COEFFICIENTS 16
+#define TMC_MAX_EXTRAPOLATION 8
 
 /* ------------------------------------------------------------------------- */
 /* Errors                                                                     */
@@ -543,13 +544,34 @@ typedef struct tmc_rosenbrock_parameters
   double a[15], c[15];
   double m[TMC_MAX_STAGES], e[TMC_MAX_STAGES];
   double alpha[TMC_MAX_STAGES], gamma[TMC_MAX_STAGES];
+  /* ---- The integrator loops beyond MICM's (every field zero: MICM's loop and behavior) ---- */
+  int loop;                   /* TMC_LOOP_MICM, TMC_LOOP_ROW, or TMC_LOOP_EXTRAPOLATION */
+  int warm_start;             /* start a solve from the step the state's previous solve proposed */
+  double h_start_factor;      /* the first step as a fraction of the interval when not warm-started (0: MICM's 1e-6) */
+  int norm;                   /* TMC_NORM_RMS (MICM's), TMC_NORM_CELL_MAX, or TMC_NORM_MAX */
+  int controller_type;        /* TMC_CONTROLLER_MICM, TMC_CONTROLLER_PREDICTIVE, or TMC_CONTROLLER_H211B */
+  int clamp_internal;         /* clamp negative concentrations to zero after every accepted internal step */
+  int quantize;               /* round every step to a divisor of the solve interval, so the steps tile it */
+  int max_matrix_age;         /* accepted steps a factorization may serve again (0: a new one every step) */
+  double matrix_rate_change;  /* refactor when a rate constant has changed by more than this fraction since */
+  double freeze_band;         /* keep the step when the controller's factor lies in [1/band, band] (0: always follow it) */
+  int extrapolation_order;    /* extrapolation: entries of the step-number sequence (2 to TMC_MAX_EXTRAPOLATION) */
+  int extrapolation_sequence; /* TMC_SEQUENCE_HARMONIC, TMC_SEQUENCE_SHIFTED, or TMC_SEQUENCE_EVEN */
+  double h211_b, h211_k;      /* H211b's b and k (0: b = 4 and k = the estimator order, Soderlind's choice) */
 } tmc_rosenbrock_parameters;
+
+enum { TMC_LOOP_MICM = 0, TMC_LOOP_ROW = 1, TMC_LOOP_EXTRAPOLATION = 2 };
+enum { TMC_NORM_RMS = 0, TMC_NORM_CELL_MAX = 1, TMC_NORM_MAX = 2 };
+enum { TMC_CONTROLLER_MICM = 0, TMC_CONTROLLER_PREDICTIVE = 1, TMC_CONTROLLER_H211B = 2 };
+enum { TMC_SEQUENCE_HARMONIC = 0, TMC_SEQUENCE_SHIFTED = 1, TMC_SEQUENCE_EVEN = 2 };
 
 tmc_rosenbrock_parameters tmc_rosenbrock_two_stage(void);
 tmc_rosenbrock_parameters tmc_rosenbrock_three_stage(void);
 tmc_rosenbrock_parameters tmc_rosenbrock_four_stage(void);
 tmc_rosenbrock_parameters tmc_rosenbrock_four_stage_dae(void);
 tmc_rosenbrock_parameters tmc_rosenbrock_six_stage_dae(void);
+/* ROS34PW2 (Rang and Angermann, 2005): four stages, order 3(2), L-stable, a W-method. */
+tmc_rosenbrock_parameters tmc_rosenbrock_ros34pw2(void);
 
 typedef struct tmc_backward_euler_parameters
 {
@@ -593,6 +615,7 @@ typedef struct tmc_stats
   long decompositions;
   long solves;
   long constraint_init_iterations;
+  long matrix_reuses; /* internal steps that reused an earlier factorization */
   double final_time;
 } tmc_stats;
 
@@ -771,6 +794,10 @@ void tmc_solver_free(tmc_solver *s);
 tmc_state *tmc_solver_create_state(const tmc_solver *s, int n_cells);
 /* Recompute the rate constants from the state's conditions and parameters. */
 void tmc_solver_update_state_parameters(const tmc_solver *s, tmc_state *state);
+/* Recompute only the rate constants that read custom parameters (user-defined
+ * and surface reactions), after those parameters changed and nothing else;
+ * records the largest relative change for the factorization-reuse rule. */
+void tmc_solver_update_custom_rate_constants(const tmc_solver *s, tmc_state *state);
 tmc_result tmc_solver_solve(const tmc_solver *s, double time_step, tmc_state *state);
 void tmc_solver_set_rosenbrock_parameters(tmc_solver *s, const tmc_rosenbrock_parameters *p);
 const tmc_rosenbrock_parameters *tmc_solver_rosenbrock_parameters(const tmc_solver *s);
@@ -834,6 +861,12 @@ int tmc_state_set_absolute_tolerances(tmc_state *state, const double *atol, int 
 const double *tmc_state_absolute_tolerances(const tmc_state *state);
 /* Clamp the differential variables to be non-negative, as MICM does after a solve. */
 void tmc_state_clamp(tmc_state *state);
+/* The step size a warm-started solve of the state begins with (0: none yet). */
+double tmc_state_next_step(const tmc_state *state);
+void tmc_state_set_next_step(tmc_state *state, double h);
+/* Forget the state's factorization, after its conditions or rate constants
+ * changed in a way the library did not see. */
+void tmc_state_invalidate_matrix(tmc_state *state);
 
 /* ------------------------------------------------------------------------- */
 /* Version                                                                    */

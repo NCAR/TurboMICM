@@ -172,6 +172,14 @@ struct tmc_state
   tmc_dense *K[TMC_MAX_STAGES];
   /* Backward Euler temporaries */
   tmc_dense *yn, *yn1, *forcing;
+  /* step-size memory, factorization reuse, and controller history (row.c, extrapolation.c) */
+  double h_next;             /* the step the next solve starts from when warm-started (0: none) */
+  double lu_h;               /* the step the factorization in `jacobian` was built for (0: none valid) */
+  int lu_age;                /* accepted steps since that factorization */
+  double rc_change;          /* compounded relative change of the rate constants since it */
+  double err_prev, h_prev;   /* the last accepted step's error and size (0: none) */
+  tmc_sparse *jacobian_copy; /* extrapolation: -J unshifted, refactored for each substep size */
+  tmc_dense *extrap_prev[TMC_MAX_EXTRAPOLATION], *extrap_cur[TMC_MAX_EXTRAPOLATION]; /* the tableau's last two rows */
 };
 
 /* ---- Internal kernels (process.c) --------------------------------------- */
@@ -222,8 +230,26 @@ int tmc_external_names(const tmc_external_model *m, int (*cb)(void *, char (*)[T
 void tmc_lu_decompose_mozart_in_place(const tmc_lu *lu, tmc_sparse *ALU, double *reciprocals);
 void tmc_lu_decompose_doolittle_in_place(const tmc_lu *lu, tmc_sparse *ALU, double *reciprocals);
 
+/* ---- Pieces of the Rosenbrock step shared by the loops (rosenbrock.c) ---- */
+void tmc_rosenbrock_forcing(const tmc_solver *s, tmc_state *st, const tmc_dense *y, tmc_dense *f);
+/* alpha M - J(y) into the state's LU matrix, then its factorization. */
+void tmc_rosenbrock_factor(const tmc_solver *s, tmc_state *st, const tmc_dense *y, double alpha, tmc_stats *stats);
+void tmc_rosenbrock_linear_solve(const tmc_solver *s, tmc_state *st, tmc_dense *x, tmc_stats *stats);
+/* The stages of one attempt with step H: K_i from the state's variables and
+ * initial_forcing, with the matrix already factored. */
+void tmc_rosenbrock_stages(const tmc_solver *s, tmc_state *st, const tmc_rosenbrock_parameters *p, double H, tmc_stats *stats);
+void tmc_rosenbrock_combine_solution_and_error(tmc_dense *ynew, tmc_dense *yerror, const tmc_dense *y, int stages, const double *m, const double *e, tmc_dense *const *k);
+
+/* ---- The ROW loop's pieces, shared with the extrapolation loop (row.c) ---- */
+double tmc_row_initial_step(const tmc_rosenbrock_parameters *p, const tmc_state *st, double time_step, double h_min, double h_max);
+double tmc_row_quantize(double h, double interval);
+double tmc_row_step_factor(const tmc_rosenbrock_parameters *p, double error, double H, const tmc_state *st);
+double tmc_row_error_norm(const tmc_state *st, const tmc_dense *y, const tmc_dense *ynew, const tmc_dense *errors, int norm);
+
 /* ---- Solvers ----------------------------------------------------------- */
 tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state *state);
+tmc_result tmc_row_solve(const tmc_solver *s, double time_step, tmc_state *state);
+tmc_result tmc_extrapolation_solve(const tmc_solver *s, double time_step, tmc_state *state);
 tmc_result tmc_backward_euler_solve(const tmc_solver *s, double time_step, tmc_state *state);
 
 #endif

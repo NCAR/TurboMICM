@@ -1,5 +1,46 @@
 # Results
 
+Tier 3's results come first; the Tier 1 measurements follow under "Tier 1".
+
+# Tier 3
+
+The operating points of OPERATING_POINTS.md on the six disclosed scenarios,
+against MICM's three-stage Rosenbrock, all at 1,000 cells and 10 threads on
+the Apple M5 laptop with clang 21 unless stated. Accuracy is
+`scenarios/score.py`'s: digits overall and for the worst species, with the
+gate. Times are medians of 3 runs, idle machine; the experimenter's ranking
+times 10,000-cell scenarios, median of 5, and those numbers are the
+ranking's, not these.
+
+## Operating points
+
+*(table: point, method and options, per scenario: digits overall, worst
+species, elapsed ms, internal steps, factorizations, solves; the lowest
+digits over the six scenarios; the level reached.)*
+
+## Against MICM's three-stage Rosenbrock
+
+*(table: MICM at the tolerances that reach each level on the six scenarios,
+with its time and digits, and each point's speedup over it.)*
+
+## Work-precision plots
+
+*(figures from `tools/plot_wp.py`: time against digits, overall and worst
+species, one curve per method; the operating points marked.)*
+
+## Where the time goes
+
+*(the operation counts per scenario step for each point: steps,
+factorizations, solves, forcing evaluations, matrix reuses, rate updates;
+and the cost model's prediction against the measured time.)*
+
+## Build and run times
+
+*(make env, make bench, make test-cpu with clang and gcc-15; the generated
+kernels' compile time.)*
+
+# Tier 1
+
 Measured on the experiment's machine: Apple M5 (4 performance and 6
 efficiency cores), 16 GB, macOS 27.0.1, Apple clang 21.0.0 and GCC 15.2.0,
 `OPTFLAGS=-O3 -DNDEBUG` for the port and for MICM. Times are the programs'

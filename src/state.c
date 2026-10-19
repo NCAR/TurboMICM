@@ -30,6 +30,15 @@ tmc_state *tmc_solver_create_state(const tmc_solver *s, int n_cells)
     st->yerror = tmc_dense_create(n_cells, s->n_vars, L, 0.0);
     for (int i = 0; i < s->ros.stages; ++i)
       st->K[i] = tmc_dense_create(n_cells, s->n_vars, L, 0.0);
+    if (s->ros.loop == TMC_LOOP_EXTRAPOLATION)
+    {
+      st->jacobian_copy = tmc_lu_matrix(s->lu, n_cells, 0.0);
+      for (int i = 0; i < s->ros.extrapolation_order && i < TMC_MAX_EXTRAPOLATION; ++i)
+      {
+        st->extrap_prev[i] = tmc_dense_create(n_cells, s->n_vars, L, 0.0);
+        st->extrap_cur[i] = tmc_dense_create(n_cells, s->n_vars, L, 0.0);
+      }
+    }
   }
   else
   {
@@ -59,6 +68,12 @@ void tmc_state_free(tmc_state *st)
   tmc_dense_free(st->yn);
   tmc_dense_free(st->yn1);
   tmc_dense_free(st->forcing);
+  tmc_sparse_free(st->jacobian_copy);
+  for (int i = 0; i < TMC_MAX_EXTRAPOLATION; ++i)
+  {
+    tmc_dense_free(st->extrap_prev[i]);
+    tmc_dense_free(st->extrap_cur[i]);
+  }
   free(st);
 }
 
@@ -72,7 +87,27 @@ tmc_state *tmc_state_copy(const tmc_state *src)
   memcpy(st->jacobian->data, src->jacobian->data, st->jacobian->size * sizeof(double));
   st->relative_tolerance = src->relative_tolerance;
   memcpy(st->absolute_tolerance, src->absolute_tolerance, (size_t)st->n_vars * sizeof(double));
+  st->h_next = src->h_next;
+  st->err_prev = src->err_prev;
+  st->h_prev = src->h_prev;
   return st;
+}
+
+double tmc_state_next_step(const tmc_state *st)
+{
+  return st->h_next;
+}
+
+void tmc_state_set_next_step(tmc_state *st, double h)
+{
+  st->h_next = h;
+}
+
+void tmc_state_invalidate_matrix(tmc_state *st)
+{
+  st->lu_h = 0.0;
+  st->lu_age = 0;
+  st->rc_change = 0.0;
 }
 
 int tmc_state_num_cells(const tmc_state *st)

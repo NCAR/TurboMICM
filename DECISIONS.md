@@ -190,3 +190,101 @@ machine (Apple M5, clang 21); RESULTS.md has the measurements.
   solver when it is built; a builder reused for another configuration needs
   another context. MICM copies the model object instead; C has no copy of an
   opaque context without another callback, and no case needs one.
+
+# Tier 3
+
+Decisions for the numerical-method tier, in the order they were taken. The
+Tier 1 decisions above stand.
+
+## Scope and rules
+
+- **Starting point and record.** This directory is the Tier 1 entry at
+  commit 6d2fcde with its history, as the Tier 3 prompt asks. The author of
+  this entry also orchestrates the experiment and had seen the other Tier 3
+  entries' verification reports (their methods' names, operating points,
+  and scores) before this work began, but not their code or documents; the
+  methods here are chosen from the literature and from this entry's own
+  scans, and the record says so rather than pretend otherwise.
+- **The Tier 1 path is frozen.** MICM's loop, parameters, tolerances, and
+  tests stay as they are; `--method micm3` runs them. New behavior lives in
+  new loops selected by a parameter, with every new parameter zero meaning
+  MICM's behavior, so the 680 cases and the TS1 gate test the same code as
+  in Tier 1.
+- **The literature was read before the methods were written.** Six
+  focused literature searches (Rosenbrock and W-methods; accuracy
+  requirements and solver comparisons; extrapolation, exponential, and
+  SDIRK methods; controllers, norms, reuse, and positivity; alternative
+  schemes and precision; the TS1 mechanism and CAM-chem's solver) were run
+  by research assistants and then checked source by source; REFERENCES.md
+  lists what was used and for what. No code was copied from any source.
+
+## The scenario driver
+
+- **Only the photolysis rate constants are recomputed each step.** In a
+  scenario, f(t) changes the photolysis parameters and nothing else, so
+  `tmc_solver_update_custom_rate_constants` recomputes the rate constants
+  that read custom parameters (165 of TS1's 547) and leaves the Arrhenius,
+  Troe, and other computed ones, which depend only on the unchanged
+  temperature, pressure, and air density. The results are identical to a
+  full update. The rule is generic: recompute what reads an input that
+  changed. The full update runs once per group before the timer, as the
+  prompt allows ("not setup").
+- **A step with an unchanged f(t) skips the update** (at night f = 0 on
+  every step). The count of updates is printed (`rate_updates=`).
+- **Groups run their whole scenario on one thread.** Each group's steps
+  depend on its previous state, so the parallel loop is over groups, each
+  thread taking its group through all the steps and recording snapshots
+  itself; no barrier per step. The schedule is dynamic, one group at a
+  time, as in Tier 1.
+- **Mistyped options fail.** An unknown method, option, or value is an
+  error, never a silent default, so an operating point runs as declared or
+  not at all.
+
+## The loops
+
+- **The ROW loop re-uses MICM's stage formulas.** MICM's transformed
+  Rosenbrock form (one factorization of alpha I - J per step, c_ij / H
+  terms instead of matrix products) serves every Rosenbrock and W tableau,
+  and the generated kernels (fused forcing and Jacobian, forcing at
+  y + a k, LU, solves) serve every method unchanged. The stage loop was
+  moved into a function MICM's loop also calls, with the operations in the
+  same order, so Tier 1's bit-for-bit agreement with MICM holds (checked
+  by the tests).
+- **The step is carried from one solve to the next** (`warm_start`,
+  default on for the new loops). MICM restarts every solve at 1e-6 of the
+  interval and needs about eight growth steps to recover, which is why it
+  takes nine internal steps per 30-second Tier 1 step whatever the
+  tolerance; with 5 to 30 minute scenario steps that restart would dominate
+  the cost. The carried step is the controller's proposal, not the last
+  step, which the end of the interval may have truncated.
+- **Factorization reuse is a rule on the state, not on the method.** A
+  factorization is reused when the step is the same, its age is below
+  `reuse_age`, and the rate constants have changed by less than
+  `reuse_change` since it was made; a rejection or a changed step ends it.
+  W-methods keep their order under it (ROS2 is one); for other tableaus it
+  is an experiment the scans measure. The rate-change test is cheap (it
+  falls out of the photolysis update) and catches dawn and dusk, when the
+  photolysis rates change by large fractions from one step to the next.
+- **Steps that tile the interval** (`quantize`) round the step to
+  dt / n. With a carried step this makes the step sequence repeat from one
+  scenario step to the next, which is what lets a factorization live across
+  scenario steps, and it removes the truncated last step that would
+  otherwise force a new factorization every interval.
+- **Extrapolation evaluates the Jacobian once per step and shifts a copy
+  for each substep size.** The alternative, re-assembling alpha I - J for
+  each n_j, would cost a Jacobian assembly (438 ns per cell) per entry
+  instead of a copy and a diagonal add.
+- **Clamping inside the loop is an option, off by default.** MICM clamps
+  once after the solve; clamping after each accepted step changes the
+  trajectory slightly and is measured, not assumed.
+
+## Prototypes
+
+- **The prototypes use the library's linear algebra.** A Python mirror of
+  each loop over the library's forcing, Jacobian, and sparse LU (through a
+  small ctypes shim) agrees with C to roundoff and counts the same
+  operations, which is what the prompt's agreement test asks; a prototype
+  with its own dense LU would differ at the level of the factorization's
+  rounding on a stiff matrix and prove less. The shim and the shared
+  library are built apart from the benchmark (`make proto`, objects with
+  -fPIC in build/proto), so the benchmark's build is unchanged.

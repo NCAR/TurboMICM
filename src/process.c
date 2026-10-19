@@ -2,6 +2,8 @@
  * (MICM's ReactionRateConstantStore and ProcessSet). */
 #include "internal.h"
 
+#include <math.h>
+
 void tmc_calculate_rate_constants(const tmc_solver *s, tmc_state *st)
 {
   const int L = st->L;
@@ -46,6 +48,43 @@ void tmc_solver_update_state_parameters(const tmc_solver *s, tmc_state *st)
   if (s->n_external)
     tmc_external_update_constraint_parameters(s, st->conditions, st->n_cells, st->custom_rate_parameters);
   tmc_calculate_rate_constants(s, st);
+}
+
+void tmc_solver_update_custom_rate_constants(const tmc_solver *s, tmc_state *st)
+{
+  double change = 0.0;
+  for (int cell = 0; cell < st->n_cells; ++cell)
+  {
+    const tmc_conditions *c = &st->conditions[cell];
+    for (int r = 0; r < s->n_reactions; ++r)
+    {
+      const tmc_process_plan *p = &s->processes[r];
+      if (p->custom_index < 0)
+        continue;
+      double custom[2] = { 0.0, 0.0 };
+      int n = tmc_rate_constant_custom_parameter_count(&s->reactions[r].rate_constant);
+      for (int i = 0; i < n; ++i)
+        custom[i] = tmc_dense_get(st->custom_rate_parameters, cell, p->custom_index + i);
+      double k = tmc_rate_constant_calculate(&s->reactions[r].rate_constant, c, custom);
+      if (p->n_parameterized)
+      {
+        double v = 1.0;
+        for (int i = 0; i < p->n_parameterized; ++i)
+          v *= tmc_species_parameterized_value(&p->parameterized[i], c);
+        k *= v;
+      }
+      const double old = tmc_dense_get(st->rate_constants, cell, r);
+      if (k != old)
+      {
+        const double relative = old > 0.0 ? fabs(k / old - 1.0) : (k > 0.0 ? INFINITY : 0.0);
+        if (relative > change)
+          change = relative;
+        tmc_dense_set(st->rate_constants, cell, r, k);
+      }
+    }
+  }
+  /* compounded with the changes since the factorization, an upper bound on the total change */
+  st->rc_change = (1.0 + st->rc_change) * (1.0 + change) - 1.0;
 }
 
 static void clear_algebraic_rows(const tmc_solver *s, tmc_dense *forcing)

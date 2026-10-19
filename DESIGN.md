@@ -168,6 +168,124 @@ Changing W, the group size, or the kernel mode changes the roundoff and the
 step-size history as MICM's own layouts and groupings do, within 1e-13 of
 MICM on TS1.
 
+## Tier 3: the scenario solver and the integrator loops
+
+Tier 3 adds `bin/ts1_scenario` (`bench/ts1_scenario.c`), two integrator
+loops beside MICM's, and the pieces they need. The Tier 1 path is untouched:
+`--method micm3`, the default, runs MICM's three-stage Rosenbrock in MICM's
+loop (`tmc_rosenbrock_solve`) with MICM's parameters and tolerances, and the
+MICM test suite and the TS1 gate still exercise exactly that code. Only the
+stage formulas were moved into a function both loops call
+(`tmc_rosenbrock_stages`, with the same operations in the same order), and
+the step's pieces (forcing, factorization, triangular solve) lost `static`.
+
+```
+bench/ts1_scenario.c     the scenario driver: cells, f(t), snapshots, methods and options
+bench/csv_table.h        the CSV reader both drivers use
+src/row.c                the Rosenbrock-Wanner loop with the Tier 3 options
+src/extrapolation.c      extrapolated linearly implicit Euler
+src/process.c            tmc_solver_update_custom_rate_constants: only the rate constants that read custom parameters
+prototypes/              the same methods in Python over the library's pieces (prototypes/README.md)
+```
+
+### The scenario driver
+
+    bin/ts1_scenario [--threads N] [--method NAME] [--option KEY=VALUE ...] SCENARIO
+
+- Every cell starts from TS1's InitState, takes its CELLS_CSV row, and has
+  its air density recomputed; the rate constants are computed once, before
+  the timer. Cells form groups of `group_size` (default 32), each a state
+  with its own step size, handed to OpenMP threads with `schedule` and
+  `chunk` (default dynamic, one group at a time); each thread runs all the
+  steps of its group, recording the snapshots on the way.
+- At the start of step k, f(k dt) is interpolated linearly in the photolysis
+  file; when it differs from the previous step's value, every photolysis
+  parameter (a custom rate parameter whose label begins with "j") is set to
+  its CELLS_CSV value times f, and
+  `tmc_solver_update_custom_rate_constants` recomputes only the rate
+  constants that read custom parameters (TS1's user-defined photolysis,
+  heterogeneous, and surface reactions; 165 of 547). Temperature, pressure,
+  and the Arrhenius, Troe, and other computed rate constants do not change
+  within a scenario, so this is the same result as MICM's full update at a
+  fraction of its cost. The rule is mechanism-generic: a reaction's rate
+  constant is recomputed when an input it reads changed. The update also
+  records the largest relative change of any rate constant, compounded
+  since the state's last factorization, for the reuse rule below.
+- The timer covers the steps, the photolysis updates, and the snapshot
+  copies, and nothing else. The outputs follow `../scenarios/README.md`.
+- Unknown methods, options, and option values are errors, so a mistyped
+  operating point cannot run with a default.
+
+### Methods
+
+| `--method` | Loop | Formula | Stages | Forcing evaluations | Order (embedded) |
+|---|---|---|---|---|---|
+| `micm3` (default) | MICM's | MICM's three-stage Rosenbrock | 3 | 2 | 3 (2) |
+| `ros2` | ROW | MICM's two-stage Rosenbrock (ROS2, a W-method) | 2 | 2 | 2 (1) |
+| `ros3` | ROW | MICM's three-stage Rosenbrock | 3 | 2 | 3 (2) |
+| `ros4` | ROW | MICM's four-stage Rosenbrock | 4 | 3 | 4 (3) |
+| `rodas3` | ROW | MICM's four-stage DAE Rosenbrock (RODAS3) | 4 | 3 | 3 (2) |
+| `rodas4` | ROW | MICM's six-stage DAE Rosenbrock (RODAS4) | 6 | 6 | 4 (3) |
+| `extrap` | extrapolation | linearly implicit Euler extrapolated to `order` | | see below | `order` (`order` - 1) |
+
+The ROW loop (`src/row.c`) runs MICM's stage formulas in MICM's transformed
+form: one factorization of alpha I - J per step, with alpha = 1 / (H gamma),
+and one triangular solve per stage. Each step's forcing and matrix come from
+the fused `forcing_jacobian` kernel when the kernels are attached.
+
+The extrapolation loop (`src/extrapolation.c`) takes, for each entry n_j of a
+step-number sequence, n_j linearly implicit Euler substeps of H / n_j,
+y += (n_j / H I - J)^-1 F(y), with the Jacobian evaluated once per step at
+the step's start (the kernel's alpha = 0 call, kept in `jacobian_copy`) and
+copied and shifted for each n_j; the first substep of every entry reuses
+F(y_0). The rows are combined by Aitken-Neville extrapolation in powers of H,
+T_jl = T_j,l-1 + (T_j,l-1 - T_j-1,l-1) / (n_j / n_j-l - 1), the result is the
+last row's last entry and the error estimate its difference from the entry
+before it. With the harmonic sequence 1, 2, 3, 4 (`order=4`) a step costs 4
+factorizations, 10 solves, and 7 forcing evaluations.
+
+### Options
+
+| `--option` | Default | Meaning |
+|---|---|---|
+| `rtol=R` | MICM's 1e-6 | relative tolerance |
+| `atol=A` | MICM's 1e-3 mol m-3 | absolute tolerance, every species |
+| `group_size=G` | 32 | cells per state |
+| `schedule=S`, `chunk=K` | dynamic, 1 | the OpenMP schedule over groups |
+| `generic=1` | 0 | the generic index-list kernels instead of the generated ones |
+| `warm_start=0|1` | 0 for `micm3`, else 1 | start each solve from the step the state's previous solve proposed, instead of MICM's 1e-6 of the interval |
+| `h_start=S`, `h_max=S` | 0 | the first step and a cap on the step, in seconds (0: MICM's) |
+| `norm=rms|cellmax|max` | rms | the error norm: MICM's root mean square over the group; the largest of the cells' root mean squares; the largest scaled error |
+| `controller=micm|predictive|h211b` | micm | MICM's bounded safety-factor rule; Gustafsson's predictive controller, the smaller of the elementary and predicted factors as RODAS and RADAU5 take it; Soderlind's H211b filter |
+| `clamp=1` | 0 | clamp negative concentrations to zero after every accepted internal step (MICM clamps once, after the solve) |
+| `quantize=1` | 0 | round every step to a divisor of the solve interval, so steps tile it and repeat from one interval to the next |
+| `reuse_age=N` | 0 | a factorization may serve up to N accepted steps, including across solves, while the step is unchanged and the rate constants have not changed by more than `reuse_change` (default 0.1); valid without loss of order for W-methods (ros2), an approximation for the others |
+| `freeze_band=F` | 0 | keep the step when the controller's factor lies in [1/F, F], which keeps the factorization |
+| `max_steps=M` | MICM's 1000 | attempts per solve |
+| `order=K`, `sequence=harmonic|shifted|even` | 4, harmonic | extrapolation: the number of entries, and the sequence 1,2,3,...; 2,3,4,...; or 2,4,6,... |
+
+Every option value gives a valid run; the operating points in
+OPERATING_POINTS.md name the ones the measurements support.
+
+### Adding a method
+
+- **A Rosenbrock or W tableau:** a constructor in `src/parameters.c` filling
+  `tmc_rosenbrock_parameters` in MICM's form (the transformed coefficients
+  `a`, `c`, `m`, `e`, the diagonal `gamma`, the new-forcing flags, the
+  estimator order), a name in `method_parameters` of `bench/ts1_scenario.c`
+  and in `proto_tableau` of `prototypes/shim.c`, and a case in
+  `prototypes/agreement.py`. The prototype reads the coefficients from the
+  library, so they are transcribed once.
+- **Another loop:** a `tmc_<name>_solve` in its own file with the signature
+  of `tmc_row_solve`, a `TMC_LOOP_*` value, a case in `tmc_solver_solve`
+  (`src/builder.c`), any work arrays in `tmc_solver_create_state`, its
+  Python mirror in `prototypes/methods.py`, and a case in the agreement test.
+  The step-size rules (`tmc_row_initial_step`, `tmc_row_step_factor`,
+  `tmc_row_quantize`, `tmc_row_error_norm`) are shared.
+- **Another mechanism:** nothing in the loops is TS1's. The driver finds the
+  photolysis parameters by their labels; a mechanism whose photolysis labels
+  differ needs the prefix changed in one place.
+
 ## Making the changes the reviewers will try
 
 - **A Rosenbrock parameter set.** Add a constructor beside the five in

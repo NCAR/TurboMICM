@@ -8,7 +8,7 @@ static const double DEFAULT_H_MIN = 1.0e-15;  /* relative to the time step */
 static const double DEFAULT_H_START = 1.0e-6; /* relative to the time step */
 
 /* The forcing F(y) into `forcing` (overwritten). */
-static void forcing(const tmc_solver *s, tmc_state *st, const tmc_dense *y, tmc_dense *f)
+void tmc_rosenbrock_forcing(const tmc_solver *s, tmc_state *st, const tmc_dense *y, tmc_dense *f)
 {
   tmc_eval_forcing(s, st, y, f);
 }
@@ -32,7 +32,7 @@ void tmc_rosenbrock_alpha_minus_jacobian(const tmc_solver *s, tmc_state *st, dou
 }
 
 /* alpha M - J(y) into the state's LU matrix, then its factorization. */
-static void factor(const tmc_solver *s, tmc_state *st, const tmc_dense *y, double alpha, tmc_stats *stats)
+void tmc_rosenbrock_factor(const tmc_solver *s, tmc_state *st, const tmc_dense *y, double alpha, tmc_stats *stats)
 {
   if (s->kernels)
   {
@@ -65,7 +65,7 @@ static void add_coupling_masked(const tmc_solver *s, tmc_dense *k_stage, double 
     }
 }
 
-static void solve(const tmc_solver *s, tmc_state *st, tmc_dense *x, tmc_stats *stats)
+void tmc_rosenbrock_linear_solve(const tmc_solver *s, tmc_state *st, tmc_dense *x, tmc_stats *stats)
 {
   if (s->kernels)
     s->kernels->lu_solve(x->data, st->jacobian->data, st->reciprocals, st->n_blocks);
@@ -162,7 +162,7 @@ static void combine(tmc_dense *out, const tmc_dense *base, int n, const double *
 
 /* Ynew = Y + sum m_j K_j and Yerror = sum e_j K_j in one pass over the stage
  * vectors, each as MICM's sequence of fused multiply-adds. */
-static void combine_solution_and_error(tmc_dense *ynew, tmc_dense *yerror, const tmc_dense *y, int stages, const double *m, const double *e, tmc_dense *const *k)
+void tmc_rosenbrock_combine_solution_and_error(tmc_dense *ynew, tmc_dense *yerror, const tmc_dense *y, int stages, const double *m, const double *e, tmc_dense *const *k)
 {
   if (stages != 3)
   {
@@ -379,7 +379,7 @@ tmc_solver_state tmc_rosenbrock_initialize_constraints(const tmc_solver *s, tmc_
       return TMC_CONVERGED;
 
     constraint_jacobian_factor(s, st, Y, stats);
-    solve(s, st, delta, stats);
+    tmc_rosenbrock_linear_solve(s, st, delta, stats);
     chk = check_algebraic(s, st, delta);
     if (chk.nan)
       RESTORE_AND_RETURN(TMC_NAN_DETECTED);
@@ -422,7 +422,7 @@ tmc_solver_state tmc_rosenbrock_initialize_constraints(const tmc_solver *s, tmc_
           accepted = true;
           break;
         }
-        solve(s, st, trial_delta, stats);
+        tmc_rosenbrock_linear_solve(s, st, trial_delta, stats);
         chk = check_algebraic(s, st, trial_delta);
         if (chk.nan || chk.inf)
           continue;
@@ -448,6 +448,63 @@ tmc_solver_state tmc_rosenbrock_initialize_constraints(const tmc_solver *s, tmc_
   }
   RESTORE_AND_RETURN(TMC_CONSTRAINT_INITIALIZATION_FAILED);
 #undef RESTORE_AND_RETURN
+}
+
+/* The stages of one attempt: K_i for i = 0 .. stages - 1 from the state's
+ * variables Y and initial_forcing F(Y), the matrix alpha I - J already
+ * factored for this H. */
+void tmc_rosenbrock_stages(const tmc_solver *s, tmc_state *st, const tmc_rosenbrock_parameters *p, double H, tmc_stats *stats)
+{
+  tmc_dense *Y = st->variables, *Ynew = st->ynew, *initial_forcing = st->initial_forcing;
+  tmc_dense **K = st->K;
+  /* The stages. Stage s solves (alpha I - J) K_s = F(Y + sum_j a_sj K_j) + sum_j (c_sj / H) K_j.
+   * A stage that reuses the previous stage's forcing gets it before the
+   * c terms are added, as MICM's K[stage + 1].Copy(K[stage]) does. */
+  for (int stage = 0; stage < p->stages; ++stage)
+  {
+    const int stage_combinations = stage * (stage - 1) / 2;
+    const bool reused_by_next = stage + 1 < p->stages && !p->new_function_evaluation[stage + 1];
+    tmc_dense *raw = reused_by_next ? K[stage + 1] : K[stage]; /* where the raw forcing goes */
+    if (stage == 0)
+    {
+      if (raw != initial_forcing)
+        tmc_dense_copy_into(raw, initial_forcing);
+    }
+    else if (p->new_function_evaluation[stage])
+    {
+      if (stage == 1 && s->kernels && s->kernels->forcing_at)
+        s->kernels->forcing_at(Y->data, K[0]->data, p->a[stage_combinations], st->rate_constants->data, raw->data, st->n_blocks);
+      else
+      {
+        combine(Ynew, Y, stage, &p->a[stage_combinations], K);
+        tmc_rosenbrock_forcing(s, st, Ynew, raw);
+      }
+      stats->function_calls += 1;
+    }
+    else if (raw != K[stage])
+    {
+      tmc_dense_copy_into(raw, K[stage]);
+    }
+    if (stage > 0 && s->n_algebraic == 0)
+    {
+      double c_over_h[TMC_MAX_STAGES];
+      for (int j = 0; j < stage; ++j)
+        c_over_h[j] = p->c[stage_combinations + j] / H;
+      combine(K[stage], raw, stage, c_over_h, K);
+    }
+    else if (stage > 0)
+    {
+      if (raw != K[stage])
+        tmc_dense_copy_into(K[stage], raw);
+      for (int j = 0; j < stage; ++j)
+        add_coupling_masked(s, K[stage], p->c[stage_combinations + j] / H, K[j]);
+    }
+    else if (raw != K[0])
+    {
+      tmc_dense_copy_into(K[0], raw);
+    }
+    tmc_rosenbrock_linear_solve(s, st, K[stage], stats);
+  }
 }
 
 tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state *st)
@@ -509,7 +566,7 @@ tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state
       factored = true;
     }
     else
-      forcing(s, st, Y, initial_forcing);
+      tmc_rosenbrock_forcing(s, st, Y, initial_forcing);
     stats->function_calls += 1;
 
     bool accepted = false;
@@ -517,59 +574,12 @@ tmc_result tmc_rosenbrock_solve(const tmc_solver *s, double time_step, tmc_state
     {
       const double alpha = 1.0 / (H * p->gamma[0]);
       if (!factored)
-        factor(s, st, Y, alpha, stats);
+        tmc_rosenbrock_factor(s, st, Y, alpha, stats);
       factored = false;
 
-      /* The stages. Stage s solves (alpha I - J) K_s = F(Y + sum_j a_sj K_j) + sum_j (c_sj / H) K_j.
-       * A stage that reuses the previous stage's forcing gets it before the
-       * c terms are added, as MICM's K[stage + 1].Copy(K[stage]) does. */
-      for (int stage = 0; stage < p->stages; ++stage)
-      {
-        const int stage_combinations = stage * (stage - 1) / 2;
-        const bool reused_by_next = stage + 1 < p->stages && !p->new_function_evaluation[stage + 1];
-        tmc_dense *raw = reused_by_next ? K[stage + 1] : K[stage]; /* where the raw forcing goes */
-        if (stage == 0)
-        {
-          if (raw != initial_forcing)
-            tmc_dense_copy_into(raw, initial_forcing);
-        }
-        else if (p->new_function_evaluation[stage])
-        {
-          if (stage == 1 && s->kernels && s->kernels->forcing_at)
-            s->kernels->forcing_at(Y->data, K[0]->data, p->a[stage_combinations], st->rate_constants->data, raw->data, st->n_blocks);
-          else
-          {
-            combine(Ynew, Y, stage, &p->a[stage_combinations], K);
-            forcing(s, st, Ynew, raw);
-          }
-          stats->function_calls += 1;
-        }
-        else if (raw != K[stage])
-        {
-          tmc_dense_copy_into(raw, K[stage]);
-        }
-        if (stage > 0 && s->n_algebraic == 0)
-        {
-          double c_over_h[TMC_MAX_STAGES];
-          for (int j = 0; j < stage; ++j)
-            c_over_h[j] = p->c[stage_combinations + j] / H;
-          combine(K[stage], raw, stage, c_over_h, K);
-        }
-        else if (stage > 0)
-        {
-          if (raw != K[stage])
-            tmc_dense_copy_into(K[stage], raw);
-          for (int j = 0; j < stage; ++j)
-            add_coupling_masked(s, K[stage], p->c[stage_combinations + j] / H, K[j]);
-        }
-        else if (raw != K[0])
-        {
-          tmc_dense_copy_into(K[0], raw);
-        }
-        solve(s, st, K[stage], stats);
-      }
+      tmc_rosenbrock_stages(s, st, p, H, stats);
 
-      combine_solution_and_error(Ynew, Yerror, Y, p->stages, p->m, p->e, K);
+      tmc_rosenbrock_combine_solution_and_error(Ynew, Yerror, Y, p->stages, p->m, p->e, K);
       /* For DAE systems the embedded error is near zero on algebraic rows;
        * MICM uses the step change there instead. */
       if (s->n_algebraic)

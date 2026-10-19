@@ -1,0 +1,7 @@
+# S1: the first step of each solve. ros3, rtol 1e-3, atol 1e-18.
+micm-restart	ros3	rtol=1e-3 atol=1e-18 warm_start=0
+restart-1e-3	ros3	rtol=1e-3 atol=1e-18 warm_start=0 h_start_factor=1e-3
+restart-1e-1	ros3	rtol=1e-3 atol=1e-18 warm_start=0 h_start_factor=0.1
+restart-1	ros3	rtol=1e-3 atol=1e-18 warm_start=0 h_start_factor=1
+warm	ros3	rtol=1e-3 atol=1e-18 warm_start=1
+warm-quantized	ros3	rtol=1e-3 atol=1e-18 warm_start=1 quantize=1

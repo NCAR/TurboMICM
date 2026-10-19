@@ -2,9 +2,11 @@
 #
 #   make env        create the conda environment in .conda (Python for build and test only)
 #   make cpu        build the library and bin/ts1_bench_cpu
-#   make bench      alias of cpu
+#   make bench      cpu, plus bin/ts1_scenario (Tier 3)
 #   make test-cpu   run the test suite: one line per MICM case, "<id> PASS|FAIL|N/A <reason>"
 #   make micm-ref   build MICM's reference TS1 driver with clang++ and OPTFLAGS
+#   make proto      the library as a shared object for the Python prototypes (prototypes/)
+#   make micm-scenario  MICM's scenario driver, bin/micm_scenario, for small references
 #
 # The compiler comes from CC and the optimization flags from OPTFLAGS; the
 # Makefile adds only language, warning, include, OpenMP, and link flags.
@@ -70,7 +72,7 @@ env-recreate:
 .PHONY: env-recreate
 
 cpu: bin/ts1_bench_cpu
-bench: cpu
+bench: cpu bin/ts1_scenario
 
 # Rebuild everything when the compiler or flags change.
 build/flags.txt: FORCE
@@ -98,9 +100,13 @@ generated/ts1.c generated/ts1.h: configs/ts1.json tools/generate.py tools/mechan
 build/ts1.o: generated/ts1.c generated/ts1.h include/tmc.h build/flags.txt
 	$(CC) $(CFLAGS) -Igenerated -c $< -o $@
 
-bin/ts1_bench_cpu: bench/ts1_bench.c build/ts1.o build/libtmc.a generated/ts1.h $(wildcard include/*.h)
+bin/ts1_bench_cpu: bench/ts1_bench.c bench/csv_table.h build/ts1.o build/libtmc.a generated/ts1.h $(wildcard include/*.h)
 	@mkdir -p bin
 	$(CC) $(CFLAGS) -Igenerated bench/ts1_bench.c build/ts1.o build/libtmc.a $(LDLIBS) -o $@
+
+bin/ts1_scenario: bench/ts1_scenario.c bench/csv_table.h build/ts1.o build/libtmc.a generated/ts1.h $(wildcard include/*.h)
+	@mkdir -p bin
+	$(CC) $(CFLAGS) -Igenerated bench/ts1_scenario.c build/ts1.o build/libtmc.a $(LDLIBS) -o $@
 
 # ---- tests --------------------------------------------------------------
 TEST_SOURCES := $(wildcard tests/*.c)
@@ -110,6 +116,17 @@ TEST_MECHANISMS := $(patsubst %,generated/%.o,$(EXAMPLES))
 test-cpu: cpu bin/test_cpu
 	TMC_TEST_MICM=$(MICM) TMC_TEST_REFERENCE=$(REFERENCE) bin/test_cpu $(TEST_FILTER)
 	@TMC_TEST_MICM=$(MICM) TMC_TEST_REFERENCE=$(REFERENCE) bin/test_cpu --extra 1>&2
+	@$(MAKE) --no-print-directory test-methods 1>&2
+
+# Tier 3: each C method against its Python prototype (states to roundoff, equal
+# operation counts) and the transformed tableaus against their standard form,
+# on the mini scenario; printed to stderr by test-cpu, so the 680 lines stay the list.
+test-methods: bench proto prototypes/mini/reference_snapshots.csv
+	$(PYTHON) prototypes/tableau_check.py
+	$(PYTHON) prototypes/agreement.py
+prototypes/mini/reference_snapshots.csv: prototypes/make_mini.py bin/micm_scenario | $(PYTHON)
+	$(PYTHON) prototypes/make_mini.py
+.PHONY: test-methods
 
 generated/tests/registry.h generated/tests/case_list.inc: $(TEST_SOURCES) $(REFERENCE)/micm_cases.txt tools/test_registry.py | $(PYTHON)
 	@mkdir -p generated/tests
@@ -129,8 +146,37 @@ bin/test_cpu: $(TEST_SOURCES) $(wildcard tests/*.h include/*.h) generated/tests/
 	@mkdir -p bin
 	$(CC) $(CFLAGS) -Itests -Igenerated -Igenerated/tests -Isrc $(TEST_SOURCES) build/ts1.o $(TEST_MECHANISMS) build/libtmc.a $(LDLIBS) -o $@
 
+# ---- prototypes: the library as a shared object for ctypes (development tool) ----
+# Built from its own objects with -fPIC, so the benchmark's objects are untouched.
+ifeq ($(UNAME_S),Darwin)
+SHARED_FLAGS := -dynamiclib
+PROTO_LIB := build/libtmc_proto.dylib
+else
+SHARED_FLAGS := -shared
+PROTO_LIB := build/libtmc_proto.so
+endif
+PROTO_OBJECTS := $(patsubst src/%.c,build/proto/%.o,$(LIB_SOURCES)) build/proto/ts1.o build/proto/shim.o
+proto: $(PROTO_LIB)
+build/proto/%.o: src/%.c $(wildcard include/*.h) src/internal.h build/flags.txt
+	@mkdir -p build/proto
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+build/proto/ts1.o: generated/ts1.c generated/ts1.h include/tmc.h build/flags.txt
+	@mkdir -p build/proto
+	$(CC) $(CFLAGS) -fPIC -Igenerated -c $< -o $@
+build/proto/shim.o: prototypes/shim.c generated/ts1.h $(wildcard include/*.h) src/internal.h build/flags.txt
+	@mkdir -p build/proto
+	$(CC) $(CFLAGS) -fPIC -Igenerated -Isrc -c $< -o $@
+$(PROTO_LIB): $(PROTO_OBJECTS)
+	$(CC) $(SHARED_FLAGS) $(PROTO_OBJECTS) $(LDLIBS) -o $@
+.PHONY: proto
+
 # ---- MICM reference -----------------------------------------------------
 micm-ref: bin/micm_ts1_ref
+micm-scenario: bin/micm_scenario
+bin/micm_scenario: $(ROOT)/scenarios/micm_scenario.cpp
+	@mkdir -p bin
+	clang++ -std=c++20 $(OPTFLAGS) -I$(MICM)/include -I$(MICM)/test/benchmark $< -o $@
+.PHONY: micm-scenario
 bin/micm_ts1_ref: $(REFERENCE)/micm_ts1_ref.cpp
 	@mkdir -p bin
 	clang++ -std=c++20 $(OPTFLAGS) -I$(MICM)/include -I$(MICM)/test/benchmark $< -o $@

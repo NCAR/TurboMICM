@@ -1,0 +1,6 @@
+# 4 cells of diurnal-10min from its step 36; 12 steps of 600 s
+cells = cells.csv
+dt = 600
+steps = 12
+photolysis = photolysis.csv
+snapshot_every = 6
