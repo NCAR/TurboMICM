@@ -1866,6 +1866,13 @@ static void csr_scale_source(size_t block, double *destination,
       block*sources[0].stride] : 0.0;
 }
 
+static void csr_count_blocks(size_t block, double *destination,
+                             const chem_csr_const_value_view *sources,
+                             size_t source_count, void *context) {
+  (void)block; (void)destination; (void)sources; (void)source_count;
+  ++*(size_t *)context;
+}
+
 static int check_csr_matrix_api(void) {
   const size_t empty_offsets[] = {0,0,0,0};
   chem_csr_matrix empty;
@@ -1969,6 +1976,21 @@ static int check_csr_matrix_api(void) {
       a_values[1] != 10.0 || a_values[3] != 11.0 || a_values[5] != 12.0 ||
       chem_csr_value_view_copy_from_vector(&block_destination,block_copy,2) == 0)
     return 18;
+  const size_t zero_block_offsets[] = {0,1,1,1};
+  const size_t zero_block_columns[] = {1};
+  chem_csr_matrix zero_block_matrix;
+  chem_csr_value_view zero_destination;
+  chem_csr_const_value_view zero_source;
+  size_t callback_count = 0;
+  if (chem_csr_matrix_init(&zero_block_matrix,3,0,1,zero_block_offsets,
+                           zero_block_columns,NULL) ||
+      chem_csr_matrix_get_value_view(&zero_block_matrix,0,1,
+                                     &zero_destination) ||
+      chem_csr_matrix_get_const_value_view(&zero_block_matrix,0,1,
+                                           &zero_source) ||
+      chem_csr_matrix_apply_blocks(&zero_destination,&zero_source,1,
+                                   csr_count_blocks,&callback_count) ||
+      callback_count != 0) return 19;
   return 0;
 }
 
