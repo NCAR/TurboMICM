@@ -58,6 +58,20 @@ implemented = {
     "rate_constants_no_user_defined_example_by_hand",
     "rate_constants_user_defined_example_by_hand",
 }
+not_applicable = {
+    "process_set:ProcessSetAlgebraicVariables.CudaMatrix":
+        "CUDA backend is outside the CPU-only port scope",
+    "view_category_sfinae:ViewCategorySFINAE.VectorTypes":
+        "C has no template type-trait or SFINAE behavior",
+    "view_category_sfinae:ViewCategorySFINAE.MatrixViews":
+        "C has no template type-trait or SFINAE behavior",
+    "view_category_sfinae:ViewCategorySFINAE.SparseMatrixViews":
+        "C has no template type-trait or SFINAE behavior",
+    "view_category_sfinae:ViewCategorySFINAE.MatrixTypesExcluded":
+        "C has no template type-trait or SFINAE behavior",
+    "view_category_sfinae:ViewCategorySFINAE.RuntimeVectorUse":
+        "C has no template type-trait or SFINAE behavior",
+}
 
 failed = False
 for raw in case_file.read_text().splitlines():
@@ -75,6 +89,8 @@ for raw in case_file.read_text().splitlines():
         else:
             reason = "C rate formula checked"
         print(f"{case_id} PASS {reason}")
+    elif case_id in not_applicable:
+        print(f"{case_id} N/A {not_applicable[case_id]}")
     elif kind == "program":
         failed = True
         print(f"{case_id} FAIL C program port incomplete")

@@ -33,3 +33,7 @@
   in a group share the Rosenbrock step controller and normalized error norm, as
   in the reference benchmark; each cell still has its own rate constants,
   forcing, Jacobian, and factorization.
+
+- Mark the five `ViewCategorySFINAE` cases N/A because they inspect C++
+  template substitution and type categories, which have no C equivalent. Mark
+  the CUDA matrix case N/A because CUDA is outside the CPU-only port scope.
