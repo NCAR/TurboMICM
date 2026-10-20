@@ -66,3 +66,7 @@
 
 - Mark the four State copy/move cases N/A. The C state API is a non-owning view,
   so it has no deep-copy or move constructor behavior to reproduce.
+
+- Implement matrix logical OR/AND reductions with caller-supplied predicates and
+  a strict reduction that visits each logical entry once. Strided views expose
+  no padded entries, so strict traversal is the ordinary bounded row/column loop.

@@ -268,6 +268,9 @@ typedef void (*chem_matrix_row_function)(
     size_t destination_stride, const double *first, size_t first_columns,
     size_t first_stride, const double *second, size_t second_columns,
     size_t second_stride, void *context);
+typedef int (*chem_matrix_predicate)(double value, void *context);
+typedef double (*chem_matrix_combine)(double accumulator, double value,
+                                      void *context);
 
 int chem_matrix_view_init(chem_matrix_view *view, double *data,
                           size_t rows, size_t columns,
@@ -392,6 +395,16 @@ int chem_matrix_view_axpy(chem_matrix_view *destination,
 int chem_matrix_view_min(const chem_matrix_view *view, double *value);
 int chem_matrix_view_max(const chem_matrix_view *view, double *value);
 int chem_matrix_view_sum(const chem_matrix_view *view, double *value);
+int chem_matrix_view_reduce_or(const chem_matrix_view *view,
+                               chem_matrix_predicate predicate, void *context,
+                               int initial, int *value);
+int chem_matrix_view_reduce_and(const chem_matrix_view *view,
+                                chem_matrix_predicate predicate, void *context,
+                                int initial, int *value);
+int chem_matrix_view_reduce_strict(const chem_const_matrix_view *view,
+                                   chem_matrix_combine combine, void *context,
+                                   double initial,
+                                   double *value);
 
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density);

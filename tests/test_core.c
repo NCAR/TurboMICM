@@ -1433,6 +1433,21 @@ static void matrix_add_index(size_t row, size_t column, double *value,
   *value += scale * (double)(row * 10 + column);
 }
 
+static int matrix_greater_than(double value, void *context) {
+  return value > *(const double *)context;
+}
+
+static int matrix_is_finite(double value, void *context) {
+  (void)context;
+  return isfinite(value);
+}
+
+static double matrix_count(double accumulator, double value, void *context) {
+  (void)value;
+  (void)context;
+  return accumulator + 1.0;
+}
+
 typedef struct {
   const double *values;
   size_t count;
@@ -1740,6 +1755,19 @@ static int check_matrix_view_api(void) {
   if (chem_vector_matrix_view_init(&vector_short,vector_short_data,2,3,2) ||
       chem_vector_matrix_view_for_each_row(&vector_left,&vector_left,
         &vector_short,matrix_combine_rows,NULL) == 0) return 62;
+  chem_const_matrix_view const_loop_view;
+  int logical = 0;
+  const double threshold = 150.0;
+  if (chem_const_matrix_view_init(&const_loop_view,loop_data,3,4,4,1) ||
+      chem_matrix_view_reduce_or(&loop,matrix_greater_than,
+                                 (void *)&threshold,0,&logical) || logical != 1 ||
+      chem_matrix_view_reduce_or(&loop,matrix_greater_than,
+                                 (void *)&threshold,1,&logical) || logical != 1 ||
+      chem_matrix_view_reduce_and(&loop,matrix_is_finite,NULL,1,&logical) ||
+      logical != 1 ||
+      chem_matrix_view_reduce_strict(&const_loop_view,matrix_count,NULL,0.0,
+                                     &value) || value != 12.0)
+    return 63;
   return 0;
 }
 

@@ -526,6 +526,45 @@ int chem_matrix_view_sum(const chem_matrix_view *view, double *value) {
   return matrix_reduce(view, value, 0);
 }
 
+int chem_matrix_view_reduce_or(const chem_matrix_view *view,
+                               chem_matrix_predicate predicate, void *context,
+                               int initial, int *value) {
+  if (!valid_view(view) || !predicate || !value) return 1;
+  int result = initial != 0;
+  for (size_t row = 0; row < view->rows; ++row)
+    for (size_t column = 0; column < view->columns; ++column)
+      result |= predicate(view->data[row*view->row_stride +
+                                     column*view->column_stride], context) != 0;
+  *value = result;
+  return 0;
+}
+
+int chem_matrix_view_reduce_and(const chem_matrix_view *view,
+                                chem_matrix_predicate predicate, void *context,
+                                int initial, int *value) {
+  if (!valid_view(view) || !predicate || !value) return 1;
+  int result = initial != 0;
+  for (size_t row = 0; row < view->rows; ++row)
+    for (size_t column = 0; column < view->columns; ++column)
+      result &= predicate(view->data[row*view->row_stride +
+                                     column*view->column_stride], context) != 0;
+  *value = result;
+  return 0;
+}
+
+int chem_matrix_view_reduce_strict(const chem_const_matrix_view *view,
+                                   chem_matrix_combine combine, void *context,
+                                   double initial, double *value) {
+  if (!valid_const_view(view) || !combine || !value) return 1;
+  double result = initial;
+  for (size_t row = 0; row < view->rows; ++row)
+    for (size_t column = 0; column < view->columns; ++column)
+      result = combine(result, view->data[row*view->row_stride +
+                                           column*view->column_stride], context);
+  *value = result;
+  return 0;
+}
+
 int chem_matrix_view_min(const chem_matrix_view *view, double *value) {
   return matrix_reduce(view, value, 1);
 }
