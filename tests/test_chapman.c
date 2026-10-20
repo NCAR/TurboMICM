@@ -181,6 +181,61 @@ static int regression_jacobian(void) {
   return 0;
 }
 
+static const size_t chapman_sparse_rows[23] = {
+  0u, 6u, 7u, 8u, 1u, 2u, 3u, 4u, 5u, 6u, 5u, 6u,
+  6u, 7u, 8u, 5u, 6u, 7u, 8u, 5u, 6u, 7u, 8u,
+};
+static const size_t chapman_sparse_columns[23] = {
+  0u, 0u, 0u, 0u, 1u, 2u, 3u, 4u, 4u, 4u, 5u, 5u,
+  6u, 6u, 6u, 7u, 7u, 7u, 7u, 8u, 8u, 8u, 8u,
+};
+
+static int chapman_lin_solve(void) {
+  double factors[23], rhs[9];
+  for (size_t i = 0; i < 23u; ++i) factors[i] = 1.0;
+  for (size_t i = 0; i < 9u; ++i) rhs[i] = 0.5;
+  const double expected[] = { 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -1.0, 0.5, 0.0 };
+  if (chem_lu_solve_sparse_in_place(9u, 23u, chapman_sparse_rows,
+          chapman_sparse_columns, factors, rhs) != 0) return 1;
+  for (size_t i = 0; i < 9u; ++i)
+    if (fabs(rhs[i] - expected[i]) > 1e-12) return 1;
+  return 0;
+}
+
+static int chapman_factored_alpha_minus_jac(void) {
+  double factors[23];
+  for (size_t i = 0; i < 23u; ++i) factors[i] = -1.0;
+  for (size_t entry = 0; entry < 23u; ++entry)
+    if (chapman_sparse_rows[entry] == chapman_sparse_columns[entry]) factors[entry] = 1.0;
+  if (chem_lu_factor_sparse_in_place(9u, 23u, chapman_sparse_rows,
+          chapman_sparse_columns, factors) != 0) return 1;
+  const double expected[] = {
+    1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0,
+    1.0, -1.0, 1.0, -1.0, -1.0, -1.0, -2.0, -1.0, 3.0, -1.0,
+    -2.0, -3.0, 0.125,
+  };
+  for (size_t i = 0; i < 23u; ++i)
+    if (fabs(factors[i] - expected[i]) > 0.01) {
+      fprintf(stderr, "Chapman sparse LU entry %zu: %.17g expected %.17g\n", i, factors[i], expected[i]);
+      return 1;
+    }
+  return 0;
+}
+
+static int chapman_dforce_dy_times_vector(void) {
+  double values[23], vector[9], result[9];
+  const double expected[] = { 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 3.0, 2.0, 2.0 };
+  for (size_t i = 0; i < 23u; ++i) values[i] = 1.0;
+  for (size_t entry = 0; entry < 23u; ++entry)
+    if (chapman_sparse_rows[entry] < 5u) values[entry] = 0.0;
+  for (size_t i = 0; i < 9u; ++i) vector[i] = 0.5;
+  if (chem_sparse_matrix_vector(9u, 9u, 23u, chapman_sparse_rows,
+          chapman_sparse_columns, values, vector, result) != 0) return 1;
+  for (size_t i = 0; i < 9u; ++i)
+    if (fabs(result[i] - expected[i]) > 0.01) return 1;
+  return 0;
+}
+
 static int force_case(double concentration, double rate, const double *expected, double tolerance) {
   double y[9], rates[7], forcing[9];
   for (size_t i = 0; i < 9u; ++i) y[i] = concentration;
@@ -270,6 +325,9 @@ int main(int argc, char **argv) {
     { "RateConstants", regression_rate_constants }, { "VectorRateConstants", regression_rate_constants },
     { "Forcing", regression_forcing }, { "VectorForcing", regression_forcing },
     { "Jacobian", regression_jacobian }, { "VectorJacobian", regression_jacobian },
+    { "lin_solve", chapman_lin_solve },
+    { "factored_alpha_minus_jac", chapman_factored_alpha_minus_jac },
+    { "dforce_dy_times_vector", chapman_dforce_dy_times_vector },
     { "simple_force", simple_force }, { "smaller_force", smaller_force },
     { "Solve", solve_one }, { "solve_10_times_larger", solve_large },
     { "solve_10_times_smaller", solve_small }, { "solve_with_random_number_densities", solve_random },

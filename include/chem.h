@@ -46,6 +46,21 @@ int chem_lu_factor_dense(
     chem_lu_method method);
 int chem_lu_solve_dense_in_place(const double *combined_lu, size_t order, double *right_hand_side);
 
+/* Coordinate sparse LU utilities. Each matrix entry has one unique (row,
+   column) pair. Factorization stores lower multipliers and U in `values`; the
+   diagonal is stored as its reciprocal to support direct back substitution.
+   The supplied sparsity pattern must contain every fill entry produced by
+   elimination. These routines do not pivot. */
+int chem_lu_factor_sparse_in_place(
+    size_t order, size_t nonzero_count, const size_t *rows, const size_t *columns, double *values);
+int chem_lu_solve_sparse_in_place(
+    size_t order, size_t nonzero_count, const size_t *rows, const size_t *columns,
+    const double *factor_values, double *right_hand_side);
+int chem_sparse_matrix_vector(
+    size_t row_count, size_t column_count, size_t nonzero_count,
+    const size_t *rows, const size_t *columns, const double *values,
+    const double *vector, double *result);
+
 typedef struct {
   const char *name;
   double molecular_weight;

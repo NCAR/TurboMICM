@@ -54,6 +54,10 @@ the unconstrained mechanism path retains its sparse symbolic factorization.
 The public dense LU routines in `chem.h` expose the same no-pivot algorithms in
 packed in-place form or as separate unit-diagonal `L` and upper-triangular `U`
 matrices, with a reusable forward/back substitution function.
+The coordinate sparse LU path accepts a caller-supplied fill-complete pattern,
+uses no pivoting, and stores reciprocal diagonal pivots for direct back solve.
+The sparse matrix-vector helper and LU routines also cover the packed Chapman
+reference operations without adding a mechanism-specific implementation.
 
 `chem_state` is an owning C state container for clients that want state
 management as well as the lower-level solver arrays. Initialization copies

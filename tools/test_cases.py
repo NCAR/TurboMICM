@@ -176,7 +176,8 @@ def main() -> int:
         elif suite == "chapman_ode_solver" and test.split(".", 1)[-1] in {
             "DefaultConstructor", "ReactionNames", "PhotolysisNames", "SpeciesNames",
             "simple_force", "smaller_force", "Solve", "solve_10_times_larger",
-            "solve_10_times_smaller", "solve_with_random_number_densities",
+            "solve_10_times_smaller", "solve_with_random_number_densities", "lin_solve",
+            "factored_alpha_minus_jac", "dforce_dy_times_vector",
         }:
             ok = run([str(PROJECT / "bin/test_chapman"), test])
             status, reason = ("PASS", "generic C mechanism and solver match Chapman reference values") if ok else (
