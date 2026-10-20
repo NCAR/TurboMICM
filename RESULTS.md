@@ -28,6 +28,11 @@
 - The C core test reproduces the first ten one-second FlowTube regression states
   for both the two-stage Rosenbrock solver and backward Euler, matching the
   checked-in MICM CSV values within the reference tolerance.
+- Stub aerosol coverage uses generic C reactions with the same qualified state
+  names. It checks single and multi-cell state updates, forcing, Jacobians, and
+  single and three-cell Rosenbrock integrations against the analytical
+  partitioning results. State, forcing, and Jacobian checks also cover the
+  backward Euler case family.
 - The C core test ports the vectorized-matrix tutorial's two cell layouts and
   both sparse element orders. The tutorial's solve loop is skipped by its own
   initial converged-state condition, so the layout checks cover its output.
@@ -83,7 +88,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Five hundred ninety-six cases pass, eighteen are marked N/A, and 66 cases
+  statuses. Six hundred ten cases pass, eighteen are marked N/A, and 52 cases
   still report incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison

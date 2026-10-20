@@ -518,6 +518,27 @@ implemented.update({
     "analytical_backward_euler:AnalyticalExamples.SurfaceRxn",
     "analytical_rosenbrock_integration:AnalyticalExamples.SurfaceRxn",
 })
+
+_aerosol_state_cases = (
+    "StateIncludesStubAerosolModel",
+    "CanUpdateStateWithStubAerosolModel",
+    "CanUpdateMultiCellStateWithStubAerosolModel",
+    "CanCalculateSingleGridCellForcingWithStubAerosolModel",
+    "CanCalculateSingleGridCellJacobianWithStubAerosolModel",
+)
+for _category in ("aerosol_model_backward_euler", "aerosol_model_rosenbrock"):
+    implemented.update(f"{_category}:AerosolModelIntegration.{_name}"
+                       for _name in _aerosol_state_cases)
+implemented.update(
+    "aerosol_model_rosenbrock:AerosolModelIntegration." + _name
+    for _name in (
+        "CanSolveSingleGridCellWithStubAerosolModel1",
+        "CanSolveSingleGridCellWithTwoStubAerosolModels",
+        "CanSolveMultiGridCellWithStubAerosolModel1",
+        "CanSolveMultiGridCellWithTwoStubAerosolModels",
+    )
+)
+
 not_applicable = {
     "solver_builder:SolverBuilder.FinalizeReceivesDenseMatrixPolicy":
         "C has no templated Finalize overload dispatch or matrix policy types",
@@ -604,6 +625,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C rate mechanism drives both solvers against the two-step closed form"
         elif case_id.startswith("solver_builder:"):
             reason = "C workspace builds, solve entry points, and species-use validation checked"
+        elif case_id.startswith("aerosol_model_"):
+            reason = "C generic mechanism reproduces aerosol state, forcing, Jacobian, and solve behavior"
         elif case_id.startswith("regression_test_rosenbrock_p_force:"):
             reason = "generic C Chapman mechanism rates and forcing match independent formulas"
         elif case_id.startswith("regression:") and case_id.endswith("FlowTube"):

@@ -1090,6 +1090,123 @@ static int check_flow_tube_reference(int backward_euler) {
   return status;
 }
 
+static double stub_temperature_rate(double temperature, double pressure,
+                                   double air_density,
+                                   const double *parameters) {
+  (void)pressure; (void)air_density; (void)parameters;
+  return 0.005*temperature;
+}
+
+static int check_stub_aerosol_mechanism(int backward_euler) {
+  const char *names[] = {
+      "FO2", "BAR", "STUB1.MODE1.QUUX.BAZ", "STUB1.MODE1.QUUX.QUX",
+      "STUB1.MODE2.QUUX.BAZ", "STUB1.MODE2.QUUX.QUX",
+      "STUB1.MODE2.CORGE.FO2", "STUB1.MODE2.CORGE.BAZ",
+      "STUB1.MODE2.CORGE.QUX", "STUB2.MODE1.NUMBER",
+      "STUB2.MODE1.QUUX.BAZ", "STUB2.MODE1.QUUX.QUX",
+      "STUB2.MODE2.NUMBER", "STUB2.MODE2.CORGE.FO2",
+      "STUB2.MODE2.CORGE.BAZ", "STUB2.MODE2.CORGE.QUX",
+      "STUB2.MODE3.NUMBER", "STUB2.MODE3.QUUX.BAZ",
+      "STUB2.MODE3.QUUX.QUX", "STUB2.MODE3.CORGE.FO2",
+      "STUB2.MODE3.CORGE.BAZ", "STUB2.MODE3.CORGE.QUX"};
+  chem_species species[22];
+  for (size_t i=0;i<22;++i) species[i]=(chem_species){.name=names[i]};
+  const chem_term fo2[]={ {0,1.0} }, fo2_dest[]={ {6,1.0} };
+  const chem_term baz_source[]={ {2,1.0} }, baz_dest[]={ {4,1.0} };
+  const chem_term stub2_fo2[]={ {13,1.0} }, stub2_baz[]={ {14,1.0} };
+  const chem_term mode3_baz[]={ {17,1.0} }, mode3_qux[]={ {18,1.0} };
+  const char *custom_labels[]={"STUB2.PARAM.MODE2.CORGE.FO2_TO_BAZ_RATE_CONSTANT"};
+  const chem_reaction reactions[]={
+      {.kind=CHEM_ARRHENIUS,.reactants=fo2,.reactant_count=1,
+       .products=fo2_dest,.product_count=1,.p={0.001,0,0,0,0}},
+      {.kind=CHEM_ARRHENIUS,.reactants=baz_source,.reactant_count=1,
+       .products=baz_dest,.product_count=1,.p={0.002,0,0,0,0}},
+      {.kind=CHEM_USER_DEFINED,.label=custom_labels[0],.reactants=stub2_fo2,
+       .reactant_count=1,.products=stub2_baz,.product_count=1,
+       .p={1,0,0,0,0,0,0,0}},
+      {.kind=CHEM_LAMBDA,.reactants=mode3_baz,.reactant_count=1,
+       .products=mode3_qux,.product_count=1,.rate_function=stub_temperature_rate}};
+  const chem_mechanism mechanism={.species=species,.species_count=22,
+      .reactions=reactions,.reaction_count=4,.custom_labels=custom_labels,
+      .custom_parameter_count=1};
+  double state_values[3*22]={0};
+  double custom_values[3]={0};
+  chem_state_view state;
+  if (chem_state_view_init(&state,names,22,custom_labels,1,3,state_values,
+                           custom_values)) return 1;
+  const double fo2_values[]={1.0,1.5,2.0};
+  const double bar_values[]={2.0,2.5,3.0};
+  const double baz_values[]={0.5,0.7,0.9};
+  const double mode2_fo2[]={0.4,0.6,0.8};
+  const chem_state_series series[]={
+      {"FO2",fo2_values,3},{"BAR",bar_values,3},
+      {"STUB1.MODE1.QUUX.BAZ",baz_values,3},
+      {"STUB2.MODE2.CORGE.FO2",mode2_fo2,3},
+      {"STUB2.MODE3.QUUX.BAZ",(const double[]){0.2,0.3,0.4},3}};
+  if (chem_state_set_concentrations(&state,series,5)) return 2;
+  const double rates[]={0.01};
+  double forcing[22], jacobian[22*22];
+  if (chem_forcing(&mechanism,state_values,275.0,1e5,rates,forcing) ||
+      chem_jacobian(&mechanism,state_values,275.0,1e5,rates,jacobian)) return 3;
+  if (fabs(forcing[0]+0.001)>1e-14 || fabs(forcing[6]-0.001)>1e-14 ||
+      fabs(forcing[2]+0.001)>1e-14 || fabs(forcing[4]-0.001)>1e-14 ||
+      fabs(forcing[13]+0.004)>1e-14 || fabs(forcing[14]-0.004)>1e-14 ||
+      fabs(forcing[17]+0.275)>1e-14 || fabs(forcing[18]-0.275)>1e-14 ||
+      fabs(jacobian[0*22+0]+0.001)>1e-14 ||
+      fabs(jacobian[6*22+0]-0.001)>1e-14 ||
+      fabs(jacobian[2*22+2]+0.002)>1e-14 ||
+      fabs(jacobian[4*22+2]-0.002)>1e-14) return 4;
+  const double number_values[]={1000.0,1100.0,1200.0};
+  if (chem_state_set_concentration(&state,"STUB2.MODE1.NUMBER",
+                                   number_values,3)) return 5;
+  for (size_t i=0;i<22;++i) {
+    double observed=0.0;
+    if (chem_state_get_concentration(&state,names[i],0,&observed)) return 6;
+  }
+  /* State, setter, forcing, and Jacobian behavior is independent of solver. */
+  if (backward_euler) return 0;
+  /* Solve three cells independently; unused aerosol state stays unchanged. */
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 7;
+  const double temperatures[]={275.0,285.0,295.0};
+  const double stub2_rates[]={0.01,0.015,0.02};
+  int status=0;
+  for (size_t cell=0;cell<3 && !status;++cell) {
+    double y[22]={0};
+    y[0]=fo2_values[cell]; y[1]=bar_values[cell]; y[2]=baz_values[cell];
+    y[4]=0.0; y[6]=0.8+0.2*(double)cell;
+    y[13]=mode2_fo2[cell]; y[14]=0.1+0.05*(double)cell;
+    y[17]=0.2+0.1*(double)cell; y[18]=0.3+0.1*(double)cell;
+    const double cell_rates[]={stub2_rates[cell]};
+    if (backward_euler) {
+      const chem_backward_euler_options options=chem_backward_euler_default_options();
+      status=chem_backward_euler_solve_with_workspace(&mechanism,&workspace,y,
+          temperatures[cell],101325.0,1.0e5,cell_rates,10.0,&options,NULL);
+    } else {
+      const chem_solver_options options=chem_solver_default_options();
+      status=chem_rosenbrock3_solve_with_workspace(&mechanism,&workspace,y,
+          temperatures[cell],101325.0,1.0e5,cell_rates,10.0,&options,NULL);
+    }
+    const double dfo2=fo2_values[cell]*(1.0-exp(-0.001*10.0));
+    const double dbaz=baz_values[cell]*(1.0-exp(-0.002*10.0));
+    const double dstub2=mode2_fo2[cell]*(1.0-exp(-stub2_rates[cell]*10.0));
+    const double dmode3=(0.2+0.1*(double)cell)*
+        (1.0-exp(-temperatures[cell]*0.005*10.0));
+    const double tol=5.0e-5;
+    if (!status && (fabs(y[0]-(fo2_values[cell]-dfo2))>tol*fo2_values[cell] ||
+        y[1]!=bar_values[cell] ||
+        fabs(y[2]-(baz_values[cell]-dbaz))>tol*baz_values[cell] ||
+        fabs(y[4]-dbaz)>tol*baz_values[cell] ||
+        fabs(y[6]-(0.8+0.2*(double)cell+dfo2))>tol*fo2_values[cell] ||
+        fabs(y[13]-(mode2_fo2[cell]-dstub2))>tol*mode2_fo2[cell] ||
+        fabs(y[14]-(0.1+0.05*(double)cell+dstub2))>tol*mode2_fo2[cell] ||
+        fabs(y[17]-(0.2+0.1*(double)cell-dmode3))>tol*(0.2+0.1*(double)cell) ||
+        fabs(y[18]-(0.3+0.1*(double)cell+dmode3))>tol*(0.2+0.1*(double)cell))) status=8;
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
 static int check_lambda_callback_override(void) {
   const chem_species species[] = {{.name="A"}, {.name="B"}};
   const chem_term a[] = {{.species=0,.coefficient=1.0}};
@@ -4418,6 +4535,8 @@ int main(void) {
   if (check_integrated_reaction_rates() != 0) return 60;
   if (check_flow_tube_reference(0) != 0) return 74;
   if (check_flow_tube_reference(1) != 0) return 75;
+  { const int status=check_stub_aerosol_mechanism(0); if (status) return 75+status; }
+  { const int status=check_stub_aerosol_mechanism(1); if (status) return 80+status; }
   if (check_lambda_callback_override() != 0) return 61;
   if (check_phase_species_metadata() != 0) return 62;
   if (check_constraint_api() != 0) return 63;
