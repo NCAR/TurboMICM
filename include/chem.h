@@ -192,6 +192,18 @@ int chem_evaluate_rate(
     double pressure,
     double *rate_constant);
 
+/* Apply already evaluated reaction rates to one or more cell-major states.
+   y and forcing use [cell * species_count + species]; rate_constants use
+   [cell * reaction_count + reaction]. Input and output arrays must not overlap.
+   Return 0 on success, -1 for invalid descriptors or dimensions, and -2 on
+   allocation failure. */
+int chem_evaluate_forcing(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *rate_constants,
+    double *forcing);
+
 /* Integrate each row of y in place for one chemistry interval.  State layout
    is cell-major: y[cell * species_count + species].  Parameters use the same
    cell-major convention.  A separate call owns a separate adaptive history. */

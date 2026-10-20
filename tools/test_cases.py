@@ -54,7 +54,7 @@ def main() -> int:
         PROJECT / "bin/test_rates", PROJECT / "bin/test_example_no_user",
         PROJECT / "bin/test_example_user", PROJECT / "bin/test_tutorial_programs",
         PROJECT / "bin/test_jacobian_verification", PROJECT / "bin/test_solver_configuration",
-        PROJECT / "bin/test_integration_equivalents", PROJECT / "bin/test_state",
+        PROJECT / "bin/test_integration_equivalents", PROJECT / "bin/test_state", PROJECT / "bin/test_chapman",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -145,6 +145,14 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_state"), test])
             status, reason = ("PASS", "C state storage and named access match the reference behavior") if ok else (
                 "FAIL", "C state storage, ownership, or validation differs from the reference behavior")
+        elif suite == "chapman_ode_solver" and test.split(".", 1)[-1] in {
+            "DefaultConstructor", "ReactionNames", "PhotolysisNames", "SpeciesNames",
+            "simple_force", "smaller_force", "Solve", "solve_10_times_larger",
+            "solve_10_times_smaller", "solve_with_random_number_densities",
+        }:
+            ok = run([str(PROJECT / "bin/test_chapman"), test])
+            status, reason = ("PASS", "generic C mechanism and solver match Chapman reference values") if ok else (
+                "FAIL", "generic C Chapman forcing or integration differs from the reference behavior")
         elif suite in integration_results:
             ok = integration_results[suite]
             status, reason = ("PASS", "C integration preserves the reference analytic or chemical invariant") if ok else (

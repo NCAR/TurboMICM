@@ -665,6 +665,61 @@ static void chem_add_forcing(
   }
 }
 
+int chem_evaluate_forcing(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *rate_constants,
+    double *forcing) {
+  if (mechanism == NULL || cell_count == 0u || mechanism->species_count == 0u ||
+      mechanism->species == NULL || (mechanism->reaction_count != 0u &&
+      (mechanism->reactions == NULL || rate_constants == NULL)) || y == NULL || forcing == NULL ||
+      mechanism->species_count > SIZE_MAX / cell_count / sizeof(double) ||
+      mechanism->reaction_count > SIZE_MAX / cell_count / sizeof(double)) return -1;
+  for (size_t r = 0; r < mechanism->reaction_count; ++r) {
+    const chem_reaction *reaction = &mechanism->reactions[r];
+    if ((reaction->reactant_count != 0u && mechanism->reactant_terms == NULL) ||
+        (reaction->product_count != 0u && mechanism->product_terms == NULL) ||
+        reaction->reactant_offset > mechanism->reactant_term_count ||
+        reaction->reactant_count > mechanism->reactant_term_count - reaction->reactant_offset ||
+        reaction->product_offset > mechanism->product_term_count ||
+        reaction->product_count > mechanism->product_term_count - reaction->product_offset) return -1;
+    for (size_t q = 0; q < reaction->reactant_count; ++q)
+      if (mechanism->reactant_terms[reaction->reactant_offset + q].species >= mechanism->species_count) return -1;
+    for (size_t q = 0; q < reaction->product_count; ++q)
+      if (mechanism->product_terms[reaction->product_offset + q].species >= mechanism->species_count) return -1;
+  }
+
+  const size_t state_size = cell_count * mechanism->species_count;
+  memset(forcing, 0, state_size * sizeof(double));
+  if (mechanism->reaction_count == 0u) return 0;
+  double *flux = malloc(cell_count * sizeof(double));
+  if (flux == NULL) return -2;
+  for (size_t r = 0; r < mechanism->reaction_count; ++r) {
+    const chem_reaction *reaction = &mechanism->reactions[r];
+    for (size_t cell = 0; cell < cell_count; ++cell) {
+      double value = rate_constants[cell * mechanism->reaction_count + r];
+      for (size_t q = 0; q < reaction->reactant_count; ++q) {
+        const unsigned species = mechanism->reactant_terms[reaction->reactant_offset + q].species;
+        value *= y[cell * mechanism->species_count + species];
+      }
+      flux[cell] = value;
+    }
+    for (size_t q = 0; q < reaction->reactant_count; ++q) {
+      const unsigned species = mechanism->reactant_terms[reaction->reactant_offset + q].species;
+      for (size_t cell = 0; cell < cell_count; ++cell)
+        forcing[cell * mechanism->species_count + species] -= flux[cell];
+    }
+    for (size_t q = 0; q < reaction->product_count; ++q) {
+      const chem_term *product = &mechanism->product_terms[reaction->product_offset + q];
+      for (size_t cell = 0; cell < cell_count; ++cell)
+        forcing[cell * mechanism->species_count + product->species] += product->coefficient * flux[cell];
+    }
+  }
+  free(flux);
+  return 0;
+}
+
 static void chem_build_jacobian(
     const chem_mechanism *mechanism,
     const chem_symbolic *symbolic,

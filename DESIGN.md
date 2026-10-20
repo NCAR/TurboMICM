@@ -11,7 +11,8 @@ mechanism input is the provided TS1 builder header.
 
 The library API in `include/chem.h` takes a `chem_mechanism` descriptor. It can
 also evaluate a single rate constant through `chem_evaluate_rate`, or integrate
-cell-major state arrays in a group through `chem_integrate_group` and
+reaction forcing from precomputed rates through `chem_evaluate_forcing`, or
+integrate cell-major state arrays in a group through `chem_integrate_group` and
 `chem_integrate_group_steps`. Callers can select a Rosenbrock coefficient set
 with `chem_integrate_group_with_parameters`; the public struct stores up to six
 stages, row-wise `a` and `c` coefficients, weights, and step controls. The
