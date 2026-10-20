@@ -372,6 +372,10 @@ int chem_matrix_view_for_each_row(chem_matrix_view *destination,
                                   const chem_matrix_view *second,
                                   chem_matrix_row_function function,
                                   void *context);
+int chem_matrix_view_for_each_row_const_sources(
+    chem_matrix_view *destination, const chem_const_matrix_view *first,
+    const chem_const_matrix_view *second, chem_matrix_row_function function,
+    void *context);
 int chem_matrix_view_copy_to_vector(const chem_matrix_view *view,
                                     double *vector, size_t vector_size);
 int chem_matrix_view_copy_from_vector(chem_matrix_view *view,

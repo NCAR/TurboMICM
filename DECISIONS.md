@@ -54,6 +54,8 @@
   dimensions and strides at the API boundary.
   Lane-packed dense views carry their group width at runtime; tests compare
   widths 1, 2, 4, and 8 against identical logical row-major values.
+  A const-source row callback handles read-only matrices and one-column vector
+  views; row-count mismatches are rejected at invocation.
 
 - Represent sparse matrices as non-owning block CSR views. A block shares one
   sorted, duplicate-free row/column pattern; values are contiguous block-major

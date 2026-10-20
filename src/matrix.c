@@ -429,6 +429,25 @@ int chem_matrix_view_for_each_row(chem_matrix_view *destination,
   return 0;
 }
 
+int chem_matrix_view_for_each_row_const_sources(
+    chem_matrix_view *destination, const chem_const_matrix_view *first,
+    const chem_const_matrix_view *second, chem_matrix_row_function function,
+    void *context) {
+  if (!valid_view(destination) || !valid_const_view(first) ||
+      !valid_const_view(second) || !function ||
+      destination->rows != first->rows || destination->rows != second->rows)
+    return 1;
+  for (size_t row = 0; row < destination->rows; ++row)
+    function(row,
+        destination->data ? destination->data + row*destination->row_stride : NULL,
+        destination->columns,destination->column_stride,
+        first->data ? first->data + row*first->row_stride : NULL,
+        first->columns,first->column_stride,
+        second->data ? second->data + row*second->row_stride : NULL,
+        second->columns,second->column_stride,context);
+  return 0;
+}
+
 static int vector_dimensions(const chem_matrix_view *view, size_t vector_size) {
   return valid_view(view) && view->rows <= (size_t)-1 / (view->columns ? view->columns : 1) &&
       view->rows * view->columns == vector_size;

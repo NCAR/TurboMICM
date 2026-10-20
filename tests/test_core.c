@@ -1460,6 +1460,18 @@ static double matrix_count(double accumulator, double value, void *context) {
   return accumulator + 1.0;
 }
 
+static void matrix_add_vector_rows(size_t row, double *destination,
+    size_t destination_columns, size_t destination_stride,
+    const double *first, size_t first_columns, size_t first_stride,
+    const double *second, size_t second_columns, size_t second_stride,
+    void *context) {
+  (void)row;
+  const double scale = context ? *(const double *)context : 1.0;
+  if (destination_columns && first_columns && second_columns)
+    destination[0] = first[0] + scale*second[0];
+  (void)destination_stride; (void)first_stride; (void)second_stride;
+}
+
 typedef struct {
   const double *values;
   size_t count;
@@ -1805,6 +1817,34 @@ static int check_matrix_view_api(void) {
             flat_packed[row*columns+column] != got) return 67;
       }
   }
+  double vector_a[] = {1,2,3}, vector_b[] = {10,20,30};
+  double vector_out[3] = {0}, vector_mutable[] = {0,0,0};
+  chem_const_matrix_view vector_a_view, vector_b_view;
+  chem_const_matrix_view vector_short_view;
+  chem_matrix_view vector_out_view, vector_mutable_view;
+  double short_source[] = {1,2};
+  const double vector_scale = 2.0;
+  if (chem_const_matrix_view_init(&vector_a_view,vector_a,3,1,1,1) ||
+      chem_const_matrix_view_init(&vector_b_view,vector_b,3,1,1,1) ||
+      chem_const_matrix_view_init(&vector_short_view,short_source,2,1,1,1) ||
+      chem_matrix_view_init(&vector_out_view,vector_out,3,1,1,1) ||
+      chem_matrix_view_for_each_row_const_sources(&vector_out_view,
+          &vector_a_view,&vector_b_view,matrix_add_vector_rows,
+          (void *)&vector_scale) ||
+      vector_out[0] != 21 || vector_out[1] != 42 || vector_out[2] != 63 ||
+      chem_matrix_view_init(&vector_mutable_view,vector_mutable,3,1,1,1) ||
+      chem_matrix_view_for_each_row_const_sources(&vector_mutable_view,
+          &vector_a_view,&vector_b_view,matrix_add_vector_rows,NULL) ||
+      vector_mutable[0] != 11 || vector_mutable[2] != 33 ||
+      chem_matrix_view_for_each_row_const_sources(&vector_out_view,
+          &vector_a_view,&vector_short_view,matrix_add_vector_rows,NULL) == 0)
+    return 68;
+  const double vector_a_again[] = {5,6,7};
+  chem_const_matrix_view vector_a_again_view;
+  if (chem_const_matrix_view_init(&vector_a_again_view,vector_a_again,3,1,1,1) ||
+      chem_matrix_view_for_each_row_const_sources(&vector_out_view,
+          &vector_a_again_view,&vector_b_view,matrix_add_vector_rows,NULL) ||
+      vector_out[0] != 15 || vector_out[2] != 37) return 69;
   return 0;
 }
 
