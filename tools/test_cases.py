@@ -63,6 +63,7 @@ def main() -> int:
         PROJECT / "bin/test_sparse_matrix", PROJECT / "bin/test_backward_euler",
         PROJECT / "bin/test_analytical_simple", PROJECT / "bin/test_rosenbrock_utilities",
         PROJECT / "bin/test_analytical_additional",
+        PROJECT / "bin/test_regression",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -164,6 +165,14 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_solver_configuration")])
             status, reason = ("PASS", "five C Rosenbrock parameter sets match the MICM tutorial") if ok else (
                 "FAIL", "C Rosenbrock tutorial output or solver statistics differ from MICM")
+        elif suite == "regression":
+            ok = run([str(PROJECT / "bin/test_regression"), test])
+            status, reason = ("PASS", "C FlowTube trajectory matches the MICM regression rows") if ok else (
+                "FAIL", "C FlowTube trajectory differs from the MICM regression rows")
+        elif suite == "regression_test_solve":
+            ok = run([str(PROJECT / "bin/test_regression"), test])
+            status, reason = ("PASS", "C Chapman batch solves agree with per-cell integrations within MICM tolerance") if ok else (
+                "FAIL", "C Chapman batch solve differs from the per-cell integration")
         elif suite == "backward_euler":
             ok = run([str(PROJECT / "bin/test_backward_euler"), test.split(".", 1)[-1]])
             status, reason = ("PASS", "C implicit backward Euler solve and convergence rule match the reference") if ok else (
