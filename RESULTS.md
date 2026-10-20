@@ -26,7 +26,7 @@ correctness gate.
 
 All results below use `-O3 -DNDEBUG`, double precision, and the same TS1 input
 and 10-thread setting on the provided Apple arm64 machine. For the 10,000-cell
-seed 2026 comparison, C used **20,450.701 ms** and MICM used **27,534.547 ms**.
+seed 2026 comparison, C used **20,465.211 ms** and MICM used **27,195.973 ms**.
 Both reported 9,000 internal steps, with matching accepted/rejected counts,
 function calls, Jacobian updates, decompositions, and solves. All 2,110,000
 final cell/species values passed `../reference/compare_final.py`; maximum
