@@ -68,6 +68,8 @@ solver interface.
 Grouped vector-matrix views expose MICM-style lane packing for batched rows,
 with vector conversion, AXPY, fill, reductions, element callbacks, and
 multi-matrix row callbacks.
+Caller-owned phase and system views expose diffusion metadata, parameterized
+species filtering, state sizes, and qualified names.
 Matrix views support checked element access, row-major vector conversion,
 row and column vector copies, element traversal, fill, AXPY, and min/max/sum
 reductions. Row callbacks can combine matrices with different column counts and

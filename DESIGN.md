@@ -36,6 +36,10 @@ same row and column strides as MICM's grouped vector matrices.
 Its row callback accepts multiple source matrices with distinct column counts
 and lane widths.
 
+`chem_phase` and `chem_system` are non-owning compositions of caller-owned
+species records. Phase state sizes omit density-parameterized species, and
+phase/system name helpers emit qualified or plain names into caller buffers.
+
 `chem_constraint_set` describes caller-owned linear conservation or
 equilibrium constraints using species indexes. Its utilities validate records,
 mark algebraic rows, construct the constraint portion of the Jacobian pattern,

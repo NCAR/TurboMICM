@@ -1356,6 +1356,36 @@ static int check_process_algebraic_mask(void) {
   return 0;
 }
 
+static int check_phase_system_metadata(void) {
+  const chem_species species[] = {
+      {.name="foo"},{.name="bar",.density_parameterized=1,.density_factor=42.0},
+      {.name="baz"}};
+  chem_phase_species members[3];
+  if (chem_phase_species_init(&members[0],&species[0],0,0.0) ||
+      chem_phase_species_init(&members[1],&species[1],0,0.0) ||
+      chem_phase_species_init(&members[2],&species[2],0,0.0)) return 1;
+  if (members[0].has_diffusion_coefficient ||
+      chem_phase_species_set_diffusion_coefficient(&members[0],1.23e-5) ||
+      !members[0].has_diffusion_coefficient ||
+      fabs(members[0].diffusion_coefficient-1.23e-5)>1.0e-18 ||
+      chem_phase_species_init(&members[0],&species[0],1,2.5e-6) ||
+      !members[0].has_diffusion_coefficient ||
+      fabs(members[0].diffusion_coefficient-2.5e-6)>1.0e-18) return 2;
+  const chem_phase phase = {.name="gas",.species=members,.species_count=3};
+  if (chem_phase_state_size(&phase) != 2) return 3;
+  char name[64];
+  if (chem_phase_unique_name(&phase,0,name,sizeof(name)) || strcmp(name,"gas.foo") ||
+      chem_phase_unique_name(&phase,1,name,sizeof(name)) != 1 ||
+      chem_phase_unique_name(&phase,2,name,sizeof(name)) || strcmp(name,"gas.baz"))
+    return 4;
+  chem_system system;
+  if (chem_system_init(&system,&phase) || chem_system_state_size(&system) != 2 ||
+      chem_system_unique_name(&system,0,name,sizeof(name)) || strcmp(name,"foo") ||
+      chem_system_unique_name(&system,1,name,sizeof(name)) || strcmp(name,"baz") ||
+      chem_system_unique_name(&system,2,name,sizeof(name)) == 0) return 5;
+  return 0;
+}
+
 static void matrix_add_index(size_t row, size_t column, double *value,
                              void *context) {
   const double scale = *(const double *)context;
@@ -2261,6 +2291,7 @@ int main(void) {
   if (check_constraint_api() != 0) return 63;
   if (check_constrained_solver() != 0) return 65;
   if (check_process_algebraic_mask() != 0) return 66;
+  if (check_phase_system_metadata() != 0) return 67;
   if (check_matrix_view_api() != 0) return 64;
   return 0;
 }
