@@ -156,13 +156,12 @@ static int test_openmp_tutorial(void) {
 }
 
 static int test_solve_results(void) {
-  double state[3] = { 1.0, 0.0, 0.0 };
-  double custom[3];
-  for (size_t p = 0; p < 3; ++p)
-    custom[p] = parameters_abc[p].initial_value;
+  const double initial_a[] = { 1.0, 2.0, 0.5 };
+  double state[9] = { 0.0 }, custom[9] = { 0.0 };
+  double temperature[3], pressure[3];
+  set_abc_inputs(3, initial_a, state, custom, temperature, pressure);
   chem_statistics statistics = { 0 };
-  const double temperature[] = { 272.5 }, pressure[] = { 101253.3 };
-  if (chem_integrate_group(&mechanism_abc, 1, state, custom, temperature, pressure, 200.0, &statistics) != 0)
+  if (chem_integrate_group(&mechanism_abc, 3, state, custom, temperature, pressure, 200.0, &statistics) != 0)
     return 0;
   if (statistics.internal_steps != 18 || statistics.accepted != 18 || statistics.rejected != 0 ||
       statistics.function_calls != 36 || statistics.jacobian_updates != 18 ||

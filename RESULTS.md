@@ -8,21 +8,22 @@ lines. Results for the current source are:
 
 | Compiler | PASS | FAIL | N/A | TS1 serial / parallel |
 | --- | ---: | ---: | ---: | --- |
-| Apple clang 21, macOS arm64 | 54 | 614 | 12 | PASS / PASS |
-| GCC 15.2, macOS arm64 | 54 | 614 | 12 | PASS / PASS |
+| Apple clang 21, macOS arm64 | 55 | 613 | 12 | PASS / PASS |
+| GCC 15.2, macOS arm64 | 55 | 613 | 12 | PASS / PASS |
 
-The 54 passing case lines cover implemented rate-constant formulas, rate
+The 55 passing case lines cover implemented rate-constant formulas, rate
 parameter descriptor references, the two configuration-versus-hand-built
 examples, the README chemistry example, multiple grid cells, the OpenMP tutorial,
-the vectorized storage example, seven Jacobian verification cases, and the
-OpenMP TS1 path. The 12 N/A cases cover C++ callable storage, template type
-traits, and release metadata with no meaningful equivalent in the current C
-API. The remaining 614 cases are explicitly reported as FAIL; they cover
+the vectorized storage example, the solve_results tutorial, seven Jacobian
+verification cases, and the OpenMP TS1 path. The 12 N/A cases cover C++ callable
+storage, template type traits, and release metadata with no meaningful
+equivalent in the current C API. The remaining 613 cases are explicitly
+reported as FAIL; they cover
 unimplemented MICM builder/state APIs, generic matrix and view utilities,
 standalone linear algebra cases, constraint/DAE and alternate integration
-paths, external/aerosol model APIs, one tutorial statistics mismatch, and a
-small output mismatch in the four- and six-stage DA tutorial at 1400 s. The
-five parameter sets match MICM's step statistics; the two DA trajectories
+paths, external/aerosol model APIs, and a small output mismatch in the four-
+and six-stage DA tutorial at 1400 s. The five parameter sets match MICM's step
+statistics; the two DA trajectories
 differ in one printed species value. The per-case reasons are printed by the
 runner. These results do not satisfy the prompt's all-cases correctness gate.
 
@@ -47,9 +48,9 @@ maximum relative error `9.7e-13`.
 ## Build verification
 
 Clean `make test-cpu` builds completed with Apple clang 21 and GCC 15.2. Both
-compiler runs reported 54 PASS, 614 FAIL, and 12 N/A, and passed the serial and
+compiler runs reported 55 PASS, 613 FAIL, and 12 N/A, and passed the serial and
 four-thread TS1 checks. The target exits nonzero while failed cases remain. The
-`solve_results` tutorial still differs: C accepts 17 steps for 200 s while MICM
-accepts 18, although TS1 solver statistics match. The benchmark and library
-contain no Python linkage. The gate remains incomplete because many MICM cases
-have not been ported.
+solver_configuration tutorial's DA trajectories still differ from MICM in
+one printed species value at 1400 s, although its step statistics match. The
+benchmark and library contain no Python linkage. The gate remains incomplete
+because many MICM cases have not been ported.

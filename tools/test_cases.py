@@ -122,7 +122,7 @@ def main() -> int:
         elif suite == "solve_results":
             ok = run([str(PROJECT / "bin/test_tutorial_programs"), suite])
             status, reason = ("PASS", "C solver statistics match the MICM tutorial") if ok else (
-                "FAIL", "C solver accepts 17 steps for 200 s; MICM accepts 18")
+                "FAIL", "C solve_results statistics differ from MICM")
         elif suite == "jacobian_verification" and test.split(".", 1)[-1] in jacobian_results:
             ok = jacobian_results[test.split(".", 1)[-1]]
             status, reason = ("PASS", "C finite-difference and Jacobian checks match the analytical quantities") if ok else (
