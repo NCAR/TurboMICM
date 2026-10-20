@@ -462,6 +462,7 @@ implemented.update({
     "rosenbrock:RosenbrockSolver.VectorAlphaMinusJacobian",
     "matrix:Matrix.WrongColumnCountAtInvocation",
     "vector_matrix:VectorMatrix.WrongColumnCountAtInvocation",
+    "constraint_initialization:ConstraintInitialization.PureODESystemUnaffected",
 })
 not_applicable = {
     "state:State.CopyConstructor":

@@ -3026,7 +3026,8 @@ int main(void) {
   if (solve_status != 0 || solve_stats.internal_steps != 18 ||
       solve_stats.accepted != 18 || solve_stats.rejected != 0 ||
       solve_stats.function_calls != 36 || solve_stats.jacobian_updates != 18 ||
-      solve_stats.decompositions != 18 || solve_stats.solves != 54) return 40;
+      solve_stats.decompositions != 18 || solve_stats.solves != 54 ||
+      solve_stats.constraint_init_iterations != 0) return 40;
 
   /* The multiple-grid-cells tutorial prints ten states for each cell. */
   const double grid_expected[10][3][3] = {
