@@ -31,6 +31,10 @@ the ranking times, unless --points-all-compilers is given.
 
 WORK/report.md collects every stage's results; the raw logs are in WORK/logs/
 and the scenario runs in WORK/runs/. Needs only the Python standard library.
+
+It also verifies a Tier 1 entry, as CLAUDE.md's "Verify an entry" describes:
+--stages build,tests,ts1,audit with its branch (runs/luna/max); the Tier 3 run
+root's micm and reference are links to the Tier 1 run root's.
 """
 
 import argparse
@@ -126,7 +130,7 @@ def make(cc, target, log, timeout=None):
 
 
 heads = {cc: prepare(cc) for cc in compilers}
-report.append(f"# Verification of tier3/{args.run}\n")
+report.append(f"# Verification of {args.branch}\n")
 report.append(f"Branch `{args.branch}`, commit {heads[compilers[0]]}; compilers {', '.join(compilers)}; "
               f"OPTFLAGS `{OPTFLAGS}`; {time.strftime('%Y-%m-%d %H:%M')}.\n")
 

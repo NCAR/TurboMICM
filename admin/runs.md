@@ -45,6 +45,11 @@ Launch changes
   environment with the SSE's login shell, and checked on screen and in the session
   record. The method was first tested on a throwaway repository. The Sol and
   Astra runs were launched by the SSE.
+- 2026-10-19, during luna-max: the SSE authorized Claude Code to stop a Luna run
+  it judges to be floundering. There is no time limit; slowness alone is no
+  reason. Claude Code checks each run every 20 minutes (commits, the agent's
+  failing-case counts, tokens) with a read-only probe of the session record,
+  and records any stop here with its reasons.
 
 Reference changes
 - 2026-10-15: `reference/micm_ts1_ref.cpp` gained `--group-size G`, so MICM can be
