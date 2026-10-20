@@ -28,10 +28,12 @@ make test-cpu CC=gcc-15
 The runner exits nonzero while any case fails. The current coverage and known
 unported cases are recorded in [RESULTS.md](RESULTS.md).
 
-`include/chem.h` exposes both the low-level integration API and an owning
-`chem_state` container with deep copy, move, named concentration access, and
-custom rate-parameter setters. See [DESIGN.md](DESIGN.md) for its storage and
-ownership rules.
+`include/chem.h` exposes the low-level integration API, owning species/phase/
+system definitions for code-built mechanisms, and an owning `chem_state`
+container with deep copy, move, named concentration access, and custom
+rate-parameter setters. C object initialization uses zero-initialized structs;
+functions return status codes, and name lists and states have explicit destroy
+functions. See [DESIGN.md](DESIGN.md) for storage and ownership rules.
 
 ## Run TS1
 

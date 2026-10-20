@@ -36,6 +36,12 @@
   and move clears the source. C++ bracket proxies are represented by named
   getter/setter functions with explicit cell indices; invalid names and
   dimensions return error codes.
+- Code-built species, phase, and system objects use explicit owning C structs.
+  Species property values are tagged as string, double, integer, or boolean;
+  phase/system state size omits parameterized species, and their names follow
+  MICM's qualified phase and unqualified system conventions. C initialization
+  and copy operations require zero-initialized destinations, with destroy
+  functions for each owner; string property access returns a borrowed value.
 - Tiny negative accepted concentrations are set to zero at interval boundaries
   only when their magnitude is within the configured absolute tolerance. This
   addresses roundoff undershoots that otherwise propagate through fast

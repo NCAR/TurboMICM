@@ -36,6 +36,17 @@ raw custom-parameter matrix path. C has no overloaded bracket proxy, so the
 equivalent operations use named get/set functions and explicit cell indices.
 Errors are returned as status codes instead of C++ exceptions.
 
+`chem_species_info`, `chem_phase`, and `chem_system` provide owning code-built
+metadata. Species properties use a tagged value type for strings, doubles,
+integers, and booleans. Parameterized species store four linear condition
+coefficients and are excluded from phase/system state size and names. Phase
+species optionally carry diffusion and density values. Copies own their names,
+properties, and nested phase entries; initialize destination structs and
+`chem_string_list` values with `{0}`, then release them with the matching
+destroy function. String property reads return a borrowed pointer valid until
+the property is changed or the species is destroyed. Property and allocation
+errors use distinct return codes.
+
 ## Solver path
 
 `src/chem.c` builds the reaction dependency graph and sparse Jacobian pattern

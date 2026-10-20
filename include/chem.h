@@ -38,6 +38,114 @@ typedef struct {
   unsigned flags;
 } chem_species;
 
+/* Owning species metadata used when assembling mechanisms through C code.
+   Initialize owning structs with {0}; names and properties are copied by all
+   init/copy functions. */
+typedef enum {
+  CHEM_PROPERTY_STRING = 0,
+  CHEM_PROPERTY_DOUBLE,
+  CHEM_PROPERTY_INTEGER,
+  CHEM_PROPERTY_BOOLEAN
+} chem_property_type;
+
+typedef struct {
+  double constant;
+  double temperature;
+  double pressure;
+  double air_density;
+  int enabled;
+} chem_species_parameterization;
+
+typedef struct {
+  char *name;
+  chem_property_type type;
+  union {
+    char *string_value;
+    double double_value;
+    int integer_value;
+    int boolean_value;
+  } value;
+} chem_species_property;
+
+typedef struct {
+  char *name;
+  size_t property_count;
+  chem_species_property *properties;
+  chem_species_parameterization parameterization;
+} chem_species_info;
+
+typedef struct {
+  chem_species_info species;
+  double diffusion_coefficient;
+  int has_diffusion_coefficient;
+  double density;
+  int has_density;
+} chem_phase_species;
+
+typedef struct {
+  char *name;
+  size_t species_count;
+  chem_phase_species *species;
+} chem_phase;
+
+typedef struct {
+  char **items;
+  size_t count;
+} chem_string_list;
+
+typedef struct {
+  chem_phase gas_phase;
+} chem_system;
+
+/* C equivalents for MICM's species, phase, and system value objects. Return
+   0 on success, -1 for invalid input or missing properties, -2 for a property
+   type mismatch, and -3 for allocation failure. */
+int chem_species_info_init(chem_species_info *species, const char *name);
+void chem_species_info_destroy(chem_species_info *species);
+int chem_species_info_copy(chem_species_info *destination, const chem_species_info *source);
+int chem_species_info_set_string(chem_species_info *species, const char *name, const char *value);
+int chem_species_info_set_double(chem_species_info *species, const char *name, double value);
+int chem_species_info_set_integer(chem_species_info *species, const char *name, int value);
+int chem_species_info_set_boolean(chem_species_info *species, const char *name, int value);
+int chem_species_info_get_property(
+    const chem_species_info *species,
+    const char *name,
+    chem_property_type type,
+    void *value);
+int chem_species_info_set_parameterization(
+    chem_species_info *species,
+    chem_species_parameterization parameterization);
+void chem_species_info_set_third_body(chem_species_info *species);
+int chem_species_info_is_parameterized(const chem_species_info *species);
+double chem_species_info_parameterized_value(
+    const chem_species_info *species,
+    double temperature,
+    double pressure,
+    double air_density);
+
+int chem_phase_species_init(
+    chem_phase_species *phase_species,
+    const chem_species_info *species,
+    const double *diffusion_coefficient,
+    const double *density);
+int chem_phase_species_set_diffusion_coefficient(chem_phase_species *phase_species, double value);
+int chem_phase_species_set_density(chem_phase_species *phase_species, double value);
+void chem_phase_species_destroy(chem_phase_species *phase_species);
+int chem_phase_init(chem_phase *phase, const char *name, const chem_phase_species *species, size_t species_count);
+void chem_phase_destroy(chem_phase *phase);
+size_t chem_phase_state_size(const chem_phase *phase);
+int chem_phase_unique_names(const chem_phase *phase, chem_string_list *names);
+int chem_system_init(chem_system *system, const chem_phase *gas_phase);
+void chem_system_destroy(chem_system *system);
+size_t chem_system_state_size(const chem_system *system);
+typedef size_t (*chem_name_reorder)(const char *const *names, size_t count, size_t output_index, void *context);
+int chem_system_unique_names(
+    const chem_system *system,
+    chem_name_reorder reorder,
+    void *context,
+    chem_string_list *names);
+void chem_string_list_destroy(chem_string_list *list);
+
 typedef struct {
   unsigned species;
   double coefficient;

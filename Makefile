@@ -7,7 +7,7 @@ ROOT := $(abspath ..)
 BUILD := build
 BIN := bin
 GEN := $(BUILD)/generated
-LIBSRC := src/chem.c src/state.c
+LIBSRC := src/chem.c src/state.c src/objects.c
 LIBOBJ := $(patsubst src/%.c,$(BUILD)/%.o,$(LIBSRC))
 LIBHDR := include/chem.h include/jacobian_verification.h
 CONFIG := config/ts1.json
@@ -138,6 +138,13 @@ $(BUILD)/test_state.o: tests/test_state.c $(LIBHDR)
 $(BIN)/test_state: $(BUILD)/test_state.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
+$(BUILD)/test_objects.o: tests/test_objects.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_objects: $(BUILD)/test_objects.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
 $(BUILD)/test_chapman.o: tests/test_chapman.c $(LIBHDR)
 	@mkdir -p $(BUILD) $(BIN)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -145,7 +152,7 @@ $(BUILD)/test_chapman.o: tests/test_chapman.c $(LIBHDR)
 $(BIN)/test_chapman: $(BUILD)/test_chapman.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_chapman
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_objects $(BIN)/test_chapman
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu
