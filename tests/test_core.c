@@ -1910,7 +1910,11 @@ static int check_csr_matrix_api(void) {
   if (chem_csr_matrix_fill(&matrix,2.0)) return 8;
   for (size_t i = 0; i < 5*53; ++i) if (values[i] != 2.0) return 9;
   const size_t invalid_offsets[] = {0,2,1,1,1};
-  if (chem_csr_matrix_init(&matrix,4,1,1,invalid_offsets,columns,values) == 0)
+  const size_t invalid_column[] = {3};
+  const size_t invalid_column_offsets[] = {0,1,1,1,1};
+  if (chem_csr_matrix_init(&matrix,4,1,1,invalid_offsets,columns,values) == 0 ||
+      chem_csr_matrix_init(&matrix,3,1,1,invalid_column_offsets,
+                           invalid_column,values) == 0)
     return 10;
   const size_t array_offsets[] = {0,1,2,4,5};
   const size_t array_columns[] = {0,1,2,3,3};
@@ -1976,6 +1980,9 @@ static int check_csr_matrix_api(void) {
       a_values[1] != 10.0 || a_values[3] != 11.0 || a_values[5] != 12.0 ||
       chem_csr_value_view_copy_from_vector(&block_destination,block_copy,2) == 0)
     return 18;
+  if (chem_csr_value_view_copy_to_vector(&block_source,block_copy,2) == 0 ||
+      chem_csr_value_view_copy_to_vector(&block_source,NULL,0) == 0)
+    return 19;
   const size_t zero_block_offsets[] = {0,1,1,1};
   const size_t zero_block_columns[] = {1};
   chem_csr_matrix zero_block_matrix;
@@ -1990,7 +1997,9 @@ static int check_csr_matrix_api(void) {
                                            &zero_source) ||
       chem_csr_matrix_apply_blocks(&zero_destination,&zero_source,1,
                                    csr_count_blocks,&callback_count) ||
-      callback_count != 0) return 19;
+      callback_count != 0 ||
+      chem_csr_value_view_copy_to_vector(&zero_source,NULL,0) ||
+      chem_csr_value_view_copy_from_vector(&zero_destination,NULL,0)) return 20;
   const size_t csc_offsets[] = {0,0,3,4,5};
   const size_t csc_rows[] = {0,1,2,3,2};
   double csc_values[10];
@@ -2017,7 +2026,10 @@ static int check_csr_matrix_api(void) {
       chem_csr_value_view_copy_to_vector(&csc_sources[0],csc_copy,2) ||
       csc_copy[0] != 24.0 || csc_copy[1] != 24.0 ||
       chem_csr_value_view_fill(&csc_destination,3.0) ||
-      csc_values[2] != 3.0 || csc_values[7] != 3.0)
+      csc_values[2] != 3.0 || csc_values[7] != 3.0 ||
+      chem_csr_value_view_copy_from_vector(&csc_destination,csc_copy,2) ||
+      csc_values[2] != 24.0 || csc_values[7] != 24.0 ||
+      chem_csr_value_view_copy_to_vector(&csc_sources[0],csc_copy,1) == 0)
     return 21;
   return 0;
 }

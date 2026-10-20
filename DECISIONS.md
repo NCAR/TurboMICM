@@ -65,6 +65,8 @@
   Entry views also provide fill, copy, and dense-vector transfer operations.
   The same interface accepts CSC patterns by searching column offsets and row
   indices, while keeping the block-value layout unchanged.
+  Block callbacks and vector transfers validate block counts and exact vector
+  lengths at invocation, and zero-block views execute without visiting entries.
 
 - Store optional species properties in caller-owned tagged records. Typed C
   getters report missing properties separately from type mismatches, avoiding
