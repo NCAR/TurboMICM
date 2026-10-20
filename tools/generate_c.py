@@ -148,15 +148,20 @@ def main():
                 values[j] = float(params.get(key, {"A": 1.0, "D": 300.0}.get(key, 0.0)))
         elif kind == "CHEM_TROE":
             for j, key in enumerate(("k0_A", "k0_B", "k0_C", "kinf_A", "kinf_B", "kinf_C", "Fc", "N")):
-                values[j] = float(params.get(key, 0.0))
+                values[j] = float(params.get(key, {"k0_A": 1.0, "kinf_A": 1.0,
+                                                   "Fc": 0.6, "N": 1.0}.get(key, 0.0)))
         elif kind == "CHEM_TERNARY_ACTIVATION":
             for j, key in enumerate(("k0_A", "k0_B", "k0_C", "kinf_A", "kinf_B", "kinf_C", "Fc", "N")):
-                values[j] = float(params.get(key, 0.0))
+                values[j] = float(params.get(key, {"k0_A": 1.0, "kinf_A": 1.0,
+                                                   "Fc": 0.6, "N": 1.0}.get(key, 0.0)))
         elif kind == "CHEM_TERNARY_ACTIVATION_JPL19":
             for j, key in enumerate(("k0_A", "k0_B", "k0_C", "k0_D",
                                      "kinf_A", "kinf_B", "kinf_C", "kinf_D",
                                      "kint_A", "kint_B", "kint_C", "kint_D", "Fc", "N")):
-                values[j] = float(params.get(key, 0.0))
+                values[j] = float(params.get(key, {
+                    "k0_A": 1.0, "k0_D": 298.0, "kinf_A": 1.0,
+                    "kinf_D": 298.0, "kint_A": 1.0, "kint_D": 298.0,
+                    "Fc": 0.6, "N": 1.0}.get(key, 0.0)))
         elif kind == "CHEM_TAYLOR_SERIES":
             for j, key in enumerate(("A", "B", "C", "D", "E")):
                 values[j] = float(params.get(key, {"A": 1.0, "D": 300.0}.get(key, 0.0)))
