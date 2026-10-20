@@ -187,6 +187,10 @@ implemented = {
     "sparse_matrix_vector_compressed_column_ordering:SparseVectorCompressedColumnMatrix.SingleBlockMatrix",
     "sparse_matrix_vector_compressed_column_ordering:SparseVectorCompressedColumnMatrix.ConstSingleBlockMatrix",
     "sparse_matrix_vector_compressed_column_ordering:SparseVectorCompressedColumnMatrix.MultiBlockMatrix",
+    "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.IntegerVectorSparse",
+    "sparse_matrix_standard_compressed_column_ordering:SparseCompressedColumnMatrix.IntegerVectorSparse",
+    "sparse_matrix_vector_compressed_row_ordering:SparseVectorCompressedRowMatrix.IntegerVectorSparse",
+    "sparse_matrix_vector_compressed_column_ordering:SparseVectorCompressedColumnMatrix.IntegerVectorSparse",
     "sparse_matrix_standard_compressed_column_ordering:SparseCompressedColumnMatrix.ZeroMatrix",
     "sparse_matrix_standard_compressed_column_ordering:SparseCompressedColumnMatrix.ConstZeroMatrix",
     "sparse_matrix_standard_compressed_column_ordering:SparseCompressedColumnMatrix.SetScalar",
@@ -414,6 +418,18 @@ not_applicable = {
         "C has no template type-trait or SFINAE behavior",
     "view_category_sfinae:ViewCategorySFINAE.RuntimeVectorUse":
         "C has no template type-trait or SFINAE behavior",
+    "sparse_matrix_vector_compressed_row_ordering:SparseVectorCompressedRowMatrix.IncompatibleOrdering":
+        "C uses runtime scalar views and has no compile-time ordering mismatch",
+    "sparse_matrix_vector_compressed_row_ordering:SparseVectorCompressedRowMatrix.IncompatibleVectorOrdering":
+        "C uses runtime scalar views and has no compile-time ordering mismatch",
+    "sparse_matrix_vector_compressed_row_ordering:SparseVectorCompressedRowMatrix.IncompatibleSparseOrdering":
+        "C uses runtime scalar views and has no compile-time ordering mismatch",
+    "sparse_matrix_vector_compressed_column_ordering:SparseVectorCompressedColumnMatrix.IncompatibleOrdering":
+        "C uses runtime scalar views and has no compile-time ordering mismatch",
+    "sparse_matrix_vector_compressed_column_ordering:SparseVectorCompressedColumnMatrix.IncompatibleVectorOrdering":
+        "C uses runtime scalar views and has no compile-time ordering mismatch",
+    "sparse_matrix_vector_compressed_column_ordering:SparseVectorCompressedColumnMatrix.IncompatibleSparseOrdering":
+        "C uses runtime scalar views and has no compile-time ordering mismatch",
 }
 
 failed = False

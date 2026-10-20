@@ -1947,6 +1947,16 @@ static int check_vector_sparse_layout(size_t width, int compressed_by_column) {
     if (chem_csr_matrix_get(&matrix,block,0,1,&value) ||
         value != diagonal_before[block] + 1.0) return 14;
   }
+  int integers[10];
+  for (size_t block = 0; block < blocks; ++block)
+    integers[block] = (int)(5*(block+1));
+  if (chem_csr_value_view_scale_from_int_vector(&copy_target,integers,blocks,
+                                                 1.5)) return 16;
+  for (size_t block = 0; block < blocks; ++block) {
+    double value = 0.0;
+    if (chem_csr_matrix_get(&matrix,block,0,1,&value) ||
+        value != 7.5*(double)(block+1)) return 17;
+  }
   chem_csr_value_view callback_destination;
   chem_csr_const_value_view callback_source;
   if (chem_csr_matrix_get_value_view(&matrix,2,3,&callback_destination) ||
@@ -1957,7 +1967,7 @@ static int check_vector_sparse_layout(size_t width, int compressed_by_column) {
   for (size_t block = 0; block < blocks; ++block) {
     double result = 0.0;
     if (chem_csr_matrix_get(&matrix,block,2,3,&result) ||
-        result != 2.0*(double)(block*10+2)) return 12;
+        result != 15.0*(double)(block+1)) return 12;
   }
   if (chem_csr_matrix_fill(&matrix,2.0)) return 8;
   for (size_t i = 0; i < storage_size; ++i)
@@ -2189,9 +2199,12 @@ static int check_csr_matrix_api(void) {
   if (chem_csr_matrix_init_csc(&csc,3,1,1,bad_csc_offsets,bad_csc_rows,
                                print_values) == 0) return 33;
   const size_t widths[] = {1,2,4,8};
-  for (size_t i = 0; i < sizeof(widths)/sizeof(widths[0]); ++i)
-    if (check_vector_sparse_layout(widths[i],0) ||
-        check_vector_sparse_layout(widths[i],1)) return 34;
+  for (size_t i = 0; i < sizeof(widths)/sizeof(widths[0]); ++i) {
+    const int row_status = check_vector_sparse_layout(widths[i],0);
+    const int column_status = check_vector_sparse_layout(widths[i],1);
+    if (row_status) return 34 + (int)i*30 + row_status;
+    if (column_status) return 34 + (int)i*30 + 15 + column_status;
+  }
   return 0;
 }
 

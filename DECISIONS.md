@@ -63,6 +63,8 @@
   Entry views span blocks with an explicit stride; block callbacks can combine
   entries from matrices with different sparsity patterns when block counts match.
   Entry views also provide fill, copy, and dense-vector transfer operations.
+  Integer vectors can feed value views through an explicit scaled conversion,
+  which keeps the sparse value buffer in the library's `double` type.
   Sparse matrix text output writes either dense rows or only nonzero coordinates
   with block headers, matching the corresponding CPU utility output.
   The same interface accepts CSC patterns by searching column offsets and row
@@ -87,6 +89,9 @@
 
 - Mark the four State copy/move cases N/A. The C state API is a non-owning view,
   so it has no deep-copy or move constructor behavior to reproduce.
+- Mark six sparse vector `Incompatible*Ordering` cases N/A. They test that C++
+  template overloads reject combinations at compile time; the C API uses scalar
+  runtime views and can combine differing layouts through explicit accessors.
 
 - Implement matrix logical OR/AND reductions with caller-supplied predicates and
   a strict reduction that visits each logical entry once. Strided views expose

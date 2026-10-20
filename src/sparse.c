@@ -195,6 +195,18 @@ int chem_csr_value_view_copy_from_vector(chem_csr_value_view *view,
   return 0;
 }
 
+int chem_csr_value_view_scale_from_int_vector(chem_csr_value_view *view,
+                                              const int *vector,
+                                              size_t vector_size,
+                                              double scale) {
+  if (!view || vector_size != view->count ||
+      (vector_size && (!vector || !view->data))) return 1;
+  for (size_t block = 0; block < view->count; ++block)
+    view->data[csr_value_offset(view->stride,view->group_width,block)] =
+        (double)vector[block] * scale;
+  return 0;
+}
+
 int chem_csr_matrix_get(const chem_csr_matrix *matrix, size_t block,
                         size_t row, size_t column, double *value) {
   size_t index = 0;

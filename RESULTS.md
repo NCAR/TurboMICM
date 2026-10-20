@@ -80,7 +80,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Four hundred thirty-six cases pass, nine are marked N/A, and 235 cases
+  statuses. Four hundred forty cases pass, fifteen are marked N/A, and 225 cases
   still report incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -100,5 +100,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 all 2,110,000 values; the largest relative difference was `5.34e-14` for
 BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
 MICM at this scale. The 100-cell and first-cell runs above also pass for both
-compilers. Overall, 235 of the 680 inventory cases remain incomplete; nine
+compilers. Overall, 225 of the 680 inventory cases remain incomplete; fifteen
 C++-only cases are marked N/A.

@@ -486,6 +486,10 @@ int chem_csr_value_view_copy_to_vector(
 int chem_csr_value_view_copy_from_vector(chem_csr_value_view *view,
                                          const double *vector,
                                          size_t vector_size);
+int chem_csr_value_view_scale_from_int_vector(chem_csr_value_view *view,
+                                              const int *vector,
+                                              size_t vector_size,
+                                              double scale);
 
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density);
