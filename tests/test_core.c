@@ -32,6 +32,12 @@ static int tutorial_print_match(double actual, double expected) {
   return fabs(actual - expected) <= tolerance;
 }
 
+static int check_solver_workspace_argument_errors(void) {
+  chem_solver_workspace workspace = {0};
+  return chem_solver_workspace_init(&workspace,NULL) != 0 &&
+         chem_solver_workspace_init(NULL,NULL) != 0 ? 0 : 1;
+}
+
 static int check_rate_constants_no_user_tutorial(void) {
   const chem_species species[] = {
       {.name="A"}, {.name="B"},
@@ -3205,6 +3211,7 @@ int main(void) {
         scheme_total.solves != scheme_counts[scheme][4] ||
         scheme_total.rejected != scheme_counts[scheme][5]) return 47;
   }
+  if (check_solver_workspace_argument_errors() != 0) return 72;
   if (check_rate_constants_no_user_tutorial() != 0) return 48;
   if (check_lambda_rate_constant_position() != 0) return 49;
   if (check_jacobian_verification() != 0) return 50;
