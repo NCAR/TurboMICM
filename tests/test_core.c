@@ -3168,8 +3168,59 @@ static int check_rosenbrock_species_tolerances(void) {
   return 0;
 }
 
+static int check_rejected_step_determinism(void) {
+  const chem_species species[] = {{.name="foo"},{.name="bar"},
+      {.name="baz"},{.name="quz"},{.name="quuz"}};
+  const chem_term foo_baz[] = {{.species=0,.coefficient=1},
+                                {.species=2,.coefficient=1}};
+  const chem_term bar_quuz[] = {{.species=1,.coefficient=1},
+                                 {.species=4,.coefficient=2.4}};
+  const chem_term bar[] = {{.species=1,.coefficient=1}};
+  const chem_term foo_quz[] = {{.species=0,.coefficient=1},
+                                {.species=3,.coefficient=1.4}};
+  const chem_term baz[] = {{.species=2,.coefficient=1}};
+  const chem_reaction reactions[] = {
+      {.kind=CHEM_ARRHENIUS,.reactants=foo_baz,.reactant_count=2,
+       .products=bar_quuz,.product_count=2,.p={2e-11,0,110,300,0}},
+      {.kind=CHEM_ARRHENIUS,.reactants=bar,.reactant_count=1,
+       .products=foo_quz,.product_count=2,.p={1e-6,0,0,300,0}},
+      {.kind=CHEM_ARRHENIUS,.reactants=baz,.reactant_count=1,
+       .p={3.5e-6,0,0,300,0}}};
+  const chem_mechanism mechanism = {.species=species,.species_count=5,
+      .reactions=reactions,.reaction_count=3};
+  chem_solver_options options = chem_solver_default_options();
+  options.initial_step=1000.0;
+  double first[5]={1e12,1e12,1e12,1e12,1e12};
+  double second[5];
+  memcpy(second,first,sizeof(first));
+  chem_solver_workspace a={0},b={0};
+  if (chem_solver_workspace_init(&a,&mechanism) ||
+      chem_solver_workspace_init(&b,&mechanism)) {
+    chem_solver_workspace_destroy(&a);
+    chem_solver_workspace_destroy(&b);
+    return 1;
+  }
+  chem_solver_stats stats_a={0},stats_b={0};
+  const int status_a=chem_rosenbrock3_solve_with_workspace(
+      &mechanism,&a,first,298.15,101325.0,40.0,NULL,1000.0,&options,&stats_a);
+  const int status_b=chem_rosenbrock3_solve_with_workspace(
+      &mechanism,&b,second,298.15,101325.0,40.0,NULL,1000.0,&options,&stats_b);
+  chem_solver_workspace_destroy(&a);
+  chem_solver_workspace_destroy(&b);
+  if (status_a || status_b) return 10;
+  if (stats_a.rejected<2) return 20;
+  if (stats_a.internal_steps!=stats_b.internal_steps ||
+      stats_a.accepted!=stats_b.accepted || stats_a.rejected!=stats_b.rejected)
+    return 30;
+  for (size_t i=0;i<5;++i)
+    if (first[i]!=second[i]) return 40;
+  return 0;
+}
+
 int main(void) {
   if (check_rosenbrock_species_tolerances()) return 52;
+  { const int status=check_rejected_step_determinism();
+    if (status) return 53+status; }
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
   const double b = chem_arrhenius(3.0e-11, 0.0, -200.0, 300.0, 0.0, t, 0.0);

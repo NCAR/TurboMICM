@@ -133,14 +133,16 @@ void chem_solver_workspace_destroy(chem_solver_workspace *workspace) {
 chem_solver_options chem_solver_default_options(void) {
   chem_solver_options result = {
       .relative_tolerance=1.0e-6, .absolute_tolerance=1.0e-3,
-      .absolute_tolerances=NULL, .absolute_tolerance_count=0, .max_steps=1000};
+      .absolute_tolerances=NULL, .absolute_tolerance_count=0, .max_steps=1000,
+      .initial_step=0.0};
   return result;
 }
 
 static int solver_tolerances_valid(const chem_solver_options *options,
                                    size_t species_count) {
   if (options->relative_tolerance <= 0.0 ||
-      options->absolute_tolerance <= 0.0 || options->max_steps == 0)
+      options->absolute_tolerance <= 0.0 || options->max_steps == 0 ||
+      options->initial_step < 0.0 || !isfinite(options->initial_step))
     return 0;
   if ((options->absolute_tolerances &&
        options->absolute_tolerance_count != species_count) ||
@@ -543,7 +545,8 @@ static int rosenbrock_solve_impl(
   const double eps = 2.2204460492503131e-16;
   const double hmin = 1.0e-15 * duration;
   const double hmax = duration;
-  double h = 1.0e-6 * duration;
+  double h = o->initial_step > 0.0 ? fmin(o->initial_step,duration)
+                                    : 1.0e-6 * duration;
   double time = 0.0;
   int rejected_previous = 0, rejected_twice = 0;
   while (time - duration + eps <= 0.0) {
@@ -642,7 +645,7 @@ static int rosenbrock_solve_impl(
         rejected_twice = rejected_previous;
         rejected_previous = 1;
         h = hnew;
-        if (local_stats.accepted >= 1) ++local_stats.rejected;
+        ++local_stats.rejected;
         ++local_stats.jacobian_updates;
       }
     }
@@ -756,7 +759,9 @@ int chem_rosenbrock3_solve_group_with_workspace(
   const size_t nn = n*n;
   const double eps = 2.2204460492503131e-16;
   const double hmin = 1.0e-15 * duration, hmax = duration;
-  double h = 1.0e-6 * duration, time = 0.0;
+  double h = o->initial_step > 0.0 ? fmin(o->initial_step,duration)
+                                    : 1.0e-6 * duration;
+  double time = 0.0;
   int rejected_previous = 0, rejected_twice = 0, status = SOLVER_OK;
   const double aa[3] = {1.0, 1.0, 0.0};
   const double cc[3] = {-1.0156171083877702091975600115545,
@@ -889,7 +894,7 @@ int chem_rosenbrock3_solve_group_with_workspace(
         rejected_twice = rejected_previous;
         rejected_previous = 1;
         h = hnew;
-        if (local.accepted >= 1) ++local.rejected;
+        ++local.rejected;
         ++local.jacobian_updates;
       }
     }

@@ -633,6 +633,7 @@ typedef struct {
   const double *absolute_tolerances;
   size_t absolute_tolerance_count;
   size_t max_steps;
+  double initial_step;
 } chem_solver_options;
 
 typedef struct {

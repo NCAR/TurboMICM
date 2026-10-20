@@ -461,6 +461,7 @@ implemented.update({
     "rosenbrock:RosenbrockSolver.StandardAlphaMinusJacobian",
     "rosenbrock:RosenbrockSolver.VectorAlphaMinusJacobian",
     "rosenbrock:RosenbrockSolver.CanSetTolerances",
+    "rosenbrock:RosenbrockSolver.RejectedStepAlphaMatchesInPlaceSolver",
     "matrix:Matrix.WrongColumnCountAtInvocation",
     "vector_matrix:VectorMatrix.WrongColumnCountAtInvocation",
     "constraint_initialization:ConstraintInitialization.PureODESystemUnaffected",
@@ -569,6 +570,8 @@ for raw in case_file.read_text().splitlines():
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):
             reason = ("C per-species tolerance properties feed solver error control"
                       if case_id.endswith("CanSetTolerances") else
+                      "C rejected-step sequence and results repeat across workspaces"
+                      if case_id.endswith("RejectedStepAlphaMatchesInPlaceSolver") else
                       "C Rosenbrock matrix transforms and normalized error checked")
         elif case_id == "process_set:ProcessSetAlgebraicVariables.CudaMatrix":
             reason = "C masked reaction forcing and Jacobian updates preserve algebraic rows"

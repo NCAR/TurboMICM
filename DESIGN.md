@@ -80,9 +80,12 @@ path.
 
 The default controller uses relative tolerance `1e-6`, absolute tolerance
 `1e-3`, initial step `1e-6 * DT`, minimum step `1e-15 * DT`, maximum step `DT`,
-and a 1000-step limit. The inert third-body species is excluded from the error
-norm. Ordinary state rows are clamped to nonnegative values after each solve
-call, as MICM does in its `PostSolveClamp` step.
+and a 1000-step limit. Set `initial_step` to override the starting step, and
+use `chem_mechanism_absolute_tolerances` to build the per-species absolute
+tolerance vector from `absolute tolerance` species properties (default `1e-3`).
+The inert third-body species is excluded from the error norm. Ordinary state
+rows are clamped to nonnegative values after each solve call, as MICM does in
+its `PostSolveClamp` step.
 
 The public `chem_solver_workspace` owns reusable matrix, stage, symbolic fill,
 and group-output buffers for one mechanism. The single-cell API uses one cell
