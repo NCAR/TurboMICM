@@ -517,6 +517,8 @@ implemented.update({
     "analytical_rosenbrock_integration:AnalyticalExamples.TernaryChemicalActivation",
     "analytical_backward_euler:AnalyticalExamples.SurfaceRxn",
     "analytical_rosenbrock_integration:AnalyticalExamples.SurfaceRxn",
+    "dae_constraint_overshoot:DAEConstraintOvershoot.AlgebraicVariableStaysNonNegative",
+    "dae_constraint_overshoot:DAEConstraintOvershoot.AllRosenbrockOrdersConstrained",
 })
 
 _aerosol_state_cases = (
@@ -669,6 +671,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C generic Chapman integration matches the reference trajectory across concentration scales"
         elif case_id.startswith("regression_test_rosenbrock_dforce_dy:"):
             reason = "C generic Chapman negative Jacobian matches a directional finite difference"
+        elif case_id.startswith("dae_constraint_overshoot:"):
+            reason = "C constrained Rosenbrock preserves nonnegative algebraic mass across parameter sets"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):
             reason = ("C per-species tolerance properties feed solver error control"
                       if case_id.endswith("CanSetTolerances") else

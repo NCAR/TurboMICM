@@ -2282,6 +2282,51 @@ static int check_robertson_terminator_dae(void) {
   return status;
 }
 
+static int check_constrained_overshoot_order(chem_rosenbrock_parameter_set scheme) {
+  const chem_species species[]={{.name="A"},{.name="B"},{.name="C"}};
+  const chem_term reactant[]={{0,1.0}}, product[]={{1,1.0}};
+  const chem_reaction reaction={.kind=CHEM_ARRHENIUS,.reactants=reactant,
+      .reactant_count=1,.products=product,.product_count=1,
+      .p={1.0e4,0,0,298,0}};
+  const chem_mechanism mechanism={.species=species,.species_count=3,
+      .reactions=&reaction,.reaction_count=1};
+  const chem_constraint_term terms[]={{0,1.0},{1,1.0},{2,1.0}};
+  const chem_constraint constraint={.kind=CHEM_CONSTRAINT_LINEAR,
+      .name="mass_conservation",.algebraic_species=2,.terms=terms,
+      .term_count=3,.constant=1.0e-6};
+  const chem_constraint_set set={.constraints=&constraint,
+      .constraint_count=1,.species_count=3};
+  const chem_rosenbrock_parameters parameters=chem_rosenbrock_builtin_parameters(scheme);
+  const double atol[]={1.0e-12,1.0e-12,1.0e-12};
+  const chem_solver_options options={.relative_tolerance=1.0e-6,
+      .absolute_tolerance=1.0e-12,.absolute_tolerances=atol,
+      .absolute_tolerance_count=3,.max_steps=10000};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  double y[]={0.9e-6,0.0,0.1e-6};
+  int status=chem_rosenbrock_solve_constrained_with_parameters(&mechanism,
+      &workspace,y,298.0,101325.0,40.0,NULL,30.0,&parameters,
+      &set,&options,NULL);
+  const double sum=y[0]+y[1]+y[2];
+  if (!status && (fabs(sum-1.0e-6)>1.0e-12 || y[2]<-1.0e-18)) {
+    chem_solver_workspace_destroy(&workspace);
+    return 3;
+  }
+  if (!status && (y[0]>=1.0e-12 || fabs(y[1]-0.9e-6)>1.0e-10 ||
+                  fabs(y[2]-0.1e-6)>1.0e-10)) status=4;
+  chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
+static int check_all_constrained_overshoot_orders(void) {
+  const chem_rosenbrock_parameter_set schemes[]={
+      CHEM_ROSENBROCK_THREE_STAGE,CHEM_ROSENBROCK_FOUR_STAGE,
+      CHEM_ROSENBROCK_FOUR_STAGE_DAE,CHEM_ROSENBROCK_SIX_STAGE_DAE};
+  for (size_t i=0;i<sizeof(schemes)/sizeof(schemes[0]);++i)
+    if (check_constrained_overshoot_order(schemes[i])) return (int)i+1;
+  return 0;
+}
+
 static int check_process_algebraic_mask(void) {
   const chem_species species[] = {
       {.name="A"},{.name="B"},{.name="C"},{.name="D"}};
@@ -4724,6 +4769,7 @@ int main(void) {
   for (int mode=0;mode<4;++mode)
     if (check_equilibrium_dae_case(mode)!=0) return 120+mode;
   if (check_robertson_terminator_dae()!=0) return 130;
+  if (check_all_constrained_overshoot_orders()!=0) return 131;
   if (check_process_algebraic_mask() != 0) return 66;
   if (check_phase_system_metadata() != 0) return 67;
   if (check_species_properties() != 0) return 68;
