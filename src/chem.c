@@ -1,4 +1,5 @@
 #include "chem.h"
+#include "jacobian_verification.h"
 
 #include <float.h>
 #include <math.h>
@@ -173,6 +174,166 @@ int chem_evaluate_rate(
   return isfinite(*rate_constant) ? 0 : -1;
 }
 
+chem_rosenbrock_parameters chem_rosenbrock_default_parameters(void) {
+  chem_rosenbrock_parameters parameters = { 0 };
+  parameters.stage_count = 3;
+  parameters.new_function_evaluation[0] = 1u;
+  parameters.new_function_evaluation[1] = 1u;
+  parameters.a[0] = 1.0;
+  parameters.c[0] = -1.0156171083877702091975600115545;
+  parameters.c[1] = 4.0759956452537699824805835358067;
+  parameters.c[2] = 9.2076794298330791242156818474003;
+  parameters.m[0] = 1.0;
+  parameters.m[1] = 6.1697947043828245592553615689730;
+  parameters.m[2] = -0.42772256543218573326238373806514;
+  parameters.e[0] = 0.5;
+  parameters.e[1] = -2.907955871680469821793236208017;
+  parameters.e[2] = 0.22354069897811569627360909276199;
+  parameters.gamma0 = 0.43586652150845899941601945119356;
+  parameters.estimator_order = 3.0;
+  parameters.round_off = DBL_EPSILON;
+  parameters.factor_min = 0.2;
+  parameters.factor_max = 6.0;
+  parameters.rejection_factor_decrease = 0.1;
+  parameters.safety_factor = 0.9;
+  parameters.h_start_fraction = 1.0e-6;
+  parameters.h_min_fraction = 1.0e-15;
+  parameters.h_max_fraction = 1.0;
+  parameters.max_internal_steps = 1000u;
+  return parameters;
+}
+
+static chem_rosenbrock_parameters chem_rosenbrock_empty_method(size_t stages) {
+  chem_rosenbrock_parameters parameters = chem_rosenbrock_default_parameters();
+  parameters.stage_count = stages;
+  memset(parameters.new_function_evaluation, 0, sizeof(parameters.new_function_evaluation));
+  memset(parameters.a, 0, sizeof(parameters.a));
+  memset(parameters.c, 0, sizeof(parameters.c));
+  memset(parameters.m, 0, sizeof(parameters.m));
+  memset(parameters.e, 0, sizeof(parameters.e));
+  return parameters;
+}
+
+chem_rosenbrock_parameters chem_rosenbrock_two_stage_parameters(void) {
+  chem_rosenbrock_parameters parameters = chem_rosenbrock_empty_method(2u);
+  const double gamma = 1.0 + 1.0 / sqrt(2.0);
+  parameters.new_function_evaluation[0] = 1u;
+  parameters.new_function_evaluation[1] = 1u;
+  parameters.a[0] = 1.0 / gamma;
+  parameters.c[0] = -2.0 / gamma;
+  parameters.m[0] = 3.0 / (2.0 * gamma);
+  parameters.m[1] = 1.0 / (2.0 * gamma);
+  parameters.e[0] = 1.0 / (2.0 * gamma);
+  parameters.e[1] = 1.0 / (2.0 * gamma);
+  parameters.gamma0 = gamma;
+  parameters.estimator_order = 2.0;
+  return parameters;
+}
+
+chem_rosenbrock_parameters chem_rosenbrock_four_stage_parameters(void) {
+  chem_rosenbrock_parameters parameters = chem_rosenbrock_empty_method(4u);
+  const double a[] = {
+    2.0, 1.867943637803922, 0.2344449711399156, 1.867943637803922,
+    0.2344449711399156, 0.0,
+  };
+  const double c[] = {
+    -7.137615036412310, 2.580708087951457, 0.6515950076447975,
+    -2.137148994382534, -0.3214669691237626, -0.6949742501781779,
+  };
+  memcpy(parameters.a, a, sizeof(a));
+  memcpy(parameters.c, c, sizeof(c));
+  parameters.new_function_evaluation[0] = 1u;
+  parameters.new_function_evaluation[1] = 1u;
+  parameters.new_function_evaluation[2] = 1u;
+  parameters.m[0] = 2.255570073418735;
+  parameters.m[1] = 0.2870493262186792;
+  parameters.m[2] = 0.4353179431840180;
+  parameters.m[3] = 1.093502252409163;
+  parameters.e[0] = -0.2815431932141155;
+  parameters.e[1] = -0.07276199124938920;
+  parameters.e[2] = -0.1082196201495311;
+  parameters.e[3] = -1.093502252409163;
+  parameters.gamma0 = 0.5728200000000000;
+  parameters.estimator_order = 4.0;
+  return parameters;
+}
+
+chem_rosenbrock_parameters chem_rosenbrock_four_stage_da_parameters(void) {
+  chem_rosenbrock_parameters parameters = chem_rosenbrock_empty_method(4u);
+  const double a[] = { 0.0, 2.0, 0.0, 2.0, 0.0, 1.0 };
+  const double c[] = { 4.0, 1.0, -1.0, 1.0, -1.0, -8.0 / 3.0 };
+  memcpy(parameters.a, a, sizeof(a));
+  memcpy(parameters.c, c, sizeof(c));
+  parameters.new_function_evaluation[0] = 1u;
+  parameters.new_function_evaluation[2] = 1u;
+  parameters.new_function_evaluation[3] = 1u;
+  parameters.m[0] = 2.0;
+  parameters.m[2] = 1.0;
+  parameters.m[3] = 1.0;
+  parameters.e[3] = 1.0;
+  parameters.gamma0 = 0.5;
+  parameters.estimator_order = 3.0;
+  return parameters;
+}
+
+chem_rosenbrock_parameters chem_rosenbrock_six_stage_da_parameters(void) {
+  chem_rosenbrock_parameters parameters = chem_rosenbrock_empty_method(6u);
+  const double a[] = {
+    1.544, 0.9466785280815826, 0.2557011698983284, 3.314825187068521,
+    2.896124015972201, 0.9986419139977817, 1.221224509226641,
+    6.019134481288629, 12.53708332932087, -0.6878860361058950,
+    1.221224509226641, 6.019134481288629, 12.53708332932087,
+    -0.6878860361058950, 1.0,
+  };
+  const double c[] = {
+    -5.6688, -2.430093356833875, -0.2063599157091915,
+    -0.1073529058151375, -9.594562251023355, -20.47028614809616,
+    7.496443313967647, -10.24680431464352, -33.99990352819905,
+    11.70890893206160, 8.083246795921522, -7.981132988064893,
+    -31.52159432874371, 16.31930543123136, -6.058818238834054,
+  };
+  memcpy(parameters.a, a, sizeof(a));
+  memcpy(parameters.c, c, sizeof(c));
+  for (size_t stage = 0; stage < 6; ++stage)
+    parameters.new_function_evaluation[stage] = 1u;
+  parameters.m[0] = a[6];
+  parameters.m[1] = a[7];
+  parameters.m[2] = a[8];
+  parameters.m[3] = a[9];
+  parameters.m[4] = 1.0;
+  parameters.m[5] = 1.0;
+  parameters.e[5] = 1.0;
+  parameters.gamma0 = 0.25;
+  parameters.estimator_order = 4.0;
+  return parameters;
+}
+
+static int chem_rosenbrock_parameters_valid(const chem_rosenbrock_parameters *parameters) {
+  if (!parameters || !parameters->stage_count || parameters->stage_count > CHEM_ROSENBROCK_MAX_STAGES ||
+      !parameters->new_function_evaluation[0] || !isfinite(parameters->gamma0) || parameters->gamma0 <= 0.0 ||
+      (parameters->lu_method != CHEM_LU_MOZART_IN_PLACE && parameters->lu_method != CHEM_LU_DOOLITTLE) ||
+      !isfinite(parameters->estimator_order) || parameters->estimator_order <= 0.0 ||
+      !isfinite(parameters->round_off) || parameters->round_off < 0.0 ||
+      !isfinite(parameters->factor_min) || parameters->factor_min <= 0.0 ||
+      !isfinite(parameters->factor_max) || parameters->factor_max < parameters->factor_min ||
+      !isfinite(parameters->rejection_factor_decrease) || parameters->rejection_factor_decrease <= 0.0 ||
+      !isfinite(parameters->safety_factor) || parameters->safety_factor <= 0.0 ||
+      !isfinite(parameters->h_start_fraction) || parameters->h_start_fraction <= 0.0 ||
+      !isfinite(parameters->h_min_fraction) || parameters->h_min_fraction <= 0.0 ||
+      !isfinite(parameters->h_max_fraction) || parameters->h_max_fraction < parameters->h_min_fraction ||
+      parameters->h_max_fraction <= 0.0 ||
+      !parameters->max_internal_steps)
+    return 0;
+  const size_t coefficient_count = parameters->stage_count * (parameters->stage_count - 1u) / 2u;
+  for (size_t i = 0; i < parameters->stage_count; ++i) {
+    if (parameters->new_function_evaluation[i] > 1u || !isfinite(parameters->m[i]) || !isfinite(parameters->e[i]))
+      return 0;
+  }
+  for (size_t i = 0; i < coefficient_count; ++i)
+    if (!isfinite(parameters->a[i]) || !isfinite(parameters->c[i])) return 0;
+  return 1;
+}
+
 static void chem_symbolic_destroy(chem_symbolic *symbolic) {
   free(symbolic->jobs);
   free(symbolic->dependent_species);
@@ -262,7 +423,8 @@ static int chem_markowitz_order(const unsigned char *pattern, size_t n, size_t *
   return 0;
 }
 
-static int chem_symbolic_build(const chem_mechanism *mechanism, chem_symbolic *symbolic) {
+static int chem_symbolic_build(
+    const chem_mechanism *mechanism, chem_lu_method lu_method, chem_symbolic *symbolic) {
   const size_t n = mechanism->species_count;
   size_t jobs = 0, dependent_count = 0;
   memset(symbolic, 0, sizeof(*symbolic));
@@ -319,7 +481,10 @@ static int chem_symbolic_build(const chem_mechanism *mechanism, chem_symbolic *s
     }
   }
 
-  if (chem_markowitz_order(symbolic->pattern, n, symbolic->permutation) != 0) {
+  if (lu_method == CHEM_LU_DOOLITTLE) {
+    for (size_t i = 0; i < n; ++i)
+      symbolic->permutation[i] = i;
+  } else if (chem_markowitz_order(symbolic->pattern, n, symbolic->permutation) != 0) {
     chem_symbolic_destroy(symbolic);
     return -1;
   }
@@ -573,6 +738,66 @@ static int chem_factor(
   return 0;
 }
 
+static int chem_factor_doolittle(
+    const chem_symbolic *symbolic,
+    size_t cell_count,
+    double *matrix,
+    size_t *bad_pivot,
+    size_t *bad_cell) {
+  const size_t n = symbolic->species_count;
+  for (size_t row = 0; row < n; ++row) {
+    const size_t diagonal_position = symbolic->position[row * n + row];
+    const size_t upper_count = symbolic->row_upper_count[row];
+    for (size_t upper_index = 0; upper_index <= upper_count; ++upper_index) {
+      const size_t col = upper_index == 0 ? row : symbolic->row_upper[row * n + upper_index - 1u];
+      const size_t target_position = symbolic->position[row * n + col];
+      double *target = matrix + target_position * cell_count;
+      for (size_t lower_index = 0; lower_index < symbolic->row_lower_count[row]; ++lower_index) {
+        const size_t inner = symbolic->row_lower[row * n + lower_index];
+        const size_t upper_position = symbolic->position[inner * n + col];
+        if (upper_position == SIZE_MAX)
+          continue;
+        const double *lower_value = matrix + symbolic->position[row * n + inner] * cell_count;
+        const double *upper_value = matrix + upper_position * cell_count;
+        #pragma omp simd
+        for (size_t cell = 0; cell < cell_count; ++cell)
+          target[cell] -= lower_value[cell] * upper_value[cell];
+      }
+    }
+
+    const double *diagonal = matrix + diagonal_position * cell_count;
+    for (size_t cell = 0; cell < cell_count; ++cell)
+      if (diagonal[cell] == 0.0 || !isfinite(diagonal[cell])) {
+        *bad_pivot = row;
+        *bad_cell = cell;
+        return -1;
+      }
+
+    for (size_t lower_index = 0; lower_index < symbolic->lower_count[row]; ++lower_index) {
+      const size_t lower_row = symbolic->lower[row * n + lower_index];
+      const size_t target_position = symbolic->position[lower_row * n + row];
+      double *target = matrix + target_position * cell_count;
+      for (size_t inner_index = 0; inner_index < symbolic->row_lower_count[lower_row]; ++inner_index) {
+        const size_t inner = symbolic->row_lower[lower_row * n + inner_index];
+        if (inner >= row)
+          break;
+        const size_t upper_position = symbolic->position[inner * n + row];
+        if (upper_position == SIZE_MAX)
+          continue;
+        const double *lower_value = matrix + symbolic->position[lower_row * n + inner] * cell_count;
+        const double *upper_value = matrix + upper_position * cell_count;
+        #pragma omp simd
+        for (size_t cell = 0; cell < cell_count; ++cell)
+          target[cell] -= lower_value[cell] * upper_value[cell];
+      }
+      #pragma omp simd
+      for (size_t cell = 0; cell < cell_count; ++cell)
+        target[cell] /= diagonal[cell];
+    }
+  }
+  return 0;
+}
+
 static void chem_solve(const chem_symbolic *symbolic, size_t cell_count, const double *matrix, double *rhs) {
   const size_t n = symbolic->species_count;
   for (size_t i = 0; i < n; ++i) {
@@ -628,6 +853,11 @@ static double chem_normalized_error(
   return fmax(result, 1.0e-10);
 }
 
+static double chem_step_size_factor(const chem_rosenbrock_parameters *parameters, double normalized_error) {
+  const double factor = parameters->safety_factor / pow(normalized_error, 1.0 / parameters->estimator_order);
+  return fmin(parameters->factor_max, fmax(parameters->factor_min, factor));
+}
+
 static int chem_allocate(size_t count, size_t width, double **out) {
   if (width && count > SIZE_MAX / width / sizeof(double))
     return -1;
@@ -636,7 +866,7 @@ static int chem_allocate(size_t count, size_t width, double **out) {
   return *out ? 0 : -1;
 }
 
-int chem_integrate_group_steps(
+int chem_integrate_group_steps_with_parameters(
     const chem_mechanism *mechanism,
     size_t cell_count,
     double *restrict y_external,
@@ -645,28 +875,35 @@ int chem_integrate_group_steps(
     const double *restrict pressure,
     double interval,
     size_t interval_count,
+    const chem_rosenbrock_parameters *solver_parameters,
     chem_statistics *statistics) {
   if (!mechanism || !cell_count || !interval_count || !y_external || !temperature || !pressure || interval <= 0.0 ||
-      !mechanism->species_count || !mechanism->reaction_count)
+      !mechanism->species_count || !mechanism->reaction_count ||
+      !chem_rosenbrock_parameters_valid(solver_parameters))
     return -1;
+  const chem_rosenbrock_parameters *solver = solver_parameters;
   const size_t n = mechanism->species_count;
   const size_t nr = mechanism->reaction_count;
   chem_symbolic symbolic;
-  if (chem_symbolic_build(mechanism, &symbolic) != 0)
+  if (chem_symbolic_build(mechanism, solver->lu_method, &symbolic) != 0)
     return -1;
-  double *y = NULL, *ynew = NULL, *initial_forcing = NULL, *error = NULL;
-  double *k[3] = { NULL, NULL, NULL };
+  double *y = NULL, *ynew = NULL, *initial_forcing = NULL, *stage_forcing = NULL, *error = NULL;
+  double *k[CHEM_ROSENBROCK_MAX_STAGES] = { NULL };
   double *parameters = NULL, *rates = NULL, *jacobian = NULL, *scratch = NULL;
   int failed = 0;
   if (chem_allocate(n, cell_count, &y) || chem_allocate(n, cell_count, &ynew) ||
-      chem_allocate(n, cell_count, &initial_forcing) || chem_allocate(n, cell_count, &error) ||
-      chem_allocate(n, cell_count, &k[0]) || chem_allocate(n, cell_count, &k[1]) ||
-      chem_allocate(n, cell_count, &k[2]) || chem_allocate(mechanism->parameter_count, cell_count, &parameters) ||
+      chem_allocate(n, cell_count, &initial_forcing) || chem_allocate(n, cell_count, &stage_forcing) ||
+      chem_allocate(n, cell_count, &error) || chem_allocate(mechanism->parameter_count, cell_count, &parameters) ||
       chem_allocate(nr, cell_count, &rates) || chem_allocate(symbolic.nonzero_count, cell_count, &jacobian) ||
       chem_allocate(1, cell_count, &scratch)) {
     failed = 1;
     goto cleanup;
   }
+  for (size_t stage = 0; stage < solver->stage_count; ++stage)
+    if (chem_allocate(n, cell_count, &k[stage]) != 0) {
+      failed = 1;
+      goto cleanup;
+    }
   for (size_t c = 0; c < cell_count; ++c)
     for (size_t s = 0; s < n; ++s)
       y[s * cell_count + c] = y_external[c * n + symbolic.permutation[s]];
@@ -683,24 +920,18 @@ int chem_integrate_group_steps(
      reaction constants are invariant across its internal stages and intervals. */
   chem_calculate_rates(mechanism, cell_count, parameters, temperature, pressure, rates);
 
-  const double gamma0 = 0.435866521508459;
-  const double c10 = -1.0156171083877702091975600115545;
-  const double c20 = 4.0759956452537699824805835358067;
-  const double c21 = 9.2076794298330791242156818474003;
-  const double a10 = 1.0;
-  const double m[3] = { 1.0, 6.1697947043828245592553615689730, -0.42772256543218573326238373806514 };
-  const double e[3] = { 0.5, -2.907955871680469821793236208017, 0.22354069897811569627360909276199 };
-  const double h_min = 1.0e-15 * interval;
-  const double h_max = interval;
-  const double round_off = DBL_EPSILON;
+  const double h_min = solver->h_min_fraction * interval;
+  const double h_max = fmin(solver->h_max_fraction * interval, interval);
+  const double h_start = fmin(solver->h_start_fraction * interval, h_max);
+  const double round_off = solver->round_off;
 
   for (size_t interval_index = 0; interval_index < interval_count; ++interval_index) {
-    double h = fmin(fmax(h_min, 1.0e-6 * interval), h_max);
+    double h = fmin(fmax(h_min, h_start), h_max);
     double present_time = 0.0;
     int reject_last_h = 0, reject_more_h = 0;
     size_t step_attempts = 0, accepted_this_interval = 0;
     while ((present_time - interval + round_off) <= 0.0) {
-      if (step_attempts > 1000) {
+      if (step_attempts > solver->max_internal_steps) {
         fprintf(stderr, "solver exceeded 1000 internal steps\n");
         failed = 1;
         goto cleanup;
@@ -718,7 +949,7 @@ int chem_integrate_group_steps(
 
       int accepted = 0;
       while (!accepted) {
-        const double alpha = 1.0 / (h * gamma0);
+        const double alpha = 1.0 / (h * solver->gamma0);
         for (size_t s = 0; s < n; ++s) {
           double *diagonal = jacobian + symbolic.position[s * n + s] * cell_count;
           #pragma omp simd
@@ -726,7 +957,10 @@ int chem_integrate_group_steps(
             diagonal[c] += alpha;
         }
         size_t bad_pivot = 0, bad_cell = 0;
-        if (chem_factor(&symbolic, cell_count, jacobian, scratch, &bad_pivot, &bad_cell) != 0) {
+        const int factor_status = solver->lu_method == CHEM_LU_DOOLITTLE
+            ? chem_factor_doolittle(&symbolic, cell_count, jacobian, &bad_pivot, &bad_cell)
+            : chem_factor(&symbolic, cell_count, jacobian, scratch, &bad_pivot, &bad_cell);
+        if (factor_status != 0) {
           const double bad_value = jacobian[symbolic.position[bad_pivot * n + bad_pivot] * cell_count + bad_cell];
           fprintf(stderr, "linear factorization failed at cell %zu time %.17g h %.17g pivot %zu value %.17g\n",
                   bad_cell, present_time, h, bad_pivot, bad_value);
@@ -735,35 +969,45 @@ int chem_integrate_group_steps(
         }
         if (statistics) ++statistics->decompositions;
 
-        memcpy(k[0], initial_forcing, n * cell_count * sizeof(double));
-        chem_solve(&symbolic, cell_count, jacobian, k[0]);
-        if (statistics) ++statistics->solves;
-        memcpy(ynew, y, n * cell_count * sizeof(double));
-        for (size_t i = 0; i < n * cell_count; ++i)
-          ynew[i] += a10 * k[0][i];
-        chem_add_forcing(mechanism, &symbolic, cell_count, ynew, rates, k[1], scratch);
-        if (statistics) ++statistics->function_calls;
-        memcpy(k[2], k[1], n * cell_count * sizeof(double));
-        const double c0 = c10 / h;
-        for (size_t i = 0; i < n * cell_count; ++i)
-          k[1][i] += c0 * k[0][i];
-        chem_solve(&symbolic, cell_count, jacobian, k[1]);
-        if (statistics) ++statistics->solves;
+        const size_t state_size = n * cell_count;
+        memcpy(stage_forcing, initial_forcing, state_size * sizeof(double));
+        for (size_t stage = 0; stage < solver->stage_count; ++stage) {
+          if (stage == 0) {
+            memcpy(k[stage], initial_forcing, state_size * sizeof(double));
+          } else {
+            if (solver->new_function_evaluation[stage]) {
+              const size_t coefficient_offset = stage * (stage - 1u) / 2u;
+              memcpy(ynew, y, state_size * sizeof(double));
+              for (size_t previous = 0; previous < stage; ++previous) {
+                const double coefficient = solver->a[coefficient_offset + previous];
+                for (size_t i = 0; i < state_size; ++i)
+                  ynew[i] += coefficient * k[previous][i];
+              }
+              chem_add_forcing(mechanism, &symbolic, cell_count, ynew, rates, stage_forcing, scratch);
+              if (statistics) ++statistics->function_calls;
+            }
+            memcpy(k[stage], stage_forcing, state_size * sizeof(double));
+            const size_t coefficient_offset = stage * (stage - 1u) / 2u;
+            for (size_t previous = 0; previous < stage; ++previous) {
+              const double coefficient = solver->c[coefficient_offset + previous] / h;
+              for (size_t i = 0; i < state_size; ++i)
+                k[stage][i] += coefficient * k[previous][i];
+            }
+          }
+          chem_solve(&symbolic, cell_count, jacobian, k[stage]);
+          if (statistics) ++statistics->solves;
+        }
 
-        const double c20_over_h = c20 / h;
-        const double c21_over_h = c21 / h;
-        for (size_t i = 0; i < n * cell_count; ++i)
-          k[2][i] += c20_over_h * k[0][i] + c21_over_h * k[1][i];
-        chem_solve(&symbolic, cell_count, jacobian, k[2]);
-        if (statistics) ++statistics->solves;
-
-        for (size_t i = 0; i < n * cell_count; ++i) {
-          ynew[i] = y[i] + m[0] * k[0][i] + m[1] * k[1][i] + m[2] * k[2][i];
-          error[i] = e[0] * k[0][i] + e[1] * k[1][i] + e[2] * k[2][i];
+        memcpy(ynew, y, state_size * sizeof(double));
+        memset(error, 0, state_size * sizeof(double));
+        for (size_t stage = 0; stage < solver->stage_count; ++stage) {
+          for (size_t i = 0; i < state_size; ++i) {
+            ynew[i] += solver->m[stage] * k[stage][i];
+            error[i] += solver->e[stage] * k[stage][i];
+          }
         }
         const double normalized_error = chem_normalized_error(mechanism, &symbolic, cell_count, y, ynew, error);
-        double factor = 0.9 / pow(normalized_error, 1.0 / 3.0);
-        factor = fmin(6.0, fmax(0.2, factor));
+        const double factor = chem_step_size_factor(solver, normalized_error);
         double hnew = h * factor;
         if (statistics) ++statistics->internal_steps;
         ++step_attempts;
@@ -786,7 +1030,7 @@ int chem_integrate_group_steps(
           accepted = 1;
         } else {
           if (reject_more_h)
-            hnew = h * 0.1;
+            hnew = h * solver->rejection_factor_decrease;
           reject_more_h = reject_last_h;
           reject_last_h = 1;
           h = hnew;
@@ -818,16 +1062,45 @@ cleanup:
   free(y);
   free(ynew);
   free(initial_forcing);
+  free(stage_forcing);
   free(error);
-  free(k[0]);
-  free(k[1]);
-  free(k[2]);
+  for (size_t stage = 0; stage < CHEM_ROSENBROCK_MAX_STAGES; ++stage)
+    free(k[stage]);
   free(parameters);
   free(rates);
   free(jacobian);
   free(scratch);
   chem_symbolic_destroy(&symbolic);
   return failed ? -1 : 0;
+}
+
+int chem_integrate_group_steps(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    double *restrict y,
+    double *restrict parameters,
+    const double *restrict temperature,
+    const double *restrict pressure,
+    double interval,
+    size_t interval_count,
+    chem_statistics *statistics) {
+  const chem_rosenbrock_parameters solver = chem_rosenbrock_default_parameters();
+  return chem_integrate_group_steps_with_parameters(
+      mechanism, cell_count, y, parameters, temperature, pressure, interval, interval_count, &solver, statistics);
+}
+
+int chem_integrate_group_with_parameters(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    double *restrict y,
+    double *restrict parameters,
+    const double *restrict temperature,
+    const double *restrict pressure,
+    double interval,
+    const chem_rosenbrock_parameters *solver_parameters,
+    chem_statistics *statistics) {
+  return chem_integrate_group_steps_with_parameters(
+      mechanism, cell_count, y, parameters, temperature, pressure, interval, 1, solver_parameters, statistics);
 }
 
 int chem_integrate_group(
@@ -839,6 +1112,194 @@ int chem_integrate_group(
     const double *restrict pressure,
     double interval,
     chem_statistics *statistics) {
-  return chem_integrate_group_steps(
-      mechanism, cell_count, y, parameters, temperature, pressure, interval, 1, statistics);
+  const chem_rosenbrock_parameters solver = chem_rosenbrock_default_parameters();
+  return chem_integrate_group_with_parameters(
+      mechanism, cell_count, y, parameters, temperature, pressure, interval, &solver, statistics);
+}
+
+int chem_finite_difference_jacobian(
+    chem_forcing_callback forcing,
+    void *context,
+    const double *state,
+    size_t block_count,
+    size_t species_count,
+    double perturbation,
+    double *jacobian) {
+  if (!forcing || !state || !jacobian || !block_count || !species_count ||
+      !isfinite(perturbation) || perturbation <= 0.0 || species_count > SIZE_MAX / species_count ||
+      block_count > SIZE_MAX / (species_count * species_count) || species_count > SIZE_MAX / (5u * sizeof(double)))
+    return -1;
+  const size_t width = species_count * species_count;
+  double *workspace = malloc(5u * species_count * sizeof(double));
+  if (!workspace)
+    return -1;
+  double *plus_state = workspace;
+  double *minus_state = plus_state + species_count;
+  double *plus_forcing = minus_state + species_count;
+  double *minus_forcing = plus_forcing + species_count;
+  double *base_forcing = minus_forcing + species_count;
+  for (size_t block = 0; block < block_count; ++block) {
+    const double *base_state = state + block * species_count;
+    double *block_jacobian = jacobian + block * width;
+    for (size_t column = 0; column < species_count; ++column) {
+      memcpy(plus_state, base_state, species_count * sizeof(double));
+      memcpy(minus_state, base_state, species_count * sizeof(double));
+      const double x = base_state[column];
+      const double h = perturbation * fmax(1.0, fabs(x));
+      if (!isfinite(x) || !isfinite(h) || h <= 0.0) {
+        free(workspace);
+        return -1;
+      }
+      const int use_central = x - h >= 0.0;
+      plus_state[column] = x + h;
+      if (use_central)
+        minus_state[column] = x - h;
+      memset(plus_forcing, 0, species_count * sizeof(double));
+      if (forcing(block, plus_state, species_count, plus_forcing, context) != 0) {
+        free(workspace);
+        return -1;
+      }
+      for (size_t row = 0; row < species_count; ++row) {
+        if (!isfinite(plus_forcing[row])) {
+          free(workspace);
+          return -1;
+        }
+      }
+      if (use_central) {
+        memset(minus_forcing, 0, species_count * sizeof(double));
+        if (forcing(block, minus_state, species_count, minus_forcing, context) != 0) {
+          free(workspace);
+          return -1;
+        }
+        for (size_t row = 0; row < species_count; ++row)
+          if (!isfinite(minus_forcing[row])) {
+            free(workspace);
+            return -1;
+          }
+      } else {
+        memset(base_forcing, 0, species_count * sizeof(double));
+        if (forcing(block, base_state, species_count, base_forcing, context) != 0) {
+          free(workspace);
+          return -1;
+        }
+      }
+      for (size_t row = 0; row < species_count; ++row) {
+        if (!use_central && !isfinite(base_forcing[row])) {
+          free(workspace);
+          return -1;
+        }
+        block_jacobian[row * species_count + column] = use_central
+            ? (plus_forcing[row] - minus_forcing[row]) / (2.0 * h)
+            : (plus_forcing[row] - base_forcing[row]) / h;
+        if (!isfinite(block_jacobian[row * species_count + column])) {
+          free(workspace);
+          return -1;
+        }
+      }
+    }
+  }
+  free(workspace);
+  return 0;
+}
+
+int chem_compare_jacobian_to_finite_difference(
+    const unsigned char *pattern,
+    const double *negative_jacobian,
+    const double *finite_difference_jacobian,
+    size_t block_count,
+    size_t species_count,
+    double absolute_tolerance,
+    double relative_tolerance,
+    chem_jacobian_comparison *result) {
+  if (!pattern || !negative_jacobian || !finite_difference_jacobian || !result || !block_count ||
+      !species_count || species_count > SIZE_MAX / species_count ||
+      block_count > SIZE_MAX / (species_count * species_count) || !isfinite(absolute_tolerance) ||
+      !isfinite(relative_tolerance) || absolute_tolerance < 0.0 || relative_tolerance < 0.0)
+    return -1;
+  memset(result, 0, sizeof(*result));
+  result->passed = 1;
+  const size_t width = species_count * species_count;
+  for (size_t block = 0; block < block_count; ++block) {
+    for (size_t row = 0; row < species_count; ++row) {
+      for (size_t column = 0; column < species_count; ++column) {
+        const size_t index = row * species_count + column;
+        if (!pattern[index]) continue;
+        const size_t offset = block * width + index;
+        const double analytical = -negative_jacobian[offset];
+        const double fd = finite_difference_jacobian[offset];
+        if (!isfinite(analytical) || !isfinite(fd)) {
+          result->passed = 0;
+          result->max_absolute_error = INFINITY;
+          result->max_relative_error = INFINITY;
+          result->worst_block = block;
+          result->worst_row = row;
+          result->worst_column = column;
+          result->worst_analytical = analytical;
+          result->worst_finite_difference = fd;
+          continue;
+        }
+        const double absolute_error = fabs(analytical - fd);
+        const double scale = fmax(fabs(analytical), fabs(fd));
+        const double relative_error = scale > 0.0 ? absolute_error / scale : 0.0;
+        if (absolute_error > result->max_absolute_error) {
+          result->max_absolute_error = absolute_error;
+          result->worst_block = block;
+          result->worst_row = row;
+          result->worst_column = column;
+          result->worst_analytical = analytical;
+          result->worst_finite_difference = fd;
+        }
+        if (relative_error > result->max_relative_error)
+          result->max_relative_error = relative_error;
+        if (absolute_error > absolute_tolerance + relative_tolerance * scale)
+          result->passed = 0;
+      }
+    }
+  }
+  return 0;
+}
+
+int chem_check_jacobian_sparsity(
+    const unsigned char *pattern,
+    const double *finite_difference_jacobian,
+    size_t block_count,
+    size_t species_count,
+    double threshold,
+    chem_jacobian_comparison *result) {
+  if (!pattern || !finite_difference_jacobian || !result || !block_count || !species_count ||
+      species_count > SIZE_MAX / species_count || block_count > SIZE_MAX / (species_count * species_count) ||
+      !isfinite(threshold) || threshold < 0.0)
+    return -1;
+  memset(result, 0, sizeof(*result));
+  result->passed = 1;
+  const size_t width = species_count * species_count;
+  for (size_t block = 0; block < block_count; ++block) {
+    for (size_t row = 0; row < species_count; ++row) {
+      for (size_t column = 0; column < species_count; ++column) {
+        const size_t index = row * species_count + column;
+        if (pattern[index]) continue;
+        const double fd = fabs(finite_difference_jacobian[block * width + index]);
+        if (!isfinite(fd)) {
+          result->passed = 0;
+          result->max_absolute_error = INFINITY;
+          result->worst_block = block;
+          result->worst_row = row;
+          result->worst_column = column;
+          result->worst_analytical = 0.0;
+          result->worst_finite_difference = fd;
+          continue;
+        }
+        if (fd > threshold && fd > result->max_absolute_error) {
+          result->passed = 0;
+          result->max_absolute_error = fd;
+          result->worst_block = block;
+          result->worst_row = row;
+          result->worst_column = column;
+          result->worst_analytical = 0.0;
+          result->worst_finite_difference = fd;
+        }
+      }
+    }
+  }
+  return 0;
 }

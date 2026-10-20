@@ -8,7 +8,7 @@ BUILD := build
 BIN := bin
 GEN := $(BUILD)/generated
 LIBSRC := src/chem.c
-LIBHDR := include/chem.h
+LIBHDR := include/chem.h include/jacobian_verification.h
 CONFIG := config/ts1.json
 GENSRC := $(GEN)/ts1.c
 NO_USER_CONFIG := config/rate_constants_no_user_defined/config.yaml
@@ -109,7 +109,21 @@ $(BUILD)/test_tutorial_programs.o: tests/test_tutorial_programs.c $(LIBHDR)
 $(BIN)/test_tutorial_programs: $(BUILD)/test_tutorial_programs.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs
+$(BUILD)/test_jacobian_verification.o: tests/test_jacobian_verification.c include/jacobian_verification.h
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_jacobian_verification: $(BUILD)/test_jacobian_verification.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(OPENMP_LDFLAGS) -lm -o $@
+
+$(BUILD)/test_solver_configuration.o: tests/test_solver_configuration.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_solver_configuration: $(BUILD)/test_solver_configuration.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu

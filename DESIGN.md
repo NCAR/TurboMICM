@@ -12,20 +12,31 @@ mechanism input is the provided TS1 builder header.
 The library API in `include/chem.h` takes a `chem_mechanism` descriptor. It can
 also evaluate a single rate constant through `chem_evaluate_rate`, or integrate
 cell-major state arrays in a group through `chem_integrate_group` and
-`chem_integrate_group_steps`.
+`chem_integrate_group_steps`. Callers can select a Rosenbrock coefficient set
+with `chem_integrate_group_with_parameters`; the public struct stores up to six
+stages, row-wise `a` and `c` coefficients, weights, and step controls. The
+constructors include two-, three-, four-, four-stage DA, and six-stage DA sets.
+The parameter set also selects Doolittle LU or the in-place Mozart LU used by
+the TS1 benchmark.
+The public `jacobian_verification.h` helpers use a C forcing callback to compute
+finite-difference Jacobians and compare them with a sparse pattern; they support
+central differences and forward differences at the nonnegative boundary.
 
 ## Solver path
 
 `src/chem.c` builds the reaction dependency graph and sparse Jacobian pattern
-once per group call. It applies a Markowitz species permutation to reduce fill,
-constructs the in-place Mozart sparse LU structure, then stores mutable state and
-work arrays in the group context. Rate constants are cached for the duration of
-the call because temperature, pressure, and rate parameters remain fixed during
-an ODE solve. The forcing and Jacobian loops traverse cells contiguously; the
-cell loops use `#pragma omp simd` where applicable.
+once per group call. The benchmark's in-place Mozart LU applies a Markowitz
+species permutation to reduce fill; the Doolittle path preserves mechanism
+order. Both reuse the symbolic pattern and group-local work arrays. Rate
+constants are cached for the duration of the call because temperature,
+pressure, and rate parameters remain fixed during an ODE solve. The forcing and
+Jacobian loops traverse cells contiguously; the cell loops use `#pragma omp simd`
+where applicable.
 
-The integrator uses MICM's default three-stage Rosenbrock coefficients, error
-estimate, step-size controller, and mechanism tolerances. Independent groups
+The default integrator uses MICM's three-stage Rosenbrock coefficients, error
+estimate, step-size controller, and mechanism tolerances. Callers may pass
+another `chem_rosenbrock_parameters` set through the same integration API.
+Independent groups
 run concurrently with a static OpenMP schedule. The benchmark creates
 `min(threads, cells)` contiguous balanced groups, so each active thread owns one
 adaptive solver history. The default thread count is OpenMP's maximum; use
@@ -40,15 +51,15 @@ reactions at the next interval. Larger negative values are retained.
 
 ## Extension points
 
-- **Add a Rosenbrock parameter set:** add its coefficients and selection to the
-  integrator parameter interface, keeping the error estimate and solver stages
-  together as a named method.
-- **Replace the step-size controller:** isolate the error-to-next-step policy
-  from the stage evaluation in `chem_integrate_group_steps`; preserve the
-  current tolerance norm or make its replacement explicit in the API.
-- **Swap the linear solver:** replace the symbolic pattern/factor/solve helpers
-  while retaining the `chem_factor`/`chem_solve` boundary and the cell-batched
-  matrix storage.
+- **Add a Rosenbrock parameter set:** fill a `chem_rosenbrock_parameters` value
+  with the stage count, triangular `a` and `c` arrays, stage flags, output/error
+  weights, and `gamma0`. Pass it to `chem_integrate_group_with_parameters`.
+- **Replace the step-size controller:** replace `chem_step_size_factor` and
+  adjust the h bounds in `chem_integrate_group_steps_with_parameters`; the
+  method stages and error norm remain separate.
+- **Swap the linear solver:** select `CHEM_LU_DOOLITTLE` or
+  `CHEM_LU_MOZART_IN_PLACE` in `chem_rosenbrock_parameters`; a new method can be
+  added at the factor/solve boundary while reusing the cell-batched storage.
 - **Add a rate type:** extend `chem_rate_kind`, normalization and descriptor
   generation in `tools/generate.py`, then implement the formula in
   `chem_rate_value` and add direct formula and generated-configuration checks.

@@ -25,6 +25,9 @@
 - The sparse LU uses MICM's in-place Mozart factor/solve approach. A symbolic
   Markowitz permutation is applied to reduce fill while preserving the original
   mechanism order in the public state layout.
+- The solver parameter API also exposes Doolittle LU in natural species order
+  for MICM CPU tutorial configurations that use the default Doolittle solver.
+  TS1 keeps the in-place Mozart default used by its benchmark reference.
 - Tiny negative accepted concentrations are set to zero at interval boundaries
   only when their magnitude is within the configured absolute tolerance. This
   addresses roundoff undershoots that otherwise propagate through fast

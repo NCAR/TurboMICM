@@ -21,6 +21,12 @@ typedef enum {
 } chem_rate_kind;
 
 enum { CHEM_RATE_PARAMETER_COUNT = 24, CHEM_SPECIES_THIRD_BODY = 1u };
+enum { CHEM_ROSENBROCK_MAX_STAGES = 6, CHEM_ROSENBROCK_MAX_COEFFICIENTS = 15 };
+
+typedef enum {
+  CHEM_LU_MOZART_IN_PLACE = 0,
+  CHEM_LU_DOOLITTLE = 1
+} chem_lu_method;
 
 typedef struct {
   const char *name;
@@ -88,7 +94,37 @@ typedef struct {
   unsigned long solves;
 } chem_statistics;
 
+typedef struct {
+  size_t stage_count;
+  unsigned char new_function_evaluation[CHEM_ROSENBROCK_MAX_STAGES];
+  /* Strictly lower-triangular row storage: offset i*(i-1)/2 + j for stage i, j<i. */
+  double a[CHEM_ROSENBROCK_MAX_COEFFICIENTS];
+  double c[CHEM_ROSENBROCK_MAX_COEFFICIENTS];
+  double m[CHEM_ROSENBROCK_MAX_STAGES];
+  double e[CHEM_ROSENBROCK_MAX_STAGES];
+  double gamma0;
+  chem_lu_method lu_method;
+  double estimator_order;
+  double round_off;
+  double factor_min;
+  double factor_max;
+  double rejection_factor_decrease;
+  double safety_factor;
+  /* Step limits are fractions of the requested interval. */
+  double h_start_fraction;
+  double h_min_fraction;
+  double h_max_fraction;
+  size_t max_internal_steps;
+} chem_rosenbrock_parameters;
+
 const chem_mechanism *chem_generated_mechanism(void);
+
+/* Default MICM three-stage Rosenbrock coefficients and error controls. */
+chem_rosenbrock_parameters chem_rosenbrock_default_parameters(void);
+chem_rosenbrock_parameters chem_rosenbrock_two_stage_parameters(void);
+chem_rosenbrock_parameters chem_rosenbrock_four_stage_parameters(void);
+chem_rosenbrock_parameters chem_rosenbrock_four_stage_da_parameters(void);
+chem_rosenbrock_parameters chem_rosenbrock_six_stage_da_parameters(void);
 
 /* Evaluate one reaction's rate coefficient for one cell. Parameters are in
    descriptor order; pass NULL when the mechanism has no custom parameters.
@@ -124,6 +160,29 @@ int chem_integrate_group_steps(
     const double *restrict pressure,
     double interval,
     size_t interval_count,
+    chem_statistics *statistics);
+
+int chem_integrate_group_with_parameters(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    double *restrict y,
+    double *restrict parameters,
+    const double *restrict temperature,
+    const double *restrict pressure,
+    double interval,
+    const chem_rosenbrock_parameters *solver_parameters,
+    chem_statistics *statistics);
+
+int chem_integrate_group_steps_with_parameters(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    double *restrict y,
+    double *restrict parameters,
+    const double *restrict temperature,
+    const double *restrict pressure,
+    double interval,
+    size_t interval_count,
+    const chem_rosenbrock_parameters *solver_parameters,
     chem_statistics *statistics);
 
 #ifdef __cplusplus

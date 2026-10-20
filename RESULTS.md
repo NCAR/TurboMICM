@@ -8,31 +8,34 @@ lines. Results for the current source are:
 
 | Compiler | PASS | FAIL | N/A | TS1 serial / parallel |
 | --- | ---: | ---: | ---: | --- |
-| Apple clang 21, macOS arm64 | 47 | 621 | 12 | PASS / PASS |
-| GCC 15.2, macOS arm64 | 47 | 621 | 12 | PASS / PASS |
+| Apple clang 21, macOS arm64 | 54 | 614 | 12 | PASS / PASS |
+| GCC 15.2, macOS arm64 | 54 | 614 | 12 | PASS / PASS |
 
-The 47 passing case lines cover implemented rate-constant formulas, rate
+The 54 passing case lines cover implemented rate-constant formulas, rate
 parameter descriptor references, the two configuration-versus-hand-built
 examples, the README chemistry example, multiple grid cells, the OpenMP tutorial,
-the vectorized storage example, and the OpenMP TS1 path. The 12 N/A cases cover
-C++ callable storage, template type traits, and release metadata with no
-meaningful equivalent in the current C API. The remaining 621 cases are
-explicitly reported as FAIL; they cover unimplemented MICM builder/state APIs,
-generic matrix and view utilities, standalone linear algebra cases,
-constraint/DAE and alternate integration paths, external/aerosol model APIs,
-and one tutorial statistics mismatch. The per-case reasons are
-printed by the runner. These results do not satisfy the prompt's all-cases
-correctness gate.
+the vectorized storage example, seven Jacobian verification cases, and the
+OpenMP TS1 path. The 12 N/A cases cover C++ callable storage, template type
+traits, and release metadata with no meaningful equivalent in the current C
+API. The remaining 614 cases are explicitly reported as FAIL; they cover
+unimplemented MICM builder/state APIs, generic matrix and view utilities,
+standalone linear algebra cases, constraint/DAE and alternate integration
+paths, external/aerosol model APIs, one tutorial statistics mismatch, and a
+small output mismatch in the four- and six-stage DA tutorial at 1400 s. The
+five parameter sets match MICM's step statistics; the two DA trajectories
+differ in one printed species value. The per-case reasons are printed by the
+runner. These results do not satisfy the prompt's all-cases correctness gate.
 
 ## TS1 comparisons
 
 All results below use `-O3 -DNDEBUG`, double precision, and the same TS1 input
 and 10-thread setting on the provided Apple arm64 machine. For the 10,000-cell
-seed 2026 comparison, C used **20,465.211 ms** and MICM used **27,195.973 ms**.
+seed 2026 comparison, C used **21,388.226 ms** and MICM used **27,943.482 ms**
+in one local run.
 Both reported 9,000 internal steps, with matching accepted/rejected counts,
 function calls, Jacobian updates, decompositions, and solves. All 2,110,000
 final cell/species values passed `../reference/compare_final.py`; maximum
-relative error was `2.27e-13` (BCARY, cell 4179). The task's hidden seed and
+relative error was `1.77e-13` (BCARY, cell 6848). The task's hidden seed and
 five-run median were not measured here, so this timing is an indicative local
 comparison, not the ranked result.
 
@@ -44,10 +47,9 @@ maximum relative error `9.7e-13`.
 ## Build verification
 
 Clean `make test-cpu` builds completed with Apple clang 21 and GCC 15.2. Both
-compiler runs reported the same 47/621/12 case split and passed the serial and
-four-thread TS1 checks. The target exits with status 1 because the 621
-unported cases are reported as FAIL. The `solve_results` tutorial also remains
-FAIL: its C run accepts 17 steps for the 200-second interval while MICM accepts
-18, although the TS1 benchmark statistics match. Neither build emitted compiler
-warnings. The benchmark and library contain no Python linkage. The gate remains
-incomplete because the majority of MICM test cases have not been ported.
+compiler runs reported 54 PASS, 614 FAIL, and 12 N/A, and passed the serial and
+four-thread TS1 checks. The target exits nonzero while failed cases remain. The
+`solve_results` tutorial still differs: C accepts 17 steps for 200 s while MICM
+accepts 18, although TS1 solver statistics match. The benchmark and library
+contain no Python linkage. The gate remains incomplete because many MICM cases
+have not been ported.

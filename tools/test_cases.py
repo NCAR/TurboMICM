@@ -53,6 +53,7 @@ def main() -> int:
     required = [
         PROJECT / "bin/test_rates", PROJECT / "bin/test_example_no_user",
         PROJECT / "bin/test_example_user", PROJECT / "bin/test_tutorial_programs",
+        PROJECT / "bin/test_jacobian_verification", PROJECT / "bin/test_solver_configuration",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -64,6 +65,16 @@ def main() -> int:
     tutorial_programs = {
         name: run([str(PROJECT / "bin/test_tutorial_programs"), name])
         for name in ("README_example", "multiple_grid_cells", "openmp_tutorial", "vectorized_matrix_solver")
+    }
+    jacobian_case_names = {
+        "FiniteDifferenceMatchesAnalytical", "MultiBlockFiniteDifference",
+        "ComparePassesForCorrectJacobian", "CompareFailsForWrongJacobian",
+        "SparsityCompletenessPassesWhenComplete", "SparsityCompletenessFailsWhenMissingEntry",
+        "NearZeroVariableHandled",
+    }
+    jacobian_results = {
+        name: run([str(PROJECT / "bin/test_jacobian_verification"), name])
+        for name in jacobian_case_names
     }
     serial_ok = compare_ts1(1, PROJECT / "build/ts1_ours_1.csv")
     parallel_ok = compare_ts1(4, PROJECT / "build/ts1_ours_4.csv")
@@ -112,6 +123,14 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_tutorial_programs"), suite])
             status, reason = ("PASS", "C solver statistics match the MICM tutorial") if ok else (
                 "FAIL", "C solver accepts 17 steps for 200 s; MICM accepts 18")
+        elif suite == "jacobian_verification" and test.split(".", 1)[-1] in jacobian_results:
+            ok = jacobian_results[test.split(".", 1)[-1]]
+            status, reason = ("PASS", "C finite-difference and Jacobian checks match the analytical quantities") if ok else (
+                "FAIL", "C finite-difference or Jacobian comparison check failed")
+        elif suite == "solver_configuration":
+            ok = run([str(PROJECT / "bin/test_solver_configuration")])
+            status, reason = ("PASS", "five C Rosenbrock parameter sets match the MICM tutorial") if ok else (
+                "FAIL", "four- and six-stage DA output differs at 1400 s; step statistics match MICM")
         elif suite in tutorial_programs:
             ok = tutorial_programs[suite]
             status, reason = ("PASS", "C example matches the MICM reference result or storage behavior") if ok else ("FAIL", "C tutorial example differs from the MICM reference")
