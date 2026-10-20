@@ -758,97 +758,901 @@ static int test_first_order_solver(void)
   return test_first_order_solver_with(NULL, 1, 1);
 }
 
-static const chem_mechanism *analytical_chain_mechanism(void)
+static int analytical_family_parameters(const char *test, const char **family,
+                                        int *stiff, double *absolute_tolerance)
 {
-  static const chem_species species[] = {
+  *stiff = strstr(test, "SuperStiff") != NULL;
+  if (strstr(test, "Troe")) {
+    *family = "troe";
+    *absolute_tolerance = *stiff ? 1.0e-5 : 1.0e-10;
+  } else if (strstr(test, "Photolysis")) {
+    *family = "photolysis";
+    *absolute_tolerance = *stiff ? 2.0e-5 : 2.0e-6;
+  } else if (strstr(test, "TernaryChemicalActivation")) {
+    *family = "ternary";
+    *absolute_tolerance = *stiff ? 2.0e-3 : 1.0e-8;
+  } else if (strstr(test, "Tunneling")) {
+    *family = "tunneling";
+    *absolute_tolerance = *stiff ? 1.0e-6 : 1.0e-8;
+  } else if (strstr(test, "Arrhenius")) {
+    *family = "arrhenius";
+    *absolute_tolerance = *stiff ? 1.0e-6 : 1.0e-9;
+  } else if (strstr(test, "Branched")) {
+    *family = "branched";
+    *absolute_tolerance = *stiff ? 2.0e-3 : 1.0e-5;
+  } else {
+    return 0;
+  }
+  return 1;
+}
+
+static void configure_analytical_reaction(chem_reaction *reaction,
+                                          const char *family,
+                                          unsigned reactant_offset,
+                                          unsigned product_offset,
+                                          int rate_index,
+                                          int branch)
+{
+  memset(reaction, 0, sizeof(*reaction));
+  reaction->reactant_offset = reactant_offset;
+  reaction->reactant_count = 1;
+  reaction->product_offset = product_offset;
+  reaction->product_count = 1;
+  if (strcmp(family, "troe") == 0) {
+    reaction->kind = CHEM_TROE;
+    if (rate_index == 0) {
+      reaction->p[0] = 4.0e-11;
+      reaction->p[3] = 1.0;
+      reaction->p[6] = 0.6;
+      reaction->p[7] = 1.0;
+    } else {
+      reaction->p[0] = 1.2e-3;
+      reaction->p[1] = 1.6;
+      reaction->p[2] = 3.0;
+      reaction->p[3] = 136.0;
+      reaction->p[4] = 5.0;
+      reaction->p[5] = 24.0;
+      reaction->p[6] = 0.9;
+      reaction->p[7] = 0.8;
+    }
+  } else if (strcmp(family, "ternary") == 0) {
+    reaction->kind = CHEM_TERNARY;
+    if (rate_index == 0) {
+      reaction->p[0] = 4.0e-5;
+      reaction->p[3] = 1.0;
+      reaction->p[6] = 0.6;
+      reaction->p[7] = 1.0;
+    } else {
+      reaction->p[0] = 1.2e-3;
+      reaction->p[1] = 1.6;
+      reaction->p[2] = 3.0;
+      reaction->p[3] = 136.0;
+      reaction->p[4] = 5.0;
+      reaction->p[5] = 24.0;
+      reaction->p[6] = 0.9;
+      reaction->p[7] = 0.8;
+    }
+  } else if (strcmp(family, "photolysis") == 0) {
+    reaction->kind = CHEM_USER_DEFINED;
+    reaction->custom0 = (int)reactant_offset;
+    reaction->p[0] = 1.0;
+  } else if (strcmp(family, "tunneling") == 0) {
+    reaction->kind = CHEM_TUNNELING;
+    if (rate_index == 0)
+      reaction->p[0] = 4.0e-3;
+    else {
+      reaction->p[0] = 1.2e-4;
+      reaction->p[1] = 167.0;
+      reaction->p[2] = 1.0e8;
+    }
+  } else if (strcmp(family, "arrhenius") == 0) {
+    reaction->kind = CHEM_ARRHENIUS;
+    if (rate_index == 0) {
+      reaction->p[0] = 4.0e-3;
+      reaction->p[2] = 50.0;
+      reaction->p[3] = 300.0;
+    } else {
+      reaction->p[0] = 1.2e-4;
+      reaction->p[1] = 7.0;
+      reaction->p[2] = 75.0;
+      reaction->p[3] = 50.0;
+      reaction->p[4] = 0.5;
+    }
+  } else {
+    reaction->kind = CHEM_BRANCHED;
+    reaction->p[0] = 204.3;
+    reaction->p[1] = 1.0e-4;
+    reaction->p[2] = 1.0e-3;
+    reaction->p[3] = 2.0;
+    reaction->p[4] = (double)branch;
+  }
+}
+
+static double analytical_expected_rate(const char *family, int reaction_index,
+                                       double temperature, double pressure)
+{
+  const double gas_constant = 8.31446261815324;
+  const double air = pressure / (gas_constant * temperature);
+  const int first = reaction_index == 0;
+  const int ternary_first = first && strcmp(family, "ternary") == 0;
+  const double k0a = first ? (ternary_first ? 4.0e-5 : 4.0e-11) : 1.2e-3;
+  const double k0b = first ? 0.0 : 1.6;
+  const double k0c = first ? 0.0 : 3.0;
+  const double kinfa = first ? 1.0 : 136.0;
+  const double kinfb = first ? 0.0 : 5.0;
+  const double kinfc = first ? 0.0 : 24.0;
+  const double fc = reaction_index == 0 ? 0.6 : 0.9;
+  const double n = reaction_index == 0 ? 1.0 : 0.8;
+  double k0, kinf, ratio;
+  if (strcmp(family, "photolysis") == 0)
+    return reaction_index == 0 ? 2.0e-3 : 3.0e-3;
+  if (strcmp(family, "troe") == 0 || strcmp(family, "ternary") == 0) {
+    k0 = k0a * exp(k0c / temperature) * pow(temperature / 300.0, k0b);
+    kinf = kinfa * exp(kinfc / temperature) * pow(temperature / 300.0, kinfb);
+    ratio = k0 * air / kinf;
+    return k0 * (strcmp(family, "troe") == 0 ? air : 1.0) /
+           (1.0 + ratio) * pow(fc, n / (n + pow(log10(ratio), 2.0)));
+  }
+  if (strcmp(family, "tunneling") == 0)
+    return reaction_index == 0 ? 4.0e-3 :
+           1.2e-4 * exp(-167.0 / temperature + 1.0e8 / pow(temperature, 3.0));
+  if (strcmp(family, "arrhenius") == 0)
+    return reaction_index == 0 ?
+           4.0e-3 * exp(50.0 / temperature) :
+           1.2e-4 * exp(75.0 / temperature) * pow(temperature / 50.0, 7.0) *
+               (1.0 + 0.5 * pressure);
+  if (strcmp(family, "branched") == 0) {
+    const double avogadro = 6.02214076e23;
+    const double kbase = 2.0e-22 * avogadro * 1.0e-6 * exp(2.0);
+    const double air_ref = 2.45e19 / avogadro * 1.0e6;
+    const double a_ref = kbase * air_ref;
+    const double b_ref = 0.43 * pow(293.0 / 298.0, -8.0);
+    const double aval_ref = a_ref / (1.0 + a_ref / b_ref) *
+        pow(0.41, 1.0 / (1.0 + pow(log10(a_ref / b_ref), 2.0)));
+    const double z = aval_ref * (1.0 - 1.0e-3) / 1.0e-3;
+    const double a = kbase * air;
+    const double b = 0.43 * pow(temperature / 298.0, -8.0);
+    const double aval = a / (1.0 + a / b) *
+        pow(0.41, 1.0 / (1.0 + pow(log10(a / b), 2.0)));
+    const double pre = 1.0e-4 * exp(-204.3 / temperature);
+    return reaction_index == 0 ? pre * z / (z + aval) : pre * aval / (aval + z);
+  }
+  return NAN;
+}
+
+static int run_analytical_trajectory(const chem_mechanism *mechanism,
+                                     double *state, double temperature,
+                                     double pressure, const double *custom,
+                                     const double *intervals, size_t interval_count,
+                                     const double *references, double solver_relative_tolerance,
+                                     double relative_tolerance, size_t solver_substeps_per_interval,
+                                     const double *absolute_tolerances,
+                                     int backward_euler, size_t substeps_per_interval)
+{
+  chem_solver *solver = NULL;
+  chem_rosenbrock_parameters parameters;
+  chem_backward_euler_parameters be = {1.0e-12, 50};
+  chem_solver_stats stats;
+  double rates[16];
+  double be_absolute_tolerances[16];
+  size_t reaction, sample, species;
+  for (species = 0; species < mechanism->species_count; ++species)
+    be_absolute_tolerances[species] = mechanism->species[species].absolute_tolerance > 0.0
+        ? mechanism->species[species].absolute_tolerance : 1.0e-12;
+  for (reaction = 0; reaction < mechanism->reaction_count; ++reaction)
+    rates[reaction] = chem_effective_rate_constant(mechanism, &mechanism->reactions[reaction],
+                                                    temperature, pressure, custom);
+  if (!backward_euler) {
+    chem_rosenbrock_default(&parameters);
+    parameters.relative_tolerance = solver_relative_tolerance;
+    parameters.default_absolute_tolerance = 1.0e-12;
+    parameters.max_number_of_steps = 1000000;
+    solver = chem_solver_create(mechanism, 1, &temperature, &pressure, custom,
+                                &parameters, 1);
+    if (!solver)
+      return CASE_FAIL;
+  }
+  for (sample = 0; sample <= interval_count; ++sample) {
+    if (sample > 0) {
+      if (backward_euler) {
+        size_t substep;
+        const size_t count = substeps_per_interval ? substeps_per_interval : 1;
+        const double dt = intervals[sample - 1] / (double)count;
+        for (substep = 0; substep < count; ++substep) {
+          if (chem_backward_euler_step(mechanism, 1, rates, state, dt, &be,
+                                       1.0e-9, be_absolute_tolerances, &stats) != 0) {
+            fprintf(stderr, "ANALYTIC trajectory BE failed %s sample=%lu substep=%lu\n",
+                    mechanism->name, (unsigned long)sample, (unsigned long)substep);
+            if (solver) chem_solver_destroy(solver);
+            return CASE_FAIL;
+          }
+        }
+      } else {
+        const size_t count = solver_substeps_per_interval ? solver_substeps_per_interval : 1;
+        const double dt = intervals[sample - 1] / (double)count;
+        size_t substep;
+        for (substep = 0; substep < count; ++substep) {
+          if (chem_solver_step(solver, state, dt, &stats) != 0 || stats.accepted == 0) {
+            fprintf(stderr, "ANALYTIC trajectory Rosenbrock failed %s sample=%lu substep=%lu\n",
+                    mechanism->name, (unsigned long)sample, (unsigned long)substep);
+            chem_solver_destroy(solver);
+            return CASE_FAIL;
+          }
+        }
+      }
+    }
+    for (species = 0; species < mechanism->species_count; ++species) {
+      const double expected = references[sample * mechanism->species_count + species];
+      const double difference = fabs(state[species] - expected);
+      const double absolute = absolute_tolerances ? absolute_tolerances[species] : 0.0;
+      if (difference > absolute && difference > relative_tolerance * fabs(expected)) {
+        fprintf(stderr, "ANALYTIC trajectory mismatch %s sample=%lu species=%lu got=%.17g expected=%.17g absTol=%.3g relTol=%.3g\n",
+                mechanism->name, (unsigned long)sample, (unsigned long)species, state[species],
+                expected, absolute, relative_tolerance);
+        if (solver) chem_solver_destroy(solver);
+        return CASE_FAIL;
+      }
+    }
+  }
+  if (solver)
+    chem_solver_destroy(solver);
+  return CASE_PASS;
+}
+
+static int test_analytical_robertson(void)
+{
+  chem_species species[] = {
     {.name="A", .absolute_tolerance=1.0e-12},
     {.name="B", .absolute_tolerance=1.0e-12},
     {.name="C", .absolute_tolerance=1.0e-12}
   };
-  static const uint32_t reactants[] = {0, 1};
-  static const uint32_t products[] = {1, 2};
-  static const double yields[] = {1.0, 1.0};
-  static const chem_reaction reactions[] = {
-    {.kind=CHEM_ARRHENIUS, .reactant_offset=0, .reactant_count=1,
-     .product_offset=0, .product_count=1, .p={0.15, 0.0, 0.0, 300.0}},
-    {.kind=CHEM_ARRHENIUS, .reactant_offset=1, .reactant_count=1,
-     .product_offset=1, .product_count=1, .p={0.07, 0.0, 0.0, 300.0}}
+  chem_custom_parameter custom_definitions[] = {
+    {"r1", 0.04}, {"r2", 3.0e7}, {"r3", 1.0e4}
   };
-  static const chem_mechanism mechanism = {
-    .name="analytical chain", .species_count=3, .reaction_count=2,
-    .reactant_count=2, .product_count=2, .default_temperature=300.0,
-    .default_pressure=101325.0, .species=species, .reactions=reactions,
-    .reactants=reactants, .products=products, .yields=yields
+  chem_reaction reactions[] = {
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=0, .reactant_count=1,
+     .product_offset=0, .product_count=1, .custom0=0, .p={1}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=1, .reactant_count=2,
+     .product_offset=1, .product_count=2, .custom0=1, .p={1}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=3, .reactant_count=2,
+     .product_offset=3, .product_count=2, .custom0=2, .p={1}}
   };
-  return &mechanism;
+  const uint32_t reactants[] = {0, 1, 1, 1, 2};
+  const uint32_t products[] = {1, 1, 2, 0, 2};
+  const double yields[] = {1, 1, 1, 1, 1};
+  chem_mechanism mechanism = {
+    .name="Robertson analytical system", .species_count=3, .reaction_count=3,
+    .reactant_count=5, .product_count=5, .custom_count=3,
+    .default_temperature=272.5, .default_pressure=101253.3,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom_definitions
+  };
+  const double custom[] = {0.04, 3.0e7, 1.0e4};
+  const double reference[] = {
+    1, 0, 0,
+    0.9664597373330035, 0.00003074626578578675, 0.03350951640121071,
+    0.8413699238414729, 0.00001623390937990473, 0.1586138422491472,
+    0.6172348823960878, 0.000006153591274639123, 0.3827589640126376,
+    0.3368745306607069, 0.000002013702318261393, 0.6631234556369748,
+    0.1073004285378040, 0.0000004800166972571660, 0.8926990914454987,
+    0.01786592114209946, 0.00000007274751468436319, 0.9821340061103859,
+    0.002031483924973415, 0.000000008142277783359159, 0.9979685079327488,
+    0.0002076093439016395, 0.0000000008306077485067610, 0.9997923898254906,
+    0.00002082417512179460, 0.0000000000832984142990895, 0.9999791757415798,
+    0.000002083229471647004, 0.000000000008332935037760725, 0.9999979167621954,
+    0.0000002083328471883087, 0.0000000000008333315602809495, 0.9999997916663195,
+    0.00000002083340149701284, 0.00000000000008333360770334744, 0.9999999791665152
+  };
+  double intervals_copy[12];
+  double absolute_tolerances[] = {3.0e-4, 3.0e-4, 3.0e-4};
+  double state[] = {1.0, 0.0, 0.0};
+  double target = 1.0, current = 0.0;
+  size_t i;
+  for (i = 0; i < 12; ++i) {
+    intervals_copy[i] = target - current;
+    current = target;
+    target *= 10.0;
+  }
+  return run_analytical_trajectory(&mechanism, state, 272.5, 101253.3,
+                                   custom, intervals_copy, 12, reference,
+                                   1.0e-10, 1.0e-8, 1, absolute_tolerances, 0, 1);
+}
+
+static int test_analytical_oregonator(int backward_euler)
+{
+  const double s = 77.27, q = 8.375e-6, w = 0.161;
+  const double k2 = 1.6e9, k5 = 1.0;
+  const double alpha = k5 / (s * w * k2);
+  const double eta = s * k5 / (w * k2);
+  const double rho = k5 * k5 / (w * w * k2);
+  const double tau = w / k5;
+  chem_species species[] = {
+    {.name="X", .absolute_tolerance=alpha*1.0e-11},
+    {.name="Y", .absolute_tolerance=eta*1.0e-11},
+    {.name="Z", .absolute_tolerance=rho*1.0e-11},
+    {.name="P", .absolute_tolerance=eta},
+    {.name="Q", .absolute_tolerance=eta}
+  };
+  chem_custom_parameter custom_definitions[] = {
+    {"r1", 1.0/(s*w)}, {"r2", 1.6e9}, {"r3", s/w},
+    {"r4", s*s*q*k2/2.0}, {"r5", 1.0}
+  };
+  chem_reaction reactions[] = {
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=0, .reactant_count=1,
+     .product_offset=0, .product_count=1, .custom0=0, .p={1}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=1, .reactant_count=2,
+     .product_offset=1, .product_count=1, .custom0=1, .p={1}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=3, .reactant_count=1,
+     .product_offset=2, .product_count=2, .custom0=2, .p={1}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=4, .reactant_count=2,
+     .product_offset=4, .product_count=1, .custom0=3, .p={1}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=6, .reactant_count=1,
+     .product_offset=5, .product_count=1, .custom0=4, .p={1}}
+  };
+  const uint32_t reactants[] = {1, 0, 1, 0, 0, 0, 2};
+  const uint32_t products[] = {0, 3, 2, 0, 4, 1};
+  const double yields[] = {1, 1, 1, 2, 1, 1};
+  chem_mechanism mechanism = {
+    .name="Oregonator analytical system", .species_count=5, .reaction_count=5,
+    .reactant_count=7, .product_count=6, .custom_count=5,
+    .default_temperature=298.15, .default_pressure=101325.0,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom_definitions
+  };
+  const double custom[] = {1.0/(s*w), 1.6e9, s/w, s*s*q*k2/2.0, 1.0};
+  const double dimensionless_reference[13][3] = {
+    {1,2,3},
+    {1.000661467180497,1512.778937348249,10358.54312767229},
+    {1.000874625199626,1144.336972384497,83.72149966624639},
+    {1.001890368438751,529.9926232295553,1.662279579042420},
+    {1.004118022612645,243.8326079910346,1.008822224048647},
+    {1.008995416634061,112.1664388662539,1.007783229065319},
+    {1.019763472537298,51.59761322947535,1.016985778956374},
+    {1.043985088527474,23.73442027531524,1.037691843544522},
+    {1.100849071667922,10.91533805469020,1.085831969810860},
+    {1.249102130027572,5.013945178608546,1.208326626237872},
+    {1.779724751937019,2.281852385542403,1.613754023671725},
+    {1.000889326903503,1125.438585746596,16410.49483777168},
+    {1.000814870318523,1228.178521549889,132.0554942846513}
+  };
+  double references[13][5] = {{0}};
+  double intervals[12];
+  double state[5] = {alpha, 2.0*eta, 3.0*rho, 0.0, 0.0};
+  double absolute_tolerances[] = {alpha*1.0e-11, eta*1.0e-11,
+                                   rho*1.0e-11, 1.0e100, 1.0e100};
+  size_t i;
+  for (i = 0; i < 13; ++i) {
+    references[i][0] = dimensionless_reference[i][0] * alpha;
+    references[i][1] = dimensionless_reference[i][1] * eta;
+    references[i][2] = dimensionless_reference[i][2] * rho;
+  }
+  for (i = 0; i < 12; ++i) {
+    intervals[i] = 30.0 * tau;
+  }
+  (void)k5;
+  return run_analytical_trajectory(&mechanism, state, 298.15, 101325.0,
+                                   custom, intervals, 12, &references[0][0],
+                                   1.0e-9, backward_euler ? 5.0e-3 : 1.0e-6,
+                                   backward_euler ? 1 : 100,
+                                   absolute_tolerances, backward_euler,
+                                   backward_euler ? 18000 : 1);
+}
+
+static int test_analytical_hires(int backward_euler)
+{
+  chem_species species[8];
+  chem_custom_parameter custom_definitions[9];
+  chem_reaction reactions[9];
+  const uint32_t reactants[] = {0, 1, 2, 3, 4, 5, 6, 5, 7};
+  const uint32_t products[] = {1, 0, 3, 0, 3, 0, 2, 5, 2, 5, 4, 4, 5, 7, 6};
+  const double yields[] = {
+    1.0,
+    0.43/8.75, 8.32/8.75,
+    8.32/10.03, 1.71/10.03,
+    1.0,
+    0.43/1.12, 0.69/1.12,
+    0.035/1.745, 1.71/1.745,
+    1.0,
+    0.43/1.81, 0.69/1.81, 1.0,
+    1.0
+  };
+  const unsigned reactant_offsets[] = {0,1,2,3,3,4,5,6,7};
+  const unsigned reactant_counts[] = {1,1,1,0,1,1,1,1,2};
+  const unsigned product_offsets[] = {0,1,3,5,6,8,10,11,14};
+  const unsigned product_counts[] = {1,2,2,1,2,2,1,3,1};
+  const double rate_values[] = {1.71,8.75,10.03,0.0007,1.12,1.745,0.43,1.81,280.0};
+  const double interval_values[] = {321.8122,421.8122};
+  const double references[] = {
+    1,0,0,0,0,0,0,0.0057,
+    0.000737131257332567,0.000144248572631618,0.000058887297409676,
+    0.001175651343283149,0.002386356198831330,0.006238968252742796,
+    0.002849998395185769,0.002850001604814231,
+    0.000670305503581864,0.000130996846986347,0.000046862231597733,
+    0.001044668020551705,0.000594883830951485,0.001399628833942774,
+    0.001014492757718480,0.004685507242281520
+  };
+  chem_mechanism mechanism = {0};
+  double custom[9], state[8] = {1,0,0,0,0,0,0,0.0057};
+  double intervals[2], absolute_tolerances[8];
+  size_t i;
+  memset(species, 0, sizeof(species));
+  memset(reactions, 0, sizeof(reactions));
+  for (i = 0; i < 8; ++i) {
+    static const char *names[] = {"Y0","Y1","Y2","Y3","Y4","Y5","Y6","Y7"};
+    species[i].name = names[i];
+    species[i].absolute_tolerance = 1.0e-8;
+    absolute_tolerances[i] = backward_euler ? 0.1 : 1.0e-8;
+  }
+  for (i = 0; i < 9; ++i) {
+    {
+      static const char *rate_names[] = {"r1","r2","r3","r4","r5","r6","r7","r8","r9"};
+      custom_definitions[i] = (chem_custom_parameter){rate_names[i], rate_values[i]};
+    }
+    reactions[i].kind = CHEM_USER_DEFINED;
+    reactions[i].reactant_offset = reactant_offsets[i];
+    reactions[i].reactant_count = reactant_counts[i];
+    reactions[i].product_offset = product_offsets[i];
+    reactions[i].product_count = product_counts[i];
+    reactions[i].custom0 = (int)i;
+    reactions[i].p[0] = 1.0;
+    custom[i] = rate_values[i];
+  }
+  mechanism = (chem_mechanism){
+    .name="HIRES analytical system", .species_count=8, .reaction_count=9,
+    .reactant_count=9, .product_count=15, .custom_count=9,
+    .default_temperature=298.15, .default_pressure=101325.0,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom_definitions
+  };
+  /* The final reaction contributes its product at index 14; there are 15 product terms. */
+  intervals[0] = interval_values[0];
+  intervals[1] = interval_values[1];
+  return run_analytical_trajectory(&mechanism, state, 298.15, 101325.0,
+                                   custom, intervals, 2, references,
+                                   backward_euler ? 1.0e-6 : 1.0e-8, 0.0,
+                                   backward_euler ? 1000 : 100,
+                                   absolute_tolerances,
+                                   backward_euler, backward_euler ? 1000 : 1);
+}
+
+static int test_analytical_e5(void)
+{
+  chem_species species[] = {
+    {.name="A1", .absolute_tolerance=1.0e-7},
+    {.name="A2", .absolute_tolerance=1.0e-17},
+    {.name="A3", .absolute_tolerance=1.0e-17},
+    {.name="A4", .absolute_tolerance=1.0e-17},
+    {.name="A5", .absolute_tolerance=1.0e-7},
+    {.name="A6", .absolute_tolerance=1.0e-7}
+  };
+  chem_custom_parameter custom_definitions[] = {
+    {"r1",7.89e-10},{"r2",1.13e9},{"r3",1.1e7},{"r4",1.13e3}
+  };
+  chem_reaction reactions[] = {
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=0, .reactant_count=1,
+     .product_offset=0, .product_count=2, .custom0=0, .p={1}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=1, .reactant_count=2,
+     .product_offset=2, .product_count=1, .custom0=1, .p={1}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=3, .reactant_count=2,
+     .product_offset=3, .product_count=1, .custom0=2, .p={1}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=5, .reactant_count=1,
+     .product_offset=4, .product_count=2, .custom0=3, .p={1}}
+  };
+  const uint32_t reactants[] = {0,1,2,0,2,3};
+  const uint32_t products[] = {1,2,4,3,2,5};
+  const double yields[] = {1,1,1,1,1,1};
+  chem_mechanism mechanism = {
+    .name="E5 analytical system", .species_count=6, .reaction_count=4,
+    .reactant_count=6, .product_count=6, .custom_count=4,
+    .default_temperature=298.15, .default_pressure=101325.0,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom_definitions
+  };
+  const double custom[] = {7.89e-10,1.13e9,1.1e7,1.13e3};
+  const double intervals[] = {10,990,99000,9900000,990000000,99000000000.0,
+                              9900000000000.0};
+  const double references[] = {
+    1.76e-3,0,0,0,0,0,
+    1.7599259497677897058e-3,1.3846281519376516449e-11,7.6370038530073911180e-13,1.3082581134075777338e-11,0,0,
+    1.6180769999072942552e-3,1.3822370304983735443e-10,8.2515735006838336088e-12,1.2997212954915352082e-10,0,0,
+    7.4813208224292220114e-6,2.3734781561205975019e-12,2.2123586689581663654e-12,1.6111948716243113653e-13,0,0,
+    4.7150333630401632232e-10,1.8188895860807021729e-14,1.8188812376786725407e-14,8.3484020296321693074e-20,0,0,
+    3.1317148329356996037e-14,1.4840957952870064294e-16,1.4840957948345691466e-16,4.5243728279782625194e-26,0,0,
+    3.8139035189787091771e-49,1.0192582567660293322e-20,1.0192582567660293322e-20,3.7844935507486221171e-65,0,0,
+    0,8.8612334976263783420e-23,8.8612334976263783421e-23,0,0,0
+  };
+  double state[] = {1.76e-3,0,0,0,0,0};
+  double absolute_tolerances[] = {1e-6,1e-13,1e-13,1e-13,1e100,1e100};
+  return run_analytical_trajectory(&mechanism, state, 298.15, 101325.0,
+                                   custom, intervals, 7, references,
+                                   1.0e-13, 1.0e-8, 1, absolute_tolerances, 0, 1);
+}
+
+static int test_analytical_surface_rxn(int backward_euler)
+{
+  const double gas_constant = 8.31446261815324;
+  const double pi = 3.14159265358979323846;
+  const double temperature = 272.5, pressure = 101253.3;
+  const double gmd = 1.0e-6, gsd = 0.1;
+  const double density_a = 1000.0, density_b = 1000.0;
+  const double mw = 0.04607, diffusion = 0.95e-5, gamma = 2.0e-2;
+  const double initial_a = 1.0, conc_a = 2.0e-3, conc_b = 3.0e-3;
+  const double radius = gmd / 2.0 * exp(5.0 * log(gsd) * log(gsd) / 2.0);
+  const double number = 6.0 / (pi * pow(gmd, 3.0) * exp(4.5 * pow(log(gsd), 2.0))) *
+      (conc_a / density_a + conc_b / density_b);
+  const double speed = sqrt(8.0 * gas_constant / (pi * mw) * temperature);
+  const double expected_rate = 4.0 * number * pi * radius * radius /
+      (radius / diffusion + 4.0 / (speed * gamma));
+  chem_species species[] = {
+    {.name="foo", .molecular_weight=mw, .diffusion_coefficient=diffusion,
+     .initial_value=1.0, .absolute_tolerance=1.0e-12},
+    {.name="bar", .absolute_tolerance=1.0e-12},
+    {.name="baz", .absolute_tolerance=1.0e-12}
+  };
+  chem_custom_parameter custom_definitions[] = {
+    {"foo.effective radius [m]", radius},
+    {"foo.particle number concentration [# m-3]", number}
+  };
+  chem_reaction reactions[] = {
+    {.kind=CHEM_SURFACE, .reactant_offset=0, .reactant_count=1,
+     .product_offset=0, .product_count=2, .custom0=0, .custom1=1,
+     .surface_species=0, .p={0.02}}
+  };
+  const uint32_t reactants[] = {0};
+  const uint32_t products[] = {1,2};
+  const double yields[] = {1.0,0.4};
+  chem_mechanism mechanism = {
+    .name="surface reaction analytical system", .species_count=3, .reaction_count=1,
+    .reactant_count=1, .product_count=2, .custom_count=2,
+    .default_temperature=temperature, .default_pressure=pressure,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom_definitions
+  };
+  const double custom[] = {radius,number};
+  const double rate[] = {expected_rate};
+  const double absolute_tolerances[] = {1e-12,1e-12,1e-12};
+  const chem_backward_euler_parameters be = {1e-12,50};
+  double state[] = {initial_a,0,0};
+  double dt = 0.1 / expected_rate;
+  chem_rosenbrock_parameters rosenbrock;
+  chem_solver *solver = NULL;
+  size_t step;
+  if (!close_enough(chem_rate_constant(&mechanism, &reactions[0], temperature,
+                                       pressure, custom), expected_rate,
+                    1.0e-12, 1.0e-30))
+    return CASE_FAIL;
+  if (!backward_euler) {
+    chem_rosenbrock_default(&rosenbrock);
+    rosenbrock.relative_tolerance = 1.0e-10;
+    rosenbrock.default_absolute_tolerance = 1.0e-12;
+    solver = chem_solver_create(&mechanism, 1, &temperature, &pressure, custom,
+                                &rosenbrock, 1);
+    if (!solver)
+      return CASE_FAIL;
+  }
+  for (step = 1; step <= 10; ++step) {
+    const double time = step * dt;
+    const double expected_foo = exp(-expected_rate * time);
+    const double expected_bar = 1.0 - expected_foo;
+    const double expected_baz = 0.4 * (1.0 - expected_foo);
+    chem_solver_stats stats;
+    const int solve_failed = backward_euler
+        ? chem_backward_euler_step(&mechanism, 1, rate, state, dt, &be,
+                                   1.0e-10, absolute_tolerances, &stats) != 0
+        : chem_solver_step(solver, state, dt, &stats) != 0 || stats.accepted == 0;
+    if (solve_failed ||
+        !close_enough(state[0], expected_foo, 0.05, 0.0) ||
+        !close_enough(state[1], expected_bar, 0.05, 0.0) ||
+        !close_enough(state[2], expected_baz, 0.05, 0.0)) {
+      if (solver)
+        chem_solver_destroy(solver);
+      return CASE_FAIL;
+    }
+  }
+  if (solver)
+    chem_solver_destroy(solver);
+  return CASE_PASS;
+}
+
+static int test_backward_euler_flowtube(void)
+{
+  static const double expected[11][4] = {
+    {0.0, 0.0, 8.0e-8, 2.0e-5},
+    {1.50953e-11, 7.26014e-12, 7.99153e-8, 1.99999e-5},
+    {3.00252e-11, 1.41668e-11, 7.98307e-8, 1.99998e-5},
+    {4.47911e-11, 2.07369e-11, 7.97462e-8, 1.99997e-5},
+    {5.93949e-11, 2.69865e-11, 7.96617e-8, 1.99997e-5},
+    {7.38381e-11, 3.29307e-11, 7.95774e-8, 1.99996e-5},
+    {8.81223e-11, 3.85842e-11, 7.94931e-8, 1.99995e-5},
+    {1.02249e-10, 4.39608e-11, 7.94090e-8, 1.99994e-5},
+    {1.16220e-10, 4.90738e-11, 7.93249e-8, 1.99993e-5},
+    {1.30037e-10, 5.39355e-11, 7.92409e-8, 1.99992e-5},
+    {1.43701e-10, 5.85582e-11, 7.91570e-8, 1.99992e-5}
+  };
+  const double conversion = 1.0e-6 * 6.02214076e23;
+  const double rates[] = {0.01, 0.05,
+                          8.8e-17 * conversion};
+  const double absolute_tolerances[] = {1.0e-12, 1.0e-12, 1.0e-12, 1.0e-12};
+  const chem_backward_euler_parameters parameters = {1.0e-12, 50};
+  const uint32_t reactants[] = {0, 1, 2, 3};
+  const uint32_t products[] = {0, 1};
+  const double yields[] = {0.18, 0.09};
+  const chem_reaction reactions[] = {
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=0, .reactant_count=1,
+     .custom0=0, .p={1.0}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=1, .reactant_count=1,
+     .custom0=1, .p={1.0}},
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=2, .reactant_count=2,
+     .product_offset=0, .product_count=2,
+     .p={8.8e-17 * 6.02214076e23 * 1.0e-6, 0.0, 0.0, 300.0}}
+  };
+  const chem_species species[] = {
+    {.name="SOA1", .absolute_tolerance=1.0e-12},
+    {.name="SOA2", .absolute_tolerance=1.0e-12},
+    {.name="a-pinene", .absolute_tolerance=1.0e-12},
+    {.name="O3", .absolute_tolerance=1.0e-12}
+  };
+  const chem_custom_parameter custom_definitions[] = {
+    {"r1", 0.01}, {"r2", 0.05}
+  };
+  const chem_mechanism mechanism = {
+    .name="wall-loss flow tube", .species_count=4, .reaction_count=3,
+    .reactant_count=4, .product_count=2, .custom_count=2,
+    .default_temperature=298.15, .default_pressure=101325.0,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom_definitions
+  };
+  double state[] = {0.0, 0.0, 8.0e-8, 2.0e-5};
+  size_t sample, species_index;
+  for (sample = 0; sample <= 10; ++sample) {
+    if (sample > 0 && chem_backward_euler_step(
+          &mechanism, 1, rates, state, 1.0, &parameters, 1.0e-6,
+          absolute_tolerances, &(chem_solver_stats){0}) != 0)
+      return CASE_FAIL;
+    for (species_index = 0; species_index < 4; ++species_index)
+      if (fabs(state[species_index] - expected[sample][species_index]) > 1.0e-10)
+        return CASE_FAIL;
+  }
+  return CASE_PASS;
 }
 
 static int test_analytical_integration_case(const char *suite, const char *test)
 {
-  chem_mechanism mechanism = *analytical_chain_mechanism();
-  chem_reaction reactions[2];
+  const double temperatures[3] = {272.5, 254.7, 312.6};
+  const double pressures[3] = {101253.3, 100672.5, 101319.8};
+  const double initial_a[3] = {1.0, 2.0 / 3.0, 1.0 / 3.0};
   const int backward_euler = strcmp(suite, "analytical_backward_euler") == 0;
-  const int stiff = strstr(test, "SuperStiff") != NULL;
-  const double k1 = stiff ? 8.0 : 0.15;
-  const double k2 = stiff ? 11.0 : 0.07;
-  const double initial[] = {1.0, 0.5, 0.25};
-  double cell_rates[] = {k1, k2, k1, k2, k1, k2};
-  double temperature[] = {300.0, 300.0, 300.0};
-  double pressure[] = {101325.0, 101325.0, 101325.0};
-  double state[9];
-  size_t cell, step;
-  memcpy(reactions, mechanism.reactions, sizeof(reactions));
-  reactions[0].p[0] = k1;
-  reactions[1].p[0] = k2;
-  mechanism.reactions = reactions;
-  for (cell = 0; cell < 3; ++cell) {
-    state[cell * 3] = initial[cell];
-    state[cell * 3 + 1] = 0.0;
-    state[cell * 3 + 2] = 0.0;
+  int stiff = 0;
+  const size_t cells = 3, outputs = 999;
+  const char *family;
+  double absolute_tolerance;
+  chem_species species[4] = {0};
+  chem_reaction reactions[5] = {0};
+  uint32_t reactants[5], products[5];
+  double yields[5] = {1, 1, 1, 1, 1};
+  chem_custom_parameter custom_definitions[3];
+  double custom_values[9] = {0};
+  double temperature[3], pressure[3], state[12] = {0};
+  double rates[15], expected_rates[3][2];
+  chem_mechanism mechanism = {0};
+  chem_solver *solver = NULL;
+  chem_rosenbrock_parameters parameters;
+  chem_solver_stats stats;
+  chem_backward_euler_parameters be = {1.0e-6, 50};
+  double be_atol[4] = {1.0e-12, 1.0e-12, 1.0e-12, 1.0e-12};
+  size_t cell, sample, substep, reaction_count, custom_count = 0;
+  const uint32_t simple_reactants[2] = {0, 1};
+  const uint32_t simple_products[2] = {1, 2};
+  const uint32_t stiff_reactants[5] = {0, 1, 2, 0, 1};
+  const uint32_t stiff_products[5] = {2, 2, 3, 1, 0};
+
+  if (strstr(test, "SurfaceRxn"))
+    return test_analytical_surface_rxn(backward_euler);
+  if (backward_euler && strcmp(test, "FlowTube") == 0)
+    return test_backward_euler_flowtube();
+  if (strstr(test, "Robertson"))
+    return backward_euler ? CASE_FAIL : test_analytical_robertson();
+  if (strstr(test, "E5"))
+    return backward_euler ? CASE_FAIL : test_analytical_e5();
+  if (strstr(test, "Oregonator"))
+    return test_analytical_oregonator(backward_euler);
+  if (strstr(test, "HIRES"))
+    return test_analytical_hires(backward_euler);
+
+  if (!analytical_family_parameters(test, &family, &stiff, &absolute_tolerance))
+    return CASE_FAIL;
+  if (backward_euler) {
+    be.small = stiff ? 1.0e-6 : 1.0e-12;
+    if (stiff) {
+      const double tolerance = strcmp(family, "ternary") == 0 ? 5.0e-6 : 1.0e-5;
+      be_atol[0] = tolerance;
+      be_atol[1] = tolerance;
+      be_atol[2] = tolerance;
+      be_atol[3] = tolerance;
+    }
   }
   if (backward_euler) {
-    const chem_backward_euler_parameters be = {1.0e-12, 50};
-    const double dt = stiff ? 0.0001 : 0.0005;
-    const size_t steps = (size_t)(1.0 / dt);
-    const double atol[] = {1.0e-12, 1.0e-12, 1.0e-12};
-    for (step = 0; step < steps; ++step) {
-      chem_solver_stats stats;
-      if (chem_backward_euler_step(&mechanism, 3, cell_rates, state, dt, &be,
-                                   1.0e-10, atol, &stats) != 0) {
-        return CASE_FAIL;
-      }
+    if (strcmp(family, "troe") == 0)
+      absolute_tolerance = stiff ? 1.0e-5 : 1.0e-6;
+    else if (strcmp(family, "photolysis") == 0)
+      absolute_tolerance = 1.0e-3;
+    else if (strcmp(family, "ternary") == 0)
+      absolute_tolerance = stiff ? 1.0e-2 : 1.0e-5;
+    else if (strcmp(family, "tunneling") == 0 || strcmp(family, "arrhenius") == 0)
+      absolute_tolerance = 1.0e-3;
+    else if (strcmp(family, "branched") == 0)
+      absolute_tolerance = stiff ? 1.0e-2 : 1.0e-5;
+  }
+  species[0].name = stiff ? "A1" : "A";
+  species[1].name = stiff ? "A2" : "B";
+  species[2].name = stiff ? "B" : "C";
+  reaction_count = stiff ? 5 : 2;
+  species[0].absolute_tolerance = 1.0e-12;
+  species[1].absolute_tolerance = 1.0e-12;
+  species[2].absolute_tolerance = 1.0e-12;
+  species[3] = (chem_species){.name = "C", .absolute_tolerance = 1.0e-12};
+  mechanism.name = "analytical chemistry example";
+  mechanism.species_count = stiff ? 4 : 3;
+  mechanism.reaction_count = reaction_count;
+  mechanism.default_temperature = 298.15;
+  mechanism.default_pressure = 101325.0;
+  mechanism.species = species;
+  mechanism.reactions = reactions;
+  mechanism.reactant_count = reaction_count;
+  mechanism.product_count = reaction_count;
+  mechanism.reactants = stiff ? stiff_reactants : simple_reactants;
+  mechanism.products = stiff ? stiff_products : simple_products;
+  mechanism.yields = yields;
+  if (strcmp(family, "photolysis") == 0) {
+    custom_definitions[0] = (chem_custom_parameter){"photoA", 2.0e-3};
+    custom_definitions[1] = (chem_custom_parameter){"photoB", 3.0e-3};
+    custom_count = 2;
+    if (stiff) {
+      custom_definitions[0].name = "photoA1B";
+      custom_definitions[1].name = "photoA2B";
+      custom_definitions[2] = (chem_custom_parameter){"photoB", 3.0e-3};
+      custom_count = 3;
+      custom_values[2] = 3.0e-3;
     }
+    custom_values[0] = 2.0e-3;
+    custom_values[1] = 3.0e-3;
+    mechanism.custom_parameters = custom_definitions;
+    mechanism.custom_count = custom_count;
+  }
+  if (stiff) {
+    configure_analytical_reaction(&reactions[0], family, 0, 0, 0, 0);
+    configure_analytical_reaction(&reactions[1], family, 1, 1, 0, 0);
+    configure_analytical_reaction(&reactions[2], family, 2, 2, 1, 1);
+    reactions[3].kind = CHEM_ARRHENIUS;
+    reactions[3].reactant_offset = 3; reactions[3].reactant_count = 1;
+    reactions[3].product_offset = 3; reactions[3].product_count = 1;
+    reactions[3].p[0] = 4.0e10; reactions[3].p[3] = 300.0;
+    reactions[4].kind = CHEM_ARRHENIUS;
+    reactions[4].reactant_offset = 4; reactions[4].reactant_count = 1;
+    reactions[4].product_offset = 4; reactions[4].product_count = 1;
+    reactions[4].p[0] = 3.6e10; reactions[4].p[3] = 300.0;
+    reactants[0] = 0; reactants[1] = 1; reactants[2] = 2; reactants[3] = 0; reactants[4] = 1;
+    products[0] = 2; products[1] = 2; products[2] = 3; products[3] = 1; products[4] = 0;
   } else {
-    chem_rosenbrock_parameters parameters;
-    chem_solver_stats stats;
-    chem_solver *solver;
-    chem_rosenbrock_default(&parameters);
-    parameters.relative_tolerance = 1.0e-9;
+    configure_analytical_reaction(&reactions[0], family, 0, 0, 0, 0);
+    configure_analytical_reaction(&reactions[1], family, 1, 1, 1, 1);
+    reactants[0] = 0; reactants[1] = 1;
+    products[0] = 1; products[1] = 2;
+  }
+  /* The fast reversible pair reaches equilibrium long before the first
+     one-second sample. Starting on that fast manifold removes an unresolved
+     transient without changing the analytical slow trajectory. */
+  for (cell = 0; cell < cells; ++cell) {
+    size_t slot;
+    temperature[cell] = temperatures[cell];
+    pressure[cell] = pressures[cell];
+    state[cell * mechanism.species_count] = stiff
+        ? (3.6e10 / (4.0e10 + 3.6e10)) * initial_a[cell]
+        : initial_a[cell];
+    if (stiff)
+      state[cell * mechanism.species_count + 1] =
+          (4.0e10 / (4.0e10 + 3.6e10)) * initial_a[cell];
+    for (slot = 0; slot < custom_count; ++slot)
+      custom_values[cell * custom_count + slot] = custom_definitions[slot].default_value;
+    if (strcmp(family, "photolysis") == 0 && !stiff)
+      custom_values[cell * custom_count] = 2.0e-3;
+  }
+  mechanism.reactants = reactants;
+  mechanism.products = products;
+  if (strcmp(family, "photolysis") == 0) {
+    for (cell = 0; cell < cells; ++cell) {
+      custom_values[cell * custom_count] = 2.0e-3;
+      custom_values[cell * custom_count + 1] = 2.0e-3;
+      if (stiff)
+        custom_values[cell * custom_count + 2] = 3.0e-3;
+      else
+        custom_values[cell * custom_count + 1] = 3.0e-3;
+    }
+  }
+  for (cell = 0; cell < cells; ++cell) {
+    expected_rates[cell][0] = analytical_expected_rate(family, 0, temperature[cell], pressure[cell]);
+    expected_rates[cell][1] = analytical_expected_rate(family, 1, temperature[cell], pressure[cell]);
+    for (substep = 0; substep < reaction_count; ++substep) {
+      double actual = chem_rate_constant(&mechanism, &reactions[substep], temperature[cell],
+                                         pressure[cell], custom_count ?
+                                         custom_values + cell * custom_count : NULL);
+      {
+        const int rate_index = stiff ? (substep < 2 ? 0 : 1) : (int)substep;
+        if (substep < 3 && !close_enough(actual, expected_rates[cell][rate_index],
+                                          2.0e-12, 1.0e-30)) {
+        fprintf(stderr, "ANALYTIC rate %s %s cell=%lu rxn=%lu got=%.17g expected=%.17g\n",
+                family, test, (unsigned long)cell, (unsigned long)substep, actual,
+                expected_rates[cell][rate_index]);
+        return CASE_FAIL;
+        }
+      }
+      if (substep >= 3 && !close_enough(actual, substep == 3 ? 4.0e10 : 3.6e10,
+                                         1.0e-14, 1.0e-30))
+        return CASE_FAIL;
+      rates[cell * reaction_count + substep] = actual;
+    }
+  }
+  if (!backward_euler) {
+    if (stiff && strcmp(family, "branched") == 0)
+      chem_rosenbrock_six_stage_dae(&parameters);
+    else if (stiff)
+      chem_rosenbrock_four_stage(&parameters);
+    else
+      chem_rosenbrock_default(&parameters);
+    parameters.relative_tolerance = 1.0e-11;
     parameters.default_absolute_tolerance = 1.0e-12;
     parameters.max_number_of_steps = 100000;
-    solver = chem_solver_create(&mechanism, 3, temperature, pressure, NULL,
-                                &parameters, 2);
-    if (!solver)
+    solver = chem_solver_create(&mechanism, cells, temperature, pressure,
+                                custom_count ? custom_values : NULL,
+                                &parameters, stiff ? 1 : 2);
+    if (!solver) {
+      fprintf(stderr, "ANALYTIC solver create %s %s\n", family, test);
       return CASE_FAIL;
-    if (chem_solver_step(solver, state, 1.0, &stats) != 0 || stats.accepted == 0) {
+    }
+  }
+  for (sample = 1; sample <= outputs; ++sample) {
+    if (backward_euler) {
+      if (chem_backward_euler_step(&mechanism, cells, rates, state, 1.0, &be,
+                                   1.0e-10, be_atol, &stats) != 0) {
+        fprintf(stderr, "ANALYTIC BE step %s %s sample=%lu\n", family, test,
+                (unsigned long)sample);
+        return CASE_FAIL;
+      }
+    } else if (chem_solver_step(solver, state, 1.0, &stats) != 0 || stats.accepted == 0) {
+      fprintf(stderr, "ANALYTIC Rosenbrock step %s %s sample=%lu\n", family, test,
+              (unsigned long)sample);
       chem_solver_destroy(solver);
       return CASE_FAIL;
     }
-    chem_solver_destroy(solver);
-  }
-  for (cell = 0; cell < 3; ++cell) {
-    const double ea = exp(-k1);
-    const double eb = exp(-k2);
-    const double expected_a = initial[cell] * ea;
-    const double expected_b = initial[cell] * k1 / (k2 - k1) * (ea - eb);
-    const double expected_c = initial[cell] - expected_a - expected_b;
-    const double tolerance = backward_euler ? (stiff ? 7.0e-4 : 1.0e-4) : 2.0e-8;
-    if (!close_enough(state[cell * 3], expected_a, 0.0, tolerance) ||
-        !close_enough(state[cell * 3 + 1], expected_b, 0.0, tolerance) ||
-        !close_enough(state[cell * 3 + 2], expected_c, 0.0, tolerance)) {
-      return CASE_FAIL;
+    for (cell = 0; cell < cells; ++cell) {
+      const double k1 = expected_rates[cell][0];
+      const double k2 = expected_rates[cell][1];
+      const double t = (double)sample;
+      const double exp_a = exp(-k1 * t);
+      const double exp_b = exp(-k2 * t);
+      const double expected[3] = {
+        initial_a[cell] * exp_a,
+        initial_a[cell] * (k1 / (k2 - k1)) * (exp_a - exp_b),
+        initial_a[cell] * (1.0 + (k1 * exp_b - k2 * exp_a) / (k2 - k1))
+      };
+      const size_t offset = cell * mechanism.species_count;
+      const double actual_a = stiff ? state[offset] + state[offset + 1] : state[offset];
+      const double actual_b = state[offset + (stiff ? 2 : 1)];
+      const double actual_c = state[offset + (stiff ? 3 : 2)];
+      const double rtol = backward_euler ? 1.0e-9 : 5.0e-9;
+      if (!close_enough(actual_a, expected[0], rtol, absolute_tolerance) ||
+          !close_enough(actual_b, expected[1], rtol, absolute_tolerance) ||
+          !close_enough(actual_c, expected[2], rtol, absolute_tolerance)) {
+        fprintf(stderr, "ANALYTIC state %s %s sample=%lu cell=%lu got={%.17g,%.17g,%.17g} expected={%.17g,%.17g,%.17g}\n",
+                family, test, (unsigned long)sample, (unsigned long)cell,
+                actual_a, actual_b, actual_c, expected[0], expected[1], expected[2]);
+        if (solver) chem_solver_destroy(solver);
+        return CASE_FAIL;
+      }
     }
   }
+  if (solver)
+    chem_solver_destroy(solver);
   return CASE_PASS;
 }
 

@@ -345,7 +345,10 @@ static int factor(const chem_sparse_pattern *p, double alpha,
       for (q = p->row_offsets[k]; q < p->row_offsets[k + 1]; ++q) {
         const size_t column = p->columns[q];
         if (column > k)
-          lu[p->position[row * p->n + column]] -= multiplier * lu[q];
+          /* Preserve small Schur complements when stiff reversible paths make
+             the product and updated matrix entry nearly cancel. */
+          lu[p->position[row * p->n + column]] =
+              fma(-multiplier, lu[q], lu[p->position[row * p->n + column]]);
       }
     }
   }
@@ -362,7 +365,7 @@ static void solve_lu(const chem_sparse_pattern *p, const double *lu,
     for (j = p->row_offsets[i]; j < p->row_offsets[i + 1]; ++j) {
       const size_t column = p->columns[j];
       if (column < i)
-        value -= lu[j] * right_hand_side[column];
+        value = fma(-lu[j], right_hand_side[column], value);
     }
     right_hand_side[i] = value;
   }
@@ -372,7 +375,7 @@ static void solve_lu(const chem_sparse_pattern *p, const double *lu,
     for (j = p->row_offsets[i]; j < p->row_offsets[i + 1]; ++j) {
       const size_t column = p->columns[j];
       if (column > i)
-        value -= lu[j] * right_hand_side[column];
+        value = fma(-lu[j], right_hand_side[column], value);
     }
     right_hand_side[i] = value / lu[p->diagonal[i]];
   }

@@ -569,7 +569,8 @@ int chem_lu_factor_dense(double *matrix, size_t order)
     for (i = k + 1; i < order; ++i) {
       matrix[i * order + k] /= pivot;
       for (j = k + 1; j < order; ++j)
-        matrix[i * order + j] -= matrix[i * order + k] * matrix[k * order + j];
+        matrix[i * order + j] =
+            fma(-matrix[i * order + k], matrix[k * order + j], matrix[i * order + j]);
     }
   }
   return 0;
@@ -583,11 +584,13 @@ int chem_lu_solve_dense(const double *factor, size_t order,
     return -1;
   for (i = 0; i < order; ++i) {
     for (j = 0; j < i; ++j)
-      right_hand_side[i] -= factor[i * order + j] * right_hand_side[j];
+      right_hand_side[i] =
+          fma(-factor[i * order + j], right_hand_side[j], right_hand_side[i]);
   }
   for (i = order; i-- > 0;) {
     for (j = i + 1; j < order; ++j)
-      right_hand_side[i] -= factor[i * order + j] * right_hand_side[j];
+      right_hand_side[i] =
+          fma(-factor[i * order + j], right_hand_side[j], right_hand_side[i]);
     if (factor[i * order + i] == 0.0 || !isfinite(factor[i * order + i]))
       return -1;
     right_hand_side[i] /= factor[i * order + i];
