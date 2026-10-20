@@ -20,8 +20,8 @@ comparison utility with both compilers. The 100-cell seed-1 run also passed:
 
 | Compiler | C elapsed time | MICM elapsed time | Solver steps | Largest relative difference |
 | --- | ---: | ---: | ---: | ---: |
-| Clang | 147.610 ms | 10.430 ms | 900 | `9.77e-15` |
-| GCC 15 | 173.665 ms | 11.009 ms | 900 | `1.51e-14` |
+| Clang | 142.861 ms | 10.430 ms | 900 | `1.13e-14` |
+| GCC 15 | 165.924 ms | 11.009 ms | 900 | `2.58e-15` |
 
 For 100 seed-1 cells, 100 steps, and four threads, Clang completed in
 3,651.047 ms; the comparison run took 338.929 ms. All 21,100 state values

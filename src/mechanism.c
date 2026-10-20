@@ -25,10 +25,10 @@ double chem_reaction_rate(const chem_reaction *reaction, double temperature,
     return rate_parameters == NULL ? 0.0 :
            rate_parameters[(size_t)reaction->p[7]] * reaction->p[0];
   case CHEM_TROE: {
-    double k0 = reaction->p[0] * pow(temperature / 300.0, reaction->p[1]) *
-                exp(reaction->p[2] / temperature);
-    double kinf = reaction->p[3] * pow(temperature / 300.0, reaction->p[4]) *
-                  exp(reaction->p[5] / temperature);
+    double k0 = reaction->p[0] * exp(reaction->p[2] / temperature) *
+                pow(temperature / 300.0, reaction->p[1]);
+    double kinf = reaction->p[3] * exp(reaction->p[5] / temperature) *
+                  pow(temperature / 300.0, reaction->p[4]);
     double pr = air_density * k0 / kinf;
     double log_pr = log10(pr);
     return k0 * air_density / (1.0 + pr) *
@@ -36,10 +36,10 @@ double chem_reaction_rate(const chem_reaction *reaction, double temperature,
                                       (reaction->p[7] + log_pr * log_pr));
   }
   case CHEM_TERNARY_ACTIVATION: {
-    double k0 = reaction->p[0] * pow(temperature / 300.0, reaction->p[1]) *
-                exp(reaction->p[2] / temperature);
-    double kinf = reaction->p[3] * pow(temperature / 300.0, reaction->p[4]) *
-                  exp(reaction->p[5] / temperature);
+    double k0 = reaction->p[0] * exp(reaction->p[2] / temperature) *
+                pow(temperature / 300.0, reaction->p[1]);
+    double kinf = reaction->p[3] * exp(reaction->p[5] / temperature) *
+                  pow(temperature / 300.0, reaction->p[4]);
     double ratio = air_density * k0 / kinf;
     double lratio = log10(ratio);
     return k0 / (1.0 + ratio) *
