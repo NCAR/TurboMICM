@@ -38,6 +38,7 @@ implemented = {
     "user_defined_rate_constant:UserDefinedRateConstant.CustomScalingFactor",
     "process:Process.Matrix",
     "process:Process.VectorMatrix",
+    "process_set:ProcessSetFiniteDifferenceJacobian.Matrix",
     "process:Process.BuildsChemicalReaction",
     "process:Process.ChemicalReactionCopyAssignmentSucceeds",
     "reaction_rate_store:ReactionRateConstantStore.OffsetsAreContiguousCumulativeSizes",
@@ -133,6 +134,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C finite-difference Jacobian checks"
         elif case_id.startswith("version:"):
             reason = "C version API checked"
+        elif case_id == "process_set:ProcessSetFiniteDifferenceJacobian.Matrix":
+            reason = "C process Jacobian agrees with finite differences"
         elif case_id in {"process:Process.Matrix", "process:Process.VectorMatrix"}:
             reason = "C rate constants match scalar and grouped cell layouts"
         elif case_id.startswith("state:State."):

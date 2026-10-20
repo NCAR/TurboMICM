@@ -459,6 +459,48 @@ static int check_process_rate_constant_layouts(void) {
   return 0;
 }
 
+static int check_process_set_finite_difference_jacobian(void) {
+  const chem_species species[] = {{.name = "A"}, {.name = "B"}, {.name = "C"}};
+  const chem_term ab[] = {{.species = 0, .coefficient = 1.0},
+                          {.species = 1, .coefficient = 1.0}};
+  const chem_term c[] = {{.species = 2, .coefficient = 1.0}};
+  const chem_term two_c[] = {{.species = 2, .coefficient = 2.0}};
+  const chem_term a[] = {{.species = 0, .coefficient = 1.0}};
+  const chem_reaction reactions[] = {
+      {.kind = CHEM_ARRHENIUS, .reactants = ab, .reactant_count = 2,
+       .products = two_c, .product_count = 1},
+      {.kind = CHEM_ARRHENIUS, .reactants = c, .reactant_count = 1,
+       .products = a, .product_count = 1}};
+  const chem_mechanism mechanism = {
+      .species = species, .species_count = 3,
+      .reactions = reactions, .reaction_count = 2};
+  const double constants[] = {1.3, 0.8};
+  const double states[][3] = {{1.2, 0.7, 0.5}, {0.4, 1.1, 0.9}};
+  for (size_t cell = 0; cell < 2; ++cell) {
+    double jacobian[9] = {0};
+    if (chem_jacobian_with_constants(&mechanism, states[cell], constants,
+                                     1.0e6, jacobian)) return 1;
+    for (size_t col = 0; col < 3; ++col) {
+      double plus[3], minus[3], f_plus[3], f_minus[3];
+      memcpy(plus, states[cell], sizeof(plus));
+      memcpy(minus, states[cell], sizeof(minus));
+      const double h = 1.0e-6 * fmax(1.0, fabs(states[cell][col]));
+      plus[col] += h;
+      minus[col] -= h;
+      if (chem_forcing_with_constants(&mechanism, plus, constants, 1.0e6,
+                                      f_plus) ||
+          chem_forcing_with_constants(&mechanism, minus, constants, 1.0e6,
+                                      f_minus)) return 2;
+      for (size_t row = 0; row < 3; ++row) {
+        const double finite_difference = (f_plus[row] - f_minus[row]) / (2*h);
+        if (fabs(jacobian[row*3 + col] - finite_difference) >
+            1.0e-8 * fmax(1.0, fabs(finite_difference))) return 3;
+      }
+    }
+  }
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -1037,5 +1079,6 @@ int main(void) {
   if (check_one_solver_many_thread_states() != 0) return 52;
   if (check_state_view() != 0) return 53;
   if (check_process_rate_constant_layouts() != 0) return 54;
+  if (check_process_set_finite_difference_jacobian() != 0) return 55;
   return 0;
 }
