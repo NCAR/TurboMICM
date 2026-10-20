@@ -1,0 +1,7 @@
+.conda/
+.conda-pkgs/
+build/
+bin/
+generated/
+ts1_final.csv
+*.o
