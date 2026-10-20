@@ -797,13 +797,67 @@ static int check_chapman_integration(void) {
       {.kind=CHEM_ARRHENIUS,.reactants=o1d_n2,.reactant_count=2,.products=o_n2,.product_count=2,.p={2.15e-11,0,110,300,0}},
       {.kind=CHEM_ARRHENIUS,.reactants=o1d_o2,.reactant_count=2,.products=o_o2,.product_count=2,.p={3.3e-11,0,55,300,0}},
       {.kind=CHEM_ARRHENIUS,.reactants=o_o3,.reactant_count=2,.products=two_o2,.product_count=1,.p={8e-12,0,-2060,300,0}},
-      {.kind=CHEM_ARRHENIUS,.reactants=o_o2_m,.reactant_count=3,.products=o3_m,.product_count=2,.p={6e-34,0,2.4,300,0}},
+      {.kind=CHEM_ARRHENIUS,.reactants=o_o2_m,.reactant_count=3,.products=o3_m,.product_count=2,.p={6e-34,2.4,0,300,0}},
       {.kind=CHEM_USER_DEFINED,.label="jO2",.reactants=o2,.reactant_count=1,.products=two_o,.product_count=1,.p={1,0,0,0,0,0,0,0}},
       {.kind=CHEM_USER_DEFINED,.label="jO3a",.reactants=o3,.reactant_count=1,.products=o1d_o2_product,.product_count=2,.p={1,0,0,0,0,0,0,1}},
       {.kind=CHEM_USER_DEFINED,.label="jO3b",.reactants=o3,.reactant_count=1,.products=o_o2_product,.product_count=2,.p={1,0,0,0,0,0,0,2}}};
   const chem_mechanism mechanism = {
       .species=species,.species_count=9,.reactions=reactions,.reaction_count=7,
       .custom_parameter_count=3};
+  const double cell_temperatures[] = {284.19,215.02,299.31};
+  const double cell_pressures[] = {101245.0,100789.2,101398.0};
+  const double cell_photolysis[3][3] = {
+      {1.0e-4,1.0e-5,1.0e-6},
+      {3.2e-4,7.3e-5,3.2e-6},
+      {5.2e-4,8.2e-5,4.6e-6}};
+  const double gas_constant = 8.31446261815324;
+  for (size_t width=1;width<=4;++width) {
+    double packed[4*9]={0};
+    chem_vector_matrix_view packed_view;
+    if (chem_vector_matrix_view_init(&packed_view,packed,3,9,width)) return 6;
+    for (size_t cell=0;cell<3;++cell)
+      for (size_t col=0;col<9;++col)
+        if (chem_vector_matrix_view_set(&packed_view,cell,col,
+              1.0+0.1*(double)(9*cell+col))) return 7;
+    for (size_t cell=0;cell<3;++cell) {
+      const double temperature=cell_temperatures[cell];
+      const double pressure=cell_pressures[cell];
+      const double density=pressure/(gas_constant*temperature);
+      double custom[3],rate[7],state_values[9],forcing[9];
+      memcpy(custom,cell_photolysis[cell],sizeof(custom));
+      if (chem_vector_matrix_view_copy_row_to_vector(
+              &packed_view,cell,state_values,9) ||
+          chem_rate_constants(&mechanism,temperature,pressure,density,custom,rate))
+        return 8;
+      const double expected_rates[] = {
+          2.15e-11*exp(110.0/temperature),
+          3.3e-11*exp(55.0/temperature),
+          8e-12*exp(-2060.0/temperature),
+          6e-34*pow(temperature/300.0,2.4),
+          custom[0],custom[1],custom[2]};
+      for (size_t r=0;r<7;++r)
+        if (fabs(rate[r]-expected_rates[r])>1e-12*fabs(expected_rates[r])+1e-30)
+          return 9;
+      if (chem_forcing_with_constants(&mechanism,state_values,rate,density,forcing))
+        return 10;
+      const double o1d=rate[5]*state_values[3]-rate[0]*state_values[6]*state_values[1]-
+          rate[1]*state_values[1]*state_values[2];
+      const double oxygen=2.0*rate[4]*state_values[2]+rate[6]*state_values[3]+
+          rate[0]*state_values[6]*state_values[1]+rate[1]*state_values[1]*state_values[2]-
+          rate[2]*state_values[0]*state_values[3]-rate[3]*state_values[4]*
+          state_values[0]*state_values[2];
+      const double oxygen2=-rate[4]*state_values[2]+rate[5]*state_values[3]+
+          rate[6]*state_values[3]+2.0*rate[2]*state_values[0]*state_values[3]-
+          rate[3]*state_values[4]*state_values[0]*state_values[2];
+      const double ozone=-rate[5]*state_values[3]-rate[6]*state_values[3]-
+          rate[2]*state_values[0]*state_values[3]+rate[3]*state_values[4]*
+          state_values[0]*state_values[2];
+      const double expected_forcing[9] = {oxygen,o1d,oxygen2,ozone,0,0,0,0,0};
+      for (size_t i=0;i<9;++i)
+        if (fabs(forcing[i]-expected_forcing[i])>1e-12*fabs(expected_forcing[i])+1e-30)
+          return 11;
+    }
+  }
   double state[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3,0.3};
   double initial[9];
   memcpy(initial, state, sizeof(state));

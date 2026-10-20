@@ -470,6 +470,10 @@ implemented.update({
     "solver_builder:SolverBuilder.CanBuildRosenbrock",
     "solver_builder:SolverBuilder.CanBuildBackwardEulerOverloadedSolverMethod",
     "solver_builder:SolverBuilder.CanBuildRosenbrockOverloadedSolveMethod",
+    "regression_test_rosenbrock_p_force:RegressionRosenbrock.RateConstants",
+    "regression_test_rosenbrock_p_force:RegressionRosenbrock.VectorRateConstants",
+    "regression_test_rosenbrock_p_force:RegressionRosenbrock.Forcing",
+    "regression_test_rosenbrock_p_force:RegressionRosenbrock.VectorForcing",
     "backward_euler:BackwardEuler.CanCallSolve",
     "backward_euler:BackwardEuler.IsConverged",
     "analytical_backward_euler:AnalyticalExamples.Troe",
@@ -559,6 +563,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C rate mechanism drives both solvers against the two-step closed form"
         elif case_id.startswith("solver_builder:"):
             reason = "C workspace builds, solve entry points, and species-use validation checked"
+        elif case_id.startswith("regression_test_rosenbrock_p_force:"):
+            reason = "generic C Chapman mechanism rates and forcing match independent formulas"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):
             reason = "C Rosenbrock matrix transforms and normalized error checked"
         elif case_id == "process_set:ProcessSetAlgebraicVariables.CudaMatrix":
