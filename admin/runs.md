@@ -108,7 +108,7 @@ Transcripts
 | astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17-23:35 | `fbd365c`, 23:35 (11 commits) | finished |
 | astra-max | gpt-6-astra | max | Codex CLI 0.163.0, interactive | 2026-10-16 01:04-02:46 | `0dc7f67`, 02:46 (7 commits) | finished |
 | luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-16 06:47-08:11 | `217bf6e`, 08:10 (23 commits) | stopped; to rerun |
-| luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14- | | running |
+| luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14-21:05 | `da2d722`, 21:05 (5 commits) | finished; verifying |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -269,6 +269,29 @@ Token counts are as Codex reports them: total = uncached input + output.
   gpt-6-luna, Codex 0.163.0, and no model switch; the process's environment holds
   no Claude Code variables besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
 - Codex session `01a156e0-2dbb-7742-9165-1f8fc55480ba`.
+- Progress, from Claude Code's checks every 20 minutes: 61 cases passing at 18
+  minutes, 446 at 31, 528 at 44, 67 failing at 61; the TS1 gate's mismatch traced
+  to MICM's clamp of negative concentrations after each interval, at 80. No sign
+  of floundering at any check.
+- Session end: the first turn ended at 20:43 with DONE: 671 PASS, 0 FAIL, 9 N/A
+  with both compilers, the TS1 gate passing (largest relative difference
+  2.78e-13), and its code slower than MICM in its own single runs (185,107 ms
+  against 145,414 ms on one thread, 34,479 against 31,199 ms on eight). The goal
+  started a second turn, which replaced shared smoke tests with case-specific
+  ports of MICM's analytical tests and switched the LU updates to `fma`; it ended
+  at 21:05:47 with DONE, and Codex showed "Goal achieved (1h 50m)". The record was
+  idle 10 minutes by 21:16; Claude Code quit Codex (`/quit`) and closed the tmux
+  session.
+- Final commit `da2d722` (21:05), 5 commits; collected as `runs/luna/max`.
+- Tokens: 2,918,597 total; input 2,262,991 (plus 122,233,984 cached); output
+  655,606 (354,791 reasoning). Codex's weekly usage window went from 69 % to 75 %.
+- Other load during the session: from 20:14 the SSE ran a separate Codex session
+  (gpt-6-astra, xhigh) in another project, active through the end of luna-max's;
+  Claude Code's read-only progress checks. No builds, tests, or timing by the
+  experimenter.
+- Transcript archived as `transcripts/luna-max.jsonl.gz`. The credential scan's
+  only matches (28, of the `sk-` pattern) were inside encrypted reasoning and
+  encrypted compaction history.
 
 # Tier 3
 
