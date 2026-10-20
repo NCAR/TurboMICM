@@ -538,6 +538,15 @@ implemented.update(
         "CanSolveMultiGridCellWithTwoStubAerosolModels",
     )
 )
+implemented.update(
+    "aerosol_model_backward_euler:AerosolModelIntegration." + _name
+    for _name in (
+        "CanSolveSingleGridCellWithStubAerosolModel1",
+        "CanSolveSingleGridCellWithTwoStubAerosolModels",
+        "CanSolveMultiGridCellWithStubAerosolModel1",
+        "CanSolveMultiGridCellWithTwoStubAerosolModels",
+    )
+)
 implemented.update({
     "equilibrium_constraint:EquilibriumIntegration.SetConstraintsAPIWorks",
     "equilibrium_constraint:EquilibriumIntegration.SetConstraintsAPIMultipleConstraints",
@@ -633,7 +642,7 @@ for raw in case_file.read_text().splitlines():
         elif case_id.startswith("solver_builder:"):
             reason = "C workspace builds, solve entry points, and species-use validation checked"
         elif case_id.startswith("aerosol_model_"):
-            reason = "C generic mechanism reproduces aerosol state, forcing, Jacobian, and solve behavior"
+            reason = "C generic mechanism reproduces aerosol state, forcing, Jacobian, and solver behavior"
         elif case_id.startswith("regression_test_rosenbrock_p_force:"):
             reason = "generic C Chapman mechanism rates and forcing match independent formulas"
         elif case_id.startswith("regression:") and case_id.endswith("FlowTube"):

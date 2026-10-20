@@ -1163,8 +1163,6 @@ static int check_stub_aerosol_mechanism(int backward_euler) {
     double observed=0.0;
     if (chem_state_get_concentration(&state,names[i],0,&observed)) return 6;
   }
-  /* State, setter, forcing, and Jacobian behavior is independent of solver. */
-  if (backward_euler) return 0;
   /* Solve three cells independently; unused aerosol state stays unchanged. */
   chem_solver_workspace workspace={0};
   if (chem_solver_workspace_init(&workspace,&mechanism)) return 7;
@@ -1192,7 +1190,7 @@ static int check_stub_aerosol_mechanism(int backward_euler) {
     const double dstub2=mode2_fo2[cell]*(1.0-exp(-stub2_rates[cell]*10.0));
     const double dmode3=(0.2+0.1*(double)cell)*
         (1.0-exp(-temperatures[cell]*0.005*10.0));
-    const double tol=5.0e-5;
+    const double tol=backward_euler?1.0e-1:5.0e-5;
     if (!status && (fabs(y[0]-(fo2_values[cell]-dfo2))>tol*fo2_values[cell] ||
         y[1]!=bar_values[cell] ||
         fabs(y[2]-(baz_values[cell]-dbaz))>tol*baz_values[cell] ||
@@ -1202,6 +1200,26 @@ static int check_stub_aerosol_mechanism(int backward_euler) {
         fabs(y[14]-(0.1+0.05*(double)cell+dstub2))>tol*mode2_fo2[cell] ||
         fabs(y[17]-(0.2+0.1*(double)cell-dmode3))>tol*(0.2+0.1*(double)cell) ||
         fabs(y[18]-(0.3+0.1*(double)cell+dmode3))>tol*(0.2+0.1*(double)cell))) status=8;
+  }
+  if (backward_euler && !status) {
+    const double zero_rate[]={0.0};
+    const double cell_fo2[]={1.0,1.5,2.0};
+    const double cell_baz[]={0.5,0.7,0.9};
+    for (size_t cell=0;cell<3 && !status;++cell) {
+      double y[22]={0};
+      y[0]=cell_fo2[cell]; y[1]=2.0+0.5*(double)cell;
+      y[2]=cell_baz[cell]; y[6]=0.8+0.2*(double)cell;
+      const chem_backward_euler_options options=chem_backward_euler_default_options();
+      status=chem_backward_euler_solve_with_workspace(&mechanism,&workspace,y,
+          298.15,101325.0,1.0e5,zero_rate,10.0,&options,NULL);
+      const double dfo2=cell_fo2[cell]*(1.0-exp(-0.001*10.0));
+      const double dbaz=cell_baz[cell]*(1.0-exp(-0.002*10.0));
+      if (!status && (fabs(y[0]-(cell_fo2[cell]-dfo2))>2e-4*cell_fo2[cell] ||
+          y[1]!=2.0+0.5*(double)cell ||
+          fabs(y[2]-(cell_baz[cell]-dbaz))>2e-4*cell_baz[cell] ||
+          fabs(y[4]-dbaz)>2e-4*cell_baz[cell] ||
+          fabs(y[6]-(0.8+0.2*(double)cell+dfo2))>2e-4*cell_fo2[cell])) status=9;
+    }
   }
   chem_solver_workspace_destroy(&workspace);
   return status;
