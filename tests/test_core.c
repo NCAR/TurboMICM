@@ -2085,6 +2085,10 @@ static int check_csr_matrix_api(void) {
   output[csc_length] = '\0';
   fclose(stream);
   if (strcmp(output,dense_expected)) return 32;
+  const size_t bad_csc_offsets[] = {0,0,0,0};
+  const size_t bad_csc_rows[] = {3};
+  if (chem_csr_matrix_init_csc(&csc,3,1,1,bad_csc_offsets,bad_csc_rows,
+                               print_values) == 0) return 33;
   return 0;
 }
 
