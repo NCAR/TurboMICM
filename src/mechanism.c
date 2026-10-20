@@ -118,3 +118,61 @@ int chem_forcing(const chem_mechanism *mechanism, const double *concentration,
   }
   return 0;
 }
+
+int chem_jacobian(const chem_mechanism *mechanism, const double *concentration,
+                  double temperature, double air_density,
+                  const double *rate_parameters, double *jacobian) {
+  if (mechanism == NULL || concentration == NULL || jacobian == NULL ||
+      (mechanism->species_count != 0 && mechanism->species == NULL) ||
+      (mechanism->reaction_count != 0 && mechanism->reactions == NULL)) return 1;
+  const size_t n = mechanism->species_count;
+  memset(jacobian, 0, n * n * sizeof(*jacobian));
+  for (size_t r = 0; r < mechanism->reaction_count; ++r) {
+    const chem_reaction *reaction = &mechanism->reactions[r];
+    double rate_constant = reaction->kind == CHEM_SURFACE
+                               ? chem_surface_rate(reaction, mechanism->species,
+                                                   temperature, rate_parameters)
+                               : chem_reaction_rate(reaction, temperature,
+                                                    air_density, rate_parameters);
+    double rate = rate_constant;
+    for (size_t i = 0; i < reaction->reactant_count; ++i) {
+      const chem_term *term = &reaction->reactants[i];
+      if (mechanism->species[term->species].third_body)
+        rate *= pow(air_density, term->coefficient);
+      else
+        rate *= pow(concentration[term->species], term->coefficient);
+    }
+    for (size_t q = 0; q < reaction->reactant_count; ++q) {
+      const chem_term *variable = &reaction->reactants[q];
+      const size_t col = variable->species;
+      if (mechanism->species[col].third_body) continue;
+      double derivative;
+      if (concentration[col] != 0.0) {
+        derivative = rate * variable->coefficient / concentration[col];
+      } else if (variable->coefficient == 1.0) {
+        derivative = rate_constant;
+        for (size_t i = 0; i < reaction->reactant_count; ++i) {
+          if (i == q) continue;
+          const chem_term *term = &reaction->reactants[i];
+          if (mechanism->species[term->species].third_body)
+            derivative *= pow(air_density, term->coefficient);
+          else
+            derivative *= pow(concentration[term->species], term->coefficient);
+        }
+      } else {
+        derivative = 0.0;
+      }
+      for (size_t i = 0; i < reaction->reactant_count; ++i) {
+        const chem_term *term = &reaction->reactants[i];
+        if (!mechanism->species[term->species].third_body)
+          jacobian[term->species * n + col] -= term->coefficient * derivative;
+      }
+      for (size_t i = 0; i < reaction->product_count; ++i) {
+        const chem_term *term = &reaction->products[i];
+        if (!mechanism->species[term->species].third_body)
+          jacobian[term->species * n + col] += term->coefficient * derivative;
+      }
+    }
+  }
+  return 0;
+}

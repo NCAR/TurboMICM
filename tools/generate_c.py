@@ -17,6 +17,19 @@ KINDS = {
     "BRANCHED_ALKOXY": "CHEM_BRANCHED_ALKOXY",
     "BRANCHED_NITRATE": "CHEM_BRANCHED_NITRATE",
 }
+TYPE_ORDER = {
+    "arrhenius": 0, "ARRHENIUS": 0,
+    "troe": 1, "TROE": 1,
+    "ternary_chemical_activation": 2, "TERNARY_CHEMICAL_ACTIVATION": 2,
+    "ternary_chemical_activation_jpl19": 3, "TERNARY_CHEMICAL_ACTIVATION_JPL19": 3,
+    "branched_alkoxy": 4, "BRANCHED_ALKOXY": 4,
+    "branched_nitrate": 4, "BRANCHED_NITRATE": 4,
+    "tunneling": 5, "TUNNELING": 5,
+    "taylor_series": 6, "TAYLOR_SERIES": 6,
+    "user_defined": 7, "USER_DEFINED": 7,
+    "photolysis": 7, "PHOTOLYSIS": 7,
+    "surface": 8, "SURFACE": 8,
+}
 
 
 def cstr(value):
@@ -30,7 +43,8 @@ def main():
     args = ap.parse_args()
     data = json.loads(args.input.read_text())
     species = data["species"]
-    reactions = data["reactions"]
+    reactions = sorted(data["reactions"], key=lambda r: TYPE_ORDER[r["type"]])
+    defaults = data.get("defaults", {})
     names = {s["name"]: i for i, s in enumerate(species)}
     if len(names) != len(species):
         raise SystemExit("duplicate species names")
@@ -61,9 +75,10 @@ def main():
     out.append("")
     out.append("static const chem_species species[] = {")
     for sp in species:
-        out.append("  {%s, %d, %.17g, %.17g}," % (
+        out.append("  {%s, %d, %.17g, %.17g, %.17g}," % (
             cstr(sp["name"]), int(bool(sp.get("third_body", False))),
-            float(sp.get("molecular_weight", 0.0)), float(sp.get("diffusion", 0.0))))
+            float(sp.get("molecular_weight", 0.0)), float(sp.get("diffusion", 0.0)),
+            float(defaults.get("species", {}).get(sp["name"], 0.0))))
     out.append("};")
     out.append("static const chem_reaction reactions[] = {")
     for i, rxn in enumerate(reactions):
@@ -101,7 +116,10 @@ def main():
             if label is not None:
                 lookup = label + ".effective radius [m]" if kind == "CHEM_SURFACE" else label
                 values[7] = float(label_index[lookup])
-            values[0] = float(params.get("scaling_factor", params.get("reaction probability", 1.0)))
+            if kind == "CHEM_SURFACE":
+                values[0] = float(params.get("reaction_probability", params.get("reaction probability", 1.0)))
+            else:
+                values[0] = float(params.get("scaling_factor", 1.0))
         name = params.get("label", params.get("MUSICA name", ""))
         reactants = rxn.get("reactants", [])
         products = rxn.get("products", [])
@@ -118,9 +136,18 @@ def main():
         out.append("  {%s, %s, %s, %d, %s, %d, %s, {%s}}," % (
             kind, cstr(str(name)), rptr, len(reactants), pptr, len(products), surface_index,
             ", ".join(f"{v:.17g}" for v in values)))
+    out.extend(["};", "", "static const char *const custom_labels[] = {"])
+    out.extend(f"  {cstr(label)}," for label in custom_labels)
+    out.extend(["};", "static const double default_custom_parameters[] = {"])
+    out.extend(f"  {float(defaults.get('rate_parameters', {}).get(label, 0.0)):.17g},"
+               for label in custom_labels)
     out.extend(["};", "", "const chem_mechanism chem_generated_mechanism = {",
                 "  species, sizeof(species) / sizeof(species[0]),",
-                "  reactions, sizeof(reactions) / sizeof(reactions[0])", "};", ""])
+                "  reactions, sizeof(reactions) / sizeof(reactions[0]),",
+                "  custom_labels, default_custom_parameters,",
+                "  sizeof(custom_labels) / sizeof(custom_labels[0]),",
+                f"  {float(defaults.get('temperature', 298.15)):.17g},",
+                f"  {float(defaults.get('pressure', 101325.0)):.17g}", "};", ""])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text("\n".join(out))
 

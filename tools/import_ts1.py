@@ -90,6 +90,20 @@ def parse_reactions(source):
     return result
 
 
+def parse_defaults(source):
+    body = source.split("static void InitState", 1)[1].split("\n    }\n  };", 1)[0]
+    concentrations = {name: float(value) for name, value in
+                      re.findall(r'concentration\("([^"]+)",\s*([-+0-9.eE]+)\);', body)}
+    parameters = {name: float(value) for name, value in
+                  re.findall(r'parameter\("([^"]+)",\s*([-+0-9.eE]+)\);', body)}
+    temperature = re.search(r'temperature_\s*=\s*([-+0-9.eE]+)', body)
+    pressure = re.search(r'pressure_\s*=\s*([-+0-9.eE]+)', body)
+    if not temperature or not pressure:
+        raise ValueError("could not parse TS1 default temperature and pressure")
+    return {"species": concentrations, "rate_parameters": parameters,
+            "temperature": float(temperature.group(1)), "pressure": float(pressure.group(1))}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("source", type=Path, help="MICM test/benchmark/ts1_mechanism.hpp")
@@ -97,7 +111,7 @@ def main():
     args = ap.parse_args()
     source = args.source.read_text()
     data = {"format": "c-mechanism-1", "name": "TS1", "species": parse_species(source),
-            "reactions": parse_reactions(source)}
+            "reactions": parse_reactions(source), "defaults": parse_defaults(source)}
     args.output.write_text(json.dumps(data, indent=2) + "\n")
 
 

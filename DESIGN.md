@@ -1,31 +1,48 @@
 # Design
 
-## Current architecture
+## Mechanisms
 
-Configuration parsing runs in Python at build or development time. The reader
-resolves the configuration's referenced files and normalizes species and
-reaction records. The TS1 importer is separate because the permitted benchmark
-input is MICM's generated mechanism builder. Its output records species order,
-third-body flags, molecular weights, diffusion coefficients, stoichiometry,
-rate types, and rate parameters.
+Python readers accept normalized JSON and CAMP configurations. The CAMP reader
+resolves referenced files relative to the input file, then normalizes phases,
+species, reactions, and rate parameters. `tools/import_ts1.py` translates the
+permitted TS1 builder input. `tools/generate_c.py` emits immutable C tables from
+that normalized representation. Build-time generation keeps Python, YAML, and
+configuration libraries out of the executable.
 
-`tools/generate_c.py` converts the normalized JSON into immutable C tables. The
-C API is mechanism-generic: mechanisms are arrays of species and reactions;
-each reaction refers to its reactants and products by species index. The forcing
-routine applies mass action and accumulates stoichiometric production and loss.
-Rate calculation is selected by a rate-kind enum, so rate implementations can be
-replaced independently of mechanism storage.
+The C API separates mechanism data from runtime computation. Species and
+reaction tables carry metadata and index-based stoichiometry. Rate evaluation
+is selected through a rate-kind enum. `chem_forcing` and `chem_jacobian` apply
+mass action and the mechanism's generic reaction terms. The same routines feed
+the generic three-stage Rosenbrock integration path exercised by TS1.
 
-The generated C tables now build into the CPU executable. Solver state grouping,
-the integrator, and benchmark execution are not implemented yet. There are
-therefore no tuned group-size, vector-width, or thread-count defaults at this
-stage.
+## Solver and benchmark
 
-## Planned extension points
+`src/solver.c` implements the three-stage method, adaptive error control,
+symbolic fill construction, natural-order in-place LU, and solver counters.
+Its defaults are relative tolerance `1e-6`, absolute tolerance `1e-3`, initial
+step `1e-6 * DT`, minimum step `1e-15 * DT`, maximum step `DT`, and a 1000-step
+limit. The inert third-body species is excluded from the error norm.
 
-Solver methods and parameter sets should be data-driven structures consumed by
-an integrator interface. The controller should have its own interface for error
-norms and step-size decisions. Linear algebra should be selected through a
-solver interface, with matrix structure stored independently. New rate types
-should add a parameter record and rate evaluator and be reachable from the same
-configuration-to-C generator used by tests.
+`src/main.c` loads CSV values by species or parameter label, initializes any
+omitted values from the generated defaults, runs the untimed warm-up and timed
+steps, and writes `ts1_final.csv`. `--threads N` assigns independent cells to
+OpenMP workers. Each cell currently has its own adaptive integration and its
+own transient solver allocations; group-level workspaces and vectorized
+multi-cell linear algebra remain future performance work.
+
+## Extension points
+
+The solver method coefficients and controller are currently localized in
+`src/solver.c`; they should be moved into explicit method and controller
+interfaces before supporting alternate methods. The factorization is similarly
+isolated from rate evaluation and can be replaced behind a linear-solver
+interface. Add a rate type by extending the mechanism enum, its evaluator and
+Jacobian handling, and the configuration-to-C generator. Configuration cases
+should exercise the generated path, not a handwritten mechanism-specific path.
+
+## Tuning and portability
+
+The current runtime setting is thread count, defaulting to available OpenMP
+workers. Integration tolerances and step limits are solver defaults. The C
+sources use ISO C11, libm, and CPU OpenMP only. The Makefile selects OpenMP flags
+for the chosen compiler and takes optimization flags solely from `OPTFLAGS`.

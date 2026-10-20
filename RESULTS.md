@@ -4,20 +4,27 @@
 
 - `make cpu CC=clang`: passed on the provided macOS machine.
 - `make cpu CC=gcc-15`: passed on the provided macOS machine.
-- Configuration reader: JSON and YAML tutorial examples parse to 7 species and
-  9 and 6 reactions, respectively.
-- TS1 importer: parsed the expected 210 species and 547 reactions.
-- C code generator: emitted and compiled tables for all 210 species and 547
-  reactions under both compilers; `bin/ts1_bench_cpu --inspect` reports those
-  counts.
-- `make test-cpu CC=clang`: emitted all 680 case IDs; the two Arrhenius
-  calculation cases pass and the other 678 currently fail as unported.
-- `make test-cpu CC=gcc-15`: emitted the same 680 statuses. The C core checks
-  passed before the harness returned failure for unported cases.
+- `tests/test_core.c`: passed with Clang and GCC 15, including Arrhenius,
+  forcing, and small analytic integration checks.
+- JSON and YAML tutorial mechanisms normalize to 7 species; the input reactions
+  expand to 10 and 7 generated reactions, respectively (JSON and YAML).
+- TS1 import contains 210 phase species, 547 reactions, and the expected initial
+  defaults. The generated mechanism compiles with both compilers.
+- `make test-cpu`: emits all 680 case statuses. Two Arrhenius calculation cases
+  pass; 678 cases still report incomplete ports, so the target exits nonzero.
 
-## MICM cases and benchmark
+## TS1 final-state comparison
 
-Only the two Arrhenius calculation cases have a current C port. The remaining
-678 cases fail with an explicit incomplete-port reason. The TS1 integrator, CSV
-driver, final-state comparison, and timing benchmark are not implemented, so
-there are no MICM comparison or performance results.
+The seed-1 first cell, 100 steps at `DT = 30 s`, passed the supplied MICM
+comparison utility with both compilers:
+
+| Compiler | C elapsed time | MICM elapsed time | Solver steps | Largest relative difference |
+| --- | ---: | ---: | ---: | ---: |
+| Clang | 247.144 ms | 10.383 ms | 900 | `2.24e-15` |
+| GCC 15 | 347.589 ms | 10.636 ms | 900 | `2.42e-15` |
+
+These timings are a one-cell correctness check, not the requested 10,000-cell
+performance run. The current C implementation is substantially slower than the
+reference because it uses per-cell integration and repeats dense workspace
+allocation and sparse-pattern factor work for each solver call. The 10,000-cell,
+100-step benchmark and all 680 case ports remain incomplete.

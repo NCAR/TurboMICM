@@ -1,17 +1,14 @@
 # Portable chemistry C port
 
-This repository is being developed as an ISO C11 CPU port of MICM chemistry
-functionality. The current commit contains a generic species/reaction data model,
-mass-action forcing for the implemented rate types, configuration readers, and a
-TS1 mechanism translation. The ODE integrator, command-line benchmark, and full
-MICM case port are not implemented yet; `bin/ts1_bench_cpu` currently reports
-that it is unavailable.
+This repository contains a generic ISO C11 chemistry mechanism library, Python
+configuration readers and code generation, a CPU Rosenbrock integrator, and a
+TS1 benchmark driver. Python is used at build time only; the executable is C and
+links only the C library, libm, and OpenMP.
 
 ## Build
 
-The compiler defaults to the system C compiler. Set `CC` to `clang` or `gcc-15`
-to select a compiler, and set `OPTFLAGS` to change optimization flags. The
-Makefile only adds the C11 language, warning, include, OpenMP, and link flags.
+The compiler defaults to the system C compiler. Select a compiler with `CC` and
+optimization flags with `OPTFLAGS` (default `-O3 -DNDEBUG`):
 
 ```sh
 make cpu CC=clang
@@ -20,41 +17,55 @@ make cpu CC=gcc-15
 make test-cpu CC=clang
 ```
 
-`make test-cpu` checks the implemented C routines and emits one status line for
-each case in the supplied MICM case inventory. At this stage most ports are
-reported as failures, and the target exits nonzero until they are implemented.
+`make test-cpu` runs the C unit checks and reports each case in the supplied
+MICM inventory. The current implementation passes the two Arrhenius calculation
+cases; other inventory cases remain explicitly unported and the target exits
+nonzero.
 
-`make env` creates the pinned Python configuration-tooling environment at
-`.conda/`; its package cache also stays in this checkout. Use `.conda/bin/python`
-to read YAML inputs. JSON reading needs only Python's standard library.
+`make env` creates the pinned Python tooling environment under `.conda/`, with
+its package cache under `.conda-pkgs/`. Use `.conda/bin/python` for YAML input.
+JSON reading uses Python's standard library.
 
-## Configuration tooling
+## Configuration and code generation
 
-`tools/read_config.py` resolves CAMP `camp-files` entries relative to the
-configuration and emits a normalized JSON document. For example:
+`tools/read_config.py` resolves CAMP `camp-files` entries relative to the input
+configuration and writes normalized JSON. For example:
 
 ```sh
 .conda/bin/python tools/read_config.py path/to/config.yaml build/mechanism.json
 ```
 
-`tools/import_ts1.py` translates the allowed TS1 MICM builder source into
-`mechanisms/ts1.json`. It checks the expected 210 species and 547 reactions.
-`tools/generate_c.py` converts that normalized JSON to `generated/ts1.c`, which
-is compiled into the CPU executable. The runtime benchmark path remains to be
-completed.
+`tools/import_ts1.py` translates the permitted TS1 builder source to
+`mechanisms/ts1.json`; `tools/generate_c.py` emits immutable C arrays at
+`generated/ts1.c`. The generated representation is mechanism-generic and
+contains species metadata, stoichiometry, rate parameters, and initial defaults.
+
+## Run the TS1 benchmark
+
+```sh
+bin/ts1_bench_cpu [--threads N] CELLS STEPS DT CELLS_CSV
+```
+
+The CSV has a header of `temperature`, `pressure`, species names, and custom
+rate parameter labels. Missing columns use TS1 initial defaults. The executable
+uses the first `CELLS` rows, takes one untimed warm-up step, then runs `STEPS`
+timed steps of length `DT` seconds. It prints elapsed time and solver counters
+and writes the final state to `ts1_final.csv`.
+
+To build the permitted comparison executable, run `make micm-ref`. The supplied
+comparison utility checks every species and cell against the reference:
+
+```sh
+python3 ../reference/compare_final.py ts1_final.csv path/to/reference.csv
+```
 
 ## C API
 
-`include/chemistry.h` declares mechanism, species, reaction, and stoichiometric
-term records. `src/mechanism.c` implements Arrhenius, Troe, ternary activation,
-tunneling, branched, surface, and user-supplied rates, along with mass-action
-forcing. This API is an early foundation and does not yet implement the
-requested solver behavior.
+`include/chemistry.h` defines the generic mechanism records, rate evaluation,
+forcing and Jacobian routines, and solver interface. The implementation covers
+Arrhenius, Troe, user-defined, surface, ternary activation, tunneling, and
+branched rates. The three-stage Rosenbrock solver and benchmark use this same C
+library path.
 
-## Validation status
-
-Both requested compiler commands currently build the C foundation. Configuration
-reader checks have been run on the JSON and YAML tutorial mechanisms and the TS1
-translation counts have been checked. This is not a MICM equivalence result;
-there is no integrator or final-state benchmark yet. See `RESULTS.md` for the
-current status.
+See `DESIGN.md` for the architecture and `RESULTS.md` for validation and current
+limitations.

@@ -36,6 +36,7 @@ typedef struct {
   int third_body;
   double molecular_weight;
   double diffusion;
+  double initial_concentration;
 } chem_species;
 
 typedef struct {
@@ -43,6 +44,11 @@ typedef struct {
   size_t species_count;
   const chem_reaction *reactions;
   size_t reaction_count;
+  const char *const *custom_labels;
+  const double *default_custom_parameters;
+  size_t custom_parameter_count;
+  double initial_temperature;
+  double initial_pressure;
 } chem_mechanism;
 
 double chem_arrhenius(double a, double b, double c, double d, double e,
@@ -52,5 +58,31 @@ double chem_reaction_rate(const chem_reaction *reaction, double temperature,
 int chem_forcing(const chem_mechanism *mechanism, const double *concentration,
                  double temperature, double air_density,
                  const double *rate_parameters, double *forcing);
+int chem_jacobian(const chem_mechanism *mechanism, const double *concentration,
+                  double temperature, double air_density,
+                  const double *rate_parameters, double *jacobian);
+
+typedef struct {
+  size_t internal_steps;
+  size_t accepted;
+  size_t rejected;
+  size_t function_calls;
+  size_t jacobian_updates;
+  size_t decompositions;
+  size_t solves;
+} chem_solver_stats;
+
+typedef struct {
+  double relative_tolerance;
+  double absolute_tolerance;
+  size_t max_steps;
+} chem_solver_options;
+
+chem_solver_options chem_solver_default_options(void);
+int chem_rosenbrock3_solve(const chem_mechanism *mechanism, double *state,
+                           double temperature, double air_density,
+                           const double *rate_parameters, double duration,
+                           const chem_solver_options *options,
+                           chem_solver_stats *statistics);
 
 #endif
