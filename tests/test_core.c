@@ -2209,6 +2209,79 @@ static int check_equilibrium_dae_case(int mode) {
   return status;
 }
 
+static int check_robertson_terminator_dae(void) {
+  const chem_species species[]={
+      {.name="Cl2"},{.name="Cl"},{.name="A"},{.name="B"},{.name="C"}};
+  const chem_term cl2[]={ {0,1.0} };
+  const chem_term two_cl[]={ {1,1.0},{1,1.0} };
+  const chem_term a[]={ {2,1.0} }, two_b[]={ {3,1.0},{3,1.0} },
+      bc[]={ {3,1.0},{4,1.0} };
+  const chem_term two_cl_product[]={ {1,2.0} }, cl2_product[]={ {0,1.0} };
+  const chem_term b_product[]={ {3,1.0} }, bc_product[]={ {3,1.0},{4,1.0} };
+  const chem_term bc_to_ac[]={ {2,1.0},{4,1.0} };
+  const chem_reaction reactions[]={
+      {.kind=CHEM_USER_DEFINED,.label="terminator_k1",.reactants=cl2,
+       .reactant_count=1,.products=two_cl_product,.product_count=1,
+       .p={1,0,0,0,0,0,0,3}},
+      {.kind=CHEM_ARRHENIUS,.reactants=two_cl,.reactant_count=2,
+       .products=cl2_product,.product_count=1,.p={1,0,0,300,0}},
+      {.kind=CHEM_USER_DEFINED,.label="robertson_r1",.reactants=a,
+       .reactant_count=1,.products=b_product,.product_count=1,
+       .p={1,0,0,0,0,0,0,0}},
+      {.kind=CHEM_USER_DEFINED,.label="robertson_r2",.reactants=two_b,
+       .reactant_count=2,.products=bc_product,.product_count=2,
+       .p={1,0,0,0,0,0,0,1}},
+      {.kind=CHEM_USER_DEFINED,.label="robertson_r3",.reactants=bc,
+       .reactant_count=2,.products=bc_to_ac,.product_count=2,
+       .p={1,0,0,0,0,0,0,2}}};
+  const char *labels[]={"robertson_r1","robertson_r2","robertson_r3",
+                        "terminator_k1"};
+  const chem_mechanism mechanism={.species=species,.species_count=5,
+      .reactions=reactions,.reaction_count=5,.custom_labels=labels,
+      .custom_parameter_count=4};
+  const chem_constraint_term conservation_terms[]={
+      {2,1.0},{3,1.0},{4,1.0}};
+  const chem_constraint conservation={.kind=CHEM_CONSTRAINT_LINEAR,
+      .name="mass_conservation",.algebraic_species=4,
+      .terms=conservation_terms,.term_count=3,.constant=1.0};
+  const chem_constraint_set constraints={.constraints=&conservation,
+      .constraint_count=1,.species_count=5};
+  const chem_rosenbrock_parameters parameters=
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_FOUR_STAGE_DAE);
+  const double atol[]={1e-20,1e-20,1e-3,1e-3,1e-3};
+  const chem_solver_options options={.relative_tolerance=1e-8,
+      .absolute_tolerance=1e-3,.absolute_tolerances=atol,
+      .absolute_tolerance_count=5,.max_steps=1000,.initial_step=0.0};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  double state[]={1.8e-10,1.2e-6,1.0,0.0,0.0};
+  const double chlorine_initial=2.0*state[0]+state[1];
+  const double rates[]={0.04,3.0e7,1.0e4,0.0};
+  double duration=1.0;
+  int status=0;
+  for (size_t interval=0;interval<12 && !status;++interval) {
+    status=chem_rosenbrock_solve_constrained_with_parameters(&mechanism,
+        &workspace,state,298.0,101300.0,42.0,rates,duration,&parameters,
+        &constraints,&options,NULL);
+    double residual[5]={0};
+    if (!status && chem_constraint_set_add_forcing(&constraints,state,NULL,1,
+                                                    residual)) status=2;
+    if (!status && (fabs(residual[4])>1e-10 ||
+        fabs(state[2]+state[3]+state[4]-1.0)>1e-10 ||
+        fabs((2.0*state[0]+state[1])-chlorine_initial)>1e-6*chlorine_initial))
+      status=3;
+    for (size_t i=0;i<5 && !status;++i)
+      if (!isfinite(state[i]) || state[i]<0.0) status=4;
+    if (interval==0 && !status &&
+        (state[2]>=0.99 || state[3]<=0.0 || state[4]<=1e-3)) status=5;
+    duration*=10.0;
+  }
+  chem_solver_workspace_destroy(&workspace);
+  if (!status && (state[4]<=0.95 || state[2]>=0.05 ||
+      state[0]<=0.4*chlorine_initial || state[1]>=0.1*chlorine_initial)) status=6;
+  return status;
+}
+
 static int check_process_algebraic_mask(void) {
   const chem_species species[] = {
       {.name="A"},{.name="B"},{.name="C"},{.name="D"}};
@@ -4650,6 +4723,7 @@ int main(void) {
   if (check_constrained_solver() != 0) return 65;
   for (int mode=0;mode<4;++mode)
     if (check_equilibrium_dae_case(mode)!=0) return 120+mode;
+  if (check_robertson_terminator_dae()!=0) return 130;
   if (check_process_algebraic_mask() != 0) return 66;
   if (check_phase_system_metadata() != 0) return 67;
   if (check_species_properties() != 0) return 68;

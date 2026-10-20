@@ -38,6 +38,10 @@
   temperature dependent equilibrium constant, a reordered species array, two
   coupled algebraic species, and non-unit stoichiometry. It checks the
   equilibrium residual after every 0.001 second solve interval.
+- A four-stage DAE Rosenbrock run combines the constrained Robertson system
+  with the unconstrained chlorine terminator system over twelve decade-spaced
+  intervals, checking mass conservation, chlorine conservation, nonnegative
+  concentrations, and final-state evolution.
 - The C core test ports the vectorized-matrix tutorial's two cell layouts and
   both sparse element orders. The tutorial's solve loop is skipped by its own
   initial converged-state condition, so the layout checks cover its output.
@@ -93,7 +97,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Six hundred twenty cases pass, eighteen are marked N/A, and 42 cases
+  statuses. Six hundred twenty-one cases pass, eighteen are marked N/A, and 41 cases
   still report incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison

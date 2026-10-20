@@ -554,6 +554,7 @@ implemented.update({
     "equilibrium_constraint:EquilibriumIntegration.DAESolveWithConstraintAndReorderState",
     "equilibrium_constraint:EquilibriumIntegration.DAESolveWithTwoCoupledConstraints",
     "equilibrium_constraint:EquilibriumIntegration.DAESolveWithNonUnitStoichiometry",
+    "linear_constraint:DAESolveWithConstraint.TerminatorAndRobertson",
 })
 
 not_applicable = {
@@ -619,6 +620,8 @@ for raw in case_file.read_text().splitlines():
                       if case_id.endswith(("SetConstraintsAPIWorks",
                                            "SetConstraintsAPIMultipleConstraints")) else
                       "C constrained Rosenbrock integration maintains the equilibrium manifold")
+        elif case_id.startswith("linear_constraint:"):
+            reason = "C constrained DAE solve preserves Robertson mass and terminator chlorine"
         elif case_id.startswith("constraint_initialization:"):
             reason = "C constrained solve projects consistent and inconsistent algebraic initial conditions"
         elif case_id.startswith("backward_euler:"):
