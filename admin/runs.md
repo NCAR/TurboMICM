@@ -110,6 +110,7 @@ Transcripts
 | luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-16 06:47-08:11 | `217bf6e`, 08:10 (23 commits) | stopped; to rerun |
 | luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14-21:05 | `da2d722`, 21:05 (5 commits) | finished |
 | luna-xhigh | gpt-6-luna | xhigh | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-20 09:31-12:20 | `ada55d5`, 12:20 (28 commits) | finished |
+| luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code (rerun) | 2026-10-20 14:27- | | running |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -364,6 +365,20 @@ Token counts are as Codex reports them: total = uncached input + output.
   on one, 1.32 and 2.41 times MICM's default (28,198 and 144,435 ms), scaling
   2.79 times from 1 to 10 threads, the least of any program; the other seven
   keep their order, their medians within 2.2 % of the 2026-10-19 session.
+
+## luna-high (rerun)
+
+- The fresh run of luna-high, the last of Luna's three, launched once
+  luna-xhigh was verified and timed. The first attempt is under "luna-high"
+  above.
+- Session start: 2026-10-20 14:27:39, launched by Claude Code with
+  `admin/launch_codex_run.sh luna-high gpt-6-luna high`, in a detached tmux
+  session (socket `turbomicm`, session `luna-high`); the goal was sent at
+  14:28:11. The session record shows gpt-6-luna at high, base instructions from
+  gpt-6-luna, Codex 0.163.0, and no model switch; the process's environment holds
+  no Claude Code variables besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
+- Codex session `01a15aff-97c7-7251-a51e-5e14f2fa689d`. Codex's weekly usage
+  window read 9 % at the start.
 
 # Tier 3
 

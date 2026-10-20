@@ -307,7 +307,8 @@ Tier-2-Results.
   (`results/2026-10-19-luna-max-verification`), correct but 0.90 times MICM's
   default. luna-xhigh is done: finished 12:20 on 2026-10-20, verified, and timed
   (`results/2026-10-20-luna-xhigh-verification`), 1.32 times MICM's default at
-  10 threads and 2.41 on one, scaling only 2.79 times. luna-high is next. The first luna-high attempt was stopped at 08:11
+  10 threads and 2.41 on one, scaling only 2.79 times. luna-high's rerun
+  started 2026-10-20 14:27 (record `01a15aff-…`). The first luna-high attempt was stopped at 08:11
   on 2026-10-16, after 1 h 23 min, far from done (615 failing cases at its 07:51
   checkpoint); it is kept, outside the run root, at
   `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/` was recreated.
