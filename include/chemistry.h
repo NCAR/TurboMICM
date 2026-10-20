@@ -235,6 +235,8 @@ size_t chem_vector_matrix_view_number_of_groups(
 size_t chem_vector_matrix_view_row_stride(const chem_vector_matrix_view *view);
 size_t chem_vector_matrix_view_column_stride(const chem_vector_matrix_view *view);
 int chem_vector_matrix_view_fill(chem_vector_matrix_view *view, double value);
+int chem_vector_matrix_view_copy(chem_vector_matrix_view *destination,
+                                 const chem_vector_matrix_view *source);
 int chem_vector_matrix_view_get(const chem_vector_matrix_view *view,
                                 size_t row, size_t column, double *value);
 int chem_vector_matrix_view_set(chem_vector_matrix_view *view,

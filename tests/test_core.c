@@ -1608,6 +1608,12 @@ static int check_matrix_view_api(void) {
                                        (void *)&captured_vector) ||
       chem_vector_matrix_view_get(&operations,1,2,&value) || value != 41.0 ||
       chem_vector_matrix_view_max(&operations,&value) || value != 41.0) return 50;
+  double copied_data[12] = {0};
+  chem_vector_matrix_view copied;
+  if (chem_vector_matrix_view_init(&copied,copied_data,2,3,4) ||
+      chem_vector_matrix_view_copy(&copied,&operations) ||
+      chem_vector_matrix_view_get(&copied,1,2,&value) || value != 41.0 ||
+      chem_vector_matrix_view_copy(&copied,&vectorized_loop) == 0) return 56;
   if (chem_vector_matrix_view_for_each(&vectorized_loop,matrix_add_index,
                                        (void *)&scale) ||
       chem_vector_matrix_view_get(&vectorized_loop,2,3,&value) || value != 226.0)

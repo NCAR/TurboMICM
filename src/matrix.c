@@ -2,6 +2,10 @@
 
 #include <math.h>
 
+static int vector_matrix_view_valid(const chem_vector_matrix_view *view);
+static int const_vector_matrix_view_valid(
+    const chem_const_vector_matrix_view *view);
+
 static int valid_view(const chem_matrix_view *view) {
   if (view == NULL) return 0;
   if (view->rows == 0 || view->columns == 0) return 1;
@@ -161,6 +165,20 @@ int chem_vector_matrix_view_fill(chem_vector_matrix_view *view, double value) {
     for (size_t column = 0; column < view->columns; ++column)
       view->data[vector_matrix_offset(row,column,view->columns,
                                       view->group_width)] = value;
+  return 0;
+}
+
+int chem_vector_matrix_view_copy(chem_vector_matrix_view *destination,
+                                 const chem_vector_matrix_view *source) {
+  if (!vector_matrix_view_valid(destination) ||
+      !vector_matrix_view_valid(source) || destination->rows != source->rows ||
+      destination->columns != source->columns) return 1;
+  for (size_t row = 0; row < destination->rows; ++row)
+    for (size_t column = 0; column < destination->columns; ++column)
+      destination->data[vector_matrix_offset(row,column,destination->columns,
+                                             destination->group_width)] =
+          source->data[vector_matrix_offset(row,column,source->columns,
+                                            source->group_width)];
   return 0;
 }
 

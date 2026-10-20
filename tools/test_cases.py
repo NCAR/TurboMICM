@@ -166,6 +166,8 @@ implemented = {
     "vector_matrix:VectorMatrix.EmptyVectorEmptyMatrix",
     "vector_matrix:VectorMatrix.MultipleVectorsDifferentSizes",
     "vector_matrix:VectorMatrix.MultipleVectorsSameSize",
+    "vector_matrix:VectorMatrix.TestFill",
+    "vector_matrix:VectorMatrix.TestCopy",
     "phase:PhaseSpecies.ConstructsWithoutDiffusionCoefficient",
     "phase:PhaseSpecies.ConstructsWithDiffusionCoefficient",
     "phase:PhaseSpecies.SetDiffusionCoefficient",
