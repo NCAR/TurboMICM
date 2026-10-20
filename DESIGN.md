@@ -65,7 +65,13 @@ independent scalar controller for each cell.
 
 `src/solver.c` implements MICM's two-, three-, four-, four-stage DAE-, and
 six-stage DAE Rosenbrock parameter sets, adaptive error control, symbolic fill
-construction, natural-order in-place LU, and solver counters. The public
+construction, natural-order in-place LU, and solver counters. It also provides
+a fully implicit backward Euler path using Newton corrections, nonnegative
+state updates, the configurable sequence of failed-step reductions, and the
+state residual convergence test. Backward Euler uses the same generic mechanism
+forcing and Jacobian evaluators and can be configured with one absolute
+tolerance per species. Its constraints remain unsupported, matching MICM's
+backward Euler policy. The public
 `chem_rosenbrock_parameters` stores stage count, packed lower-triangular A and C
 coefficients, M and E vectors, gamma, function-evaluation reuse flags, and
 error-estimator order. Add a method by filling this structure and passing it to
@@ -91,9 +97,11 @@ sequentially inside the group.
 
 ## Extension points
 
-The controller tolerances live in `chem_solver_options` and its adaptation
-formula is a separate block in `src/solver.c`, so it can be changed without
-changing method coefficients. The factorization is isolated from rate
+The Rosenbrock controller tolerances live in `chem_solver_options`; backward
+Euler parameters and its convergence predicate use a separate public options
+structure. Both methods share the workspace factorization buffers. Their
+controller implementations are separate from the method coefficient tables,
+so either can be changed independently. The factorization is isolated from rate
 evaluation and can be replaced behind a linear-solver interface. Add a rate
 type by extending the mechanism enum, its evaluator and Jacobian handling, and
 the configuration-to-C generator. Configuration cases should exercise the

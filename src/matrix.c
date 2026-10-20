@@ -267,6 +267,67 @@ int chem_vector_normalized_error(
   return 0;
 }
 
+int chem_backward_euler_is_converged(
+    const chem_const_matrix_view *residual,
+    const chem_const_matrix_view *next_state,
+    const double *absolute_tolerances, size_t tolerance_count,
+    double relative_tolerance, double small, int *is_converged) {
+  if (!valid_const_view(residual) || !valid_const_view(next_state) ||
+      residual->rows != next_state->rows ||
+      residual->columns != next_state->columns || residual->rows == 0 ||
+      residual->columns == 0 || tolerance_count != residual->columns ||
+      !absolute_tolerances || !is_converged || relative_tolerance < 0.0 ||
+      !isfinite(relative_tolerance) || small < 0.0 || !isfinite(small)) return 1;
+  for (size_t j = 0; j < tolerance_count; ++j)
+    if (!(absolute_tolerances[j] >= 0.0) || !isfinite(absolute_tolerances[j]))
+      return 1;
+  int result = 1;
+  for (size_t row = 0; row < residual->rows; ++row)
+    for (size_t column = 0; column < residual->columns; ++column) {
+      const double error = residual->data[row*residual->row_stride +
+                                           column*residual->column_stride];
+      const double state = next_state->data[row*next_state->row_stride +
+                                             column*next_state->column_stride];
+      if (!isfinite(error) || !isfinite(state) ||
+          (fabs(error) > small &&
+           fabs(error) > absolute_tolerances[column] &&
+           fabs(error) > relative_tolerance*fabs(state))) result = 0;
+    }
+  *is_converged = result;
+  return 0;
+}
+
+int chem_backward_euler_vector_is_converged(
+    const chem_const_vector_matrix_view *residual,
+    const chem_const_vector_matrix_view *next_state,
+    const double *absolute_tolerances, size_t tolerance_count,
+    double relative_tolerance, double small, int *is_converged) {
+  if (!const_vector_matrix_view_valid(residual) ||
+      !const_vector_matrix_view_valid(next_state) ||
+      residual->rows != next_state->rows ||
+      residual->columns != next_state->columns || residual->rows == 0 ||
+      residual->columns == 0 || tolerance_count != residual->columns ||
+      !absolute_tolerances || !is_converged || relative_tolerance < 0.0 ||
+      !isfinite(relative_tolerance) || small < 0.0 || !isfinite(small)) return 1;
+  for (size_t j = 0; j < tolerance_count; ++j)
+    if (!(absolute_tolerances[j] >= 0.0) || !isfinite(absolute_tolerances[j]))
+      return 1;
+  int result = 1;
+  for (size_t row = 0; row < residual->rows; ++row)
+    for (size_t column = 0; column < residual->columns; ++column) {
+      const double error = residual->data[vector_matrix_offset(
+          row,column,residual->columns,residual->group_width)];
+      const double state = next_state->data[vector_matrix_offset(
+          row,column,next_state->columns,next_state->group_width)];
+      if (!isfinite(error) || !isfinite(state) ||
+          (fabs(error) > small &&
+           fabs(error) > absolute_tolerances[column] &&
+           fabs(error) > relative_tolerance*fabs(state))) result = 0;
+    }
+  *is_converged = result;
+  return 0;
+}
+
 static int vector_matrix_view_valid(const chem_vector_matrix_view *view) {
   size_t size = 0;
   return view && !chem_vector_matrix_view_storage_size(

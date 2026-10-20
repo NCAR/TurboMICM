@@ -466,6 +466,8 @@ implemented.update({
     "constraint_initialization:ConstraintInitialization.SolverStateToStringNewValue",
     "solver_builder:SolverBuilder.ThrowsMissingSystem",
     "solver_builder:SolverBuilder.ThrowsUnusedSpecies",
+    "backward_euler:BackwardEuler.CanCallSolve",
+    "backward_euler:BackwardEuler.IsConverged",
 })
 not_applicable = {
     "state:State.CopyConstructor":
@@ -523,6 +525,12 @@ for raw in case_file.read_text().splitlines():
             reason = "C linear/equilibrium constraint residual and Jacobian behavior checked"
         elif case_id.startswith("constraint_initialization:"):
             reason = "C constrained solve projects consistent and inconsistent algebraic initial conditions"
+        elif case_id.startswith("backward_euler:"):
+            reason = "C backward Euler residual convergence and implicit solve checked"
+        elif case_id.startswith("solver_builder:"):
+            reason = "C workspace initialization and strict species-use validation checked"
+        elif case_id.startswith("rosenbrock:RosenbrockSolver."):
+            reason = "C Rosenbrock matrix transforms and normalized error checked"
         elif case_id == "process_set:ProcessSetAlgebraicVariables.CudaMatrix":
             reason = "C masked reaction forcing and Jacobian updates preserve algebraic rows"
         elif case_id.startswith(("phase_species:", "phase:", "system:")):

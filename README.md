@@ -1,8 +1,8 @@
 # Portable chemistry C port
 
 This repository contains a generic ISO C11 chemistry mechanism library, Python
-configuration readers and code generation, a CPU Rosenbrock integrator, and a
-TS1 benchmark driver. Python is used at build time only; the executable is C and
+configuration readers and code generation, CPU Rosenbrock and backward Euler
+integrators, and a TS1 benchmark driver. Python is used at build time only; the executable is C and
 links only the C library, libm, and OpenMP.
 
 ## Build
@@ -92,6 +92,10 @@ grouped cell has its own adaptive controller.
 DAE parameter sets; pass a parameter structure to
 `chem_rosenbrock_solve_with_parameters` to use a built-in or custom method. The
 existing `chem_rosenbrock3_*` functions use the default three-stage set.
+`chem_backward_euler_solve_with_workspace` provides a fully implicit backward
+Euler solve with configurable Newton iterations, timestep reductions, scalar or
+per-species absolute tolerances, and residual convergence checks. Backward Euler
+does not accept algebraic constraints.
 
 See `DESIGN.md` for the architecture and `RESULTS.md` for validation and current
 limitations.

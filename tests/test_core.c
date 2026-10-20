@@ -1209,6 +1209,90 @@ static int check_constraint_api(void) {
   return 0;
 }
 
+static int check_backward_euler(void) {
+  const double absolute_tolerances[] = {1e-6,1e-6,1e-6};
+  double residual_data[12] = {0}, state_data[12] = {0};
+  chem_const_matrix_view residual, state;
+  int converged = 0;
+  if (chem_const_matrix_view_init(&residual,residual_data,4,3,3,1) ||
+      chem_const_matrix_view_init(&state,state_data,4,3,3,1) ||
+      chem_backward_euler_is_converged(&residual,&state,absolute_tolerances,
+                                       3,1e-3,1e-6,&converged) || !converged)
+    return 1;
+  residual_data[1] = 1e-5;
+  if (chem_backward_euler_is_converged(&residual,&state,absolute_tolerances,
+                                       3,1e-3,1e-6,&converged) || converged)
+    return 2;
+  residual_data[1] = 1e-5;
+  if (chem_backward_euler_is_converged(&residual,&state,absolute_tolerances,
+                                       3,1e-3,1e-4,&converged) || !converged)
+    return 3;
+  residual_data[11] = 1e-3;
+  if (chem_backward_euler_is_converged(&residual,&state,absolute_tolerances,
+                                       3,1e-3,1e-4,&converged) || converged)
+    return 4;
+  state_data[11] = 10.0;
+  if (chem_backward_euler_is_converged(&residual,&state,absolute_tolerances,
+                                       3,1e-3,1e-4,&converged) || !converged)
+    return 5;
+  residual_data[11] = 1e-1;
+  if (chem_backward_euler_is_converged(&residual,&state,absolute_tolerances,
+                                       3,1e-3,1e-4,&converged) || converged)
+    return 6;
+  const double relaxed_tolerances[] = {1e-6,1e-6,1.0};
+  if (chem_backward_euler_is_converged(&residual,&state,relaxed_tolerances,
+                                       3,1e-3,1e-4,&converged) || !converged)
+    return 7;
+  for (size_t width = 1; width <= 5; ++width) {
+    double packed_residual[20] = {0}, packed_state[20] = {0};
+    chem_vector_matrix_view residual_mut, state_mut;
+    chem_const_vector_matrix_view residual_view, state_view;
+    if (chem_vector_matrix_view_init(&residual_mut,packed_residual,4,3,width) ||
+        chem_vector_matrix_view_init(&state_mut,packed_state,4,3,width)) return 8;
+    for (size_t row = 0; row < 4; ++row)
+      for (size_t column = 0; column < 3; ++column)
+        if (chem_vector_matrix_view_set(&residual_mut,row,column,
+              row == 0 && column == 1 ? 1e-5 : 0.0) ||
+            chem_vector_matrix_view_set(&state_mut,row,column,0.0)) return 9;
+    if (chem_const_vector_matrix_view_init(&residual_view,packed_residual,4,3,width) ||
+        chem_const_vector_matrix_view_init(&state_view,packed_state,4,3,width) ||
+        chem_backward_euler_vector_is_converged(
+            &residual_view,&state_view,absolute_tolerances,3,1e-3,1e-6,
+            &converged) || converged) return 10;
+  }
+
+  const chem_species species[] = {{.name="A"},{.name="B"},{.name="C"}};
+  const chem_term a[] = {{.species=0,.coefficient=1.0}};
+  const chem_term b[] = {{.species=1,.coefficient=1.0}};
+  const chem_term product_b[] = {{.species=1,.coefficient=1.0}};
+  const chem_term product_c[] = {{.species=2,.coefficient=1.0}};
+  const chem_reaction reactions[] = {
+      {.kind=CHEM_USER_DEFINED,.reactants=a,.reactant_count=1,
+       .products=product_b,.product_count=1,.p={1,0,0,0,0,0,0,0}},
+      {.kind=CHEM_USER_DEFINED,.reactants=b,.reactant_count=1,
+       .products=product_c,.product_count=1,.p={1,0,0,0,0,0,0,1}}};
+  const char *labels[] = {"k1","k2"};
+  const chem_mechanism mechanism = {.species=species,.species_count=3,
+      .reactions=reactions,.reaction_count=2,.custom_labels=labels,
+      .custom_parameter_count=2};
+  const double rates[] = {0.2,0.1};
+  double concentrations[] = {1.0,0.0,0.0};
+  chem_solver_workspace workspace = {0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 11;
+  chem_backward_euler_options options = chem_backward_euler_default_options();
+  options.absolute_tolerances = absolute_tolerances;
+  options.absolute_tolerance_count = 3;
+  chem_solver_stats stats;
+  const int status = chem_backward_euler_solve_with_workspace(
+      &mechanism,&workspace,concentrations,272.5,101253.3,1e6,rates,1.0,
+      &options,&stats);
+  chem_solver_workspace_destroy(&workspace);
+  if (status || stats.accepted == 0 || stats.solves == 0 ||
+      fabs(concentrations[0]+concentrations[1]+concentrations[2]-1.0)>1e-12 ||
+      concentrations[0] >= 1.0 || concentrations[2] <= 0.0) return 12;
+  return 0;
+}
+
 static int check_constrained_solver(void) {
   if (strcmp(chem_solver_status_string(
                  CHEM_SOLVER_STATUS_CONSTRAINT_INITIALIZATION_FAILED),
@@ -3253,6 +3337,8 @@ int main(void) {
   if (check_process_set_finite_difference_jacobian() != 0) return 55;
   if (check_random_process_sets() != 0) return 56;
   if (check_process_set_forcing_and_jacobian() != 0) return 57;
+  const int backward_euler_status = check_backward_euler();
+  if (backward_euler_status != 0) return 70 + backward_euler_status;
   if (check_terminator_cases() != 0) return 58;
   if (check_chapman_integration() != 0) return 59;
   if (check_integrated_reaction_rates() != 0) return 60;

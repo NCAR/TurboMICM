@@ -629,15 +629,38 @@ typedef struct {
   size_t max_steps;
 } chem_solver_options;
 
+typedef struct {
+  double small;
+  double initial_step;
+  double relative_tolerance;
+  double absolute_tolerance;
+  const double *absolute_tolerances;
+  size_t absolute_tolerance_count;
+  size_t max_iterations;
+  double time_step_reductions[5];
+} chem_backward_euler_options;
+
 typedef enum {
   CHEM_SOLVER_STATUS_OK = 0,
   CHEM_SOLVER_STATUS_BAD_ARGUMENT = 1,
   CHEM_SOLVER_STATUS_SINGULAR = 2,
   CHEM_SOLVER_STATUS_STEP_FAILURE = 3,
   CHEM_SOLVER_STATUS_NONFINITE = 4,
-  CHEM_SOLVER_STATUS_CONSTRAINT_INITIALIZATION_FAILED = 5
+  CHEM_SOLVER_STATUS_CONSTRAINT_INITIALIZATION_FAILED = 5,
+  CHEM_SOLVER_STATUS_ACCEPTING_UNCONVERGED = 6
 } chem_solver_status;
 const char *chem_solver_status_string(chem_solver_status status);
+chem_backward_euler_options chem_backward_euler_default_options(void);
+int chem_backward_euler_is_converged(
+    const chem_const_matrix_view *residual,
+    const chem_const_matrix_view *next_state,
+    const double *absolute_tolerances, size_t tolerance_count,
+    double relative_tolerance, double small, int *is_converged);
+int chem_backward_euler_vector_is_converged(
+    const chem_const_vector_matrix_view *residual,
+    const chem_const_vector_matrix_view *next_state,
+    const double *absolute_tolerances, size_t tolerance_count,
+    double relative_tolerance, double small, int *is_converged);
 
 typedef struct {
   void *implementation;
@@ -655,6 +678,12 @@ int chem_rosenbrock3_solve_with_workspace(
     double *state, double temperature, double pressure, double air_density,
     const double *rate_parameters, double duration,
     const chem_solver_options *options, chem_solver_stats *statistics);
+int chem_backward_euler_solve_with_workspace(
+    const chem_mechanism *mechanism, chem_solver_workspace *workspace,
+    double *state, double temperature, double pressure, double air_density,
+    const double *rate_parameters, double duration,
+    const chem_backward_euler_options *options,
+    chem_solver_stats *statistics);
 int chem_rosenbrock_solve_with_parameters(
     const chem_mechanism *mechanism, chem_solver_workspace *workspace,
     double *state, double temperature, double pressure, double air_density,

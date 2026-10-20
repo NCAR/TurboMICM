@@ -19,6 +19,8 @@ const char *chem_solver_status_string(chem_solver_status status) {
   case CHEM_SOLVER_STATUS_NONFINITE: return "Non-finite Result";
   case CHEM_SOLVER_STATUS_CONSTRAINT_INITIALIZATION_FAILED:
     return "Constraint Initialization Failed";
+  case CHEM_SOLVER_STATUS_ACCEPTING_UNCONVERGED:
+    return "Accepting Unconverged Integration";
   }
   return "Unknown";
 }
@@ -893,5 +895,138 @@ int chem_rosenbrock3_solve(const chem_mechanism *m, double *y,
       rate_parameters, duration,
       requested, statistics);
   chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
+chem_backward_euler_options chem_backward_euler_default_options(void) {
+  return (chem_backward_euler_options){
+      .small=1.0e-40,.initial_step=0.0,.relative_tolerance=1.0e-6,
+      .absolute_tolerance=1.0e-3,.absolute_tolerances=NULL,
+      .absolute_tolerance_count=0,.max_iterations=11,
+      .time_step_reductions={0.5,0.5,0.5,0.5,0.1}};
+}
+
+int chem_backward_euler_solve_with_workspace(
+    const chem_mechanism *m, chem_solver_workspace *workspace, double *y,
+    double temperature, double pressure, double air_density,
+    const double *rate_parameters, double duration,
+    const chem_backward_euler_options *requested,
+    chem_solver_stats *statistics) {
+  solver_workspace_data *w = workspace ? workspace->implementation : NULL;
+  if (!m || !w || w->mechanism != m || !y || !m->species_count ||
+      !isfinite(temperature) || temperature <= 0.0 ||
+      !isfinite(pressure) || pressure < 0.0 ||
+      !isfinite(air_density) || air_density < 0.0 ||
+      !isfinite(duration) || duration < 0.0 ||
+      (m->custom_parameter_count && !rate_parameters))
+    return SOLVER_BAD_ARGUMENT;
+  const chem_backward_euler_options defaults =
+      chem_backward_euler_default_options();
+  const chem_backward_euler_options *o = requested ? requested : &defaults;
+  if (!(o->small >= 0.0) || !isfinite(o->small) ||
+      !(o->initial_step >= 0.0) || !isfinite(o->initial_step) ||
+      !(o->relative_tolerance >= 0.0) || !isfinite(o->relative_tolerance) ||
+      !(o->absolute_tolerance >= 0.0) || !isfinite(o->absolute_tolerance) ||
+      !o->max_iterations) return SOLVER_BAD_ARGUMENT;
+  if ((o->absolute_tolerances && o->absolute_tolerance_count != m->species_count) ||
+      (!o->absolute_tolerances && o->absolute_tolerance_count != 0))
+    return SOLVER_BAD_ARGUMENT;
+  for (size_t i = 0; o->absolute_tolerances && i < m->species_count; ++i)
+    if (!(o->absolute_tolerances[i] >= 0.0) ||
+        !isfinite(o->absolute_tolerances[i])) return SOLVER_BAD_ARGUMENT;
+  for (size_t i = 0; i < 5; ++i)
+    if (!(o->time_step_reductions[i] > 0.0) ||
+        !(o->time_step_reductions[i] < 1.0) ||
+        !isfinite(o->time_step_reductions[i])) return SOLVER_BAD_ARGUMENT;
+  chem_solver_stats local = {0};
+  if (statistics) *statistics = local;
+  if (duration == 0.0) return SOLVER_OK;
+  const size_t n = m->species_count;
+  int status = chem_rate_constants(m,temperature,pressure,air_density,
+                                   rate_parameters,w->rate_constants);
+  if (status) return SOLVER_BAD_ARGUMENT;
+  double *old = w->stage_y;
+  double *next = w->ynew;
+  double *delta = w->forcing;
+  double *negative_jacobian = w->jac;
+  double *linear_matrix = w->a;
+  memcpy(old,y,n*sizeof(*old));
+  memcpy(next,y,n*sizeof(*next));
+  double time = 0.0;
+  double h = o->initial_step == 0.0 ? duration : fmin(o->initial_step,duration);
+  size_t consecutive_successes = 0, failed_reductions = 0;
+  while (time < duration) {
+    h = fmin(h,duration-time);
+    memcpy(next,old,n*sizeof(*next));
+    int converged = 0;
+    for (size_t iteration = 0; iteration < o->max_iterations; ++iteration) {
+      status = chem_forcing_with_constants(m,next,w->rate_constants,
+                                           air_density,delta);
+      if (status) { status = SOLVER_BAD_ARGUMENT; break; }
+      ++local.function_calls;
+      status = chem_negative_jacobian_with_constants(
+          m,next,w->rate_constants,negative_jacobian);
+      if (status) { status = SOLVER_BAD_ARGUMENT; break; }
+      ++local.jacobian_updates;
+      for (size_t row = 0; row < n; ++row)
+        for (size_t column = 0; column < n; ++column)
+          linear_matrix[row*n+column] =
+              negative_jacobian[row*n+column] +
+              (row == column ? 1.0/h : 0.0);
+      for (size_t i = 0; i < n; ++i)
+        delta[i] -= (next[i]-old[i])/h;
+      if (chem_linear_solve_in_place(n,linear_matrix,delta)) {
+        status = CHEM_SOLVER_STATUS_SINGULAR;
+        break;
+      }
+      ++local.decompositions;
+      ++local.solves;
+      ++local.internal_steps;
+      for (size_t i = 0; i < n; ++i) {
+        next[i] = fmax(0.0,next[i]+delta[i]);
+        if (!isfinite(next[i]) || !isfinite(delta[i])) {
+          status = CHEM_SOLVER_STATUS_NONFINITE;
+          break;
+        }
+      }
+      if (status) break;
+      if (iteration == 0) continue;
+      converged = 1;
+      for (size_t i = 0; i < n; ++i) {
+        const double absolute_tolerance = o->absolute_tolerances
+            ? o->absolute_tolerances[i] : o->absolute_tolerance;
+        if (fabs(delta[i]) > o->small &&
+            fabs(delta[i]) > absolute_tolerance &&
+            fabs(delta[i]) > o->relative_tolerance*fabs(next[i])) {
+          converged = 0;
+          break;
+        }
+      }
+      if (converged) break;
+    }
+    if (status) break;
+    if (!converged) {
+      ++local.rejected;
+      consecutive_successes = 0;
+      if (failed_reductions >= 5) {
+        time += h;
+        status = CHEM_SOLVER_STATUS_ACCEPTING_UNCONVERGED;
+        break;
+      }
+      memcpy(next,old,n*sizeof(*next));
+      h *= o->time_step_reductions[failed_reductions++];
+      continue;
+    }
+    memcpy(y,next,n*sizeof(*y));
+    memcpy(old,next,n*sizeof(*old));
+    time += h;
+    ++local.accepted;
+    ++consecutive_successes;
+    if (consecutive_successes >= 2) {
+      consecutive_successes = 0;
+      h *= 2.0;
+    }
+  }
+  if (statistics) *statistics = local;
   return status;
 }
