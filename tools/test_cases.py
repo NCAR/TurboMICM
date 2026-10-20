@@ -54,6 +54,8 @@ implemented = {
     "version:Version.VersionMinor",
     "version:Version.VersionPatch",
     "version:Version.VersionTweak",
+    "state:State.DefaultConstructor",
+    "state:State.Constructor",
     "state:State.SettingSingleConcentrationWithInvalidArgumentsThowsException",
     "state:State.SetSingleConcentration",
     "state:State.SetConcentrationByElementSingleValue",
@@ -88,6 +90,14 @@ implemented = {
     "rate_constants_user_defined_example_by_hand",
 }
 not_applicable = {
+    "state:State.CopyConstructor":
+        "C state views are non-owning, so they have no deep-copy constructor",
+    "state:State.CopyAssignmentOperator":
+        "C state views are non-owning, so they have no deep-copy assignment",
+    "state:State.MoveConstructor":
+        "C state views are non-owning and have no move constructor",
+    "state:State.MoveAssignmentOperator":
+        "C state views are non-owning and have no move assignment",
     "process_set:ProcessSetAlgebraicVariables.CudaMatrix":
         "CUDA backend is outside the CPU-only port scope",
     "view_category_sfinae:ViewCategorySFINAE.VectorTypes":

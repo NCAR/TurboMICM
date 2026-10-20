@@ -300,6 +300,9 @@ static int check_one_solver_many_thread_states(void) {
 }
 
 static int check_state_view(void) {
+  chem_state_view empty_state = {0};
+  if (empty_state.cell_count != 0 || empty_state.species_names != NULL ||
+      empty_state.concentrations != NULL) return 13;
   const char *species[] = {"foo", "bar", "baz", "quz"};
   const char *parameters[] = {"O1", "O2", "O3", "AAA", "BBB"};
   double values[12] = {0};
@@ -307,6 +310,9 @@ static int check_state_view(void) {
   chem_state_view state;
   if (chem_state_view_init(&state, species, 4, parameters, 5, 3, values,
                            custom)) return 1;
+  if (state.cell_count != 3 || state.species_count != 4 ||
+      state.custom_parameter_count != 5 || state.concentrations != values ||
+      state.custom_parameters != custom) return 14;
 
   const double bar[] = {12.0, 42.0, 35.2};
   if (chem_state_set_concentration(&state, "bar", bar, 3)) return 2;

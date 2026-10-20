@@ -44,3 +44,6 @@
 - Expose runtime state through a non-owning cell-major view over caller-provided
   arrays. Batch species and custom-parameter updates validate labels and cell
   counts before changing data, and return status codes instead of throwing.
+
+- Mark the four State copy/move cases N/A. The C state API is a non-owning view,
+  so it has no deep-copy or move constructor behavior to reproduce.
