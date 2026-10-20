@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <omp.h>
+#include <stdlib.h>
 #include <string.h>
 
 static double test_lambda(double temperature, double pressure,
@@ -499,6 +500,63 @@ static int check_process_set_finite_difference_jacobian(void) {
     }
   }
   return 0;
+}
+
+static int check_random_process_set(size_t cells, size_t reaction_count,
+                                    size_t species_count) {
+  chem_species *species = calloc(species_count, sizeof(*species));
+  chem_reaction *reactions = calloc(reaction_count, sizeof(*reactions));
+  chem_term *reactants = calloc(reaction_count * 3, sizeof(*reactants));
+  chem_term *products = calloc(reaction_count * 10, sizeof(*products));
+  double *concentration = calloc(species_count, sizeof(*concentration));
+  double *constants = calloc(reaction_count, sizeof(*constants));
+  double *forcing = calloc(species_count, sizeof(*forcing));
+  if (!species || !reactions || !reactants || !products || !concentration ||
+      !constants || !forcing) {
+    free(species); free(reactions); free(reactants); free(products);
+    free(concentration); free(constants); free(forcing);
+    return 1;
+  }
+  for (size_t r = 0; r < reaction_count; ++r) {
+    const size_t n_reactants = r % 4;
+    const size_t n_products = r % 11;
+    reactions[r].kind = CHEM_ARRHENIUS;
+    reactions[r].reactants = reactants + 3*r;
+    reactions[r].reactant_count = n_reactants;
+    reactions[r].products = products + 10*r;
+    reactions[r].product_count = n_products;
+    for (size_t i = 0; i < n_reactants; ++i)
+      reactants[3*r + i] = (chem_term){
+          .species = (17*r + 31*i + 7) % species_count,
+          .coefficient = 1.0};
+    for (size_t i = 0; i < n_products; ++i)
+      products[10*r + i] = (chem_term){
+          .species = (19*r + 23*i + 11) % species_count,
+          .coefficient = 1.2};
+  }
+  const chem_mechanism mechanism = {
+      .species = species, .species_count = species_count,
+      .reactions = reactions, .reaction_count = reaction_count};
+  int result = 0;
+  for (size_t cell = 0; cell < cells && !result; ++cell) {
+    for (size_t i = 0; i < species_count; ++i)
+      concentration[i] = 0.2 + 0.001 * (double)((i*37 + cell*13) % 300);
+    for (size_t r = 0; r < reaction_count; ++r)
+      constants[r] = 0.001 + 0.00001 * (double)((r*43 + cell*17) % 1000);
+    result = chem_forcing_with_constants(&mechanism, concentration, constants,
+                                         1.0e6, forcing);
+    for (size_t i = 0; i < species_count && !result; ++i)
+      if (!isfinite(forcing[i])) result = 2;
+  }
+  free(species); free(reactions); free(reactants); free(products);
+  free(concentration); free(constants); free(forcing);
+  return result;
+}
+
+static int check_random_process_sets(void) {
+  return check_random_process_set(200, 50, 40) ||
+         check_random_process_set(300, 30, 20) ||
+         check_random_process_set(400, 100, 80);
 }
 
 int main(void) {
@@ -1080,5 +1138,6 @@ int main(void) {
   if (check_state_view() != 0) return 53;
   if (check_process_rate_constant_layouts() != 0) return 54;
   if (check_process_set_finite_difference_jacobian() != 0) return 55;
+  if (check_random_process_sets() != 0) return 56;
   return 0;
 }
