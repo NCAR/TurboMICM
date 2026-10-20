@@ -41,8 +41,11 @@ forcing operation overwrites algebraic rows with residuals; its Jacobian
 operation adds `-dG/dy` to a dense cell-major matrix. Equilibrium residuals use
 the Van't Hoff constant supplied in each cell's state-parameter row and clamp
 negative concentrations to zero. These APIs support independent constraint
-construction and numerical checks; the ODE integrator does not yet assemble
-these constraints into a full DAE solve.
+construction and numerical checks. The initialization operation projects only
+algebraic species with damped Newton steps, measures correction against the
+state tolerances, supports multiple cells, and restores the original state if
+projection fails. The ODE integrator does not yet assemble these constraints
+into a full DAE solve.
 
 `chem_state` is an owning C state container for clients that want state
 management as well as the lower-level solver arrays. Initialization copies

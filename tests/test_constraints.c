@@ -675,6 +675,194 @@ static int constraint_vector_matrix_1(void) { return constraint_vector_cells(1u)
 static int constraint_vector_matrix_2(void) { return constraint_vector_cells(2u); }
 static int constraint_vector_matrix_3(void) { return constraint_vector_cells(3u); }
 
+static int initialize_with(
+    const chem_constraint_set *set,
+    size_t cells,
+    const double *parameters,
+    double *state,
+    const double *absolute_tolerances,
+    double relative_tolerance,
+    size_t max_updates,
+    double correction_tolerance,
+    size_t max_backtracks,
+    size_t *iterations) {
+  return chem_constraint_set_initialize(
+      set, cells, parameters, state, absolute_tolerances, relative_tolerance,
+      max_updates, correction_tolerance, max_backtracks, 0.5, 1e-4, iterations);
+}
+
+static chem_constraint simple_equilibrium_constraint(size_t parameter_index) {
+  static const chem_constraint_term reactants[] = { { 1u, 1.0 } };
+  static const chem_constraint_term products[] = { { 2u, 1.0 } };
+  return equilibrium("B_C_eq", 2u, reactants, 1u, products, 1u, 2.0, 0.0, parameter_index);
+}
+
+static int initialization_consistent(void) {
+  const chem_constraint item = simple_equilibrium_constraint(0u);
+  const chem_constraint_set set = constraint_set(3u, &item, 1u, 1u);
+  const double parameters[] = { 2.0 }, tolerances[] = { 1e-3, 1e-3, 1e-3 };
+  double state[] = { 1.0, 0.5, 1.0 };
+  size_t iterations = 0u;
+  CHECK(initialize_with(&set, 1u, parameters, state, tolerances, 1e-4, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  CHECK(iterations == 1u && state[0] == 1.0 && state[1] == 0.5 && state[2] == 1.0);
+  return 0;
+}
+
+static int initialization_mild(void) {
+  const chem_constraint item = simple_equilibrium_constraint(0u);
+  const chem_constraint_set set = constraint_set(3u, &item, 1u, 1u);
+  const double parameters[] = { 2.0 }, tolerances[] = { 1e-3, 1e-3, 1e-3 };
+  double state[] = { 1.0, 0.5, 5.0 };
+  size_t iterations = 0u;
+  CHECK(initialize_with(&set, 1u, parameters, state, tolerances, 1e-4, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  CHECK(iterations > 1u && state[0] == 1.0 && state[1] == 0.5);
+  NEAR(state[2], 1.0, 1e-12);
+  return 0;
+}
+
+static int initialization_severe(void) {
+  const chem_constraint item = simple_equilibrium_constraint(0u);
+  const chem_constraint_set set = constraint_set(3u, &item, 1u, 1u);
+  const double parameters[] = { 2.0 }, tolerances[] = { 1e-3, 1e-3, 1e-3 };
+  double state[] = { 1.0, 0.5, 1000.0 };
+  size_t iterations = 0u;
+  CHECK(initialize_with(&set, 1u, parameters, state, tolerances, 1e-4, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  NEAR(state[2], 1.0, 1e-12);
+  return 0;
+}
+
+static int initialization_scaled_solve(void) {
+  const double scales[] = { 1.0, 1e-12, 1e12 };
+  const double tolerances[] = { 1e-3, 1e-3, 1e-3 };
+  for (size_t i = 0; i < 3u; ++i) {
+    const double scale = scales[i];
+    const chem_constraint_term terms[] = { { 0u, scale }, { 1u, scale }, { 2u, scale } };
+    const chem_constraint item = linear("mass", 2u, terms, 3u, scale * 1.3);
+    const chem_constraint_set set = constraint_set(3u, &item, 1u, 0u);
+    double state[] = { 0.7, 0.15, 5.0 };
+    size_t iterations = 0u;
+    CHECK(initialize_with(&set, 1u, NULL, state, tolerances, 1e-4, 10u, 0.1, 24u, &iterations) ==
+        CHEM_CONSTRAINT_INIT_CONVERGED);
+    NEAR(state[2], 0.45, 1e-12);
+  }
+  return 0;
+}
+
+static int initialization_empty_set(void) {
+  const chem_constraint_set set = constraint_set(2u, NULL, 0u, 0u);
+  double state[] = { 1.0, 2.0 };
+  size_t iterations = 9u;
+  CHECK(initialize_with(&set, 1u, NULL, state, NULL, 1e-4, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  CHECK(iterations == 0u && state[0] == 1.0 && state[1] == 2.0);
+  return 0;
+}
+
+static int initialization_multicell(void) {
+  const chem_constraint item = simple_equilibrium_constraint(0u);
+  const chem_constraint_set set = constraint_set(3u, &item, 1u, 1u);
+  const double parameters[] = { 2.0, 2.0, 2.0 }, tolerances[] = { 1e-3, 1e-3, 1e-3 };
+  double state[] = { 1.0, 0.5, 1.0, 2.0, 0.3, 5.0, 0.5, 0.1, 100.0 };
+  size_t iterations = 0u;
+  CHECK(initialize_with(&set, 3u, parameters, state, tolerances, 1e-4, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  NEAR(state[2], 1.0, 1e-12); NEAR(state[5], 0.6, 1e-12); NEAR(state[8], 0.2, 1e-12);
+  return 0;
+}
+
+static int initialization_repeated(void) {
+  const chem_constraint item = simple_equilibrium_constraint(0u);
+  const chem_constraint_set set = constraint_set(3u, &item, 1u, 1u);
+  const double parameters[] = { 2.0 }, tolerances[] = { 1e-3, 1e-3, 1e-3 };
+  double state[] = { 1.0, 0.5, 1.0 };
+  size_t iterations = 0u;
+  CHECK(initialize_with(&set, 1u, parameters, state, tolerances, 1e-4, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  state[2] = 999.0;
+  CHECK(initialize_with(&set, 1u, parameters, state, tolerances, 1e-4, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  NEAR(state[2], 1.0, 1e-12);
+  return 0;
+}
+
+static int initialization_status_name(void) {
+  CHECK(strcmp(chem_constraint_init_status_name(CHEM_CONSTRAINT_INIT_FAILED),
+      "Constraint Initialization Failed") == 0);
+  return 0;
+}
+
+static int initialization_failure_restores_state(void) {
+  const chem_constraint_term reactants[] = { { 0u, 1.0 } };
+  const chem_constraint_term products[] = { { 1u, 2.0 } };
+  const chem_constraint item = equilibrium("squared", 1u, reactants, 1u, products, 1u, 2.0, 0.0, 0u);
+  const chem_constraint_set set = constraint_set(2u, &item, 1u, 1u);
+  const double parameters[] = { 2.0 }, tolerances[] = { 1e-3, 1e-3 };
+  double state[] = { 0.5, 100.0 };
+  size_t iterations = 0u;
+  CHECK(initialize_with(&set, 1u, parameters, state, tolerances, 1e-4, 1u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_FAILED);
+  CHECK(state[0] == 0.5 && state[1] == 100.0);
+  return 0;
+}
+
+static int initialization_damped_success_and_limits(void) {
+  const chem_constraint_term reactants[] = { { 0u, 1.0 } };
+  const chem_constraint_term products[] = { { 1u, 2.0 } };
+  const chem_constraint item = equilibrium("squared", 1u, reactants, 1u, products, 1u, 2.0, 0.0, 0u);
+  const chem_constraint_set set = constraint_set(2u, &item, 1u, 1u);
+  const double parameters[] = { 2.0 }, tolerances[] = { 1e-3, 1e-3 };
+  double state[] = { 0.5, 1e-6 };
+  size_t iterations = 0u;
+  CHECK(initialize_with(&set, 1u, parameters, state, tolerances, 1e-4, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  NEAR(state[1], 1.0, 1e-3);
+  for (size_t backtracks = 0u; backtracks <= 2u; backtracks += 2u) {
+    state[1] = 1e-6;
+    CHECK(initialize_with(&set, 1u, parameters, state, tolerances, 1e-4, 10u, 0.1, backtracks, &iterations) ==
+        CHEM_CONSTRAINT_INIT_FAILED);
+    CHECK(state[0] == 0.5 && state[1] == 1e-6);
+  }
+  return 0;
+}
+
+static int initialization_weighted_row_scale(void) {
+  const double scales[] = { 1e-12, 1.0, 1e12 };
+  const double tolerances[] = { 1e-12, 1e-12 };
+  for (size_t i = 0; i < 3u; ++i) {
+    const double scale = scales[i];
+    const chem_constraint_term terms[] = { { 0u, scale }, { 1u, -scale } };
+    const chem_constraint item = linear("scaled_copy", 1u, terms, 2u, 0.0);
+    const chem_constraint_set set = constraint_set(2u, &item, 1u, 0u);
+    double state[] = { 1.0, 4.0 };
+    size_t iterations = 0u;
+    CHECK(initialize_with(&set, 1u, NULL, state, tolerances, 1e-8, 10u, 0.1, 24u, &iterations) ==
+        CHEM_CONSTRAINT_INIT_CONVERGED);
+    NEAR(state[1], 1.0, 1e-12);
+  }
+  return 0;
+}
+
+static int initialization_weighted_tolerances(void) {
+  const chem_constraint_term terms[] = { { 0u, 1.0 }, { 1u, -1.0 } };
+  const chem_constraint item = linear("scaled_copy", 1u, terms, 2u, 0.0);
+  const chem_constraint_set set = constraint_set(2u, &item, 1u, 0u);
+  const double loose_tolerance[] = { 1e-8, 1e-8 };
+  const double tight_tolerance[] = { 1e-12, 1e-12 };
+  double state[] = { 1.0, 1.0 + 5e-8 };
+  size_t iterations = 0u;
+  CHECK(initialize_with(&set, 1u, NULL, state, loose_tolerance, 1e-6, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  CHECK(iterations == 1u && state[1] == 1.0 + 5e-8);
+  state[1] = 1.0 + 5e-8;
+  CHECK(initialize_with(&set, 1u, NULL, state, tight_tolerance, 1e-8, 10u, 0.1, 24u, &iterations) ==
+      CHEM_CONSTRAINT_INIT_CONVERGED);
+  NEAR(state[1], 1.0, 1e-12);
+  return 0;
+}
+
 typedef struct { const char *name; int (*run)(void); } test_case;
 
 int main(int argc, char **argv) {
@@ -721,6 +909,18 @@ int main(int argc, char **argv) {
     { "ConstraintSet.VectorMatrix1", constraint_vector_matrix_1 },
     { "ConstraintSet.VectorMatrix2", constraint_vector_matrix_2 },
     { "ConstraintSet.VectorMatrix3", constraint_vector_matrix_3 },
+    { "ConstraintInitialization.ConsistentICsUnchanged", initialization_consistent },
+    { "ConstraintInitialization.MildlyInconsistentICsCorrected", initialization_mild },
+    { "ConstraintInitialization.SeverelyInconsistentICsConverge", initialization_severe },
+    { "ConstraintInitialization.ScaledConstraintRowsSolveIdenticallyThroughSolve", initialization_scaled_solve },
+    { "ConstraintInitialization.PureODESystemUnaffected", initialization_empty_set },
+    { "ConstraintInitialization.MultiCellSystems", initialization_multicell },
+    { "ConstraintInitialization.SubsequentSolveCallsReinitialize", initialization_repeated },
+    { "ConstraintInitialization.SolverStateToStringNewValue", initialization_status_name },
+    { "ConstraintInitialization.FailedInitializationRestoresCallerState", initialization_failure_restores_state },
+    { "ConstraintInitialization.SuccessfulInitializationKeepsTheCorrection", initialization_damped_success_and_limits },
+    { "ConstraintInitialization.WeightedCorrectionIsInvariantToConstraintRowScaling", initialization_weighted_row_scale },
+    { "ConstraintInitialization.WeightedCorrectionUsesStateTolerances", initialization_weighted_tolerances },
   };
   if (argc != 2) return 2;
   for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); ++i) {

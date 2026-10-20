@@ -42,6 +42,14 @@ typedef struct {
   const chem_constraint *constraints;
 } chem_constraint_set;
 
+typedef enum {
+  CHEM_CONSTRAINT_INIT_CONVERGED = 0,
+  CHEM_CONSTRAINT_INIT_FAILED = 1,
+  CHEM_CONSTRAINT_INIT_NAN = 2,
+  CHEM_CONSTRAINT_INIT_INFINITY = 3,
+  CHEM_CONSTRAINT_INIT_INVALID_ARGUMENT = 4
+} chem_constraint_init_status;
+
 /* Resolve a species name against the mechanism's integrated variable order.
    Return 0 on success and -1 for an unknown name or invalid arguments. */
 int chem_constraint_find_species(
@@ -83,6 +91,25 @@ int chem_constraint_set_accumulate_negative_jacobian(
     const double *state,
     const double *state_parameters,
     double *negative_jacobian);
+
+/* Project algebraic species onto the constraint manifold with damped Newton
+   updates. state is [cell][species]; absolute_tolerances is [species]. On
+   failure, state is restored. iterations counts residual evaluations. */
+chem_constraint_init_status chem_constraint_set_initialize(
+    const chem_constraint_set *set,
+    size_t cell_count,
+    const double *state_parameters,
+    double *state,
+    const double *absolute_tolerances,
+    double relative_tolerance,
+    size_t max_updates,
+    double correction_tolerance,
+    size_t max_backtracks,
+    double backtrack_factor,
+    double sufficient_decrease,
+    size_t *iterations);
+
+const char *chem_constraint_init_status_name(chem_constraint_init_status status);
 
 #ifdef __cplusplus
 }

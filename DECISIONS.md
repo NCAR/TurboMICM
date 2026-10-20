@@ -50,9 +50,9 @@
   state-parameter column for per-cell K_eq, and set operations provide a dense
   sparsity mask, algebraic rows, residual replacement, and negative Jacobian
   accumulation. Set validation rejects duplicate algebraic rows, matching
-  MICM's construction check. This keeps construction and formula checks
-  independent of the solver; full DAE integration remains a separate porting
-  item.
+  MICM's construction check. Algebraic initialization is a separate operation
+  that uses damped Newton projection and restores the input state on failure;
+  this keeps projection tests independent of full DAE time integration.
 - Tiny negative accepted concentrations are set to zero at interval boundaries
   only when their magnitude is within the configured absolute tolerance. This
   addresses roundoff undershoots that otherwise propagate through fast
