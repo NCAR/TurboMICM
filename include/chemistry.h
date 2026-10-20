@@ -435,6 +435,30 @@ int chem_csr_matrix_is_structural_zero(const chem_csr_matrix *matrix,
                                        int *is_zero);
 int chem_csr_matrix_fill(chem_csr_matrix *matrix, double value);
 int chem_csr_matrix_add_to_diagonal(chem_csr_matrix *matrix, double value);
+typedef struct {
+  double *data;
+  size_t count;
+  size_t stride;
+} chem_csr_value_view;
+typedef struct {
+  const double *data;
+  size_t count;
+  size_t stride;
+} chem_csr_const_value_view;
+typedef void (*chem_csr_block_function)(size_t block, double *destination,
+                                       const chem_csr_const_value_view *sources,
+                                       size_t source_count, void *context);
+int chem_csr_matrix_get_value_view(const chem_csr_matrix *matrix, size_t row,
+                                   size_t column,
+                                   chem_csr_value_view *view);
+int chem_csr_matrix_get_const_value_view(const chem_csr_matrix *matrix,
+                                        size_t row, size_t column,
+                                        chem_csr_const_value_view *view);
+int chem_csr_matrix_apply_blocks(chem_csr_value_view *destination,
+                                 const chem_csr_const_value_view *sources,
+                                 size_t source_count,
+                                 chem_csr_block_function function,
+                                 void *context);
 
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density);

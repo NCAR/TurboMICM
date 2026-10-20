@@ -53,6 +53,60 @@ int chem_csr_matrix_vector_index(const chem_csr_matrix *matrix, size_t block,
   return 0;
 }
 
+static int csr_entry(const chem_csr_matrix *matrix, size_t row, size_t column,
+                     size_t *entry) {
+  if (!csr_valid(matrix) || !entry || row >= matrix->dimension ||
+      column >= matrix->dimension) return 1;
+  size_t lower = matrix->row_offsets[row];
+  size_t upper = matrix->row_offsets[row + 1];
+  while (lower < upper) {
+    const size_t middle = lower + (upper - lower) / 2;
+    if (matrix->column_indices[middle] < column) lower = middle + 1;
+    else upper = middle;
+  }
+  if (lower >= matrix->row_offsets[row + 1] ||
+      matrix->column_indices[lower] != column) return 1;
+  *entry = lower;
+  return 0;
+}
+
+int chem_csr_matrix_get_value_view(const chem_csr_matrix *matrix, size_t row,
+                                   size_t column, chem_csr_value_view *view) {
+  size_t entry = 0;
+  if (!view || csr_entry(matrix,row,column,&entry)) return 1;
+  view->data = matrix->values ? matrix->values + entry : NULL;
+  view->count = matrix->block_count;
+  view->stride = matrix->nonzero_count;
+  return 0;
+}
+
+int chem_csr_matrix_get_const_value_view(const chem_csr_matrix *matrix,
+                                        size_t row, size_t column,
+                                        chem_csr_const_value_view *view) {
+  size_t entry = 0;
+  if (!view || csr_entry(matrix,row,column,&entry)) return 1;
+  view->data = matrix->values ? matrix->values + entry : NULL;
+  view->count = matrix->block_count;
+  view->stride = matrix->nonzero_count;
+  return 0;
+}
+
+int chem_csr_matrix_apply_blocks(chem_csr_value_view *destination,
+                                 const chem_csr_const_value_view *sources,
+                                 size_t source_count,
+                                 chem_csr_block_function function,
+                                 void *context) {
+  if (!destination || !function || (source_count && !sources) ||
+      (destination->count && !destination->data)) return 1;
+  for (size_t i = 0; i < source_count; ++i)
+    if (sources[i].count != destination->count ||
+        (sources[i].count && !sources[i].data)) return 1;
+  for (size_t block = 0; block < destination->count; ++block)
+    function(block,destination->data + block*destination->stride,sources,
+             source_count,context);
+  return 0;
+}
+
 int chem_csr_matrix_get(const chem_csr_matrix *matrix, size_t block,
                         size_t row, size_t column, double *value) {
   size_t index = 0;

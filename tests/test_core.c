@@ -1848,6 +1848,24 @@ static int check_matrix_view_api(void) {
   return 0;
 }
 
+static void csr_sum_sources(size_t block, double *destination,
+                            const chem_csr_const_value_view *sources,
+                            size_t source_count, void *context) {
+  (void)context;
+  double sum = 0.0;
+  for (size_t i = 0; i < source_count; ++i)
+    sum += sources[i].data[block*sources[i].stride];
+  *destination = sum;
+}
+
+static void csr_scale_source(size_t block, double *destination,
+                             const chem_csr_const_value_view *sources,
+                             size_t source_count, void *context) {
+  const double scale = context ? *(const double *)context : 1.0;
+  *destination = source_count ? scale*sources[0].data[
+      block*sources[0].stride] : 0.0;
+}
+
 static int check_csr_matrix_api(void) {
   const size_t empty_offsets[] = {0,0,0,0};
   chem_csr_matrix empty;
@@ -1887,6 +1905,55 @@ static int check_csr_matrix_api(void) {
   const size_t invalid_offsets[] = {0,2,1,1,1};
   if (chem_csr_matrix_init(&matrix,4,1,1,invalid_offsets,columns,values) == 0)
     return 10;
+  const size_t array_offsets[] = {0,1,2,4,5};
+  const size_t array_columns[] = {0,1,2,3,3};
+  double array_values[15];
+  for (size_t i = 0; i < 15; ++i) array_values[i] = 1.0;
+  if (chem_csr_matrix_init(&matrix,4,3,5,array_offsets,array_columns,
+                           array_values)) return 11;
+  if (chem_csr_matrix_set(&matrix,0,0,0,1.0) ||
+      chem_csr_matrix_set(&matrix,1,1,1,2.0) ||
+      chem_csr_matrix_set(&matrix,2,2,2,3.0) ||
+      chem_csr_matrix_set(&matrix,2,2,3,4.0) ||
+      chem_csr_matrix_set(&matrix,2,3,3,5.0)) return 12;
+  chem_csr_const_value_view sources[4];
+  chem_csr_value_view temporary_view, output_view;
+  double temporary[3] = {0};
+  if (chem_csr_matrix_get_const_value_view(&matrix,0,0,&sources[0]) ||
+      chem_csr_matrix_get_const_value_view(&matrix,1,1,&sources[1]) ||
+      chem_csr_matrix_get_const_value_view(&matrix,2,2,&sources[2]) ||
+      chem_csr_matrix_get_const_value_view(&matrix,2,3,&sources[3])) return 13;
+  temporary_view = (chem_csr_value_view){temporary,3,1};
+  if (chem_csr_matrix_apply_blocks(&temporary_view,sources,4,
+                                   csr_sum_sources,NULL)) return 14;
+  if (chem_csr_matrix_get_value_view(&matrix,2,3,&output_view) ||
+      chem_csr_matrix_apply_blocks(&output_view,
+          (chem_csr_const_value_view[1]){{temporary,3,1}},1,
+          csr_scale_source,(void *)&(const double){2.0}) ||
+      array_values[3] != 8.0 || array_values[8] != 10.0 ||
+      array_values[13] != 18.0) return 15;
+  chem_csr_const_value_view wrong_source = {temporary,2,1};
+  if (chem_csr_matrix_apply_blocks(&output_view,&wrong_source,1,
+                                   csr_scale_source,NULL) == 0) return 16;
+  const size_t a_offsets[] = {0,1,2,2};
+  const size_t a_columns[] = {1,2};
+  const size_t b_offsets[] = {0,1,2,3};
+  const size_t b_columns[] = {0,1,2};
+  double a_values[6] = {10,20,11,22,12,24};
+  double b_values[9] = {0,0,0,4,3,5,8,6,10};
+  chem_csr_matrix matrix_a, matrix_b;
+  chem_csr_value_view a_destination;
+  chem_csr_const_value_view a_source, b_source;
+  if (chem_csr_matrix_init(&matrix_a,3,3,2,a_offsets,a_columns,a_values) ||
+      chem_csr_matrix_init(&matrix_b,3,3,3,b_offsets,b_columns,b_values) ||
+      chem_csr_matrix_get_value_view(&matrix_a,1,2,&a_destination) ||
+      chem_csr_matrix_get_const_value_view(&matrix_a,0,1,&a_source) ||
+      chem_csr_matrix_get_const_value_view(&matrix_b,2,2,&b_source) ||
+      chem_csr_matrix_apply_blocks(&a_destination,
+          (chem_csr_const_value_view[2]){a_source,b_source},2,
+          csr_sum_sources,NULL) ||
+      a_values[1] != 10.0 || a_values[3] != 16.0 || a_values[5] != 22.0)
+    return 17;
   return 0;
 }
 

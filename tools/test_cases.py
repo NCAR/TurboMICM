@@ -170,6 +170,8 @@ implemented = {
     "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.SingleBlockMatrix",
     "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.ConstSingleBlockMatrix",
     "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.MultiBlockMatrix",
+    "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.ArrayFunction",
+    "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.MultiMatrixArrayFunction",
     "matrix:Matrix.IterateOverMatrix",
     "matrix:Matrix.FunctionReusability",
     "matrix:Matrix.MultiMatrixDifferentRowsFromCreation",

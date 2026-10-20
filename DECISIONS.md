@@ -60,6 +60,8 @@
 - Represent sparse matrices as non-owning block CSR views. A block shares one
   sorted, duplicate-free row/column pattern; values are contiguous block-major
   slices, and operations return status codes for missing structural entries.
+  Entry views span blocks with an explicit stride; block callbacks can combine
+  entries from matrices with different sparsity patterns when block counts match.
 
 - Store optional species properties in caller-owned tagged records. Typed C
   getters report missing properties separately from type mismatches, avoiding
