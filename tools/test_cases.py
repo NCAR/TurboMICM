@@ -36,6 +36,8 @@ implemented = {
     "user_defined_rate_constant:UserDefinedRateConstant.ConstructorWithRate",
     "user_defined_rate_constant:UserDefinedRateConstant.ConstructorWithRateAndName",
     "user_defined_rate_constant:UserDefinedRateConstant.CustomScalingFactor",
+    "process:Process.Matrix",
+    "process:Process.VectorMatrix",
     "process:Process.BuildsChemicalReaction",
     "process:Process.ChemicalReactionCopyAssignmentSucceeds",
     "reaction_rate_store:ReactionRateConstantStore.OffsetsAreContiguousCumulativeSizes",
@@ -131,6 +133,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C finite-difference Jacobian checks"
         elif case_id.startswith("version:"):
             reason = "C version API checked"
+        elif case_id in {"process:Process.Matrix", "process:Process.VectorMatrix"}:
+            reason = "C rate constants match scalar and grouped cell layouts"
         elif case_id.startswith("state:State."):
             reason = "C caller-owned state views and setter errors checked"
         elif case_id == "openmp:OpenMP.OneSolverManyStates":

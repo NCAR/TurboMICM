@@ -8,7 +8,7 @@
   checks across Arrhenius, branched, lambda, reversible, surface, Taylor, Troe,
   ternary activation, tunneling, and user-defined rates; also forcing and small
   analytic integration checks, C reaction construction and value-copy checks,
-  density-parameterized reaction multipliers, indexed lambda rates, version getters, and state setter behavior.
+  density-parameterized reaction multipliers, indexed lambda rates, version getters, state setter behavior, and process rate constants across scalar and grouped cells.
 - `tests/test_codegen.py`: passed with both compilers through `make test-cpu`,
   checking rate-type ordering, parameter defaults and indexes, derived branched
   parameters, surface parameters, density multipliers, and reaction counts in
@@ -43,7 +43,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Eighty-three cases pass, ten are marked N/A, and 587 cases still report
+  statuses. Eighty-five cases pass, ten are marked N/A, and 585 cases still report
   incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -63,5 +63,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 all 2,110,000 values; the largest relative difference was `5.34e-14` for
 BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
 MICM at this scale. The 100-cell and first-cell runs above also pass for both
-compilers. Overall, 587 of the 680 inventory cases remain incomplete; ten C++-only or CUDA
+compilers. Overall, 585 of the 680 inventory cases remain incomplete; ten C++-only or CUDA
 cases are marked N/A.

@@ -385,6 +385,80 @@ static int check_state_view(void) {
   return 0;
 }
 
+static int check_process_rate_constant_layouts(void) {
+  const chem_species species[] = {
+      {.name = "foo", .molecular_weight = 0.025, .diffusion = 230.0},
+      {.name = "bar", .density_parameterized = 1, .density_factor = 0.82}};
+  const chem_term foo[] = {{.species = 0, .coefficient = 1.0}};
+  const chem_term bar[] = {{.species = 1, .coefficient = 1.0}};
+  const chem_term foo_bar[] = {{.species = 0, .coefficient = 1.0},
+                               {.species = 1, .coefficient = 1.0}};
+  const chem_reaction reactions[] = {
+      {.kind = CHEM_ARRHENIUS, .reactants = foo_bar, .reactant_count = 2,
+       .p = {12.2, 0.0, 300.0, 300.0, 0.0}},
+      {.kind = CHEM_USER_DEFINED, .reactants = bar, .reactant_count = 1,
+       .p = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+      {.kind = CHEM_SURFACE, .reactants = foo, .reactant_count = 1,
+       .surface_species = 0, .p = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0}}};
+  const chem_mechanism mechanism = {
+      .species = species, .species_count = 2,
+      .reactions = reactions, .reaction_count = 3};
+  const double r = 8.31446261815324;
+  double scalar_results[5][3] = {{0}};
+  for (size_t cell = 0; cell < 5; ++cell) {
+    const double temperature = 280.0 + 2.0 * (double)cell;
+    const double pressure = 99000.0 + 100.0 * (double)cell;
+    const double density = 6.0 + 0.1 * (double)cell;
+    const double user_rate = 0.01 + 0.001 * (double)cell;
+    const double radius = 1.0e-8 * (1.0 + 0.1 * (double)cell);
+    const double number = 1.0e5 * (1.0 + 0.05 * (double)cell);
+    const double custom[] = {user_rate, radius, number};
+    double constants[3] = {0};
+    if (chem_rate_constants(&mechanism, temperature, pressure, density,
+                            custom, constants)) return 1;
+    const double expected_arrhenius = 12.2 * exp(300.0 / temperature) *
+                                      (density * 0.82);
+    const double expected_user = user_rate * (density * 0.82);
+    const double speed = sqrt(8.0 * r * temperature /
+                              (3.14159265358979323846 * 0.025));
+    const double expected_surface =
+        4.0 * number * 3.14159265358979323846 * radius * radius /
+        (radius / 230.0 + 4.0 / speed);
+    if (!near(constants[0], expected_arrhenius) ||
+        !near(constants[1], expected_user) ||
+        fabs(constants[2] - expected_surface) > 1e-10 * expected_surface)
+      return 2;
+    memcpy(scalar_results[cell], constants, sizeof(constants));
+  }
+
+  /* The C API's cell-major arrays are valid for scalar and grouped cell widths. */
+  for (size_t width = 1; width <= 4; ++width) {
+    size_t offset = 0;
+    while (offset < 5) {
+      const size_t count = width < 5 - offset ? width : 5 - offset;
+      double grouped[4][3] = {{0}};
+      for (size_t local = 0; local < count; ++local) {
+        const size_t cell = offset + local;
+        const double temperature = 280.0 + 2.0 * (double)cell;
+        const double pressure = 99000.0 + 100.0 * (double)cell;
+        const double density = 6.0 + 0.1 * (double)cell;
+        const double custom[] = {0.01 + 0.001 * (double)cell,
+                                 1.0e-8 * (1.0 + 0.1 * (double)cell),
+                                 1.0e5 * (1.0 + 0.05 * (double)cell)};
+        if (chem_rate_constants(&mechanism, temperature, pressure, density,
+                                custom, grouped[local])) return 3;
+      }
+      for (size_t local = 0; local < count; ++local)
+        for (size_t rate = 0; rate < 3; ++rate)
+          if (!isfinite(grouped[local][rate]) ||
+              !near(grouped[local][rate], scalar_results[offset + local][rate]))
+            return 4;
+      offset += count;
+    }
+  }
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -962,5 +1036,6 @@ int main(void) {
   if (check_version_api() != 0) return 51;
   if (check_one_solver_many_thread_states() != 0) return 52;
   if (check_state_view() != 0) return 53;
+  if (check_process_rate_constant_layouts() != 0) return 54;
   return 0;
 }
