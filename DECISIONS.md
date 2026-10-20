@@ -40,3 +40,7 @@
 
 - Give the independent C library an initial version of `0.1.0+0` and expose the
   string and numeric components through `chem_version*` functions.
+
+- Expose runtime state through a non-owning cell-major view over caller-provided
+  arrays. Batch species and custom-parameter updates validate labels and cell
+  counts before changing data, and return status codes instead of throwing.

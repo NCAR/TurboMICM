@@ -61,8 +61,8 @@ python3 ../reference/compare_final.py ts1_final.csv path/to/reference.csv
 
 ## C API
 
-`include/chemistry.h` defines the generic mechanism records, rate evaluation,
-forcing and Jacobian routines, and solver interface. The implementation covers
+`include/chemistry.h` defines the generic mechanism records, non-owning state view,
+rate evaluation, forcing and Jacobian routines, version API, and solver interface. The implementation covers
 Arrhenius, photolysis, user-defined, Troe, surface, ternary activation (including
 JPL19), tunneling, branched, Taylor-series, reversible, and callback rates.
 `chem_rosenbrock_builtin_parameters` supplies MICM's two-, three-, four-, and

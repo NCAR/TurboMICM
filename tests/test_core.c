@@ -299,6 +299,86 @@ static int check_one_solver_many_thread_states(void) {
   return 0;
 }
 
+static int check_state_view(void) {
+  const char *species[] = {"foo", "bar", "baz", "quz"};
+  const char *parameters[] = {"O1", "O2", "O3", "AAA", "BBB"};
+  double values[12] = {0};
+  double custom[15] = {0};
+  chem_state_view state;
+  if (chem_state_view_init(&state, species, 4, parameters, 5, 3, values,
+                           custom)) return 1;
+
+  const double bar[] = {12.0, 42.0, 35.2};
+  if (chem_state_set_concentration(&state, "bar", bar, 3)) return 2;
+  for (size_t cell = 0; cell < 3; ++cell) {
+    double observed = 0.0;
+    if (chem_state_get_concentration(&state, "bar", cell, &observed) ||
+        observed != bar[cell]) return 3;
+  }
+  const double foo[] = {0.9, 0.99, 0.999};
+  const double baz[] = {0.3, 0.33, 0.333};
+  const double quz[] = {0.4, 0.44, 0.444};
+  const chem_state_series concentrations[] = {
+      {.label = "quz", .values = quz, .value_count = 3},
+      {.label = "foo", .values = foo, .value_count = 3},
+      {.label = "baz", .values = baz, .value_count = 3}};
+  if (chem_state_set_concentrations(&state, concentrations, 3)) return 4;
+  const double expected[] = {0.9, 12.0, 0.3, 0.4,
+                             0.99, 42.0, 0.33, 0.44,
+                             0.999, 35.2, 0.333, 0.444};
+  for (size_t i = 0; i < 12; ++i)
+    if (values[i] != expected[i]) return 5;
+  const double invalid[] = {0.1};
+  const chem_state_series unknown_species[] = {
+      {.label = "FUU", .values = invalid, .value_count = 1}};
+  if (chem_state_set_concentrations(&state, unknown_species, 1) == 0 ||
+      chem_state_set_concentration(&state, "missing", invalid, 3) == 0 ||
+      chem_state_set_concentration(&state, "foo", invalid, 1) == 0) return 6;
+
+  const double o1[] = {0.1, 0.11, 0.111};
+  const double o2[] = {0.5, 0.55, 0.555};
+  const double o3[] = {0.3, 0.33, 0.333};
+  const double aaa[] = {0.5, 0.55, 0.555};
+  const double bbb[] = {0.7, 0.77, 0.777};
+  const chem_state_series custom_series[] = {
+      {.label = "O3", .values = o3, .value_count = 3},
+      {.label = "O1", .values = o1, .value_count = 3},
+      {.label = "BBB", .values = bbb, .value_count = 3},
+      {.label = "O2", .values = o2, .value_count = 3},
+      {.label = "AAA", .values = aaa, .value_count = 3}};
+  if (chem_state_set_custom_parameters(&state, custom_series, 5)) return 7;
+  const double expected_custom[] = {0.1,0.5,0.3,0.5,0.7,
+                                   0.11,0.55,0.33,0.55,0.77,
+                                   0.111,0.555,0.333,0.555,0.777};
+  for (size_t i = 0; i < 15; ++i)
+    if (custom[i] != expected_custom[i]) return 8;
+  const chem_state_series bad_custom_size[] = {
+      {.label = "O1", .values = invalid, .value_count = 1}};
+  const chem_state_series bad_custom_label[] = {
+      {.label = "CCC", .values = o1, .value_count = 3}};
+  if (chem_state_set_custom_parameters(&state, bad_custom_size, 1) == 0 ||
+      chem_state_set_custom_parameters(&state, bad_custom_label, 1) == 0 ||
+      chem_state_set_custom_parameter(&state, "CCC", o1, 3) == 0) return 9;
+
+  /* The caller-owned flat matrix is the C equivalent of MICM's unchecked bulk setter. */
+  if (chem_state_set_custom_parameter_matrix(&state, expected_custom, 3, 5) ||
+      chem_state_set_custom_parameter_matrix(&state, expected_custom, 2, 5) == 0 ||
+      chem_state_set_custom_parameter_matrix(&state, expected_custom, 3, 4) == 0)
+    return 10;
+
+  double one_cell_values[4] = {0};
+  double one_cell_custom[5] = {0};
+  chem_state_view one_cell;
+  if (chem_state_view_init(&one_cell, species, 4, parameters, 5, 1,
+                           one_cell_values, one_cell_custom)) return 11;
+  const double scalar[] = {324.2};
+  const double param[] = {42.3};
+  if (chem_state_set_concentration(&one_cell, "bar", scalar, 1) ||
+      chem_state_set_custom_parameter(&one_cell, "O2", param, 1) ||
+      one_cell_values[1] != 324.2 || one_cell_custom[1] != 42.3) return 12;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -875,5 +955,6 @@ int main(void) {
   if (check_jacobian_verification() != 0) return 50;
   if (check_version_api() != 0) return 51;
   if (check_one_solver_many_thread_states() != 0) return 52;
+  if (check_state_view() != 0) return 53;
   return 0;
 }

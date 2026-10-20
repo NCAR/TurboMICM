@@ -61,6 +61,48 @@ typedef struct {
   double density_factor;
 } chem_species;
 
+/* Non-owning, cell-major state view. The caller owns the names and arrays. */
+typedef struct {
+  const char *const *species_names;
+  size_t species_count;
+  const char *const *custom_parameter_labels;
+  size_t custom_parameter_count;
+  size_t cell_count;
+  double *concentrations;
+  double *custom_parameters;
+} chem_state_view;
+
+typedef struct {
+  const char *label;
+  const double *values;
+  size_t value_count;
+} chem_state_series;
+
+int chem_state_view_init(chem_state_view *state,
+                         const char *const *species_names,
+                         size_t species_count,
+                         const char *const *custom_parameter_labels,
+                         size_t custom_parameter_count, size_t cell_count,
+                         double *concentrations, double *custom_parameters);
+int chem_state_set_concentration(chem_state_view *state, const char *species,
+                                 const double *values, size_t value_count);
+int chem_state_get_concentration(const chem_state_view *state,
+                                 const char *species, size_t cell,
+                                 double *value);
+int chem_state_set_concentrations(chem_state_view *state,
+                                  const chem_state_series *series,
+                                  size_t series_count);
+int chem_state_set_custom_parameter(chem_state_view *state, const char *label,
+                                    const double *values,
+                                    size_t value_count);
+int chem_state_set_custom_parameters(chem_state_view *state,
+                                     const chem_state_series *series,
+                                     size_t series_count);
+int chem_state_set_custom_parameter_matrix(chem_state_view *state,
+                                           const double *values,
+                                           size_t row_count,
+                                           size_t column_count);
+
 typedef struct {
   const chem_species *species;
   size_t species_count;

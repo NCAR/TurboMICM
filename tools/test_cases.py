@@ -54,6 +54,22 @@ implemented = {
     "version:Version.VersionMinor",
     "version:Version.VersionPatch",
     "version:Version.VersionTweak",
+    "state:State.SettingSingleConcentrationWithInvalidArgumentsThowsException",
+    "state:State.SetSingleConcentration",
+    "state:State.SetConcentrationByElementSingleValue",
+    "state:State.SetConcentrationByElementVector",
+    "state:State.SettingConcentrationsWithInvalidArguementsThrowsException",
+    "state:State.SetConcentrations",
+    "state:State.SetStateWithSquareBracketOperator",
+    "state:State.SetMultiCellStateWithSquareBrackets",
+    "state:State.SettingCustomRateParameterWithInvalidVectorSizeThrowsException",
+    "state:State.SettingCustomRateParameterWithInvalidLabelThrowsException",
+    "state:State.SetCustomRateParameter",
+    "state:State.SetCustomRateParameters",
+    "state:State.UnsafelySetCustomRateParameterOneCell",
+    "state:State.UnsafelySetCustomRateParameterMultiCell",
+    "state:State.UnsafelySetCustomRateParameterCatchesTooFewGridCells",
+    "state:State.UnsafelySetCustomRateParameterCatchesTooParameters",
     "openmp:OpenMP.OneSolverManyStates",
     "jacobian_verification:JacobianVerification.FiniteDifferenceMatchesAnalytical",
     "jacobian_verification:JacobianVerification.MultiBlockFiniteDifference",
@@ -105,6 +121,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C finite-difference Jacobian checks"
         elif case_id.startswith("version:"):
             reason = "C version API checked"
+        elif case_id.startswith("state:State."):
+            reason = "C caller-owned state views and setter errors checked"
         elif case_id == "openmp:OpenMP.OneSolverManyStates":
             reason = "independent C workspaces give identical thread states"
         print(f"{case_id} PASS {reason}")

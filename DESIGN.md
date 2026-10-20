@@ -9,7 +9,10 @@ permitted TS1 builder input. `tools/generate_c.py` emits immutable C tables from
 that normalized representation. Build-time generation keeps Python, YAML, and
 configuration libraries out of the executable.
 
-The C API separates mechanism data from runtime computation. Species and
+The C API separates mechanism data from runtime computation. `chem_state_view`
+provides non-owning, cell-major access to concentration and custom-parameter
+arrays, with label-based setters and status-code validation. Batch updates validate
+all labels and lengths before writing. Species and
 reaction tables carry metadata and index-based stoichiometry. Third bodies and
 general density-parameterized species fold their density factors into rate
 constants while remaining distinct from kinetic state dependencies. Evaluation
@@ -41,7 +44,8 @@ and group-output buffers for one mechanism. The single-cell API uses one cell
 per workspace; the benchmark initializes one workspace per cell group. `src/main.c`
 loads CSV values by species or parameter label, initializes omitted values
 from generated defaults, runs the untimed warm-up and timed steps, and writes
-`ts1_final.csv`. `--threads N` creates N contiguous cell groups. Each group
+`ts1_final.csv`. `chem_version*` exposes the C library version as `0.1.0+0`.
+`--threads N` creates N contiguous cell groups. Each group
 shares one adaptive step controller and error norm, matching MICM's benchmark
 grouping. The current C implementation still factors each cell's matrix
 sequentially inside the group.
