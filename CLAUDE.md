@@ -328,6 +328,10 @@ Tier-2-Results.
     them every step (`src/ts1_bench.c:154`).
   - Compile time of the generated kernels (16,000 to 21,000 lines of C), with
     clang and gcc-15.
+  - luna-xhigh: the cost of the setup inside its timer (each group's symbolic
+    build, about 38 MB of allocation, transposes, rate constants; once per
+    group, `src/chem.c:1080-1113`), and why it speeds up only 2.79 times from
+    1 to 10 threads.
 - Framework, after the contest: Opus and Fable build on its results a framework
   usable from MUSICA, CheMPAS-A, CAM-chem, and other host models (wiki:
   From-Contest-to-Framework). First, a MUSICA integration study, after the
