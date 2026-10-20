@@ -792,6 +792,42 @@ static int check_chapman_integration(void) {
   return 0;
 }
 
+static int check_integrated_reaction_rates(void) {
+  const chem_species species[] = {{.name="a"}, {.name="b"}, {.name="c"},
+                                  {.name="irr_1"}, {.name="irr_2"}};
+  const chem_term a[] = {{.species=0,.coefficient=1.0}};
+  const chem_term b[] = {{.species=1,.coefficient=1.0}};
+  const chem_term b_irr1[] = {{.species=1,.coefficient=1.0},
+                              {.species=3,.coefficient=1.0}};
+  const chem_term c_irr2[] = {{.species=2,.coefficient=1.0},
+                              {.species=4,.coefficient=1.0}};
+  const chem_reaction reactions[] = {
+      {.kind=CHEM_ARRHENIUS,.reactants=a,.reactant_count=1,
+       .products=b_irr1,.product_count=2,.p={2.15e-11,0,110,300,0}},
+      {.kind=CHEM_USER_DEFINED,.label="r2",.reactants=b,.reactant_count=1,
+       .products=c_irr2,.product_count=2,.p={1,0,0,0,0,0,0,0}}};
+  const chem_mechanism mechanism = {.species=species,.species_count=5,
+      .reactions=reactions,.reaction_count=2,.custom_parameter_count=1};
+  double state[] = {1.0,0,0,0,0};
+  chem_solver_workspace workspace = {0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  const double temperature=273.0, pressure=1000.0;
+  const double density=pressure/(8.31446261815324*temperature);
+  double previous_irr1=0.0, previous_irr2=0.0;
+  int result=0;
+  for (size_t step=0;step<100 && !result;++step) {
+    const double rate=(step>50)?0.0:1.0;
+    result=chem_rosenbrock3_solve_with_workspace(
+        &mechanism,&workspace,state,temperature,pressure,density,&rate,30.0,
+        NULL,NULL);
+    if (!result && (state[3]<previous_irr1 || state[4]<previous_irr2)) result=2;
+    previous_irr1=state[3];
+    previous_irr2=state[4];
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return result;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -1375,5 +1411,6 @@ int main(void) {
   if (check_process_set_forcing_and_jacobian() != 0) return 57;
   if (check_terminator_cases() != 0) return 58;
   if (check_chapman_integration() != 0) return 59;
+  if (check_integrated_reaction_rates() != 0) return 60;
   return 0;
 }
