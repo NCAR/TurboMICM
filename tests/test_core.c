@@ -1201,10 +1201,16 @@ static int check_matrix_view_api(void) {
   if (chem_matrix_view_get(&view, 2, 0, &value) == 0 ||
       chem_matrix_view_init(&view, storage, (size_t)-1, 2, (size_t)-1, 1) == 0)
     return 12;
+  chem_matrix_view wrong_rows, wrong_columns;
+  double mismatch_storage[8] = {0};
+  if (chem_matrix_view_init(&wrong_rows, mismatch_storage, 3, 3, 3, 1) ||
+      chem_matrix_view_init(&wrong_columns, mismatch_storage, 2, 2, 2, 1) ||
+      chem_matrix_view_axpy(&view, &wrong_rows, 1.0) == 0 ||
+      chem_matrix_view_axpy(&view, &wrong_columns, 1.0) == 0) return 13;
   chem_matrix_view empty;
   if (chem_matrix_view_init(&empty, NULL, 0, 0, 0, 0) ||
       chem_matrix_view_fill(&empty, 0.0) ||
-      chem_matrix_view_sum(&empty, &value) == 0) return 13;
+      chem_matrix_view_sum(&empty, &value) == 0) return 14;
   return 0;
 }
 
