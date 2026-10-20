@@ -78,6 +78,23 @@ DEFINE_PROPERTY_GETTER(chem_species_get_string_property,const char *,
 
 #undef DEFINE_PROPERTY_GETTER
 
+int chem_mechanism_absolute_tolerances(const chem_mechanism *mechanism,
+                                       double *values, size_t value_count) {
+  if (!mechanism || !mechanism->species || !values ||
+      value_count != mechanism->species_count) return 1;
+  for (size_t i = 0; i < mechanism->species_count; ++i) {
+    values[i] = 1.0e-3;
+    double property_value = 0.0;
+    const chem_property_status status = chem_species_get_double_property(
+        &mechanism->species[i], "absolute tolerance", &property_value);
+    if (status == CHEM_PROPERTY_STATUS_NOT_FOUND) continue;
+    if (status != CHEM_PROPERTY_STATUS_OK || !(property_value > 0.0) ||
+        !isfinite(property_value)) return 1;
+    values[i] = property_value;
+  }
+  return 0;
+}
+
 int chem_mechanism_validate_species_usage(const chem_mechanism *mechanism,
                                           unsigned char *used_species,
                                           size_t used_species_count) {

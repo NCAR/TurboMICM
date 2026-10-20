@@ -460,6 +460,7 @@ implemented.update({
     "rosenbrock:RosenbrockSolver.VectorNormalizedErrorWithConstraints",
     "rosenbrock:RosenbrockSolver.StandardAlphaMinusJacobian",
     "rosenbrock:RosenbrockSolver.VectorAlphaMinusJacobian",
+    "rosenbrock:RosenbrockSolver.CanSetTolerances",
     "matrix:Matrix.WrongColumnCountAtInvocation",
     "vector_matrix:VectorMatrix.WrongColumnCountAtInvocation",
     "constraint_initialization:ConstraintInitialization.PureODESystemUnaffected",
@@ -566,7 +567,9 @@ for raw in case_file.read_text().splitlines():
         elif case_id.startswith("regression_test_rosenbrock_p_force:"):
             reason = "generic C Chapman mechanism rates and forcing match independent formulas"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):
-            reason = "C Rosenbrock matrix transforms and normalized error checked"
+            reason = ("C per-species tolerance properties feed solver error control"
+                      if case_id.endswith("CanSetTolerances") else
+                      "C Rosenbrock matrix transforms and normalized error checked")
         elif case_id == "process_set:ProcessSetAlgebraicVariables.CudaMatrix":
             reason = "C masked reaction forcing and Jacobian updates preserve algebraic rows"
         elif case_id.startswith(("phase_species:", "phase:", "system:")):

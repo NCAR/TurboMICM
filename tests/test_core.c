@@ -1751,14 +1751,18 @@ static int check_constrained_solver(void) {
   if (chem_solver_workspace_init(&weighted_workspace,&pair_mechanism)) return 7;
   const double deviation = 5.0e-8;
   double weighted_state[] = {1.0,1.0+deviation};
-  const chem_solver_options loose = {1.0e-6,1.0e-8,1000};
+  const chem_solver_options loose = {
+      .relative_tolerance=1.0e-6, .absolute_tolerance=1.0e-8,
+      .max_steps=1000};
   const int loose_status = chem_rosenbrock_solve_constrained_with_parameters(
       &pair_mechanism,&weighted_workspace,weighted_state,298.15,101325.0,
       40.0,NULL,0.1,NULL,&weighted_set,&loose,&stats);
   if (loose_status || weighted_state[1] != 1.0+deviation ||
       stats.constraint_init_iterations != 1) return 8;
   weighted_state[0] = 1.0; weighted_state[1] = 1.0+deviation;
-  const chem_solver_options tight = {1.0e-8,1.0e-12,1000};
+  const chem_solver_options tight = {
+      .relative_tolerance=1.0e-8, .absolute_tolerance=1.0e-12,
+      .max_steps=1000};
   const int tight_status = chem_rosenbrock_solve_constrained_with_parameters(
       &pair_mechanism,&weighted_workspace,weighted_state,298.15,101325.0,
       40.0,NULL,0.1,NULL,&weighted_set,&tight,&stats);
@@ -3128,7 +3132,44 @@ static int check_linear_solvers(void) {
   return 0;
 }
 
+static int check_rosenbrock_species_tolerances(void) {
+  const chem_property foo_properties[] = {{
+      .name="absolute tolerance", .kind=CHEM_PROPERTY_DOUBLE,
+      .value.real_value=1e-7}};
+  const chem_property bar_properties[] = {{
+      .name="absolute tolerance", .kind=CHEM_PROPERTY_DOUBLE,
+      .value.real_value=1e-8}};
+  const chem_species species[] = {
+      {.name="foo",.properties=foo_properties,.property_count=1},
+      {.name="bar",.properties=bar_properties,.property_count=1}};
+  const chem_term reactant[] = {{.species=0,.coefficient=1.0}};
+  const chem_term product[] = {{.species=1,.coefficient=1.0}};
+  const chem_reaction reaction = {.kind=CHEM_ARRHENIUS,
+      .reactants=reactant,.reactant_count=1,.products=product,
+      .product_count=1,.p={2e-11,0,110,300,0}};
+  const chem_mechanism mechanism = {.species=species,.species_count=2,
+      .reactions=&reaction,.reaction_count=1};
+  double tolerances[2];
+  if (chem_mechanism_absolute_tolerances(&mechanism,tolerances,2) ||
+      tolerances[0]!=1e-7 || tolerances[1]!=1e-8 ||
+      chem_mechanism_absolute_tolerances(&mechanism,tolerances,1)==0)
+    return 1;
+  chem_solver_options options = chem_solver_default_options();
+  options.absolute_tolerances=tolerances;
+  options.absolute_tolerance_count=2;
+  double state[] = {1.0,0.0};
+  chem_solver_workspace workspace = {0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 2;
+  const int status = chem_rosenbrock3_solve_with_workspace(
+      &mechanism,&workspace,state,298.15,101325.0,40.0,NULL,1.0,
+      &options,NULL);
+  chem_solver_workspace_destroy(&workspace);
+  if (status || !(state[0]<1.0) || !(state[1]>0.0)) return 3;
+  return 0;
+}
+
 int main(void) {
+  if (check_rosenbrock_species_tolerances()) return 52;
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
   const double b = chem_arrhenius(3.0e-11, 0.0, -200.0, 300.0, 0.0, t, 0.0);
@@ -3401,7 +3442,9 @@ int main(void) {
       .reaction_count = 1,
   };
   double y[] = {1.0, 0.0};
-  chem_solver_options options = {1.0e-10, 1.0e-12, 1000};
+  chem_solver_options options = {
+      .relative_tolerance=1.0e-10, .absolute_tolerance=1.0e-12,
+      .max_steps=1000};
   chem_solver_stats stats;
   if (chem_rosenbrock3_solve(&decay_mechanism, y, 300.0, 0.0, NULL, 1.0,
                              &options, &stats) != 0) return 5;
@@ -3424,7 +3467,9 @@ int main(void) {
       .reactions = chain, .reaction_count = 2,
   };
   double chain_y[] = {1.0, 0.0, 0.0};
-  const chem_solver_options chain_options = {1.0e-10, 1.0e-12, 10000};
+  const chem_solver_options chain_options = {
+      .relative_tolerance=1.0e-10, .absolute_tolerance=1.0e-12,
+      .max_steps=10000};
   int chain_status = chem_rosenbrock3_solve(&chain_mechanism, chain_y, 300.0,
                                              0.0, NULL, 1.0, &chain_options, &stats);
   if (chain_status != 0) return 7;

@@ -190,6 +190,10 @@ typedef struct {
   double initial_temperature;
   double initial_pressure;
 } chem_mechanism;
+/* Fills MICM-compatible per-species solver tolerances: 1e-3 by default,
+   overridden by a positive numeric "absolute tolerance" species property. */
+int chem_mechanism_absolute_tolerances(const chem_mechanism *mechanism,
+                                       double *values, size_t value_count);
 /* Returns 0 when every species occurs in a reaction, 2 when at least one is
    unused, and 1 for an invalid mechanism or output buffer. */
 int chem_mechanism_validate_species_usage(const chem_mechanism *mechanism,
@@ -626,6 +630,8 @@ chem_rosenbrock_parameters chem_rosenbrock_builtin_parameters(
 typedef struct {
   double relative_tolerance;
   double absolute_tolerance;
+  const double *absolute_tolerances;
+  size_t absolute_tolerance_count;
   size_t max_steps;
 } chem_solver_options;
 

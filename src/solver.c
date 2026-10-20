@@ -131,8 +131,31 @@ void chem_solver_workspace_destroy(chem_solver_workspace *workspace) {
 }
 
 chem_solver_options chem_solver_default_options(void) {
-  chem_solver_options result = {1.0e-6, 1.0e-3, 1000};
+  chem_solver_options result = {
+      .relative_tolerance=1.0e-6, .absolute_tolerance=1.0e-3,
+      .absolute_tolerances=NULL, .absolute_tolerance_count=0, .max_steps=1000};
   return result;
+}
+
+static int solver_tolerances_valid(const chem_solver_options *options,
+                                   size_t species_count) {
+  if (options->relative_tolerance <= 0.0 ||
+      options->absolute_tolerance <= 0.0 || options->max_steps == 0)
+    return 0;
+  if ((options->absolute_tolerances &&
+       options->absolute_tolerance_count != species_count) ||
+      (!options->absolute_tolerances && options->absolute_tolerance_count != 0))
+    return 0;
+  for (size_t i = 0; options->absolute_tolerances && i < species_count; ++i)
+    if (!(options->absolute_tolerances[i] > 0.0) ||
+        !isfinite(options->absolute_tolerances[i])) return 0;
+  return 1;
+}
+
+static double solver_absolute_tolerance(const chem_solver_options *options,
+                                        size_t species) {
+  return options->absolute_tolerances
+      ? options->absolute_tolerances[species] : options->absolute_tolerance;
 }
 
 chem_rosenbrock_parameters chem_rosenbrock_builtin_parameters(
@@ -476,8 +499,7 @@ static int rosenbrock_solve_impl(
   const size_t n = m->species_count;
   const chem_solver_options defaults = chem_solver_default_options();
   const chem_solver_options *o = requested ? requested : &defaults;
-  if (o->relative_tolerance <= 0.0 || o->absolute_tolerance <= 0.0 ||
-      o->max_steps == 0) return SOLVER_BAD_ARGUMENT;
+  if (!solver_tolerances_valid(o, n)) return SOLVER_BAD_ARGUMENT;
   const chem_rosenbrock_parameters default_parameters =
       chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
   const chem_rosenbrock_parameters *p = parameters ? parameters : &default_parameters;
@@ -594,7 +616,8 @@ static int rosenbrock_solve_impl(
       for (size_t i = 0; i < n; ++i) {
         if (m->species[i].third_body || row_is_algebraic(constraints, i)) continue;
         ++error_variables;
-        const double scale = o->absolute_tolerance + o->relative_tolerance*fmax(fabs(y[i]), fabs(ynew[i]));
+        const double scale = solver_absolute_tolerance(o, i) +
+            o->relative_tolerance*fmax(fabs(y[i]), fabs(ynew[i]));
         const double v = yerror[i]/scale;
         sum += v*v;
       }
@@ -722,8 +745,7 @@ int chem_rosenbrock3_solve_group_with_workspace(
   const size_t n = m->species_count, nr = m->reaction_count;
   const chem_solver_options defaults = chem_solver_default_options();
   const chem_solver_options *o = requested ? requested : &defaults;
-  if (o->relative_tolerance <= 0.0 || o->absolute_tolerance <= 0.0 ||
-      o->max_steps == 0) return SOLVER_BAD_ARGUMENT;
+  if (!solver_tolerances_valid(o, n)) return SOLVER_BAD_ARGUMENT;
   for (size_t c = 0; c < cell_count; ++c)
     if (!isfinite(temperatures[c]) || temperatures[c] <= 0.0 ||
         !isfinite(pressures[c]) || pressures[c] < 0.0 ||
@@ -834,7 +856,7 @@ int chem_rosenbrock3_solve_group_with_workspace(
           const double *y = states + c*n;
           const double *ynew = w->group_ynew + c*n;
           const double *yerror = w->group_yerror + c*n;
-          const double scale = o->absolute_tolerance + o->relative_tolerance *
+          const double scale = solver_absolute_tolerance(o, i) + o->relative_tolerance *
               fmax(fabs(y[i]), fabs(ynew[i]));
           const double value = yerror[i] / scale;
           error_sum += value*value;
