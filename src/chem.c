@@ -665,15 +665,15 @@ static void chem_add_forcing(
   }
 }
 
-int chem_evaluate_forcing(
+static int chem_validate_forcing_inputs(
     const chem_mechanism *mechanism,
     size_t cell_count,
     const double *y,
     const double *rate_constants,
-    double *forcing) {
+    const double *output) {
   if (mechanism == NULL || cell_count == 0u || mechanism->species_count == 0u ||
       mechanism->species == NULL || (mechanism->reaction_count != 0u &&
-      (mechanism->reactions == NULL || rate_constants == NULL)) || y == NULL || forcing == NULL ||
+      (mechanism->reactions == NULL || rate_constants == NULL)) || y == NULL || output == NULL ||
       mechanism->species_count > SIZE_MAX / cell_count / sizeof(double) ||
       mechanism->reaction_count > SIZE_MAX / cell_count / sizeof(double)) return -1;
   for (size_t r = 0; r < mechanism->reaction_count; ++r) {
@@ -689,9 +689,17 @@ int chem_evaluate_forcing(
     for (size_t q = 0; q < reaction->product_count; ++q)
       if (mechanism->product_terms[reaction->product_offset + q].species >= mechanism->species_count) return -1;
   }
+  return 0;
+}
 
-  const size_t state_size = cell_count * mechanism->species_count;
-  memset(forcing, 0, state_size * sizeof(double));
+int chem_accumulate_forcing(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *rate_constants,
+    const unsigned char *differential_species,
+    double *forcing) {
+  if (chem_validate_forcing_inputs(mechanism, cell_count, y, rate_constants, forcing) != 0) return -1;
   if (mechanism->reaction_count == 0u) return 0;
   double *flux = malloc(cell_count * sizeof(double));
   if (flux == NULL) return -2;
@@ -707,16 +715,68 @@ int chem_evaluate_forcing(
     }
     for (size_t q = 0; q < reaction->reactant_count; ++q) {
       const unsigned species = mechanism->reactant_terms[reaction->reactant_offset + q].species;
+      if (differential_species != NULL && differential_species[species] == 0u) continue;
       for (size_t cell = 0; cell < cell_count; ++cell)
         forcing[cell * mechanism->species_count + species] -= flux[cell];
     }
     for (size_t q = 0; q < reaction->product_count; ++q) {
       const chem_term *product = &mechanism->product_terms[reaction->product_offset + q];
+      if (differential_species != NULL && differential_species[product->species] == 0u) continue;
       for (size_t cell = 0; cell < cell_count; ++cell)
         forcing[cell * mechanism->species_count + product->species] += product->coefficient * flux[cell];
     }
   }
   free(flux);
+  return 0;
+}
+
+int chem_evaluate_forcing(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *rate_constants,
+    double *forcing) {
+  if (chem_validate_forcing_inputs(mechanism, cell_count, y, rate_constants, forcing) != 0) return -1;
+  memset(forcing, 0, cell_count * mechanism->species_count * sizeof(double));
+  return chem_accumulate_forcing(mechanism, cell_count, y, rate_constants, NULL, forcing);
+}
+
+int chem_accumulate_negative_jacobian(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *rate_constants,
+    const unsigned char *differential_species,
+    double *negative_jacobian) {
+  if (chem_validate_forcing_inputs(mechanism, cell_count, y, rate_constants, negative_jacobian) != 0)
+    return -1;
+  const size_t n = mechanism->species_count;
+  if (n > SIZE_MAX / n || cell_count > SIZE_MAX / (n * n) / sizeof(double)) return -1;
+  for (size_t r = 0; r < mechanism->reaction_count; ++r) {
+    const chem_reaction *reaction = &mechanism->reactions[r];
+    for (size_t cell = 0; cell < cell_count; ++cell) {
+      const double rate = rate_constants[cell * mechanism->reaction_count + r];
+      for (size_t q = 0; q < reaction->reactant_count; ++q) {
+        const unsigned column = mechanism->reactant_terms[reaction->reactant_offset + q].species;
+        double derivative = rate;
+        for (size_t k = 0; k < reaction->reactant_count; ++k) {
+          if (k == q) continue;
+          const unsigned other = mechanism->reactant_terms[reaction->reactant_offset + k].species;
+          derivative *= y[cell * n + other];
+        }
+        for (size_t k = 0; k < reaction->reactant_count; ++k) {
+          const unsigned row = mechanism->reactant_terms[reaction->reactant_offset + k].species;
+          if (differential_species != NULL && differential_species[row] == 0u) continue;
+          negative_jacobian[(cell * n + row) * n + column] += derivative;
+        }
+        for (size_t k = 0; k < reaction->product_count; ++k) {
+          const chem_term *product = &mechanism->product_terms[reaction->product_offset + k];
+          if (differential_species != NULL && differential_species[product->species] == 0u) continue;
+          negative_jacobian[(cell * n + product->species) * n + column] -= product->coefficient * derivative;
+        }
+      }
+    }
+  }
   return 0;
 }
 

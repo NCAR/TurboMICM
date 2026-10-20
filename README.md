@@ -31,9 +31,11 @@ unported cases are recorded in [RESULTS.md](RESULTS.md).
 `include/chem.h` exposes the low-level integration API, owning species/phase/
 system definitions for code-built mechanisms, and an owning `chem_state`
 container with deep copy, move, named concentration access, and custom
-rate-parameter setters. C object initialization uses zero-initialized structs;
-functions return status codes, and name lists and states have explicit destroy
-functions. See [DESIGN.md](DESIGN.md) for storage and ownership rules.
+rate-parameter setters. The forcing API supports accumulation and algebraic-row
+masking and can build a dense negative Jacobian. C object initialization uses
+zero-initialized structs; functions return status codes, and name lists and
+states have explicit destroy functions. See [DESIGN.md](DESIGN.md) for storage
+and ownership rules.
 
 ## Run TS1
 

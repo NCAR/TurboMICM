@@ -26,6 +26,13 @@ Code-built mechanisms may also use `CHEM_RATE_CALLBACK` with a caller-owned
 context pointer; function pointers are not representable in the YAML/JSON
 configuration format.
 
+For process evaluation, `chem_evaluate_forcing` clears and fills a cell-major
+forcing array, while `chem_accumulate_forcing` adds into an existing array and
+can skip algebraic species rows. `chem_accumulate_negative_jacobian` adds the
+dense `-df/dy` for each cell and accepts the same row mask. Masked species
+values still contribute to rates. These additive APIs let C callers preserve
+MICM's ProcessSet-style accumulation without an expression-template layer.
+
 `chem_state` is an owning C state container for clients that want state
 management as well as the lower-level solver arrays. Initialization copies
 species and custom-parameter names and allocates cell-major concentrations,

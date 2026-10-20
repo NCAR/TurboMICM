@@ -145,6 +145,13 @@ $(BUILD)/test_objects.o: tests/test_objects.c $(LIBHDR)
 $(BIN)/test_objects: $(BUILD)/test_objects.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
+$(BUILD)/test_processes.o: tests/test_processes.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_processes: $(BUILD)/test_processes.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
 $(BUILD)/test_chapman.o: tests/test_chapman.c $(LIBHDR)
 	@mkdir -p $(BUILD) $(BIN)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -152,7 +159,7 @@ $(BUILD)/test_chapman.o: tests/test_chapman.c $(LIBHDR)
 $(BIN)/test_chapman: $(BUILD)/test_chapman.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_objects $(BIN)/test_chapman
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_objects $(BIN)/test_processes $(BIN)/test_chapman
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu

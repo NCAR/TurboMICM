@@ -42,6 +42,9 @@
   MICM's qualified phase and unqualified system conventions. C initialization
   and copy operations require zero-initialized destinations, with destroy
   functions for each owner; string property access returns a borrowed value.
+- Process forcing and the dense negative Jacobian are additive C operations.
+  Their optional species mask skips output rows while leaving masked species
+  in the rate law, matching algebraic-variable handling in process sets.
 - Tiny negative accepted concentrations are set to zero at interval boundaries
   only when their magnitude is within the configured absolute tolerance. This
   addresses roundoff undershoots that otherwise propagate through fast

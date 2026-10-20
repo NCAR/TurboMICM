@@ -312,6 +312,31 @@ int chem_evaluate_forcing(
     const double *rate_constants,
     double *forcing);
 
+/* Add reaction forcing to an existing cell-major buffer. A non-NULL mask has
+   one byte per species; zero entries suppress updates to those species rows,
+   while masked concentrations still participate in reaction rates. Inputs
+   and output must not overlap. Return 0 on success, -1 for invalid descriptors
+   or dimensions, and -2 on allocation failure. */
+int chem_accumulate_forcing(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *rate_constants,
+    const unsigned char *differential_species,
+    double *forcing);
+
+/* Add -df/dy to a dense cell-major Jacobian in [cell][row][column] order.
+   A row mask follows chem_accumulate_forcing semantics. Inputs and output must
+   not overlap. Return 0 on success and -1 for invalid descriptors or
+   dimensions. */
+int chem_accumulate_negative_jacobian(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *rate_constants,
+    const unsigned char *differential_species,
+    double *negative_jacobian);
+
 /* Integrate each row of y in place for one chemistry interval.  State layout
    is cell-major: y[cell * species_count + species].  Parameters use the same
    cell-major convention.  A separate call owns a separate adaptive history. */
