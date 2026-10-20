@@ -56,6 +56,8 @@
 - Store optional species properties in caller-owned tagged records. Typed C
   getters report missing properties separately from type mismatches, avoiding
   unchecked casts from the C++ property API.
+  Species record copy construction and assignment use C value copies; names and
+  property arrays remain borrowed caller-owned data.
 
 - Give the independent C library an initial version of `0.1.0+0` and expose the
   string and numeric components through `chem_version*` functions.

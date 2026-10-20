@@ -59,6 +59,8 @@ implemented = {
     "species:Species.StringConstructor",
     "species:Species.StringAndVectorConstructor",
     "species:Species.GetProperty",
+    "species:Species.CopyConstructor",
+    "species:Species.CopyAssignment",
     "constraint_set:ConstraintSet.Construction",
     "constraint_set:ConstraintSet.ReplaceStateRowsMapsToAlgebraicSpecies",
     "constraint_set:ConstraintSet.NonZeroJacobianElements",

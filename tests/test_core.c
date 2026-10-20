@@ -1398,7 +1398,7 @@ static int check_species_properties(void) {
        .value.integer_value=42},
       {.name="enabled",.kind=CHEM_PROPERTY_BOOLEAN,
        .value.boolean_value=1}};
-  const chem_species species = {.name="thing",.properties=properties,
+  chem_species species = {.name="thing",.properties=properties,
       .property_count=5,.temperature_parameterization_factor=100.0};
   if (strcmp(species.name,"thing") || !chem_species_is_parameterized(&species) ||
       chem_species_parameterize_conditions(&species,12.5,0.0) != 1250.0)
@@ -1416,14 +1416,26 @@ static int check_species_properties(void) {
       integer_value != 42 ||
       chem_species_get_boolean_property(&species,"enabled",&boolean_value) ||
       boolean_value != 1) return 2;
+  const chem_species copied = species;
+  chem_species assigned = {.name="placeholder"};
+  assigned = species;
+  if (strcmp(copied.name,"thing") || strcmp(assigned.name,"thing") ||
+      copied.properties != properties || assigned.properties != properties ||
+      copied.property_count != 5 || assigned.property_count != 5 ||
+      !chem_species_is_parameterized(&copied) ||
+      !chem_species_is_parameterized(&assigned) ||
+      chem_species_get_integer_property(&copied,"count",&integer_value) ||
+      integer_value != 42 ||
+      chem_species_get_string_property(&assigned,"label",&string_value) ||
+      strcmp(string_value,"bar")) return 3;
   if (chem_species_get_double_property(&species,"missing",&real_value) !=
           CHEM_PROPERTY_STATUS_NOT_FOUND ||
       chem_species_get_integer_property(&species,"name [units]",&integer_value) !=
-          CHEM_PROPERTY_STATUS_TYPE_MISMATCH) return 3;
+          CHEM_PROPERTY_STATUS_TYPE_MISMATCH) return 4;
   chem_species third_body = {.name="M"};
   if (chem_species_set_third_body(&third_body) ||
       !chem_species_is_parameterized(&third_body) ||
-      chem_species_parameterize(&third_body,42.4) != 42.4) return 4;
+      chem_species_parameterize(&third_body,42.4) != 42.4) return 5;
   return 0;
 }
 
