@@ -57,16 +57,16 @@
 - Masked reaction forcing and negative-Jacobian accumulation preserve selected
   algebraic rows while updating differential rows across multiple cells.
 - The dense matrix view test covers strided indexing, conversion to and from a
-  flat vector or individual rows, AXPY, fill, min/max/sum reductions, and invalid
-  dimensions. AXPY rejects row and column shape mismatches. Read-only views
-  support indexed reads and row conversion. Callback traversal works for both
-  nonempty and empty mutable views.
+  flat vector or individual rows and columns, AXPY, fill, min/max/sum reductions,
+  and invalid dimensions. AXPY rejects row and column shape mismatches. Read-only
+  views support indexed reads and row conversion. Callback traversal works for
+  both nonempty and empty mutable views.
 - JSON and YAML tutorial mechanisms normalize to 7 species; the input reactions
   expand to 10 and 7 generated reactions, respectively (JSON and YAML).
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. One hundred seventy-five cases pass, nine are marked N/A, and 496 cases
+  statuses. One hundred eighty-three cases pass, nine are marked N/A, and 488 cases
   still report incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -86,5 +86,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 all 2,110,000 values; the largest relative difference was `5.34e-14` for
 BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
 MICM at this scale. The 100-cell and first-cell runs above also pass for both
-compilers. Overall, 496 of the 680 inventory cases remain incomplete; nine
+compilers. Overall, 488 of the 680 inventory cases remain incomplete; nine
 C++-only cases are marked N/A.

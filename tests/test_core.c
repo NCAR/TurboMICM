@@ -1457,6 +1457,24 @@ static int check_matrix_view_api(void) {
   double const_row[4];
   if (chem_const_matrix_view_copy_row_to_vector(&const_loop,1,const_row,4) ||
       const_row[0] != 100.0 || const_row[3] != 103.0) return 27;
+  if (chem_matrix_view_copy_row_to_vector(&rows,2,row_copy,2) == 0 ||
+      chem_matrix_view_copy_row_to_vector(&rows,2,row_copy,4) == 0) return 28;
+  double column_data[] = {1,2,3,4,5,6};
+  chem_matrix_view columns;
+  double column_copy[2];
+  const double column_values[] = {8.0,9.0};
+  if (chem_matrix_view_init(&columns,column_data,2,3,3,1) ||
+      chem_matrix_view_copy_column_to_vector(&columns,1,column_copy,2) ||
+      column_copy[0] != 2.0 || column_copy[1] != 5.0 ||
+      chem_matrix_view_copy_column_from_vector(&columns,1,column_values,2) ||
+      column_data[1] != 8.0 || column_data[4] != 9.0 ||
+      chem_matrix_view_copy_column_to_vector(&columns,1,column_copy,1) == 0)
+    return 29;
+  if (chem_matrix_view_copy_to_vector(&columns,NULL,0) == 0 ||
+      chem_matrix_view_copy_from_vector(&columns,column_values,2) == 0 ||
+      chem_matrix_view_copy_to_vector(&empty,NULL,0) ||
+      chem_matrix_view_copy_from_vector(&empty,NULL,0)) return 30;
+  if (chem_matrix_view_max(&columns,&value) || value != 9.0) return 31;
   return 0;
 }
 

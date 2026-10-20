@@ -151,6 +151,27 @@ int chem_matrix_view_copy_row_from_vector(chem_matrix_view *view,
   return 0;
 }
 
+int chem_matrix_view_copy_column_to_vector(const chem_matrix_view *view,
+                                           size_t column, double *vector,
+                                           size_t vector_size) {
+  if (!valid_view(view) || column >= view->columns || vector_size != view->rows ||
+      (vector_size && vector == NULL)) return 1;
+  for (size_t i = 0; i < view->rows; ++i)
+    vector[i] = view->data[i*view->row_stride + column*view->column_stride];
+  return 0;
+}
+
+int chem_matrix_view_copy_column_from_vector(chem_matrix_view *view,
+                                             size_t column,
+                                             const double *vector,
+                                             size_t vector_size) {
+  if (!valid_view(view) || column >= view->columns || vector_size != view->rows ||
+      (vector_size && vector == NULL)) return 1;
+  for (size_t i = 0; i < view->rows; ++i)
+    view->data[i*view->row_stride + column*view->column_stride] = vector[i];
+  return 0;
+}
+
 int chem_matrix_view_axpy(chem_matrix_view *destination,
                           const chem_matrix_view *source, double alpha) {
   if (!valid_view(destination) || !valid_view(source) ||

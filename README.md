@@ -66,7 +66,8 @@ mutable and read-only strided matrix views, rate evaluation, forcing and Jacobia
 routines, linear and equilibrium constraint evaluation helpers, version API, and
 solver interface.
 Matrix views support checked element access, row-major vector conversion,
-row-to-vector copies, element traversal, fill, AXPY, and min/max/sum reductions.
+row and column vector copies, element traversal, fill, AXPY, and min/max/sum
+reductions.
 The constraint helpers
 build algebraic masks and Jacobian patterns and add residual and negative-Jacobian
 terms to caller-provided arrays. Masked forcing and Jacobian helpers accumulate
