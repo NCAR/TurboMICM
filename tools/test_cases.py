@@ -46,6 +46,7 @@ implemented = {
     "terminator:RosenbrockSolver.VectorTerminator",
     "chapman_integration:ChapmanIntegration.CanBuildChapmanSystem",
     "integrated_reaction_rates:ChapmanIntegration.CanBuildChapmanSystem",
+    "solver_lambda_rate_constant:Solver.GetLambdaRateConstantByNameCanOverrideLambda",
     "process:Process.BuildsChemicalReaction",
     "process:Process.ChemicalReactionCopyAssignmentSucceeds",
     "reaction_rate_store:ReactionRateConstantStore.OffsetsAreContiguousCumulativeSizes",
@@ -141,6 +142,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C version API checked"
         elif case_id in {"process_set:ProcessSet.Matrix", "process_set:ProcessSet.VectorMatrix"}:
             reason = "C forcing and Jacobian match grouped-process reference values"
+        elif case_id == "solver_lambda_rate_constant:Solver.GetLambdaRateConstantByNameCanOverrideLambda":
+            reason = "caller-overridden C lambda callback drives rate constants and solve"
         elif case_id == "integrated_reaction_rates:ChapmanIntegration.CanBuildChapmanSystem":
             reason = "C product concentrations remain nondecreasing across rate changes"
         elif case_id == "chapman_integration:ChapmanIntegration.CanBuildChapmanSystem":

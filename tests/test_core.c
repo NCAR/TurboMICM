@@ -13,6 +13,15 @@ static double test_lambda(double temperature, double pressure,
   return 2.0 * temperature;
 }
 
+static double test_lambda_override(double temperature, double pressure,
+                                   double air_density,
+                                   const double *parameters) {
+  (void)pressure;
+  (void)air_density;
+  (void)parameters;
+  return 2.0e-3 * temperature;
+}
+
 static int near(double actual, double expected) {
   return fabs(actual - expected) <= 1e-13 * fabs(expected) + 1e-30;
 }
@@ -828,6 +837,28 @@ static int check_integrated_reaction_rates(void) {
   return result;
 }
 
+static int check_lambda_callback_override(void) {
+  const chem_species species[] = {{.name="A"}, {.name="B"}};
+  const chem_term a[] = {{.species=0,.coefficient=1.0}};
+  const chem_term b[] = {{.species=1,.coefficient=1.0}};
+  chem_reaction reaction = {.kind=CHEM_LAMBDA,.label="lambda_rc",
+      .reactants=a,.reactant_count=1,.products=b,.product_count=1,
+      .rate_function=test_lambda};
+  const chem_mechanism mechanism = {.species=species,.species_count=2,
+      .reactions=&reaction,.reaction_count=1};
+  reaction.rate_function = test_lambda_override;
+  double rate = 0.0;
+  if (chem_rate_constants(&mechanism,300.0,101253.3,1.0e6,NULL,&rate) ||
+      !near(rate,0.6)) return 1;
+  double state[] = {1.0,0.0};
+  chem_solver_workspace workspace = {0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 2;
+  const int status = chem_rosenbrock3_solve_with_workspace(
+      &mechanism,&workspace,state,300.0,101253.3,1.0e6,NULL,1.0,NULL,NULL);
+  chem_solver_workspace_destroy(&workspace);
+  return status == 0 && state[0] < 1.0 && state[1] > 0.0 ? 0 : 3;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -1412,5 +1443,6 @@ int main(void) {
   if (check_terminator_cases() != 0) return 58;
   if (check_chapman_integration() != 0) return 59;
   if (check_integrated_reaction_rates() != 0) return 60;
+  if (check_lambda_callback_override() != 0) return 61;
   return 0;
 }
