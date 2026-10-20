@@ -2395,6 +2395,63 @@ static int check_lu_decomposition(void) {
   return 0;
 }
 
+static int check_linear_solve_case(size_t n, size_t blocks, int diagonal) {
+  double matrix[5*100], rhs[5*10], solution[10], matrix_work[100], rhs_work[10];
+  for (size_t block = 0; block < blocks; ++block) {
+    double *a = matrix + block*n*n;
+    double *b = rhs + block*n;
+    for (size_t row = 0; row < n; ++row) {
+      b[row] = (double)(row+1) - 0.25*(double)block;
+      for (size_t column = 0; column < n; ++column) {
+        if (diagonal) a[row*n+column] = row == column ? 2.0+(double)row : 0.0;
+        else {
+          const int pattern = (int)((row*11+column*5+block*7)%19)-9;
+          a[row*n+column] = row == column ? 25.0+(double)(row+block) :
+                            0.1*(double)pattern;
+        }
+      }
+    }
+    for (size_t i = 0; i < n; ++i) solution[i] = NAN;
+    if (chem_linear_solve(n,a,b,solution)) return 1;
+    for (size_t row = 0; row < n; ++row) {
+      double value = 0.0;
+      for (size_t column = 0; column < n; ++column)
+        value += a[row*n+column]*solution[column];
+      if (fabs(value-b[row]) > 1e-9*(1.0+fabs(b[row]))) return 2;
+    }
+    for (size_t i = 0; i < n*n; ++i) matrix_work[i] = a[i];
+    for (size_t i = 0; i < n; ++i) rhs_work[i] = b[i];
+    if (chem_linear_solve_in_place(n,matrix_work,rhs_work)) return 3;
+    for (size_t row = 0; row < n; ++row) {
+      double value = 0.0;
+      for (size_t column = 0; column < n; ++column)
+        value += a[row*n+column]*rhs_work[column];
+      if (fabs(value-b[row]) > 1e-9*(1.0+fabs(b[row]))) return 4;
+    }
+  }
+  return 0;
+}
+
+static int check_linear_solvers(void) {
+  const double dense[] = {2,-1,-2,-4,6,3,-4,-2,8};
+  const double rhs[] = {23,42,9};
+  double solution[3];
+  if (chem_linear_solve(3,dense,rhs,solution)) return 1;
+  for (size_t i = 0; i < 3; ++i) {
+    double result = 0.0;
+    for (size_t j = 0; j < 3; ++j) result += dense[i*3+j]*solution[j];
+    if (fabs(result-rhs[i]) > 1e-10) return 2;
+  }
+  if (check_linear_solve_case(10,1,0) ||
+      check_linear_solve_case(10,5,0) ||
+      check_linear_solve_case(5,5,1)) return 3;
+  double singular[] = {1,2,2,4}, singular_rhs[] = {3,6};
+  if (chem_linear_solve(2,singular,singular_rhs,solution) == 0 ||
+      chem_linear_solve_in_place(2,singular,singular_rhs) == 0 ||
+      chem_linear_solve(2,NULL,singular_rhs,solution) == 0) return 4;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -2989,5 +3046,6 @@ int main(void) {
   if (check_matrix_view_api() != 0) return 64;
   if (check_csr_matrix_api() != 0) return 69;
   if (check_lu_decomposition() != 0) return 70;
+  if (check_linear_solvers() != 0) return 71;
   return 0;
 }

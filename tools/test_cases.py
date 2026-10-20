@@ -434,6 +434,18 @@ for _category, _case_class in (
 ):
     implemented.update(f"{_category}:{_case_class}.{_name}"
                        for _name in _lu_case_names)
+_linear_case_names = (
+    "DenseMatrixStandardOrdering", "RandomMatrixStandardOrdering",
+    "DiagonalMatrixStandardOrdering", "StandardOrderingAgnosticToInitialValue",
+    "DenseMatrixVectorOrdering", "RandomMatrixVectorOrdering",
+    "VectorOrderingAgnosticToInitialValue", "DiagonalMatrixVectorOrdering",
+)
+for _category, _case_class in (
+    ("linear_solver", "LinearSolver"),
+    ("linear_solver_in_place", "LinearSolverInPlace"),
+):
+    implemented.update(f"{_category}:{_case_class}.{_name}"
+                       for _name in _linear_case_names)
 not_applicable = {
     "state:State.CopyConstructor":
         "C state views are non-owning, so they have no deep-copy constructor",
