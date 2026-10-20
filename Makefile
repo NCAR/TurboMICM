@@ -7,7 +7,8 @@ ROOT := $(abspath ..)
 BUILD := build
 BIN := bin
 GEN := $(BUILD)/generated
-LIBSRC := src/chem.c
+LIBSRC := src/chem.c src/state.c
+LIBOBJ := $(patsubst src/%.c,$(BUILD)/%.o,$(LIBSRC))
 LIBHDR := include/chem.h include/jacobian_verification.h
 CONFIG := config/ts1.json
 GENSRC := $(GEN)/ts1.c
@@ -49,9 +50,9 @@ $(GENSRC): $(CONFIG) tools/generate.py
 
 cpu: $(BIN)/libchem.a $(BIN)/ts1_bench_cpu
 
-$(BUILD)/chem.o: $(LIBSRC) $(LIBHDR)
+$(BUILD)/%.o: src/%.c $(LIBHDR)
 	@mkdir -p $(BUILD) $(BIN)
-	$(CC) $(CFLAGS) -c $(LIBSRC) -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/ts1.o: src/ts1_bench.c $(LIBHDR)
 	@mkdir -p $(BUILD) $(BIN)
@@ -60,7 +61,7 @@ $(BUILD)/ts1.o: src/ts1_bench.c $(LIBHDR)
 $(BUILD)/ts1_mechanism.o: $(GENSRC) $(LIBHDR)
 	$(CC) $(CFLAGS) -c $(GENSRC) -o $@
 
-$(BIN)/libchem.a: $(BUILD)/chem.o
+$(BIN)/libchem.a: $(LIBOBJ)
 	@mkdir -p $(BIN)
 	ar rcs $@ $^
 
@@ -130,7 +131,14 @@ $(BUILD)/test_integration_equivalents.o: tests/test_integration_equivalents.c $(
 $(BIN)/test_integration_equivalents: $(BUILD)/test_integration_equivalents.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents
+$(BUILD)/test_state.o: tests/test_state.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_state: $(BUILD)/test_state.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu

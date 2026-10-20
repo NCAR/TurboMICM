@@ -54,7 +54,7 @@ def main() -> int:
         PROJECT / "bin/test_rates", PROJECT / "bin/test_example_no_user",
         PROJECT / "bin/test_example_user", PROJECT / "bin/test_tutorial_programs",
         PROJECT / "bin/test_jacobian_verification", PROJECT / "bin/test_solver_configuration",
-        PROJECT / "bin/test_integration_equivalents",
+        PROJECT / "bin/test_integration_equivalents", PROJECT / "bin/test_state",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -140,7 +140,11 @@ def main() -> int:
         elif suite == "solver_configuration":
             ok = run([str(PROJECT / "bin/test_solver_configuration")])
             status, reason = ("PASS", "five C Rosenbrock parameter sets match the MICM tutorial") if ok else (
-                "FAIL", "four- and six-stage DA output differs at 1400 s; step statistics match MICM")
+                "FAIL", "C Rosenbrock tutorial output or solver statistics differ from MICM")
+        elif suite == "state":
+            ok = run([str(PROJECT / "bin/test_state"), test])
+            status, reason = ("PASS", "C state storage and named access match the reference behavior") if ok else (
+                "FAIL", "C state storage, ownership, or validation differs from the reference behavior")
         elif suite in integration_results:
             ok = integration_results[suite]
             status, reason = ("PASS", "C integration preserves the reference analytic or chemical invariant") if ok else (

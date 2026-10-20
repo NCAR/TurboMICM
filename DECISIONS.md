@@ -31,6 +31,11 @@
 - The solver parameter API also exposes Doolittle LU in natural species order
   for MICM CPU tutorial configurations that use the default Doolittle solver.
   TS1 keeps the in-place Mozart default used by its benchmark reference.
+- Mutable per-cell data has a public owning `chem_state` option in addition to
+  the solver's low-level arrays. Names are copied into the state, copy is deep,
+  and move clears the source. C++ bracket proxies are represented by named
+  getter/setter functions with explicit cell indices; invalid names and
+  dimensions return error codes.
 - Tiny negative accepted concentrations are set to zero at interval boundaries
   only when their magnitude is within the configured absolute tolerance. This
   addresses roundoff undershoots that otherwise propagate through fast

@@ -101,6 +101,53 @@ typedef struct {
   unsigned long solves;
 } chem_statistics;
 
+/* Mutable, cell-major state storage. The state owns its name copies and arrays;
+   initialize an empty instance with {0} before calling init/copy/destroy. */
+typedef struct {
+  size_t cell_count;
+  size_t species_count;
+  size_t parameter_count;
+  size_t rate_constant_count;
+  char **species_names;
+  char **parameter_names;
+  double *concentrations;
+  double *custom_parameters;
+  double *rate_constants;
+  double relative_tolerance;
+  double *absolute_tolerances;
+} chem_state;
+
+typedef struct {
+  const char *name;
+  const double *values;
+  size_t value_count;
+} chem_named_values;
+
+/* Return 0 on success, -1 for invalid dimensions/names, and -2 on allocation
+   failure. Scalar concentration/parameter setters require a one-cell state;
+   vector setters take one value per cell. */
+int chem_state_init(
+    chem_state *state,
+    const char *const *species_names,
+    size_t species_count,
+    size_t rate_constant_count,
+    const char *const *parameter_names,
+    size_t parameter_count,
+    size_t cell_count,
+    double relative_tolerance,
+    const double *absolute_tolerances);
+void chem_state_destroy(chem_state *state);
+int chem_state_copy(chem_state *destination, const chem_state *source);
+void chem_state_move(chem_state *destination, chem_state *source);
+int chem_state_set_concentration(chem_state *state, const char *species, double value);
+int chem_state_set_concentrations(chem_state *state, const char *species, const double *values, size_t value_count);
+int chem_state_set_all_concentrations(chem_state *state, const chem_named_values *values, size_t value_count);
+int chem_state_get_concentration(const chem_state *state, const char *species, size_t cell, double *value);
+int chem_state_set_custom_parameter(chem_state *state, const char *parameter, double value);
+int chem_state_set_custom_parameters(chem_state *state, const char *parameter, const double *values, size_t value_count);
+int chem_state_set_all_custom_parameters(chem_state *state, const chem_named_values *values, size_t value_count);
+int chem_state_set_custom_parameters_raw(chem_state *state, const double *values, size_t rows, size_t columns);
+
 typedef struct {
   size_t stage_count;
   unsigned char new_function_evaluation[CHEM_ROSENBROCK_MAX_STAGES];

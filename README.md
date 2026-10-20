@@ -28,6 +28,11 @@ make test-cpu CC=gcc-15
 The runner exits nonzero while any case fails. The current coverage and known
 unported cases are recorded in [RESULTS.md](RESULTS.md).
 
+`include/chem.h` exposes both the low-level integration API and an owning
+`chem_state` container with deep copy, move, named concentration access, and
+custom rate-parameter setters. See [DESIGN.md](DESIGN.md) for its storage and
+ownership rules.
+
 ## Run TS1
 
 The benchmark accepts a CSV with a header naming temperature, pressure, species,

@@ -25,6 +25,16 @@ Code-built mechanisms may also use `CHEM_RATE_CALLBACK` with a caller-owned
 context pointer; function pointers are not representable in the YAML/JSON
 configuration format.
 
+`chem_state` is an owning C state container for clients that want state
+management as well as the lower-level solver arrays. Initialization copies
+species and custom-parameter names and allocates cell-major concentrations,
+custom parameters, and rate constants plus per-species tolerances. Copy is
+deep; move transfers ownership and clears the source. Named setters support
+single-cell scalar values, per-cell vectors, bulk named values, and a checked
+raw custom-parameter matrix path. C has no overloaded bracket proxy, so the
+equivalent operations use named get/set functions and explicit cell indices.
+Errors are returned as status codes instead of C++ exceptions.
+
 ## Solver path
 
 `src/chem.c` builds the reaction dependency graph and sparse Jacobian pattern
