@@ -55,7 +55,7 @@ $(MECHANISM_C): $(CONFIG) tools/generate_c.py | $(BUILD)
 $(MECHANISM_O): $(MECHANISM_C) include/kinetics.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
-$(LIB)/libmechanism.a: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/state.o $(BUILD)/solver.o $(MECHANISM_O) | $(LIB)
+$(LIB)/libmechanism.a: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/state.o $(BUILD)/species.o $(BUILD)/system.o $(BUILD)/constraint.o $(BUILD)/backward_euler.o $(BUILD)/solver.o $(MECHANISM_O) | $(LIB)
 	$(AR) rcs $@ $^
 
 $(BUILD)/kinetics.o: src/kinetics.c include/kinetics.h | $(BUILD)
@@ -67,6 +67,18 @@ $(BUILD)/matrix.o: src/matrix.c include/matrix.h | $(BUILD)
 $(BUILD)/state.o: src/state.c include/kinetics.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
+$(BUILD)/species.o: src/species.c include/kinetics.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+$(BUILD)/system.o: src/system.c include/system.h include/kinetics.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+$(BUILD)/constraint.o: src/constraint.c include/constraint.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+$(BUILD)/backward_euler.o: src/backward_euler.c include/kinetics.h include/matrix.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
 $(BUILD)/solver.o: src/solver.c include/kinetics.h src/solver_internal.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
@@ -76,7 +88,7 @@ $(BUILD)/ts1_model.o: $(TS1_MODEL) include/kinetics.h
 $(BUILD)/benchmark.o: src/benchmark.c include/kinetics.h src/solver_internal.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
-$(LIB)/libchem.a: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/state.o $(BUILD)/solver.o | $(LIB)
+$(LIB)/libchem.a: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/state.o $(BUILD)/species.o $(BUILD)/system.o $(BUILD)/constraint.o $(BUILD)/backward_euler.o $(BUILD)/solver.o | $(LIB)
 	$(AR) rcs $@ $^
 
 bench: $(BIN)/ts1_bench_cpu
@@ -89,10 +101,16 @@ SDKROOT_FLAG := $(if $(filter Darwin,$(UNAME_S)),-isysroot $(SDKROOT),)
 env:
 	CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs conda env create --prefix $(CURDIR)/.conda -f environment.yml
 
-test-cpu: $(BIN)/test_cpu $(BIN)/ts1_bench_cpu $(BIN)/test_example_no_user $(BIN)/test_example_user $(BUILD)/tutorial_no_user_model.o $(BUILD)/tutorial_user_model.o $(BUILD)/robertson_model.o
+test-cpu: $(BIN)/test_cpu $(BIN)/test_programs $(BIN)/ts1_bench_cpu $(BIN)/test_example_no_user $(BIN)/test_example_user $(BUILD)/tutorial_no_user_model.o $(BUILD)/tutorial_user_model.o $(BUILD)/robertson_model.o
 	$(PYTHON) tests/run_cases.py
 
-$(BIN)/test_cpu: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/state.o $(BUILD)/solver.o $(BUILD)/ts1_model.o $(BUILD)/test_cpu.o | $(BIN)
+$(BIN)/test_cpu: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/state.o $(BUILD)/species.o $(BUILD)/system.o $(BUILD)/constraint.o $(BUILD)/backward_euler.o $(BUILD)/solver.o $(BUILD)/ts1_model.o $(BUILD)/test_cpu.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BUILD)/test_programs.o: tests/test_programs.c include/kinetics.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+$(BIN)/test_programs: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/solver.o $(BUILD)/test_programs.o | $(BIN)
 	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
 
 $(BUILD)/example_no_user.o: tests/test_example_runtime.c include/kinetics.h | $(BUILD)
@@ -107,7 +125,7 @@ $(BIN)/test_example_no_user: $(BUILD)/kinetics.o $(BUILD)/solver.o $(BUILD)/tuto
 $(BIN)/test_example_user: $(BUILD)/kinetics.o $(BUILD)/solver.o $(BUILD)/tutorial_user_model.o $(BUILD)/example_user.o | $(BIN)
 	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
 
-$(BUILD)/test_cpu.o: tests/test_cpu.c include/kinetics.h include/matrix.h include/version.h | $(BUILD)
+$(BUILD)/test_cpu.o: tests/test_cpu.c include/kinetics.h include/matrix.h include/system.h include/constraint.h include/version.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
 $(BUILD)/tutorial_no_user_model.c: examples/rate_constants_no_user_defined/config.yaml tools/generate_c.py | $(BUILD)

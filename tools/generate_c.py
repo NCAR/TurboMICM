@@ -299,8 +299,9 @@ def compile_model(document: dict) -> str:
         mw = s.get("molecular_weight", s.get("molecular weight [kg mol-1]", 0.0)) or 0.0
         diffusion = s.get("diffusion_coefficient", s.get("diffusion coefficient [m2 s-1]")) or 0.0
         output.append(
-            f"  {{{c_string(s['name'])}, {number(mw)}, {number(diffusion)}, "
-            f"{number(s.get('initial', 0.0))}, {number(s.get('absolute_tolerance', s.get('absolute tolerance', 0.0)))}}},"
+            f"  {{.name={c_string(s['name'])}, .molecular_weight={number(mw)}, "
+            f".diffusion_coefficient={number(diffusion)}, .initial_value={number(s.get('initial', 0.0))}, "
+            f".absolute_tolerance={number(s.get('absolute_tolerance', s.get('absolute tolerance', 0.0)))}}},"
         )
     output += ["};", "", "static const chem_reaction chem_reaction_data[] = {"]
     for r in reactions:

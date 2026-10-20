@@ -30,6 +30,39 @@ struct chem_solver {
   int allocation_error;
 };
 
+double chem_normalized_error(const double *old_values,
+                             const double *new_values,
+                             const double *estimated_errors,
+                             const chem_species *species, size_t cell_count,
+                             size_t species_count, double relative_tolerance,
+                             double default_absolute_tolerance)
+{
+  size_t cell, variable;
+  size_t count;
+  double sum = 0.0;
+  if (cell_count && species_count > SIZE_MAX / cell_count)
+    return NAN;
+  count = cell_count * species_count;
+  if (count && (!old_values || !new_values || !estimated_errors || !species))
+    return NAN;
+  if (!(relative_tolerance >= 0.0) || !(default_absolute_tolerance > 0.0))
+    return NAN;
+  for (cell = 0; cell < cell_count; ++cell) {
+    for (variable = 0; variable < species_count; ++variable) {
+      const size_t index = cell * species_count + variable;
+      double absolute_tolerance = species[variable].absolute_tolerance;
+      const double scale = fmax(fabs(old_values[index]), fabs(new_values[index]));
+      double normalized;
+      if (!(absolute_tolerance > 0.0))
+        absolute_tolerance = default_absolute_tolerance;
+      normalized = estimated_errors[index] /
+                   (absolute_tolerance + relative_tolerance * scale);
+      sum += normalized * normalized;
+    }
+  }
+  return fmax(sqrt(sum / (double)(count ? count : 1)), 1.0e-10);
+}
+
 static double *work_vector(chem_solver *s, size_t which)
 {
   return s->work + which * s->cells * s->n;
@@ -308,6 +341,160 @@ void chem_rosenbrock_default(chem_rosenbrock_parameters *p)
   p->solve = default_solve_callback;
 }
 
+void chem_rosenbrock_two_stage(chem_rosenbrock_parameters *p)
+{
+  const double gamma = 1.0 + 1.0 / sqrt(2.0);
+  if (!p)
+    return;
+  chem_rosenbrock_default(p);
+  p->stages = 2;
+  memset(p->a, 0, sizeof(p->a));
+  memset(p->c, 0, sizeof(p->c));
+  memset(p->m, 0, sizeof(p->m));
+  memset(p->e, 0, sizeof(p->e));
+  memset(p->gamma, 0, sizeof(p->gamma));
+  memset(p->new_function_evaluation, 1, sizeof(p->new_function_evaluation));
+  p->a[0] = 1.0 / gamma;
+  p->c[0] = -2.0 / gamma;
+  p->m[0] = 3.0 / (2.0 * gamma);
+  p->m[1] = 1.0 / (2.0 * gamma);
+  p->e[0] = 1.0 / (2.0 * gamma);
+  p->e[1] = 1.0 / (2.0 * gamma);
+  p->gamma[0] = gamma;
+  p->gamma[1] = -gamma;
+  p->estimator_order = 2.0;
+}
+
+void chem_rosenbrock_four_stage(chem_rosenbrock_parameters *p)
+{
+  if (!p)
+    return;
+  chem_rosenbrock_default(p);
+  p->stages = 4;
+  memset(p->a, 0, sizeof(p->a));
+  memset(p->c, 0, sizeof(p->c));
+  memset(p->m, 0, sizeof(p->m));
+  memset(p->e, 0, sizeof(p->e));
+  memset(p->gamma, 0, sizeof(p->gamma));
+  memset(p->new_function_evaluation, 0, sizeof(p->new_function_evaluation));
+  p->new_function_evaluation[0] = 1;
+  p->new_function_evaluation[1] = 1;
+  p->new_function_evaluation[2] = 1;
+  p->a[0] = 2.0;
+  p->a[1] = 1.867943637803922;
+  p->a[2] = 0.2344449711399156;
+  p->a[3] = p->a[1];
+  p->a[4] = p->a[2];
+  p->c[0] = -7.137615036412310;
+  p->c[1] = 2.580708087951457;
+  p->c[2] = 0.6515950076447975;
+  p->c[3] = -2.137148994382534;
+  p->c[4] = -0.3214669691237626;
+  p->c[5] = -0.6949742501781779;
+  p->m[0] = 2.255570073418735;
+  p->m[1] = 0.2870493262186792;
+  p->m[2] = 0.4353179431840180;
+  p->m[3] = 1.093502252409163;
+  p->e[0] = -0.2815431932141155;
+  p->e[1] = -0.07276199124938920;
+  p->e[2] = -0.1082196201495311;
+  p->e[3] = -1.093502252409163;
+  p->gamma[0] = 0.5728200000000000;
+  p->gamma[1] = -1.769193891319233;
+  p->gamma[2] = 0.7592633437920482;
+  p->gamma[3] = -0.1049021087100450;
+  p->estimator_order = 4.0;
+}
+
+void chem_rosenbrock_four_stage_dae(chem_rosenbrock_parameters *p)
+{
+  if (!p)
+    return;
+  chem_rosenbrock_default(p);
+  p->stages = 4;
+  memset(p->a, 0, sizeof(p->a));
+  memset(p->c, 0, sizeof(p->c));
+  memset(p->m, 0, sizeof(p->m));
+  memset(p->e, 0, sizeof(p->e));
+  memset(p->gamma, 0, sizeof(p->gamma));
+  memset(p->new_function_evaluation, 0, sizeof(p->new_function_evaluation));
+  p->new_function_evaluation[0] = 1;
+  p->new_function_evaluation[2] = 1;
+  p->new_function_evaluation[3] = 1;
+  p->a[1] = 2.0;
+  p->a[3] = 2.0;
+  p->a[5] = 1.0;
+  p->c[0] = 4.0;
+  p->c[1] = 1.0;
+  p->c[2] = -1.0;
+  p->c[3] = 1.0;
+  p->c[4] = -1.0;
+  p->c[5] = -8.0 / 3.0;
+  p->m[0] = 2.0;
+  p->m[2] = 1.0;
+  p->m[3] = 1.0;
+  p->e[3] = 1.0;
+  p->gamma[0] = 0.5;
+  p->gamma[1] = 1.5;
+  p->estimator_order = 3.0;
+}
+
+void chem_rosenbrock_six_stage_dae(chem_rosenbrock_parameters *p)
+{
+  if (!p)
+    return;
+  chem_rosenbrock_default(p);
+  p->stages = 6;
+  memset(p->a, 0, sizeof(p->a));
+  memset(p->c, 0, sizeof(p->c));
+  memset(p->m, 0, sizeof(p->m));
+  memset(p->e, 0, sizeof(p->e));
+  memset(p->gamma, 0, sizeof(p->gamma));
+  memset(p->new_function_evaluation, 1, sizeof(p->new_function_evaluation));
+  p->gamma[0] = 0.25;
+  p->gamma[1] = -0.1043;
+  p->gamma[2] = 0.1035;
+  p->gamma[3] = -0.0362;
+  p->a[0] = 1.544;
+  p->a[1] = 0.9466785280815826;
+  p->a[2] = 0.2557011698983284;
+  p->a[3] = 3.314825187068521;
+  p->a[4] = 2.896124015972201;
+  p->a[5] = 0.9986419139977817;
+  p->a[6] = 1.221224509226641;
+  p->a[7] = 6.019134481288629;
+  p->a[8] = 12.53708332932087;
+  p->a[9] = -0.6878860361058950;
+  p->a[10] = p->a[6];
+  p->a[11] = p->a[7];
+  p->a[12] = p->a[8];
+  p->a[13] = p->a[9];
+  p->a[14] = 1.0;
+  p->c[0] = -5.6688;
+  p->c[1] = -2.430093356833875;
+  p->c[2] = -0.2063599157091915;
+  p->c[3] = -0.1073529058151375;
+  p->c[4] = -9.594562251023355;
+  p->c[5] = -20.47028614809616;
+  p->c[6] = 7.496443313967647;
+  p->c[7] = -10.24680431464352;
+  p->c[8] = -33.99990352819905;
+  p->c[9] = 11.70890893206160;
+  p->c[10] = 8.083246795921522;
+  p->c[11] = -7.981132988064893;
+  p->c[12] = -31.52159432874371;
+  p->c[13] = 16.31930543123136;
+  p->c[14] = -6.058818238834054;
+  p->m[0] = p->a[6];
+  p->m[1] = p->a[7];
+  p->m[2] = p->a[8];
+  p->m[3] = p->a[9];
+  p->m[4] = 1.0;
+  p->m[5] = 1.0;
+  p->e[5] = 1.0;
+  p->estimator_order = 4.0;
+}
+
 static int valid_mechanism(const chem_mechanism *m)
 {
   size_t i, j;
@@ -383,7 +570,7 @@ static int solve_group(chem_solver *s, size_t thread,
     h = fmin(h, fabs(dt - present));
     while (!accepted) {
       const double alpha = 1.0 / (h * p->gamma[0]);
-      double error_sum = 0.0;
+      double error;
       size_t cell, v;
       uint64_t function_evaluations = 1;
       for (stage = 1; stage < p->stages; ++stage)
@@ -429,29 +616,23 @@ static int solve_group(chem_solver *s, size_t thread,
         for (v = 0; v < n; ++v) {
           double y1 = y[offset + v];
           double error = 0.0;
-          double absolute_tolerance = m->species[v].absolute_tolerance;
-          if (!(absolute_tolerance > 0.0))
-            absolute_tolerance = p->default_absolute_tolerance;
           for (stage = 0; stage < p->stages; ++stage) {
             y1 += p->m[stage] * k_all[stage][offset + v];
             error += p->e[stage] * k_all[stage][offset + v];
           }
           err[v] = error;
           ynew[v] = y1;
-          {
-            const double ymax = fmax(fabs(y[offset + v]), fabs(y1));
-            const double scaled = error / (absolute_tolerance + p->relative_tolerance * ymax);
-            error_sum += scaled * scaled;
-          }
         }
       }
+      error = chem_normalized_error(
+          y + first * n, ynew_all + first * n, error_all + first * n,
+          m->species, last - first, n, p->relative_tolerance,
+          p->default_absolute_tolerance);
       stats->function_calls += function_evaluations;
       ++stats->jacobian_updates;
       ++stats->decompositions;
       stats->solves += p->stages;
       {
-        const size_t count = (last - first) * n;
-        const double error = fmax(sqrt(error_sum / (double)(count ? count : 1)), 1.0e-10);
         double factor = p->controller
                             ? p->controller(error, p->estimator_order, p->safety_factor,
                                             p->callback_context)
@@ -539,13 +720,10 @@ chem_solver *chem_solver_create(const chem_mechanism *m, size_t cells,
     const double t = temperature ? temperature[cell] : m->default_temperature;
     const double p = pressure ? pressure[cell] : m->default_pressure;
     const double *custom = custom_parameters ? custom_parameters + cell * m->custom_count : NULL;
-    const double air = p / (1.380649e-23 * 6.02214076e23 * t);
     for (reaction = 0; reaction < s->nr; ++reaction) {
       const chem_reaction *r = &m->reactions[reaction];
-      double rate = chem_rate_constant(m, r, t, p, custom);
-      if (r->body_order)
-        rate *= pow(air, (double)r->body_order);
-      s->rates[cell * s->nr + reaction] = rate;
+      s->rates[cell * s->nr + reaction] =
+          chem_effective_rate_constant(m, r, t, p, custom);
     }
   }
   return s;
@@ -560,6 +738,20 @@ void chem_solver_destroy(chem_solver *s)
   free(s->work);
   free(s->factor_work);
   free(s);
+}
+
+double chem_solver_absolute_tolerance(const chem_solver *s, size_t species)
+{
+  double tolerance;
+  if (!s || species >= s->n)
+    return NAN;
+  tolerance = s->mechanism->species[species].absolute_tolerance;
+  return tolerance > 0.0 ? tolerance : s->parameters.default_absolute_tolerance;
+}
+
+double chem_solver_relative_tolerance(const chem_solver *s)
+{
+  return s ? s->parameters.relative_tolerance : NAN;
 }
 
 int chem_solver_step(chem_solver *s, double *concentrations, double dt,

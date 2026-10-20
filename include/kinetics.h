@@ -15,7 +15,8 @@ typedef enum {
   CHEM_REVERSIBLE,
   CHEM_USER_DEFINED,
   CHEM_SURFACE,
-  CHEM_CALLBACK
+  CHEM_CALLBACK,
+  CHEM_RATE_KIND_COUNT
 } chem_rate_kind;
 
 typedef double (*chem_rate_callback)(double temperature, double pressure,
@@ -23,12 +24,47 @@ typedef double (*chem_rate_callback)(double temperature, double pressure,
                                      const double *custom_parameters,
                                      void *context);
 
+typedef enum {
+  CHEM_SPECIES_UNPARAMETERIZED = 0,
+  CHEM_SPECIES_CONSTANT,
+  CHEM_SPECIES_TEMPERATURE,
+  CHEM_SPECIES_AIR_DENSITY
+} chem_species_parameter_kind;
+
+typedef enum {
+  CHEM_PROPERTY_DOUBLE = 1,
+  CHEM_PROPERTY_STRING,
+  CHEM_PROPERTY_INTEGER,
+  CHEM_PROPERTY_BOOLEAN
+} chem_species_property_kind;
+
+typedef union {
+  double real_value;
+  const char *string_value;
+  int integer_value;
+  int boolean_value;
+} chem_species_property_value;
+
+typedef struct {
+  char *name;
+  chem_species_property_kind kind;
+  chem_species_property_value value;
+} chem_species_property;
+
 typedef struct {
   const char *name;
   double molecular_weight;
   double diffusion_coefficient;
   double initial_value;
   double absolute_tolerance;
+  chem_species_property *properties;
+  size_t property_count;
+  size_t property_capacity;
+  chem_species_parameter_kind parameter_kind;
+  double parameter_c0;
+  double parameter_c_temperature;
+  double parameter_c_air_density;
+  int owns_properties;
 } chem_species;
 
 typedef struct {
@@ -93,6 +129,23 @@ typedef struct {
   uint64_t solves;
 } chem_solver_stats;
 
+typedef struct {
+  double small;
+  size_t max_iterations;
+} chem_backward_euler_parameters;
+
+int chem_backward_euler_is_converged(
+    const chem_backward_euler_parameters *parameters,
+    const double *residuals, const double *new_values,
+    const double *absolute_tolerances, double relative_tolerance,
+    size_t cell_count, size_t species_count);
+int chem_backward_euler_step(
+    const chem_mechanism *mechanism, size_t cell_count,
+    const double *rate_constants, double *concentrations, double time_step,
+    const chem_backward_euler_parameters *parameters,
+    double relative_tolerance, const double *absolute_tolerances,
+    chem_solver_stats *stats);
+
 typedef struct chem_sparse_pattern {
   size_t n;
   size_t nnz;
@@ -141,6 +194,10 @@ typedef struct {
 } chem_rosenbrock_parameters;
 
 void chem_rosenbrock_default(chem_rosenbrock_parameters *parameters);
+void chem_rosenbrock_two_stage(chem_rosenbrock_parameters *parameters);
+void chem_rosenbrock_four_stage(chem_rosenbrock_parameters *parameters);
+void chem_rosenbrock_four_stage_dae(chem_rosenbrock_parameters *parameters);
+void chem_rosenbrock_six_stage_dae(chem_rosenbrock_parameters *parameters);
 
 typedef struct chem_solver chem_solver;
 
@@ -156,10 +213,50 @@ void chem_solver_destroy(chem_solver *solver);
 /* Integrate one chemistry interval over the persistent cell-major state. */
 int chem_solver_step(chem_solver *solver, double *concentrations,
                      double time_step, chem_solver_stats *stats);
+double chem_solver_absolute_tolerance(const chem_solver *solver, size_t species);
+double chem_solver_relative_tolerance(const chem_solver *solver);
+double chem_normalized_error(const double *old_values,
+                             const double *new_values,
+                             const double *estimated_errors,
+                             const chem_species *species, size_t cell_count,
+                             size_t species_count, double relative_tolerance,
+                             double default_absolute_tolerance);
 
 double chem_rate_constant(const chem_mechanism *mechanism,
                           const chem_reaction *reaction, double temperature,
                           double pressure, const double *custom_parameters);
+double chem_effective_rate_constant(const chem_mechanism *mechanism,
+                                    const chem_reaction *reaction,
+                                    double temperature, double pressure,
+                                    const double *custom_parameters);
+int chem_rate_store_layout(const chem_mechanism *mechanism,
+                           size_t counts[CHEM_RATE_KIND_COUNT],
+                           size_t offsets[CHEM_RATE_KIND_COUNT + 1],
+                           size_t *ordered_reaction_indices);
+int chem_mechanism_forcing(const chem_mechanism *mechanism,
+                           const double *concentrations,
+                           const double *rate_constants, double *forcing);
+int chem_mechanism_jacobian_dense(const chem_mechanism *mechanism,
+                                  const double *concentrations,
+                                  const double *rate_constants,
+                                  double *jacobian);
+
+int chem_species_init(chem_species *species, const char *name);
+int chem_species_copy(chem_species *destination, const chem_species *source);
+void chem_species_destroy(chem_species *species);
+int chem_species_set_property(chem_species *species, const char *name,
+                              chem_species_property_kind kind,
+                              chem_species_property_value value);
+int chem_species_get_property(const chem_species *species, const char *name,
+                              chem_species_property_kind kind, void *value);
+int chem_species_set_parameterization(chem_species *species,
+                                      chem_species_parameter_kind kind,
+                                      double c0, double c_temperature,
+                                      double c_air_density);
+int chem_species_set_third_body(chem_species *species);
+int chem_species_is_parameterized(const chem_species *species);
+double chem_species_parameterize(const chem_species *species,
+                                 double temperature, double air_density);
 
 int chem_state_init(chem_state *state, const chem_mechanism *mechanism,
                     size_t cell_count);

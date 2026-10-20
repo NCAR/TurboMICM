@@ -88,6 +88,23 @@ def verify_example_runtime() -> dict[str, tuple[bool, str]]:
     return results
 
 
+def verify_program_runtime() -> dict[str, tuple[bool, str]]:
+    binary = ROOT / "bin" / "test_programs"
+    cases = (
+        "README_example", "solve_results", "multiple_grid_cells",
+        "solver_configuration", "vectorized_matrix_solver", "openmp_tutorial",
+    )
+    results = {}
+    for case_id in cases:
+        run = subprocess.run(
+            [str(binary), case_id], cwd=ROOT, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        message = run.stdout.strip() or run.stderr.strip()
+        results[case_id] = (run.returncode == 0, message)
+    return results
+
+
 def main() -> int:
     verify_configurations()
     run = subprocess.run(
@@ -111,6 +128,7 @@ def main() -> int:
 
     gate_ok, gate_message = verify_ts1_gate()
     example_results = verify_example_runtime()
+    program_results = verify_program_runtime()
     regression_id = "regression:RosenbrockRegression.FlowTube"
     for row in rows:
         if row[0] == regression_id:
@@ -120,9 +138,13 @@ def main() -> int:
             matched, message = example_results[row[0]]
             row[1] = "PASS" if matched else "FAIL"
             row[2] = message
+        if row[0] in program_results:
+            matched, message = program_results[row[0]]
+            row[1] = "PASS" if matched else "FAIL"
+            row[2] = message if message else "C tutorial program completed"
     for row in rows:
         print(" ".join(row))
-    return 0 if gate_ok and run.returncode == 0 and all(ok for ok, _ in example_results.values()) else 1
+    return 0 if gate_ok and run.returncode == 0 and all(ok for ok, _ in example_results.values()) and all(ok for ok, _ in program_results.values()) else 1
 
 
 if __name__ == "__main__":

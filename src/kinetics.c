@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <stddef.h>
+#include <string.h>
 
 #define CHEM_GAS_CONSTANT (1.380649e-23 * 6.02214076e23)
 #define CHEM_PI 3.141592653589793238462643383279502884
@@ -106,6 +107,133 @@ double chem_rate_constant(const chem_mechanism *m, const chem_reaction *r,
     if (r->callback)
       rate = r->callback(temperature, pressure, air, custom, r->callback_context);
     break;
+  case CHEM_RATE_KIND_COUNT:
+    break;
   }
   return rate;
+}
+
+double chem_effective_rate_constant(const chem_mechanism *mechanism,
+                                    const chem_reaction *reaction,
+                                    double temperature, double pressure,
+                                    const double *custom_parameters)
+{
+  const double air = pressure / (CHEM_GAS_CONSTANT * temperature);
+  return chem_rate_constant(mechanism, reaction, temperature, pressure,
+                            custom_parameters) *
+         pow(air, (double)reaction->body_order);
+}
+
+int chem_rate_store_layout(const chem_mechanism *mechanism,
+                           size_t counts[CHEM_RATE_KIND_COUNT],
+                           size_t offsets[CHEM_RATE_KIND_COUNT + 1],
+                           size_t *ordered_reaction_indices)
+{
+  size_t cursor[CHEM_RATE_KIND_COUNT];
+  size_t reaction, kind;
+  if (!mechanism || !counts || !offsets ||
+      (mechanism->reaction_count &&
+       (!mechanism->reactions || !ordered_reaction_indices)))
+    return -1;
+  memset(counts, 0, CHEM_RATE_KIND_COUNT * sizeof(*counts));
+  for (reaction = 0; reaction < mechanism->reaction_count; ++reaction) {
+    const int value = mechanism->reactions[reaction].kind;
+    if (value < 0 || value >= CHEM_RATE_KIND_COUNT)
+      return -1;
+    ++counts[value];
+  }
+  offsets[0] = 0;
+  for (kind = 0; kind < CHEM_RATE_KIND_COUNT; ++kind)
+    offsets[kind + 1] = offsets[kind] + counts[kind];
+  memcpy(cursor, offsets, CHEM_RATE_KIND_COUNT * sizeof(*cursor));
+  for (reaction = 0; reaction < mechanism->reaction_count; ++reaction) {
+    const size_t bucket = (size_t)mechanism->reactions[reaction].kind;
+    ordered_reaction_indices[cursor[bucket]++] = reaction;
+  }
+  return 0;
+}
+
+static int kinetic_tables_valid(const chem_mechanism *mechanism)
+{
+  size_t reaction, term;
+  if (!mechanism || !mechanism->species || !mechanism->species_count ||
+      (mechanism->reaction_count && !mechanism->reactions) ||
+      (mechanism->reactant_count && !mechanism->reactants) ||
+      (mechanism->product_count && (!mechanism->products || !mechanism->yields)))
+    return 0;
+  for (reaction = 0; reaction < mechanism->reaction_count; ++reaction) {
+    const chem_reaction *r = &mechanism->reactions[reaction];
+    if (r->reactant_offset > mechanism->reactant_count ||
+        r->reactant_count > mechanism->reactant_count - r->reactant_offset ||
+        r->product_offset > mechanism->product_count ||
+        r->product_count > mechanism->product_count - r->product_offset)
+      return 0;
+    for (term = 0; term < r->reactant_count; ++term)
+      if (mechanism->reactants[r->reactant_offset + term] >= mechanism->species_count)
+        return 0;
+    for (term = 0; term < r->product_count; ++term)
+      if (mechanism->products[r->product_offset + term] >= mechanism->species_count)
+        return 0;
+  }
+  return 1;
+}
+
+int chem_mechanism_forcing(const chem_mechanism *mechanism,
+                           const double *concentrations,
+                           const double *rate_constants, double *forcing)
+{
+  size_t reaction, species;
+  if (!kinetic_tables_valid(mechanism) || !forcing ||
+      (mechanism->reaction_count && (!concentrations || !rate_constants)))
+    return -1;
+  for (species = 0; species < mechanism->species_count; ++species)
+    forcing[species] = 0.0;
+  for (reaction = 0; reaction < mechanism->reaction_count; ++reaction) {
+    const chem_reaction *r = &mechanism->reactions[reaction];
+    double flux = rate_constants[reaction];
+    size_t term;
+    for (term = 0; term < r->reactant_count; ++term)
+      flux *= concentrations[mechanism->reactants[r->reactant_offset + term]];
+    for (term = 0; term < r->reactant_count; ++term)
+      forcing[mechanism->reactants[r->reactant_offset + term]] -= flux;
+    for (term = 0; term < r->product_count; ++term)
+      forcing[mechanism->products[r->product_offset + term]] +=
+          mechanism->yields[r->product_offset + term] * flux;
+  }
+  return 0;
+}
+
+int chem_mechanism_jacobian_dense(const chem_mechanism *mechanism,
+                                  const double *concentrations,
+                                  const double *rate_constants,
+                                  double *jacobian)
+{
+  size_t reaction, term;
+  const size_t n = mechanism ? mechanism->species_count : 0;
+  if (!kinetic_tables_valid(mechanism) || !jacobian ||
+      n > SIZE_MAX / sizeof(*jacobian) / n ||
+      (mechanism->reaction_count && (!concentrations || !rate_constants)))
+    return -1;
+  memset(jacobian, 0, n * n * sizeof(*jacobian));
+  for (reaction = 0; reaction < mechanism->reaction_count; ++reaction) {
+    const chem_reaction *r = &mechanism->reactions[reaction];
+    for (term = 0; term < r->reactant_count; ++term) {
+      double derivative = rate_constants[reaction];
+      const size_t column = mechanism->reactants[r->reactant_offset + term];
+      size_t other;
+      for (other = 0; other < r->reactant_count; ++other)
+        if (other != term)
+          derivative *= concentrations[mechanism->reactants[r->reactant_offset + other]];
+      for (other = 0; other < r->reactant_count; ++other) {
+        const size_t row = mechanism->reactants[r->reactant_offset + other];
+        jacobian[row * n + column] -= derivative;
+      }
+      for (other = 0; other < r->product_count; ++other) {
+        const size_t row = mechanism->products[r->product_offset + other];
+        jacobian[row * n + column] +=
+            mechanism->yields[r->product_offset + other] * derivative;
+      }
+    }
+  }
+  return 0;
 }
