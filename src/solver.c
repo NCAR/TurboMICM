@@ -11,6 +11,9 @@ typedef struct {
   const chem_mechanism *mechanism;
   size_t n;
   double *jac, *a, *forcing, *stage, *ynew, *yerror, *stage_y, *reused_forcing;
+  double *rate_constants, *cached_parameters;
+  double cached_temperature, cached_pressure, cached_density;
+  int rate_constants_valid;
   unsigned char *pattern;
   size_t *row_counts, *col_counts, *row_cols, *col_rows;
 } solver_workspace_data;
@@ -23,6 +26,7 @@ static void free_workspace_data(solver_workspace_data *w) {
   if (!w) return;
   free(w->jac); free(w->a); free(w->forcing); free(w->stage); free(w->ynew);
   free(w->yerror); free(w->stage_y); free(w->reused_forcing); free(w->pattern);
+  free(w->rate_constants); free(w->cached_parameters);
   free(w->row_counts); free(w->col_counts); free(w->row_cols); free(w->col_rows);
   free(w);
 }
@@ -48,6 +52,10 @@ int chem_solver_workspace_init(chem_solver_workspace *workspace,
   w->yerror = calloc(n, sizeof(double));
   w->stage_y = calloc(n, sizeof(double));
   w->reused_forcing = calloc(n, sizeof(double));
+  w->rate_constants = calloc(mechanism->reaction_count ? mechanism->reaction_count : 1,
+                             sizeof(double));
+  w->cached_parameters = calloc(mechanism->custom_parameter_count ? mechanism->custom_parameter_count : 1,
+                                sizeof(double));
   w->pattern = calloc(nn, sizeof(unsigned char));
   w->row_counts = calloc(n, sizeof(size_t));
   w->col_counts = calloc(n, sizeof(size_t));
@@ -55,7 +63,8 @@ int chem_solver_workspace_init(chem_solver_workspace *workspace,
   w->col_rows = calloc(nn, sizeof(size_t));
   if (!w->jac || !w->a || !w->forcing || !w->stage || !w->ynew || !w->yerror ||
       !w->stage_y || !w->reused_forcing || !w->pattern || !w->row_counts ||
-      !w->col_counts || !w->row_cols || !w->col_rows) {
+      !w->col_counts || !w->row_cols || !w->col_rows || !w->rate_constants ||
+      !w->cached_parameters) {
     free_workspace_data(w);
     return SOLVER_BAD_ARGUMENT;
   }
@@ -157,11 +166,13 @@ static void solve_factored(const double *a, size_t n, const size_t *row_counts,
 
 int chem_rosenbrock3_solve_with_workspace(
     const chem_mechanism *m, chem_solver_workspace *workspace, double *y,
-    double temperature, double air_density, const double *rate_parameters,
+    double temperature, double pressure, double air_density,
+    const double *rate_parameters,
     double duration, const chem_solver_options *requested,
     chem_solver_stats *statistics) {
   if (!m || !y || !isfinite(duration) || duration <= 0.0 ||
       !isfinite(temperature) || temperature <= 0.0 ||
+      !isfinite(pressure) || pressure < 0.0 ||
       !isfinite(air_density) || air_density < 0.0 || m->species_count == 0)
     return SOLVER_BAD_ARGUMENT;
   solver_workspace_data *w = workspace ? workspace->implementation : NULL;
@@ -180,6 +191,25 @@ int chem_rosenbrock3_solve_with_workspace(
   double *stage_y = w->stage_y, *reused_forcing = w->reused_forcing;
   size_t *row_counts = w->row_counts, *col_counts = w->col_counts;
   size_t *row_cols = w->row_cols, *col_rows = w->col_rows;
+  int status = SOLVER_OK;
+
+  int same_parameters = m->custom_parameter_count == 0 ||
+      (rate_parameters && memcmp(w->cached_parameters, rate_parameters,
+          m->custom_parameter_count*sizeof(double)) == 0);
+  if (!w->rate_constants_valid || w->cached_temperature != temperature ||
+      w->cached_pressure != pressure ||
+      w->cached_density != air_density || !same_parameters) {
+    status = chem_rate_constants(m, temperature, pressure, air_density, rate_parameters,
+                                 w->rate_constants);
+    if (status) return SOLVER_BAD_ARGUMENT;
+    if (m->custom_parameter_count && rate_parameters)
+      memcpy(w->cached_parameters, rate_parameters,
+             m->custom_parameter_count*sizeof(double));
+    w->cached_temperature = temperature;
+    w->cached_pressure = pressure;
+    w->cached_density = air_density;
+    w->rate_constants_valid = 1;
+  }
 
   const double eps = 2.2204460492503131e-16;
   const double hmin = 1.0e-15 * duration;
@@ -187,7 +217,6 @@ int chem_rosenbrock3_solve_with_workspace(
   double h = 1.0e-6 * duration;
   double time = 0.0;
   int rejected_previous = 0, rejected_twice = 0;
-  int status = SOLVER_OK;
   const double aa[3] = {1.0, 1.0, 0.0};
   const double cc[3] = {-1.0156171083877702091975600115545,
                          4.0759956452537699824805835358067,
@@ -202,17 +231,19 @@ int chem_rosenbrock3_solve_with_workspace(
     if (time + 0.1*h == time || h <= fmin(eps, hmin)) { status = SOLVER_STEP_FAILURE; break; }
     if (h > duration-time) h = duration-time;
     memset(forcing, 0, n*sizeof(*forcing));
-    status = chem_forcing(m, y, temperature, air_density, rate_parameters, forcing);
+    status = chem_forcing_with_constants(m, y, w->rate_constants,
+                                         air_density, forcing);
     if (status) { status = SOLVER_BAD_ARGUMENT; break; }
     ++local_stats.function_calls;
-    status = chem_jacobian(m, y, temperature, air_density, rate_parameters, jac);
+    status = chem_negative_jacobian_with_constants(m, y, w->rate_constants,
+                                                    jac);
     if (status) { status = SOLVER_BAD_ARGUMENT; break; }
     ++local_stats.jacobian_updates;
     int accepted = 0;
     while (!accepted) {
       const double used_h = h;
       const double alpha = 1.0 / (h*gamma);
-      for (size_t i = 0; i < nn; ++i) a[i] = -jac[i];
+      for (size_t i = 0; i < nn; ++i) a[i] = jac[i];
       for (size_t i = 0; i < n; ++i) a[i*n + i] += alpha;
       status = factor(a, n, row_counts, col_counts, row_cols, col_rows);
       ++local_stats.decompositions;
@@ -222,8 +253,8 @@ int chem_rosenbrock3_solve_with_workspace(
         if (s == 1) {
           for (size_t i = 0; i < n; ++i) stage_y[i] = y[i] + aa[0]*stage[i];
           memset(stage+n, 0, n*sizeof(*stage));
-          status = chem_forcing(m, stage_y, temperature, air_density,
-                                rate_parameters, stage+n);
+          status = chem_forcing_with_constants(m, stage_y, w->rate_constants,
+                                               air_density, stage+n);
           ++local_stats.function_calls;
           if (status) { status = SOLVER_BAD_ARGUMENT; break; }
           memcpy(reused_forcing, stage+n, n*sizeof(*reused_forcing));
@@ -296,7 +327,9 @@ int chem_rosenbrock3_solve(const chem_mechanism *m, double *y,
   int status = chem_solver_workspace_init(&workspace, m);
   if (status) return status;
   status = chem_rosenbrock3_solve_with_workspace(
-      m, &workspace, y, temperature, air_density, rate_parameters, duration,
+      m, &workspace, y, temperature,
+      air_density * 8.31446261815324 * temperature, air_density,
+      rate_parameters, duration,
       requested, statistics);
   chem_solver_workspace_destroy(&workspace);
   return status;

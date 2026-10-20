@@ -32,6 +32,55 @@ TYPE_ORDER = {
 }
 
 
+def markowitz_order(species, reactions):
+    """Return the solver's diagonal Markowitz order for dynamic species."""
+    dynamic = [sp for sp in species if not sp.get("third_body", False)]
+    names = {sp["name"]: i for i, sp in enumerate(dynamic)}
+    n = len(dynamic)
+    outgoing = [set() for _ in range(n)]
+    incoming = [set() for _ in range(n)]
+    for reaction in reactions:
+        reactants = [names[t["name"]] for t in reaction.get("reactants", [])
+                     if t["name"] in names]
+        products = [names[t["name"]] for t in reaction.get("products", [])
+                    if t["name"] in names]
+        for col in reactants:
+            for row in reactants + products:
+                outgoing[row].add(col)
+                incoming[col].add(row)
+
+    row_degree = [len(x) for x in outgoing]
+    col_degree = [len(x) for x in incoming]
+    alive = [True] * n
+    order = []
+    for _ in range(n):
+        def cost(i):
+            # MICM's Index is size_t; preserve its unsigned underflow for
+            # isolated or product-only variables in the sparsity graph.
+            mask = (1 << 64) - 1
+            return (((row_degree[i]-1) & mask) *
+                    ((col_degree[i]-1) & mask)) & mask
+        pivot = min((i for i in range(n) if alive[i]), key=cost)
+        order.append(pivot)
+        alive[pivot] = False
+        cols = [c for c in outgoing[pivot] if c != pivot and alive[c]]
+        rows = [r for r in incoming[pivot] if r != pivot and alive[r]]
+        for row in rows:
+            for col in cols:
+                if col not in outgoing[row]:
+                    outgoing[row].add(col)
+                    row_degree[row] += 1
+                    incoming[col].add(row)
+                    col_degree[col] += 1
+        for col in cols:
+            incoming[col].discard(pivot)
+            col_degree[col] -= 1
+        for row in rows:
+            outgoing[row].discard(pivot)
+            row_degree[row] -= 1
+    return [dynamic[i] for i in order] + [sp for sp in species if sp.get("third_body", False)]
+
+
 def cstr(value):
     return '"' + value.replace('\\', '\\\\').replace('"', '\\"') + '"'
 
@@ -42,8 +91,8 @@ def main():
     ap.add_argument("output", type=Path)
     args = ap.parse_args()
     data = json.loads(args.input.read_text())
-    species = data["species"]
     reactions = sorted(data["reactions"], key=lambda r: TYPE_ORDER[r["type"]])
+    species = markowitz_order(data["species"], reactions)
     defaults = data.get("defaults", {})
     names = {s["name"]: i for i, s in enumerate(species)}
     if len(names) != len(species):

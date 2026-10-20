@@ -307,7 +307,7 @@ int main(int argc, char **argv) {
                              (8.31446261815324 * temperature[c]);
       chem_solver_stats warmup_stats;
       status[c] = chem_rosenbrock3_solve_with_workspace(
-          m, &workspaces[worker], states+c*n, temperature[c], density,
+          m, &workspaces[worker], states+c*n, temperature[c], pressure[c], density,
           rates+c*nr, dt, &options, &warmup_stats);
     }
   }
@@ -334,7 +334,7 @@ int main(int argc, char **argv) {
       for (size_t step = 0; step < steps && status[c] == 0; ++step) {
         chem_solver_stats one = {0};
         status[c] = chem_rosenbrock3_solve_with_workspace(
-            m, &workspaces[worker], states+c*n, temperature[c], density,
+            m, &workspaces[worker], states+c*n, temperature[c], pressure[c], density,
             rates+c*nr, dt, &options, &one);
         stats[c].internal_steps += one.internal_steps;
         stats[c].accepted += one.accepted;

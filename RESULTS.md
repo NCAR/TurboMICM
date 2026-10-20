@@ -16,20 +16,22 @@
 ## TS1 final-state comparison
 
 The seed-1 first cell, 100 steps at `DT = 30 s`, passed the supplied MICM
-comparison utility with both compilers. A broader run over all 100 supplied
-cells also passed:
+comparison utility with both compilers. The 100-cell seed-1 run also passed:
 
 | Compiler | C elapsed time | MICM elapsed time | Solver steps | Largest relative difference |
 | --- | ---: | ---: | ---: | ---: |
-| Clang | 235.379 ms | 10.430 ms | 900 | `2.24e-15` |
-| GCC 15 | 322.778 ms | 11.009 ms | 900 | `2.42e-15` |
+| Clang | 147.610 ms | 10.430 ms | 900 | `9.77e-15` |
+| GCC 15 | 173.665 ms | 11.009 ms | 900 | `1.51e-14` |
 
 For 100 seed-1 cells, 100 steps, and four threads, Clang completed in
-6,113.087 ms; the comparison run took 338.929 ms. All 21,100 state values
-passed, with a largest relative difference of `9.7e-13`.
+3,651.047 ms; the comparison run took 338.929 ms. All 21,100 state values
+passed, with a largest relative difference of `9.69e-13`.
 
-These timings are not the requested 10,000-cell performance run. The current C
-implementation is substantially slower than the reference because it uses
-per-cell integration and scalar sparse-matrix work. Workspaces and symbolic
-fill are reused between calls. The 10,000-cell, 100-step benchmark and all 680
-case ports remain incomplete.
+The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
+281,183.725 ms; the reference completed in 27,916.468 ms. The comparison failed
+2,185 of 2,110,000 values across 26 cells; the largest relative difference was
+`5.33e-4` for HO2NO2 in cell 3974. A single-cell run of that input also fails,
+so the discrepancy is not caused by cell grouping. This result is a regression
+case for further solver arithmetic work. The implementation is about ten times
+slower than the reference at this scale, and 678 of the 680 inventory cases
+remain unported.

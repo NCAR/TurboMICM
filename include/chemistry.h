@@ -61,6 +61,21 @@ int chem_forcing(const chem_mechanism *mechanism, const double *concentration,
 int chem_jacobian(const chem_mechanism *mechanism, const double *concentration,
                   double temperature, double air_density,
                   const double *rate_parameters, double *jacobian);
+int chem_rate_constants(const chem_mechanism *mechanism, double temperature,
+                        double pressure, double air_density,
+                        const double *rate_parameters,
+                        double *rate_constants);
+int chem_forcing_with_constants(const chem_mechanism *mechanism,
+                                const double *concentration,
+                                const double *rate_constants, double air_density,
+                                double *forcing);
+int chem_jacobian_with_constants(const chem_mechanism *mechanism,
+                                 const double *concentration,
+                                 const double *rate_constants,
+                                 double air_density, double *jacobian);
+int chem_negative_jacobian_with_constants(
+    const chem_mechanism *mechanism, const double *concentration,
+    const double *rate_constants, double *negative_jacobian);
 
 typedef struct {
   size_t internal_steps;
@@ -88,7 +103,7 @@ int chem_solver_workspace_init(chem_solver_workspace *workspace,
 void chem_solver_workspace_destroy(chem_solver_workspace *workspace);
 int chem_rosenbrock3_solve_with_workspace(
     const chem_mechanism *mechanism, chem_solver_workspace *workspace,
-    double *state, double temperature, double air_density,
+    double *state, double temperature, double pressure, double air_density,
     const double *rate_parameters, double duration,
     const chem_solver_options *options, chem_solver_stats *statistics);
 int chem_rosenbrock3_solve(const chem_mechanism *mechanism, double *state,
