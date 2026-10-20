@@ -305,7 +305,8 @@ Tier-2-Results.
   SSE's order, 2026-10-19), each verified and timed with all entries before the
   next starts. luna-max is done: finished 21:05, verified, and timed overnight
   (`results/2026-10-19-luna-max-verification`), correct but 0.90 times MICM's
-  default. luna-xhigh is next. The first luna-high attempt was stopped at 08:11
+  default. luna-xhigh started 2026-10-20 09:31 (record
+  `01a159f0-…`); luna-high follows it. The first luna-high attempt was stopped at 08:11
   on 2026-10-16, after 1 h 23 min, far from done (615 failing cases at its 07:51
   checkpoint); it is kept, outside the run root, at
   `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/` was recreated.
