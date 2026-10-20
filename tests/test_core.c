@@ -868,6 +868,9 @@ static int check_phase_species_metadata(void) {
       !near(with_diffusion.diffusion,1.23e-5)) return 2;
   without_diffusion.diffusion = 2.5e-6;
   if (!near(without_diffusion.diffusion,2.5e-6)) return 3;
+  const chem_species third_body = {.name="M",.third_body=1};
+  if (!chem_species_is_parameterized(&third_body) ||
+      !near(chem_species_parameterize(&third_body,42.4),42.4)) return 4;
   return 0;
 }
 

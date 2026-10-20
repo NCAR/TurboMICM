@@ -61,6 +61,10 @@ typedef struct {
   double density_factor;
 } chem_species;
 
+int chem_species_is_parameterized(const chem_species *species);
+double chem_species_parameterize(const chem_species *species,
+                                 double air_density);
+
 /* Non-owning, cell-major state view. The caller owns the names and arrays. */
 typedef struct {
   const char *const *species_names;

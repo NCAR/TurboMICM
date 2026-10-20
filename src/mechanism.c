@@ -4,11 +4,22 @@
 #include <string.h>
 
 static int chem_density_parameterized(const chem_species *species) {
-  return species->third_body || species->density_parameterized;
+  return chem_species_is_parameterized(species);
 }
 
 static double chem_density_factor(const chem_species *species) {
   return species->third_body ? 1.0 : species->density_factor;
+}
+
+int chem_species_is_parameterized(const chem_species *species) {
+  return species != NULL && (species->third_body || species->density_parameterized);
+}
+
+double chem_species_parameterize(const chem_species *species,
+                                 double air_density) {
+  if (species == NULL || !isfinite(air_density) || air_density < 0.0)
+    return 0.0;
+  return air_density * chem_density_factor(species);
 }
 
 double chem_arrhenius(double a, double b, double c, double d, double e,

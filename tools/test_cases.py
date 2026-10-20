@@ -50,6 +50,7 @@ implemented = {
     "phase:PhaseSpecies.ConstructsWithoutDiffusionCoefficient",
     "phase:PhaseSpecies.ConstructsWithDiffusionCoefficient",
     "phase:PhaseSpecies.SetDiffusionCoefficient",
+    "species:Species.SetThirdBody",
     "process:Process.BuildsChemicalReaction",
     "process:Process.ChemicalReactionCopyAssignmentSucceeds",
     "reaction_rate_store:ReactionRateConstantStore.OffsetsAreContiguousCumulativeSizes",
@@ -145,6 +146,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C version API checked"
         elif case_id in {"process_set:ProcessSet.Matrix", "process_set:ProcessSet.VectorMatrix"}:
             reason = "C forcing and Jacobian match grouped-process reference values"
+        elif case_id == "species:Species.SetThirdBody":
+            reason = "C third-body species parameterizes to air density"
         elif case_id.startswith("phase:PhaseSpecies."):
             reason = "C species diffusion metadata checked"
         elif case_id == "solver_lambda_rate_constant:Solver.GetLambdaRateConstantByNameCanOverrideLambda":
