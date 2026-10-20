@@ -49,8 +49,9 @@
   unchanged, reports initial projection iterations, and restores the caller's
   state when projection fails. Row-scaled constraints and repeated solve calls
   also preserve the corrected manifold. The projection tolerance follows ten
-  percent of the configured absolute-plus-relative state error scale. Full DAE
-  stage equations remain incomplete. A grouped constrained call projects all
+  percent of the configured absolute-plus-relative state error scale, and
+  backtracking handles nonlinear cold starts. Full DAE stage equations remain
+  incomplete. A grouped constrained call projects all
   cells and aggregates statistics while using an independent scalar controller
   per cell.
 - The dense matrix view test covers strided indexing, conversion to and from a
