@@ -538,6 +538,10 @@ implemented.update(
         "CanSolveMultiGridCellWithTwoStubAerosolModels",
     )
 )
+implemented.update({
+    "equilibrium_constraint:EquilibriumIntegration.SetConstraintsAPIWorks",
+    "equilibrium_constraint:EquilibriumIntegration.SetConstraintsAPIMultipleConstraints",
+})
 
 not_applicable = {
     "solver_builder:SolverBuilder.FinalizeReceivesDenseMatrixPolicy":
@@ -597,6 +601,9 @@ for raw in case_file.read_text().splitlines():
             reason = "C finite-difference Jacobian checks"
         elif case_id.startswith(("constraint_set:", "linear:", "equilibrium:")):
             reason = "C linear/equilibrium constraint residual and Jacobian behavior checked"
+        elif case_id.startswith("equilibrium_constraint:") and case_id.endswith((
+                "SetConstraintsAPIWorks", "SetConstraintsAPIMultipleConstraints")):
+            reason = "C constraint sets, algebraic rows, and equilibrium parameters checked"
         elif case_id.startswith("constraint_initialization:"):
             reason = "C constrained solve projects consistent and inconsistent algebraic initial conditions"
         elif case_id.startswith("backward_euler:"):
