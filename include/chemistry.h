@@ -285,6 +285,12 @@ int chem_const_matrix_view_get(const chem_const_matrix_view *view,
 int chem_const_matrix_view_copy_row_to_vector(
     const chem_const_matrix_view *view, size_t row, double *vector,
     size_t vector_size);
+int chem_normalized_error(const chem_const_matrix_view *old_state,
+                          const chem_const_matrix_view *new_state,
+                          const chem_const_matrix_view *error_estimate,
+                          const double *absolute_tolerances,
+                          size_t tolerance_count, double relative_tolerance,
+                          double error_floor, double *value);
 
 typedef struct {
   double *data;
@@ -333,6 +339,12 @@ int chem_vector_matrix_view_copy_from_vector(chem_vector_matrix_view *view,
 int chem_const_vector_matrix_view_copy_to_vector(
     const chem_const_vector_matrix_view *view, double *vector,
     size_t vector_size);
+int chem_vector_normalized_error(
+    const chem_const_vector_matrix_view *old_state,
+    const chem_const_vector_matrix_view *new_state,
+    const chem_const_vector_matrix_view *error_estimate,
+    const double *absolute_tolerances, size_t tolerance_count,
+    double relative_tolerance, double error_floor, double *value);
 int chem_vector_matrix_view_copy_row_to_vector(
     const chem_vector_matrix_view *view, size_t row, double *vector,
     size_t vector_size);

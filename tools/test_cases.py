@@ -452,7 +452,13 @@ implemented.update({
     "linear_solver_in_place:LinearSolverInPlace.DiagonalMarkowitzReorder",
     "linear_solver_in_place:LinearSolverInPlace.VectorDiagonalMarkowitzReordering",
 })
-implemented.update({"matrix:Matrix.Print", "matrix:Matrix.IntegerVector"})
+implemented.update({
+    "matrix:Matrix.Print", "matrix:Matrix.IntegerVector",
+    "rosenbrock:RosenbrockSolver.StandardNormalizedError",
+    "rosenbrock:RosenbrockSolver.VectorNormalizedError",
+    "rosenbrock:RosenbrockSolver.StandardNormalizedErrorWithConstraints",
+    "rosenbrock:RosenbrockSolver.VectorNormalizedErrorWithConstraints",
+})
 not_applicable = {
     "state:State.CopyConstructor":
         "C state views are non-owning, so they have no deep-copy constructor",

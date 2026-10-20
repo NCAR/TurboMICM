@@ -65,6 +65,42 @@ int chem_const_matrix_view_get(const chem_const_matrix_view *view,
   return 0;
 }
 
+int chem_normalized_error(const chem_const_matrix_view *old_state,
+                          const chem_const_matrix_view *new_state,
+                          const chem_const_matrix_view *error_estimate,
+                          const double *absolute_tolerances,
+                          size_t tolerance_count, double relative_tolerance,
+                          double error_floor, double *value) {
+  if (!valid_const_view(old_state) || !valid_const_view(new_state) ||
+      !valid_const_view(error_estimate) || !value ||
+      old_state->rows == 0 || old_state->columns == 0 ||
+      old_state->rows != new_state->rows ||
+      old_state->rows != error_estimate->rows ||
+      old_state->columns != new_state->columns ||
+      old_state->columns != error_estimate->columns ||
+      tolerance_count != old_state->columns || !absolute_tolerances ||
+      !(relative_tolerance > 0.0) || !(error_floor >= 0.0)) return 1;
+  for (size_t column = 0; column < tolerance_count; ++column)
+    if (!(absolute_tolerances[column] > 0.0)) return 1;
+  double sum = 0.0;
+  for (size_t row = 0; row < old_state->rows; ++row)
+    for (size_t column = 0; column < old_state->columns; ++column) {
+      const double old_value = old_state->data[row*old_state->row_stride +
+                                               column*old_state->column_stride];
+      const double new_value = new_state->data[row*new_state->row_stride +
+                                               column*new_state->column_stride];
+      const double error = error_estimate->data[
+          row*error_estimate->row_stride + column*error_estimate->column_stride];
+      const double scale = absolute_tolerances[column] + relative_tolerance *
+          fmax(fabs(old_value),fabs(new_value));
+      const double normalized = error/scale;
+      sum += normalized*normalized;
+    }
+  const double count = (double)old_state->rows*(double)old_state->columns;
+  *value = fmax(sqrt(sum/count),error_floor);
+  return 0;
+}
+
 int chem_const_matrix_view_copy_row_to_vector(
     const chem_const_matrix_view *view, size_t row, double *vector,
     size_t vector_size) {
@@ -190,6 +226,44 @@ int chem_const_vector_matrix_view_get(
     return 1;
   *value = view->data[vector_matrix_offset(row,column,view->columns,
                                            view->group_width)];
+  return 0;
+}
+
+int chem_vector_normalized_error(
+    const chem_const_vector_matrix_view *old_state,
+    const chem_const_vector_matrix_view *new_state,
+    const chem_const_vector_matrix_view *error_estimate,
+    const double *absolute_tolerances, size_t tolerance_count,
+    double relative_tolerance, double error_floor, double *value) {
+  if (!const_vector_matrix_view_valid(old_state) ||
+      !const_vector_matrix_view_valid(new_state) ||
+      !const_vector_matrix_view_valid(error_estimate) || !value ||
+      old_state->rows == 0 || old_state->columns == 0 ||
+      old_state->rows != new_state->rows ||
+      old_state->rows != error_estimate->rows ||
+      old_state->columns != new_state->columns ||
+      old_state->columns != error_estimate->columns ||
+      tolerance_count != old_state->columns || !absolute_tolerances ||
+      !(relative_tolerance > 0.0) || !(error_floor >= 0.0)) return 1;
+  for (size_t column = 0; column < tolerance_count; ++column)
+    if (!(absolute_tolerances[column] > 0.0)) return 1;
+  double sum = 0.0;
+  for (size_t row = 0; row < old_state->rows; ++row)
+    for (size_t column = 0; column < old_state->columns; ++column) {
+      const size_t old_offset = vector_matrix_offset(
+          row,column,old_state->columns,old_state->group_width);
+      const size_t new_offset = vector_matrix_offset(
+          row,column,new_state->columns,new_state->group_width);
+      const size_t error_offset = vector_matrix_offset(
+          row,column,error_estimate->columns,error_estimate->group_width);
+      const double scale = absolute_tolerances[column] + relative_tolerance *
+          fmax(fabs(old_state->data[old_offset]),
+               fabs(new_state->data[new_offset]));
+      const double normalized = error_estimate->data[error_offset]/scale;
+      sum += normalized*normalized;
+    }
+  const double count = (double)old_state->rows*(double)old_state->columns;
+  *value = fmax(sqrt(sum/count),error_floor);
   return 0;
 }
 

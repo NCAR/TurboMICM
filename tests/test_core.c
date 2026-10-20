@@ -1500,6 +1500,54 @@ static void matrix_combine_rows(size_t row, double *destination,
 }
 
 static int check_matrix_view_api(void) {
+  {
+    const double old_values[] = {2.0, -1.0, 0.5, 4.0, 9.0, -2.0};
+    const double new_values[] = {1.0, 3.0, 0.0, 2.0, 8.0, -4.0};
+    const double error_values[] = {0.2, 0.4, 0.1, 0.3, 0.5, 0.6};
+    const double tolerances[] = {0.01, 0.02};
+    chem_const_matrix_view old_view, new_view, error_view;
+    double value = 0.0, sum = 0.0;
+    if (chem_const_matrix_view_init(&old_view,old_values,3,2,2,1) ||
+        chem_const_matrix_view_init(&new_view,new_values,3,2,2,1) ||
+        chem_const_matrix_view_init(&error_view,error_values,3,2,2,1))
+      return 87;
+    for (size_t row = 0; row < 3; ++row)
+      for (size_t column = 0; column < 2; ++column) {
+        const double scale = tolerances[column] + 1e-3*fmax(
+            fabs(old_values[row*2+column]),fabs(new_values[row*2+column]));
+        const double normalized = error_values[row*2+column]/scale;
+        sum += normalized*normalized;
+      }
+    const double expected = fmax(sqrt(sum/6.0),1e-10);
+    if (chem_normalized_error(&old_view,&new_view,&error_view,tolerances,2,
+                              1e-3,1e-10,&value) ||
+        fabs(value-expected) > 1e-13*expected ||
+        chem_normalized_error(&old_view,&new_view,&error_view,tolerances,1,
+                              1e-3,1e-10,&value) == 0) return 88;
+    const size_t widths[] = {1,2,4};
+    for (size_t w = 0; w < sizeof(widths)/sizeof(widths[0]); ++w) {
+      const size_t width = widths[w];
+      double packed_old[8], packed_new[8], packed_error[8];
+      chem_vector_matrix_view mutable_old, mutable_new, mutable_error;
+      chem_const_vector_matrix_view old_packed, new_packed, error_packed;
+      if (chem_vector_matrix_view_init(&mutable_old,packed_old,3,2,width) ||
+          chem_vector_matrix_view_init(&mutable_new,packed_new,3,2,width) ||
+          chem_vector_matrix_view_init(&mutable_error,packed_error,3,2,width))
+        return 89;
+      for (size_t i = 0; i < 3; ++i)
+        for (size_t j = 0; j < 2; ++j)
+          if (chem_vector_matrix_view_set(&mutable_old,i,j,old_values[i*2+j]) ||
+              chem_vector_matrix_view_set(&mutable_new,i,j,new_values[i*2+j]) ||
+              chem_vector_matrix_view_set(&mutable_error,i,j,error_values[i*2+j]))
+            return 90;
+      if (chem_const_vector_matrix_view_init(&old_packed,packed_old,3,2,width) ||
+          chem_const_vector_matrix_view_init(&new_packed,packed_new,3,2,width) ||
+          chem_const_vector_matrix_view_init(&error_packed,packed_error,3,2,width) ||
+          chem_vector_normalized_error(&old_packed,&new_packed,&error_packed,
+                                       tolerances,2,1e-3,1e-10,&value) ||
+          fabs(value-expected) > 1e-13*expected) return 91;
+    }
+  }
   double storage[] = {1.0, 99.0, 2.0, 99.0, 3.0, 99.0,
                       4.0, 99.0, 5.0, 99.0, 6.0, 99.0};
   chem_matrix_view view;
