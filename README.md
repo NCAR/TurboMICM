@@ -67,8 +67,10 @@ equilibrium constraint evaluation helpers, version API, and solver interface.
 Matrix views support checked element access, row-major vector conversion,
 element traversal, fill, AXPY, and min/max/sum reductions. The constraint helpers
 build algebraic masks and Jacobian patterns and add residual and negative-Jacobian
-terms to caller-provided arrays. They are not yet wired into the Rosenbrock solve
-path. The implementation covers
+terms to caller-provided arrays. The optional constrained Rosenbrock entry point
+projects algebraic variables with Newton iterations before integration and after
+each accepted step, and reports the initial projection iteration count in
+`chem_solver_stats.constraint_init_iterations`. The implementation covers
 Arrhenius, photolysis, user-defined, Troe, surface, ternary activation (including
 JPL19), tunneling, branched, Taylor-series, reversible, and callback rates.
 `chem_rosenbrock_builtin_parameters` supplies MICM's two-, three-, four-, and

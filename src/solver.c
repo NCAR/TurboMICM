@@ -22,7 +22,8 @@ typedef struct {
 } solver_workspace_data;
 
 static int make_pattern(const chem_mechanism *m, unsigned char *pattern,
-                        size_t n, size_t *row_counts, size_t *col_counts,
+                        const chem_constraint_set *constraints, size_t n,
+                        size_t *row_counts, size_t *col_counts,
                         size_t *row_cols, size_t *col_rows);
 
 static void free_workspace_data(solver_workspace_data *w) {
@@ -99,7 +100,7 @@ int chem_solver_workspace_init_group(chem_solver_workspace *workspace,
     free_workspace_data(w);
     return SOLVER_BAD_ARGUMENT;
   }
-  make_pattern(mechanism, w->pattern, n, w->row_counts, w->col_counts,
+  make_pattern(mechanism, w->pattern, NULL, n, w->row_counts, w->col_counts,
                w->row_cols, w->col_rows);
   workspace->implementation = w;
   return SOLVER_OK;
@@ -201,7 +202,8 @@ chem_rosenbrock_parameters chem_rosenbrock_builtin_parameters(
 }
 
 static int make_pattern(const chem_mechanism *m, unsigned char *pattern,
-                        size_t n, size_t *row_counts, size_t *col_counts,
+                        const chem_constraint_set *constraints, size_t n,
+                        size_t *row_counts, size_t *col_counts,
                         size_t *row_cols, size_t *col_rows) {
   memset(pattern, 0, n * n);
   for (size_t i = 0; i < n; ++i) pattern[i*n + i] = 1;
@@ -220,6 +222,17 @@ static int make_pattern(const chem_mechanism *m, unsigned char *pattern,
         if (row < n && !m->species[row].third_body) pattern[row*n + col] = 1;
       }
     }
+  }
+  if (constraints) {
+    unsigned char *constraint_pattern = calloc(n*n, sizeof(*constraint_pattern));
+    if (constraint_pattern == NULL) return SOLVER_BAD_ARGUMENT;
+    if (chem_constraint_set_jacobian_pattern(constraints, constraint_pattern)) {
+      free(constraint_pattern);
+      return SOLVER_BAD_ARGUMENT;
+    }
+    for (size_t i = 0; i < n*n; ++i)
+      pattern[i] = (unsigned char)(pattern[i] || constraint_pattern[i]);
+    free(constraint_pattern);
   }
   /* Symbolic fill for the same natural-order, no-pivot factorization used below. */
   for (size_t k = 0; k < n; ++k)
@@ -280,17 +293,112 @@ static void solve_factored(const double *a, size_t n, const size_t *row_counts,
   }
 }
 
-int chem_rosenbrock_solve_with_parameters(
+static int row_is_algebraic(const chem_constraint_set *constraints, size_t row) {
+  if (constraints == NULL) return 0;
+  for (size_t i = 0; i < constraints->constraint_count; ++i)
+    if (constraints->constraints[i].algebraic_species == row) return 1;
+  return 0;
+}
+
+static int project_constraints(const chem_constraint_set *constraints,
+                               double *state, double temperature,
+                               double *residual, double *negative_jacobian,
+                               size_t *iterations) {
+  if (constraints == NULL || constraints->constraint_count == 0) return 0;
+  if (iterations) *iterations = 0;
+  const size_t n = constraints->species_count;
+  const size_t count = constraints->constraint_count;
+  if (count > n || n > (size_t)-1/n || count > (size_t)-1/count) return 1;
+  size_t *variables = malloc(count*sizeof(*variables));
+  double *original = malloc(count*sizeof(*original));
+  double *matrix = malloc(count*count*sizeof(*matrix));
+  double *rhs = malloc(count*sizeof(*rhs));
+  if (!variables || !original || !matrix || !rhs) {
+    free(variables); free(original); free(matrix); free(rhs);
+    return 1;
+  }
+  for (size_t i = 0; i < count; ++i) {
+    variables[i] = constraints->constraints[i].algebraic_species;
+    for (size_t j = 0; j < i; ++j)
+      if (variables[j] == variables[i]) {
+        free(variables); free(original); free(matrix); free(rhs);
+        return 1;
+      }
+    original[i] = state[variables[i]];
+  }
+  int result = 1;
+  for (size_t iteration = 0; iteration < 30; ++iteration) {
+    memset(residual, 0, n*sizeof(*residual));
+    memset(negative_jacobian, 0, n*n*sizeof(*negative_jacobian));
+    if (chem_constraint_set_add_forcing(constraints, state, &temperature, 1,
+                                        residual) ||
+        chem_constraint_set_add_negative_jacobian(
+            constraints, state, &temperature, 1, negative_jacobian)) break;
+    double maximum = 0.0, scale = 1.0;
+    for (size_t i = 0; i < n; ++i) if (fabs(state[i]) > scale) scale = fabs(state[i]);
+    for (size_t i = 0; i < count; ++i) {
+      const size_t row = variables[i];
+      if (fabs(residual[row]) > maximum) maximum = fabs(residual[row]);
+      rhs[i] = -residual[row];
+      for (size_t j = 0; j < count; ++j)
+        matrix[i*count+j] = -negative_jacobian[row*n + variables[j]];
+    }
+    if (maximum <= 1.0e-12*scale) {
+      if (iterations) *iterations = iteration;
+      result = 0;
+      break;
+    }
+    for (size_t k = 0; k < count; ++k) {
+      size_t pivot = k;
+      for (size_t i = k+1; i < count; ++i)
+        if (fabs(matrix[i*count+k]) > fabs(matrix[pivot*count+k])) pivot = i;
+      if (fabs(matrix[pivot*count+k]) < 1.0e-30) goto done;
+      if (pivot != k) {
+        for (size_t j = k; j < count; ++j) {
+          const double tmp = matrix[k*count+j];
+          matrix[k*count+j] = matrix[pivot*count+j];
+          matrix[pivot*count+j] = tmp;
+        }
+        const double tmp = rhs[k]; rhs[k] = rhs[pivot]; rhs[pivot] = tmp;
+      }
+      for (size_t i = k+1; i < count; ++i) {
+        const double factor = matrix[i*count+k]/matrix[k*count+k];
+        for (size_t j = k+1; j < count; ++j)
+          matrix[i*count+j] -= factor*matrix[k*count+j];
+        rhs[i] -= factor*rhs[k];
+      }
+    }
+    for (size_t ii = count; ii-- > 0;) {
+      for (size_t j = ii+1; j < count; ++j) rhs[ii] -= matrix[ii*count+j]*rhs[j];
+      rhs[ii] /= matrix[ii*count+ii];
+    }
+    for (size_t i = 0; i < count; ++i) {
+      state[variables[i]] += rhs[i];
+      if (!isfinite(state[variables[i]])) goto done;
+    }
+  }
+done:
+  if (result != 0)
+    for (size_t i = 0; i < count; ++i) state[variables[i]] = original[i];
+  free(variables); free(original); free(matrix); free(rhs);
+  return result;
+}
+
+static int rosenbrock_solve_impl(
     const chem_mechanism *m, chem_solver_workspace *workspace, double *y,
     double temperature, double pressure, double air_density,
     const double *rate_parameters,
     double duration, const chem_rosenbrock_parameters *parameters,
+    const chem_constraint_set *constraints,
     const chem_solver_options *requested,
     chem_solver_stats *statistics) {
   if (!m || !y || !isfinite(duration) || duration <= 0.0 ||
       !isfinite(temperature) || temperature <= 0.0 ||
       !isfinite(pressure) || pressure < 0.0 ||
       !isfinite(air_density) || air_density < 0.0 || m->species_count == 0)
+    return SOLVER_BAD_ARGUMENT;
+  if (constraints && (chem_constraint_set_validate(constraints) ||
+                      constraints->species_count != m->species_count))
     return SOLVER_BAD_ARGUMENT;
   solver_workspace_data *w = workspace ? workspace->implementation : NULL;
   if (!w || w->mechanism != m || w->n != m->species_count)
@@ -314,6 +422,8 @@ int chem_rosenbrock_solve_with_parameters(
   size_t *row_counts = w->row_counts, *col_counts = w->col_counts;
   size_t *row_cols = w->row_cols, *col_rows = w->col_rows;
   int status = SOLVER_OK;
+  if (make_pattern(m, w->pattern, constraints, n, row_counts, col_counts,
+                   row_cols, col_rows) != SOLVER_OK) return SOLVER_BAD_ARGUMENT;
 
   int same_parameters = m->custom_parameter_count == 0 ||
       (rate_parameters && memcmp(w->cached_parameters, rate_parameters,
@@ -332,6 +442,10 @@ int chem_rosenbrock_solve_with_parameters(
     w->cached_density = air_density;
     w->rate_constants_valid = 1;
   }
+  if (constraints && project_constraints(constraints, y, temperature,
+                                         stage_y, jac,
+                                         &local_stats.constraint_init_iterations))
+    return SOLVER_STEP_FAILURE;
 
   const double eps = 2.2204460492503131e-16;
   const double hmin = 1.0e-15 * duration;
@@ -397,16 +511,22 @@ int chem_rosenbrock_solve_with_parameters(
           yerror[i] += p->e[s]*stage[s*n + i];
         }
       }
+      if (constraints && project_constraints(constraints, ynew, temperature,
+                                             stage_y, jac, NULL)) {
+        status = SOLVER_STEP_FAILURE;
+        break;
+      }
       double sum = 0.0;
       size_t error_variables = 0;
       for (size_t i = 0; i < n; ++i) {
-        if (m->species[i].third_body) continue;
+        if (m->species[i].third_body || row_is_algebraic(constraints, i)) continue;
         ++error_variables;
         const double scale = o->absolute_tolerance + o->relative_tolerance*fmax(fabs(y[i]), fabs(ynew[i]));
         const double v = yerror[i]/scale;
         sum += v*v;
       }
-      double error = fmax(sqrt(sum/(double)error_variables), 1.0e-10);
+      double error = error_variables
+          ? fmax(sqrt(sum/(double)error_variables), 1.0e-10) : 1.0e-10;
       double fac = fmin(6.0, fmax(0.2, 0.9/pow(error, 1.0/p->estimator_order)));
       double hnew = h*fac;
       ++local_stats.internal_steps;
@@ -433,9 +553,34 @@ int chem_rosenbrock_solve_with_parameters(
     if (status) break;
   }
   for (size_t i = 0; i < n; ++i)
-    if (!m->species[i].third_body && y[i] < 0.0) y[i] = 0.0;
+    if (!m->species[i].third_body && !row_is_algebraic(constraints, i) &&
+        y[i] < 0.0) y[i] = 0.0;
   if (statistics) *statistics = local_stats;
   return status;
+}
+
+int chem_rosenbrock_solve_with_parameters(
+    const chem_mechanism *m, chem_solver_workspace *workspace, double *y,
+    double temperature, double pressure, double air_density,
+    const double *rate_parameters, double duration,
+    const chem_rosenbrock_parameters *parameters,
+    const chem_solver_options *requested, chem_solver_stats *statistics) {
+  return rosenbrock_solve_impl(m, workspace, y, temperature, pressure,
+                               air_density, rate_parameters, duration,
+                               parameters, NULL, requested, statistics);
+}
+
+int chem_rosenbrock_solve_constrained_with_parameters(
+    const chem_mechanism *m, chem_solver_workspace *workspace, double *y,
+    double temperature, double pressure, double air_density,
+    const double *rate_parameters, double duration,
+    const chem_rosenbrock_parameters *parameters,
+    const chem_constraint_set *constraints,
+    const chem_solver_options *requested, chem_solver_stats *statistics) {
+  if (constraints == NULL) return SOLVER_BAD_ARGUMENT;
+  return rosenbrock_solve_impl(m, workspace, y, temperature, pressure,
+                               air_density, rate_parameters, duration,
+                               parameters, constraints, requested, statistics);
 }
 
 int chem_rosenbrock3_solve_with_workspace(

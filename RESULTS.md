@@ -44,7 +44,10 @@
   caller-owned indexed records, construct algebraic masks and Jacobian patterns,
   and add residual and negative-Jacobian contributions for scalar and grouped
   cells. The checks include finite-difference derivatives and invalid records;
-  solver-level DAE enforcement remains incomplete.
+  the constrained Rosenbrock entry point projects linear and equilibrium
+  algebraic variables from inconsistent initial data and leaves consistent data
+  unchanged, reports initial projection iterations, and restores the caller's
+  state when projection fails. Full DAE stage equations remain incomplete.
 - The dense matrix view test covers strided indexing, conversion to and from a
   flat vector, AXPY, fill, min/max/sum reductions, and invalid dimensions. AXPY
   rejects row and column shape mismatches. Callback traversal works for both
@@ -54,7 +57,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. One hundred fifty-six cases pass, nine are marked N/A, and 515 cases still report
+  statuses. One hundred sixty-one cases pass, nine are marked N/A, and 510 cases still report
   incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -74,5 +77,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 all 2,110,000 values; the largest relative difference was `5.34e-14` for
 BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
 MICM at this scale. The 100-cell and first-cell runs above also pass for both
-compilers. Overall, 515 of the 680 inventory cases remain incomplete; nine
+compilers. Overall, 510 of the 680 inventory cases remain incomplete; nine
 C++-only cases are marked N/A.

@@ -89,6 +89,11 @@ implemented = {
     "equilibrium:EquilibriumConstraint.ComplexStoichiometryResidual",
     "equilibrium:EquilibriumConstraint.FiniteDifferenceJacobianSimple",
     "equilibrium:EquilibriumConstraint.FiniteDifferenceJacobianComplexStoichiometry",
+    "constraint_initialization:ConstraintInitialization.ConsistentICsUnchanged",
+    "constraint_initialization:ConstraintInitialization.MildlyInconsistentICsCorrected",
+    "constraint_initialization:ConstraintInitialization.SeverelyInconsistentICsConverge",
+    "constraint_initialization:ConstraintInitialization.FailedInitializationRestoresCallerState",
+    "constraint_initialization:ConstraintInitialization.SuccessfulInitializationKeepsTheCorrection",
     "matrix:Matrix.Strides",
     "matrix:Matrix.ConversionToVector",
     "matrix:Matrix.ConversionFromVector",
@@ -202,6 +207,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C finite-difference Jacobian checks"
         elif case_id.startswith(("constraint_set:", "linear:", "equilibrium:")):
             reason = "C linear/equilibrium constraint residual and Jacobian behavior checked"
+        elif case_id.startswith("constraint_initialization:"):
+            reason = "C constrained solve projects consistent and inconsistent algebraic initial conditions"
         elif case_id.startswith("matrix:"):
             reason = "C strided matrix view, conversion, arithmetic, and reductions checked"
         elif case_id.startswith("version:"):

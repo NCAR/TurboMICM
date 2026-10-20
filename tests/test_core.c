@@ -1173,6 +1173,78 @@ static int check_constraint_api(void) {
   return 0;
 }
 
+static int check_constrained_solver(void) {
+  const chem_species species[] = {{.name="X",.initial_concentration=0.0}};
+  const chem_mechanism mechanism = {.species=species,.species_count=1};
+  const chem_constraint_term terms[] = {{.species=0,.coefficient=1.0}};
+  const chem_constraint constraint = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .algebraic_species=0,.terms=terms,.term_count=1,.constant=1.0};
+  const chem_constraint_set constraints = {.constraints=&constraint,
+      .constraint_count=1,.species_count=1};
+  chem_solver_workspace workspace = {0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  double state[] = {0.0};
+  chem_solver_stats stats = {0};
+  const chem_rosenbrock_parameters parameters =
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_FOUR_STAGE_DAE);
+  const int status = chem_rosenbrock_solve_constrained_with_parameters(
+      &mechanism,&workspace,state,298.15,101325.0,40.0,NULL,1.0,
+      &parameters,&constraints,NULL,&stats);
+  chem_solver_workspace_destroy(&workspace);
+  if (status || fabs(state[0]-1.0)>1.0e-12 || stats.accepted==0 ||
+      stats.constraint_init_iterations == 0) return 2;
+
+  const chem_species pair_species[] = {
+      {.name="B",.initial_concentration=0.5},
+      {.name="C",.initial_concentration=1000.0}};
+  const chem_mechanism pair_mechanism = {.species=pair_species,.species_count=2};
+  const chem_constraint_term reactants[] = {{.species=0,.coefficient=1.0}};
+  const chem_constraint_term products[] = {{.species=1,.coefficient=1.0}};
+  const chem_constraint equilibrium = {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=1,.reactants=reactants,.reactant_count=1,
+      .products=products,.product_count=1,.equilibrium_constant_ref=2.0,
+      .reference_temperature=298.15};
+  const chem_constraint_set equilibrium_set = {.constraints=&equilibrium,
+      .constraint_count=1,.species_count=2};
+  chem_solver_workspace pair_workspace = {0};
+  if (chem_solver_workspace_init(&pair_workspace,&pair_mechanism)) return 3;
+  double pair_state[] = {0.5,1000.0};
+  const int pair_status = chem_rosenbrock_solve_constrained_with_parameters(
+      &pair_mechanism,&pair_workspace,pair_state,298.15,101325.0,40.0,NULL,0.1,
+      NULL,&equilibrium_set,NULL,&stats);
+  if (pair_status || fabs(pair_state[0]-0.5)>1.0e-12 ||
+      fabs(pair_state[1]-1.0)>1.0e-12 || stats.constraint_init_iterations == 0)
+    return 4;
+  const double consistent_state[] = {0.5,1.0};
+  pair_state[0] = consistent_state[0]; pair_state[1] = consistent_state[1];
+  const int consistent_status = chem_rosenbrock_solve_constrained_with_parameters(
+      &pair_mechanism,&pair_workspace,pair_state,298.15,101325.0,40.0,NULL,0.1,
+      NULL,&equilibrium_set,NULL,&stats);
+  chem_solver_workspace_destroy(&pair_workspace);
+  if (consistent_status || fabs(pair_state[0]-0.5)>1.0e-12 ||
+      fabs(pair_state[1]-1.0)>1.0e-12 || stats.constraint_init_iterations > 1)
+    return 5;
+
+  const chem_species singular_species[] = {{.name="X"},{.name="Y"}};
+  const chem_mechanism singular_mechanism = {
+      .species=singular_species,.species_count=2};
+  const chem_constraint_term dependent_only[] = {{.species=1,.coefficient=1.0}};
+  const chem_constraint singular_constraint = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .algebraic_species=0,.terms=dependent_only,.term_count=1,.constant=1.0};
+  const chem_constraint_set singular_set = {.constraints=&singular_constraint,
+      .constraint_count=1,.species_count=2};
+  chem_solver_workspace singular_workspace = {0};
+  if (chem_solver_workspace_init(&singular_workspace,&singular_mechanism)) return 6;
+  double singular_state[] = {7.0,0.0};
+  const int singular_status = chem_rosenbrock_solve_constrained_with_parameters(
+      &singular_mechanism,&singular_workspace,singular_state,298.15,101325.0,
+      40.0,NULL,0.1,NULL,&singular_set,NULL,NULL);
+  chem_solver_workspace_destroy(&singular_workspace);
+  if (singular_status == 0 || singular_state[0] != 7.0 || singular_state[1] != 0.0)
+    return 7;
+  return 0;
+}
+
 static void matrix_add_index(size_t row, size_t column, double *value,
                              void *context) {
   const double scale = *(const double *)context;
@@ -1811,6 +1883,7 @@ int main(void) {
   if (check_lambda_callback_override() != 0) return 61;
   if (check_phase_species_metadata() != 0) return 62;
   if (check_constraint_api() != 0) return 63;
+  if (check_constrained_solver() != 0) return 65;
   if (check_matrix_view_api() != 0) return 64;
   return 0;
 }

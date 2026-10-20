@@ -34,7 +34,10 @@ mark algebraic rows, construct the constraint portion of the Jacobian pattern,
 and add residual and negative-Jacobian terms to cell-major forcing and dense
 Jacobian arrays. Equilibrium constraints use a van't Hoff temperature correction.
 These are evaluation primitives; the solver does not yet use them for DAE
-integration or algebraic-row replacement.
+stage equations or algebraic-row replacement. The optional constrained solve
+projects algebraic variables by Newton iteration at the start and after each
+accepted ODE step, using the constraint Jacobian restricted to algebraic columns.
+The initial Newton iteration count is reported in solver statistics.
 
 ## Solver and benchmark
 

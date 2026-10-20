@@ -233,6 +233,7 @@ typedef struct {
   size_t jacobian_updates;
   size_t decompositions;
   size_t solves;
+  size_t constraint_init_iterations;
 } chem_solver_stats;
 
 /* Lower-triangular Rosenbrock coefficients use row-wise packed indexing:
@@ -286,6 +287,13 @@ int chem_rosenbrock_solve_with_parameters(
     double *state, double temperature, double pressure, double air_density,
     const double *rate_parameters, double duration,
     const chem_rosenbrock_parameters *parameters,
+    const chem_solver_options *options, chem_solver_stats *statistics);
+int chem_rosenbrock_solve_constrained_with_parameters(
+    const chem_mechanism *mechanism, chem_solver_workspace *workspace,
+    double *state, double temperature, double pressure, double air_density,
+    const double *rate_parameters, double duration,
+    const chem_rosenbrock_parameters *parameters,
+    const chem_constraint_set *constraints,
     const chem_solver_options *options, chem_solver_stats *statistics);
 int chem_rosenbrock3_solve_group_with_workspace(
     const chem_mechanism *mechanism, chem_solver_workspace *workspace,

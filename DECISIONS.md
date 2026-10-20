@@ -45,6 +45,9 @@
   Jacobian-pattern, and negative-Jacobian evaluation separate from solver
   integration so these primitives can be validated independently. Equilibrium
   constants use a van't Hoff correction from a reference temperature.
+  The optional constrained solve projects algebraic variables with a Newton
+  solve before integration and after accepted steps; it does not yet apply a
+  full Rosenbrock DAE stage formulation.
 
 - Represent basic dense matrix access with a non-owning strided C view rather
   than an owning template type. Keep allocation with the caller and validate
