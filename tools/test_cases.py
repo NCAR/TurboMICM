@@ -494,6 +494,10 @@ implemented.update({
     "analytical_rosenbrock_integration:AnalyticalExamples.SurfaceRxn",
 })
 not_applicable = {
+    "solver_builder:SolverBuilder.FinalizeReceivesDenseMatrixPolicy":
+        "C has no templated Finalize overload dispatch or matrix policy types",
+    "solver_builder:SolverBuilder.FinalizeSupportsSparseOnlySignature":
+        "C has no templated Finalize overload dispatch or matrix policy types",
     "state:State.CopyConstructor":
         "C state views are non-owning, so they have no deep-copy constructor",
     "state:State.CopyAssignmentOperator":
