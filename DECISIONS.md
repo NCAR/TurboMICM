@@ -26,3 +26,7 @@
   mechanism builder.
 - Return a nonzero C status when surface-rate metadata lacks molecular weight
   or diffusion data, matching the construction-time error in MICM.
+- Use one contiguous cell group per requested worker in the TS1 benchmark. Cells
+  in a group share the Rosenbrock step controller and normalized error norm, as
+  in the reference benchmark; each cell still has its own rate constants,
+  forcing, Jacobian, and factorization.

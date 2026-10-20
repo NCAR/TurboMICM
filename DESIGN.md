@@ -23,14 +23,15 @@ Its defaults are relative tolerance `1e-6`, absolute tolerance `1e-3`, initial
 step `1e-6 * DT`, minimum step `1e-15 * DT`, maximum step `DT`, and a 1000-step
 limit. The inert third-body species is excluded from the error norm.
 
-The public `chem_solver_workspace` owns reusable matrix, stage, and symbolic
-fill buffers for one mechanism. Initialize one workspace per concurrent solver,
-reuse it for subsequent solves, and destroy it when the solver is no longer
-needed. `src/main.c` loads CSV values by species or parameter label, initializes
-omitted values from generated defaults, runs the untimed warm-up and timed
-steps, and writes `ts1_final.csv`. `--threads N` assigns independent cells to
-OpenMP workers. Cells still use independent adaptive integration; grouped
-multi-cell linear algebra remains future performance work.
+The public `chem_solver_workspace` owns reusable matrix, stage, symbolic fill,
+and group-output buffers for one mechanism. The single-cell API uses one cell
+per workspace; the benchmark initializes one workspace per cell group. `src/main.c`
+loads CSV values by species or parameter label, initializes omitted values
+from generated defaults, runs the untimed warm-up and timed steps, and writes
+`ts1_final.csv`. `--threads N` creates N contiguous cell groups. Each group
+shares one adaptive step controller and error norm, matching MICM's benchmark
+grouping. The current C implementation still factors each cell's matrix
+sequentially inside the group.
 
 ## Extension points
 
@@ -45,6 +46,7 @@ should exercise the generated path, not a handwritten mechanism-specific path.
 ## Tuning and portability
 
 The current runtime setting is thread count, defaulting to available OpenMP
-workers. Integration tolerances and step limits are solver defaults. The C
+workers; it also sets the number of cell groups. Integration tolerances and
+step limits are solver defaults. The C
 sources use ISO C11, libm, and CPU OpenMP only. The Makefile selects OpenMP flags
 for the chosen compiler and takes optimization flags solely from `OPTFLAGS`.

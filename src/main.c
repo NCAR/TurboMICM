@@ -247,11 +247,12 @@ int main(int argc, char **argv) {
   double *rates = calloc(cells*nr, sizeof(*rates));
   double *temperature = malloc(cells*sizeof(*temperature));
   double *pressure = malloc(cells*sizeof(*pressure));
+  double *density = malloc(cells*sizeof(*density));
   chem_solver_stats *stats = calloc(cells, sizeof(*stats));
   int *status = calloc(cells, sizeof(*status));
-  if (!states || !rates || !temperature || !pressure || !stats || !status) {
+  if (!states || !rates || !temperature || !pressure || !density || !stats || !status) {
     fprintf(stderr, "allocation failed for %zu cells\n", cells);
-    free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+    free(states); free(rates); free(temperature); free(pressure); free(density); free(stats); free(status);
     free(columns); free_table(&input); return 1;
   }
   for (size_t c = 0; c < cells; ++c) {
@@ -273,101 +274,100 @@ int main(int argc, char **argv) {
     if (temperature[c] <= 0.0 || pressure[c] < 0.0) {
       fprintf(stderr, "cell %zu has invalid temperature or pressure\n", c);
       status[c] = 1;
+    } else {
+      density[c] = pressure[c] / (8.31446261815324 * temperature[c]);
+    }
+  }
+  for (size_t c = 0; c < cells; ++c) {
+    if (status[c]) {
+      free(columns); free_table(&input);
+      free(states); free(rates); free(temperature); free(pressure);
+      free(density); free(stats); free(status);
+      return 1;
     }
   }
   free(columns);
   free_table(&input);
   if (threads > cells) threads = cells;
+  const size_t group_capacity = (cells + threads - 1) / threads;
   chem_solver_options options = chem_solver_default_options();
   chem_solver_workspace *workspaces = calloc(threads, sizeof(*workspaces));
   if (!workspaces) {
     fprintf(stderr, "allocation failed for solver workspaces\n");
-    free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+    free(states); free(rates); free(temperature); free(pressure); free(density); free(stats); free(status);
     return 1;
   }
   for (size_t i = 0; i < threads; ++i) {
-    if (chem_solver_workspace_init(&workspaces[i], m)) {
+    if (chem_solver_workspace_init_group(&workspaces[i], m, group_capacity)) {
       fprintf(stderr, "allocation failed for solver workspace %zu\n", i);
       destroy_workspaces(workspaces, threads);
-      free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+      free(states); free(rates); free(temperature); free(pressure); free(density); free(stats); free(status);
       return 1;
     }
   }
-  #pragma omp parallel num_threads(threads)
-  {
-#ifdef _OPENMP
-    const size_t worker = (size_t)omp_get_thread_num();
-#else
-    const size_t worker = 0;
-#endif
-    #pragma omp for schedule(static)
-    for (size_t c = 0; c < cells; ++c) {
-      if (status[c]) continue;
-      const double density = pressure[c] /
-                             (8.31446261815324 * temperature[c]);
+  #pragma omp parallel for schedule(static) num_threads(threads)
+  for (size_t worker = 0; worker < threads; ++worker) {
+    const size_t first = cells*worker/threads;
+    const size_t last = cells*(worker+1)/threads;
+    for (size_t c = first; c < last; ++c) if (status[c]) status[worker] = 1;
+    if (!status[worker]) {
       chem_solver_stats warmup_stats;
-      status[c] = chem_rosenbrock3_solve_with_workspace(
-          m, &workspaces[worker], states+c*n, temperature[c], pressure[c], density,
-          rates+c*nr, dt, &options, &warmup_stats);
+      status[worker] = chem_rosenbrock3_solve_group_with_workspace(
+          m, &workspaces[worker], states+first*n, temperature+first,
+          pressure+first, density+first, nr ? rates+first*nr : NULL,
+          last-first, dt, &options, &warmup_stats);
     }
   }
-  for (size_t c = 0; c < cells; ++c) {
-    if (status[c]) {
-      fprintf(stderr, "cell %zu failed warm-up solve with status %d\n", c, status[c]);
+  for (size_t worker = 0; worker < threads; ++worker) {
+    if (status[worker]) {
+      fprintf(stderr, "group %zu failed warm-up solve with status %d\n", worker, status[worker]);
       destroy_workspaces(workspaces, threads);
-      free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+      free(states); free(rates); free(temperature); free(pressure); free(density); free(stats); free(status);
       return 1;
     }
   }
   const double start = now_seconds();
-  #pragma omp parallel num_threads(threads)
-  {
-#ifdef _OPENMP
-    const size_t worker = (size_t)omp_get_thread_num();
-#else
-    const size_t worker = 0;
-#endif
-    #pragma omp for schedule(static)
-    for (size_t c = 0; c < cells; ++c) {
-      const double density = pressure[c] /
-                             (8.31446261815324 * temperature[c]);
-      for (size_t step = 0; step < steps && status[c] == 0; ++step) {
+  #pragma omp parallel for schedule(static) num_threads(threads)
+  for (size_t worker = 0; worker < threads; ++worker) {
+    const size_t first = cells*worker/threads;
+    const size_t last = cells*(worker+1)/threads;
+    for (size_t step = 0; step < steps && status[worker] == 0; ++step) {
         chem_solver_stats one = {0};
-        status[c] = chem_rosenbrock3_solve_with_workspace(
-            m, &workspaces[worker], states+c*n, temperature[c], pressure[c], density,
-            rates+c*nr, dt, &options, &one);
-        stats[c].internal_steps += one.internal_steps;
-        stats[c].accepted += one.accepted;
-        stats[c].rejected += one.rejected;
-        stats[c].function_calls += one.function_calls;
-        stats[c].jacobian_updates += one.jacobian_updates;
-        stats[c].decompositions += one.decompositions;
-        stats[c].solves += one.solves;
-      }
+        status[worker] = chem_rosenbrock3_solve_group_with_workspace(
+            m, &workspaces[worker], states+first*n, temperature+first,
+            pressure+first, density+first, nr ? rates+first*nr : NULL,
+            last-first, dt, &options, &one);
+        stats[worker].internal_steps += one.internal_steps;
+        stats[worker].accepted += one.accepted;
+        stats[worker].rejected += one.rejected;
+        stats[worker].function_calls += one.function_calls;
+        stats[worker].jacobian_updates += one.jacobian_updates;
+        stats[worker].decompositions += one.decompositions;
+        stats[worker].solves += one.solves;
     }
   }
   const double elapsed_ms = (now_seconds() - start)*1000.0;
   chem_solver_stats total = {0};
-  for (size_t c = 0; c < cells; ++c) {
-    if (status[c]) {
-      fprintf(stderr, "cell %zu failed integration with status %d\n", c, status[c]);
+  for (size_t worker = 0; worker < threads; ++worker) {
+    if (status[worker]) {
+      fprintf(stderr, "group %zu failed integration with status %d\n", worker, status[worker]);
       destroy_workspaces(workspaces, threads);
-      free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+      free(states); free(rates); free(temperature); free(pressure); free(density); free(stats); free(status);
       return 1;
     }
-    total.internal_steps += stats[c].internal_steps;
-    total.accepted += stats[c].accepted;
-    total.rejected += stats[c].rejected;
-    total.function_calls += stats[c].function_calls;
-    total.jacobian_updates += stats[c].jacobian_updates;
-    total.decompositions += stats[c].decompositions;
-    total.solves += stats[c].solves;
+    total.internal_steps += stats[worker].internal_steps;
+    total.accepted += stats[worker].accepted;
+    total.rejected += stats[worker].rejected;
+    total.function_calls += stats[worker].function_calls;
+    total.jacobian_updates += stats[worker].jacobian_updates;
+    total.decompositions += stats[worker].decompositions;
+    total.solves += stats[worker].solves;
   }
   FILE *output = fopen("ts1_final.csv", "w");
   if (!output) {
     fprintf(stderr, "cannot write ts1_final.csv: %s\n", strerror(errno));
     destroy_workspaces(workspaces, threads);
-    free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+    free(states); free(rates); free(temperature); free(pressure); free(density); free(stats); free(status);
     return 1;
   }
   fputs("temperature,pressure", output);
@@ -385,7 +385,7 @@ int main(int argc, char **argv) {
          elapsed_ms, total.internal_steps, total.accepted, total.rejected,
          total.function_calls, total.jacobian_updates, total.decompositions,
          total.solves);
-  free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+  free(states); free(rates); free(temperature); free(pressure); free(density); free(stats); free(status);
   destroy_workspaces(workspaces, threads);
   return 0;
 }

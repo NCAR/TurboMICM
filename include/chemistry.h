@@ -109,12 +109,21 @@ typedef struct {
 chem_solver_options chem_solver_default_options(void);
 int chem_solver_workspace_init(chem_solver_workspace *workspace,
                               const chem_mechanism *mechanism);
+int chem_solver_workspace_init_group(chem_solver_workspace *workspace,
+                                    const chem_mechanism *mechanism,
+                                    size_t cell_capacity);
 void chem_solver_workspace_destroy(chem_solver_workspace *workspace);
 int chem_rosenbrock3_solve_with_workspace(
     const chem_mechanism *mechanism, chem_solver_workspace *workspace,
     double *state, double temperature, double pressure, double air_density,
     const double *rate_parameters, double duration,
     const chem_solver_options *options, chem_solver_stats *statistics);
+int chem_rosenbrock3_solve_group_with_workspace(
+    const chem_mechanism *mechanism, chem_solver_workspace *workspace,
+    double *states, const double *temperatures, const double *pressures,
+    const double *air_densities, const double *rate_parameters,
+    size_t cell_count, double duration, const chem_solver_options *options,
+    chem_solver_stats *statistics);
 int chem_rosenbrock3_solve(const chem_mechanism *mechanism, double *state,
                            double temperature, double air_density,
                            const double *rate_parameters, double duration,
