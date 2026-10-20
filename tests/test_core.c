@@ -1548,6 +1548,25 @@ static int check_matrix_view_api(void) {
           fabs(value-expected) > 1e-13*expected) return 91;
     }
   }
+  {
+    double dense_data[] = {-12.2,-24.3,-0.43,-23.4};
+    chem_matrix_view dense;
+    if (chem_matrix_view_init(&dense,dense_data,2,2,2,1) ||
+        chem_matrix_view_add_diagonal(&dense,42.042) ||
+        fabs(dense_data[0]-(42.042-12.2)) > 1e-14 ||
+        fabs(dense_data[1]+24.3) > 1e-14 ||
+        fabs(dense_data[2]+0.43) > 1e-14 ||
+        fabs(dense_data[3]-(42.042-23.4)) > 1e-14 ||
+        chem_matrix_view_add_diagonal(&dense,NAN) == 0) return 92;
+    double packed_data[] = {-12.2,-0.43,-24.3,-23.4};
+    chem_vector_matrix_view packed;
+    if (chem_vector_matrix_view_init(&packed,packed_data,2,2,2) ||
+        chem_vector_matrix_view_add_diagonal(&packed,42.042) ||
+        fabs(packed_data[0]-(42.042-12.2)) > 1e-14 ||
+        fabs(packed_data[1]+0.43) > 1e-14 ||
+        fabs(packed_data[2]+24.3) > 1e-14 ||
+        fabs(packed_data[3]-(42.042-23.4)) > 1e-14) return 93;
+  }
   double storage[] = {1.0, 99.0, 2.0, 99.0, 3.0, 99.0,
                       4.0, 99.0, 5.0, 99.0, 6.0, 99.0};
   chem_matrix_view view;

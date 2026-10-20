@@ -382,6 +382,8 @@ int chem_vector_matrix_view_write(FILE *file,
 int chem_vector_matrix_view_scale_from_int_vector(
     chem_vector_matrix_view *view, const int *vector, size_t vector_size,
     double scale);
+int chem_vector_matrix_view_add_diagonal(chem_vector_matrix_view *view,
+                                         double value);
 int chem_vector_matrix_view_reduce_or(
     const chem_const_vector_matrix_view *view,
     chem_matrix_predicate predicate, void *context, int initial, int *value);
@@ -435,6 +437,7 @@ int chem_matrix_view_write(FILE *file, const chem_matrix_view *view);
 int chem_matrix_view_scale_from_int_vector(chem_matrix_view *view,
                                            const int *vector,
                                            size_t vector_size, double scale);
+int chem_matrix_view_add_diagonal(chem_matrix_view *view, double value);
 int chem_matrix_view_reduce_or(const chem_matrix_view *view,
                                chem_matrix_predicate predicate, void *context,
                                int initial, int *value);

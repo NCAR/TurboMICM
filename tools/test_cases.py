@@ -458,6 +458,8 @@ implemented.update({
     "rosenbrock:RosenbrockSolver.VectorNormalizedError",
     "rosenbrock:RosenbrockSolver.StandardNormalizedErrorWithConstraints",
     "rosenbrock:RosenbrockSolver.VectorNormalizedErrorWithConstraints",
+    "rosenbrock:RosenbrockSolver.StandardAlphaMinusJacobian",
+    "rosenbrock:RosenbrockSolver.VectorAlphaMinusJacobian",
 })
 not_applicable = {
     "state:State.CopyConstructor":

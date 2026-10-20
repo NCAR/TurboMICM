@@ -503,6 +503,18 @@ int chem_vector_matrix_view_scale_from_int_vector(
   return 0;
 }
 
+int chem_vector_matrix_view_add_diagonal(chem_vector_matrix_view *view,
+                                         double value) {
+  if (!vector_matrix_view_valid(view) || view->rows != view->columns ||
+      !isfinite(value)) return 1;
+  for (size_t i = 0; i < view->rows; ++i) {
+    const size_t offset = vector_matrix_offset(i,i,view->columns,
+                                                view->group_width);
+    view->data[offset] += value;
+  }
+  return 0;
+}
+
 static int vector_matrix_reduce_predicate(
     const chem_const_vector_matrix_view *view,
     chem_matrix_predicate predicate, void *context, int initial,
@@ -740,6 +752,14 @@ int chem_matrix_view_scale_from_int_vector(chem_matrix_view *view,
     for (size_t column = 0; column < view->columns; ++column)
       view->data[row*view->row_stride + column*view->column_stride] =
           (double)vector[index++]*scale;
+  return 0;
+}
+
+int chem_matrix_view_add_diagonal(chem_matrix_view *view, double value) {
+  if (!valid_view(view) || view->rows != view->columns || !isfinite(value))
+    return 1;
+  for (size_t i = 0; i < view->rows; ++i)
+    view->data[i*view->row_stride + i*view->column_stride] += value;
   return 0;
 }
 
