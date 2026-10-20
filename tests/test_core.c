@@ -1404,6 +1404,42 @@ static int check_matrix_view_api(void) {
       chem_matrix_view_fill(&empty, 0.0) ||
       chem_matrix_view_sum(&empty, &value) == 0 ||
       chem_matrix_view_for_each(&empty, matrix_add_index, (void *)&scale)) return 15;
+  double row_storage[12] = {0};
+  chem_matrix_view rows;
+  const double row_values[] = {12.3,15.1,24.3};
+  double row_copy[3];
+  if (chem_matrix_view_init(&rows,row_storage,4,3,3,1) ||
+      chem_matrix_view_copy_row_from_vector(&rows,2,row_values,3) ||
+      chem_matrix_view_copy_row_to_vector(&rows,2,row_copy,3) ||
+      chem_matrix_view_copy_row_from_vector(&rows,2,row_values,2) == 0)
+    return 16;
+  for (size_t j = 0; j < 3; ++j)
+    if (row_copy[j] != row_values[j] || row_storage[6+j] != row_values[j]) return 17;
+  if (row_storage[0] != 0.0 || chem_matrix_view_copy_row_to_vector(&rows,4,row_copy,3)==0)
+    return 18;
+  double small_data[15] = {0};
+  chem_matrix_view small;
+  if (chem_matrix_view_init(&small,small_data,3,5,5,1) ||
+      chem_matrix_view_set(&small,1,3,64.7) ||
+      chem_matrix_view_set(&small,0,0,41.2) ||
+      chem_matrix_view_set(&small,2,4,102.3) ||
+      small_data[0] != 41.2 || small_data[8] != 64.7 || small_data[14] != 102.3)
+    return 19;
+  double initialized_data[6] = {0};
+  chem_matrix_view initialized;
+  if (chem_matrix_view_init(&initialized,initialized_data,2,3,3,1) ||
+      chem_matrix_view_fill(&initialized,12.4) ||
+      initialized_data[0] != 12.4 || initialized_data[3] != 12.4 ||
+      initialized_data[5] != 12.4) return 20;
+  double loop_data[12] = {0};
+  chem_matrix_view loop;
+  if (chem_matrix_view_init(&loop,loop_data,3,4,4,1)) return 21;
+  for (size_t i = 0; i < 3; ++i)
+    for (size_t j = 0; j < 4; ++j)
+      if (chem_matrix_view_set(&loop,i,j,(double)(i*100+j))) return 22;
+  if (chem_matrix_view_get(&loop,0,0,&value) || value != 0.0 ||
+      chem_matrix_view_get(&loop,1,2,&value) || value != 102.0 ||
+      chem_matrix_view_get(&loop,2,3,&value) || value != 203.0) return 23;
   return 0;
 }
 

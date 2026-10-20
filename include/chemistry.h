@@ -201,6 +201,12 @@ int chem_matrix_view_copy_to_vector(const chem_matrix_view *view,
 int chem_matrix_view_copy_from_vector(chem_matrix_view *view,
                                       const double *vector,
                                       size_t vector_size);
+int chem_matrix_view_copy_row_to_vector(const chem_matrix_view *view,
+                                        size_t row, double *vector,
+                                        size_t vector_size);
+int chem_matrix_view_copy_row_from_vector(chem_matrix_view *view,
+                                          size_t row, const double *vector,
+                                          size_t vector_size);
 int chem_matrix_view_axpy(chem_matrix_view *destination,
                           const chem_matrix_view *source, double alpha);
 int chem_matrix_view_min(const chem_matrix_view *view, double *value);
