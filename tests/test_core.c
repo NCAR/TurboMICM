@@ -1,6 +1,7 @@
 #include "chemistry.h"
 
 #include <math.h>
+#include <omp.h>
 
 static double test_lambda(double temperature, double pressure,
                           double air_density, const double *parameters) {
@@ -454,5 +455,34 @@ int main(void) {
   }
   chem_solver_workspace_destroy(&solve_workspace);
   if (grid_error) return 41;
+
+  /* Port of test_openmp: every worker owns its solver workspace and state. */
+  double thread_states[] = {
+      1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
+  int thread_status[] = {0, 0, 0};
+  #pragma omp parallel num_threads(3)
+  {
+    const int thread = omp_get_thread_num();
+    chem_solver_workspace thread_workspace = {0};
+    thread_status[thread] = chem_solver_workspace_init(
+        &thread_workspace, &solve_mechanism);
+    const double thread_rates[] = {0.04, 3e7, 1e4};
+    for (size_t step = 0; step < 10 && !thread_status[thread]; ++step)
+      thread_status[thread] = chem_rosenbrock3_solve_with_workspace(
+          &solve_mechanism, &thread_workspace, thread_states + 3*thread,
+          272.5, 101253.3, 1e6, thread_rates, 200.0, NULL, NULL);
+    chem_solver_workspace_destroy(&thread_workspace);
+  }
+  for (size_t thread = 0; thread < 3; ++thread) {
+    if (thread_status[thread]) return 42;
+    const double thread_expected[] = {2.55e-1, 1.37e-6, 7.45e-1};
+    for (size_t variable = 0; variable < 3; ++variable) {
+      const double expected = thread_expected[variable];
+      const double print_tolerance =
+          0.5 * pow(10.0, floor(log10(expected)) - 2.0);
+      if (fabs(thread_states[3*thread + variable] - expected) > print_tolerance)
+        return 43;
+    }
+  }
   return 0;
 }

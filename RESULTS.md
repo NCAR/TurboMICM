@@ -21,6 +21,8 @@
 - The C core test also runs the grouped chemistry for ten 200-second intervals
   and checks all 90 printed concentrations from `test_multiple_grid_cells` at
   the tutorial's three-significant-digit precision.
+- The C core test ports `test_openmp` with three worker-owned states and solver
+  workspaces, checking each thread's final concentrations against MICM output.
 - Repeated-reactant Jacobians now match for both separate unit terms (`B + B`)
   and one stoichiometric term (`2 B`), covering a coefficient case that the
   previous negative-Jacobian implementation mishandled.
@@ -29,7 +31,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Forty-six cases pass; 634 cases still report incomplete ports,
+  statuses. Forty-seven cases pass; 633 cases still report incomplete ports,
   so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -50,5 +52,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 `5.33e-4` for HO2NO2 in cell 3974. A single-cell run of that input also fails,
 so the discrepancy is not caused by cell grouping. This result is a regression
 case for further solver arithmetic work. The implementation is about eleven
-times slower than the reference at this scale, and 634 of the 680 inventory cases
+times slower than the reference at this scale, and 633 of the 680 inventory cases
 remain unported.
