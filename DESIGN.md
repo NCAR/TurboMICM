@@ -36,6 +36,9 @@ can skip algebraic species rows. `chem_accumulate_negative_jacobian` adds the
 dense `-df/dy` for each cell and accepts the same row mask. Masked species
 values still contribute to rates. These additive APIs let C callers preserve
 MICM's ProcessSet-style accumulation without an expression-template layer.
+`chem_alpha_minus_jacobian` adds the Rosenbrock diagonal shift to dense cell
+blocks, and `chem_calculate_normalized_error` computes the RMS step error across
+all state variables, including algebraic species.
 
 `chem_constraints.h` defines borrowed linear and equilibrium constraint
 descriptors indexed against the mechanism's integrated species order. A

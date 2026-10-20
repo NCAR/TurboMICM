@@ -8,10 +8,10 @@ lines. Results for the current source are:
 
 | Compiler | PASS | FAIL | N/A | TS1 serial / parallel |
 | --- | ---: | ---: | ---: | --- |
-| Apple clang 21, macOS arm64 | 604 | 62 | 14 | PASS / PASS |
-| GCC 15.2, macOS arm64 | 604 | 62 | 14 | PASS / PASS |
+| Apple clang 21, macOS arm64 | 612 | 54 | 14 | PASS / PASS |
+| GCC 15.2, macOS arm64 | 612 | 54 | 14 | PASS / PASS |
 
-The 604 passing case lines cover implemented rate-constant formulas, rate
+The 612 passing case lines cover implemented rate-constant formulas, rate
 parameter descriptor references, the two configuration-versus-hand-built
 examples, the README chemistry example, multiple grid cells, the OpenMP tutorial,
 the vectorized storage example, the solve_results and solver_configuration
@@ -35,16 +35,18 @@ includes a fully implicit backward Euler integrator with Newton updates,
 adaptive step reduction, and the MICM residual convergence rule; its solver and
 convergence cases pass. Twelve ordinary and twelve super-stiff analytical
 A-to-B-to-C cases now pass across backward Euler and Rosenbrock, including Troe,
-photolysis, ternary activation, tunneling, Arrhenius, and branched rates. The DA tutorial output
-table was corrected against the
+photolysis, ternary activation, tunneling, Arrhenius, and branched rates. Eight
+Rosenbrock utility cases cover diagonal alpha updates, per-species tolerances,
+normalized error over all variables, and agreement after rejected steps across
+both LU implementations. The DA tutorial output table was corrected against the
 copied MICM tutorial executable: both DA methods print `0.703` at 1400 s. The 14 N/A
 cases cover a rate-store callback entry, four compile-time view-category traits,
 the grouped-view compile-time category check, and release metadata with no
 meaningful equivalent in the current C API, including three builder-specific
-checks. The 62 remaining FAIL cases cover eight analytical integration cases,
-18 aerosol integrations, 20 external-model constraint cases, eight Rosenbrock
-utility cases, two regression cases, and six regression solve cases. Per-case
-reasons are printed by the runner. These results do not satisfy the prompt's
+checks. The 54 remaining FAIL cases cover eight analytical integration cases,
+18 aerosol integrations, 20 external-model constraint cases, two regression
+cases, and six regression solve cases. Per-case reasons are printed by the
+runner. These results do not satisfy the prompt's
 all-cases correctness gate.
 
 ## TS1 comparisons
@@ -68,7 +70,7 @@ maximum relative error `9.7e-13`.
 ## Build verification
 
 Clean `make test-cpu` builds completed with Apple clang 21 and GCC 15.2. Both
-compiler runs reported 604 PASS, 62 FAIL, and 14 N/A, and passed the serial and
+compiler runs reported 612 PASS, 54 FAIL, and 14 N/A, and passed the serial and
 four-thread TS1 checks. The target exits nonzero while failed cases remain. The
 benchmark and library contain no Python linkage. The gate remains incomplete
 because many MICM cases have not been ported.

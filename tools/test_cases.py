@@ -61,7 +61,7 @@ def main() -> int:
         PROJECT / "bin/test_objects", PROJECT / "bin/test_processes", PROJECT / "bin/test_constraints",
         PROJECT / "bin/test_lu", PROJECT / "bin/test_grouped_views", PROJECT / "bin/test_matrix",
         PROJECT / "bin/test_sparse_matrix", PROJECT / "bin/test_backward_euler",
-        PROJECT / "bin/test_analytical_simple",
+        PROJECT / "bin/test_analytical_simple", PROJECT / "bin/test_rosenbrock_utilities",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -173,6 +173,14 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_analytical_simple"), method, test.split(".", 1)[-1]])
             status, reason = ("PASS", f"C {method} concentrations match the analytical three-species solution") if ok else (
                 "FAIL", f"C {method} concentrations differ from the analytical three-species solution")
+        elif suite == "rosenbrock" and test.split(".", 1)[-1] in {
+            "StandardAlphaMinusJacobian", "VectorAlphaMinusJacobian", "CanSetTolerances",
+            "StandardNormalizedError", "VectorNormalizedError", "StandardNormalizedErrorWithConstraints",
+            "VectorNormalizedErrorWithConstraints", "RejectedStepAlphaMatchesInPlaceSolver",
+        }:
+            ok = run([str(PROJECT / "bin/test_rosenbrock_utilities"), test])
+            status, reason = ("PASS", "C Rosenbrock matrix, tolerance, error norm, and rejected-step behavior match the reference") if ok else (
+                "FAIL", "C Rosenbrock utility or rejected-step behavior differs from the reference")
         elif suite == "solver_builder":
             name = test.split(".", 1)[-1]
             if name in {"ThrowsUnusedSpecies", "FinalizeReceivesDenseMatrixPolicy", "FinalizeSupportsSparseOnlySignature"}:

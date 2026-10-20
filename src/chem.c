@@ -791,6 +791,53 @@ int chem_accumulate_negative_jacobian(
   return 0;
 }
 
+int chem_alpha_minus_jacobian(
+    double *negative_jacobians,
+    size_t block_count,
+    size_t species_count,
+    double alpha) {
+  if (!negative_jacobians || !block_count || !species_count || !isfinite(alpha) ||
+      species_count > SIZE_MAX / species_count ||
+      block_count > SIZE_MAX / (species_count * species_count) / sizeof(double)) return -1;
+  const size_t matrix_length = species_count * species_count;
+  for (size_t block = 0; block < block_count; ++block)
+    for (size_t species = 0; species < species_count; ++species)
+      negative_jacobians[block * matrix_length + species * species_count + species] += alpha;
+  return 0;
+}
+
+int chem_calculate_normalized_error(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *ynew,
+    const double *error,
+    double *normalized_error) {
+  if (!mechanism || !cell_count || !mechanism->species_count || !mechanism->species ||
+      !y || !ynew || !error || !normalized_error ||
+      !isfinite(mechanism->relative_tolerance) || mechanism->relative_tolerance < 0.0 ||
+      cell_count > SIZE_MAX / mechanism->species_count) return -1;
+  const size_t state_length = cell_count * mechanism->species_count;
+  if (state_length > SIZE_MAX / sizeof(double)) return -1;
+  double sum = 0.0;
+  for (size_t cell = 0; cell < cell_count; ++cell) {
+    for (size_t species = 0; species < mechanism->species_count; ++species) {
+      const size_t i = cell * mechanism->species_count + species;
+      const double atol = mechanism->species[species].absolute_tolerance;
+      const double old_value = y[i], new_value = ynew[i], difference = error[i];
+      if (!isfinite(atol) || atol < 0.0 || !isfinite(old_value) ||
+          !isfinite(new_value) || !isfinite(difference)) return -1;
+      const double scale = atol + mechanism->relative_tolerance * fmax(fabs(old_value), fabs(new_value));
+      if (!isfinite(scale) || scale < 0.0 || (scale == 0.0 && difference != 0.0)) return -1;
+      const double scaled = scale == 0.0 ? 0.0 : difference / scale;
+      sum += scaled * scaled;
+      if (!isfinite(sum)) return -1;
+    }
+  }
+  *normalized_error = fmax(sqrt(sum / (double)state_length), 1.0e-10);
+  return isfinite(*normalized_error) ? 0 : -1;
+}
+
 static void chem_build_jacobian(
     const chem_mechanism *mechanism,
     const chem_symbolic *symbolic,
@@ -967,17 +1014,10 @@ static double chem_dae_normalized_error(
     const double *y,
     const double *ynew,
     const double *error) {
-  const size_t n = mechanism->species_count;
-  double sum = 0.0;
-  for (size_t cell = 0; cell < cell_count; ++cell) {
-    for (size_t species = 0; species < n; ++species) {
-      const chem_species *item = &mechanism->species[species];
-      const double maximum = fmax(fabs(y[cell * n + species]), fabs(ynew[cell * n + species]));
-      const double scaled = error[cell * n + species] / (item->absolute_tolerance + mechanism->relative_tolerance * maximum);
-      sum += scaled * scaled;
-    }
-  }
-  return fmax(sqrt(sum / (double)(cell_count * n)), 1.0e-10);
+  double normalized_error = NAN;
+  if (chem_calculate_normalized_error(
+          mechanism, cell_count, y, ynew, error, &normalized_error) != 0) return NAN;
+  return normalized_error;
 }
 
 static double chem_normalized_error(

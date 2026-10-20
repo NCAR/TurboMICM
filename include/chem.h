@@ -412,6 +412,25 @@ int chem_accumulate_negative_jacobian(
     const unsigned char *differential_species,
     double *negative_jacobian);
 
+/* Add alpha to every diagonal of a cell-major collection of dense matrices.
+   Each block is [species_count][species_count]. */
+int chem_alpha_minus_jacobian(
+    double *negative_jacobians,
+    size_t block_count,
+    size_t species_count,
+    double alpha);
+
+/* Calculate the RMS normalized error across every cell and species, including
+   algebraic species. y, ynew, and error use cell-major state layout. The
+   mechanism supplies species absolute tolerances and relative tolerance. */
+int chem_calculate_normalized_error(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *ynew,
+    const double *error,
+    double *normalized_error);
+
 /* Integrate each row of y in place for one chemistry interval.  State layout
    is cell-major: y[cell * species_count + species].  Parameters use the same
    cell-major convention.  A separate call owns a separate adaptive history. */
