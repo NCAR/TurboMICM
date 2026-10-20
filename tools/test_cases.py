@@ -447,6 +447,8 @@ for _category, _case_class in (
     implemented.update(f"{_category}:{_case_class}.{_name}"
                        for _name in _linear_case_names)
 implemented.update({
+    "analytical_backward_euler:AnalyticalExamples.PhotolysisSuperStiffButAnalytical",
+    "analytical_rosenbrock_integration:AnalyticalExamples.PhotolysisSuperStiffButAnalytical",
     "linear_solver:LinearSolver.DiagonalMarkowitzReorder",
     "linear_solver:LinearSolver.VectorDiagonalMarkowitzReordering",
     "linear_solver_in_place:LinearSolverInPlace.DiagonalMarkowitzReorder",
@@ -561,6 +563,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C Rosenbrock integrates the Troe chain against its closed form"
         elif case_id.endswith("AnalyticalExamples.Photolysis"):
             reason = "C user-defined rates drive backward Euler and Rosenbrock closed-form checks"
+        elif case_id.endswith("PhotolysisSuperStiffButAnalytical"):
+            reason = "C solvers integrate the fast-equilibrium photolysis chain against its closed form"
         elif case_id.endswith("AnalyticalExamples.SurfaceRxn"):
             reason = "C surface rate, decay, and product yields match the analytical solution"
         elif case_id.endswith(("AnalyticalExamples.Tunneling", "AnalyticalExamples.Arrhenius",

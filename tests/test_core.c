@@ -3217,10 +3217,92 @@ static int check_rejected_step_determinism(void) {
   return 0;
 }
 
+static int check_stiff_photolysis_chain(int backward_euler) {
+  const chem_species species[] = {{.name="A1"},{.name="A2"},
+      {.name="B"},{.name="C"}};
+  const chem_term a1[] = {{.species=0,.coefficient=1}};
+  const chem_term a2[] = {{.species=1,.coefficient=1}};
+  const chem_term b[] = {{.species=2,.coefficient=1}};
+  const chem_term products_b[] = {{.species=2,.coefficient=1}};
+  const chem_term products_c[] = {{.species=3,.coefficient=1}};
+  const chem_term products_a2[] = {{.species=1,.coefficient=1}};
+  const chem_term products_a1[] = {{.species=0,.coefficient=1}};
+  const chem_reaction reactions[] = {
+      {.kind=CHEM_USER_DEFINED,.label="photoA1B",.reactants=a1,
+       .reactant_count=1,.products=products_b,.product_count=1,
+       .p={[0]=1,[7]=0}},
+      {.kind=CHEM_USER_DEFINED,.label="photoA2B",.reactants=a2,
+       .reactant_count=1,.products=products_b,.product_count=1,
+       .p={[0]=1,[7]=1}},
+      {.kind=CHEM_USER_DEFINED,.label="photoB",.reactants=b,
+       .reactant_count=1,.products=products_c,.product_count=1,
+       .p={[0]=1,[7]=2}},
+      {.kind=CHEM_ARRHENIUS,.reactants=a1,.reactant_count=1,
+       .products=products_a2,.product_count=1,.p={4e10,0,0,300,0}},
+      {.kind=CHEM_ARRHENIUS,.reactants=a2,.reactant_count=1,
+       .products=products_a1,.product_count=1,.p={3.6e10,0,0,300,0}}};
+  const char *labels[] = {"photoA1B","photoA2B","photoB"};
+  const chem_mechanism mechanism = {.species=species,.species_count=4,
+      .reactions=reactions,.reaction_count=5,.custom_labels=labels,
+      .custom_parameter_count=3};
+  const double custom[] = {2e-3,2e-3,3e-3};
+  double check_rates[5];
+  const double temperature=272.5, pressure=101253.3;
+  const double density=pressure/(8.31446261815324*temperature);
+  if (chem_rate_constants(&mechanism,temperature,pressure,density,custom,check_rates)) return 3;
+  for (size_t i=0;i<3;++i)
+    if (fabs(check_rates[i]-custom[i])>1e-15) return 4;
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  chem_backward_euler_options be_options=chem_backward_euler_default_options();
+  be_options.initial_step=1.0;
+  be_options.relative_tolerance=1e-6;
+  be_options.absolute_tolerance=1e-3;
+  chem_solver_options ros_options=chem_solver_default_options();
+  ros_options.relative_tolerance=1e-6;
+  ros_options.absolute_tolerance=1e-3;
+  ros_options.initial_step=1.0;
+  double states[3][4];
+  const double initial[] = {1.0,2.0/3.0,1.0/3.0};
+  for (size_t cell=0;cell<3;++cell) {
+    states[cell][0]=0.5*initial[cell]; states[cell][1]=0.5*initial[cell];
+    states[cell][2]=0.0; states[cell][3]=0.0;
+  }
+  int status=0;
+  for (size_t step=1;step<1000 && !status;++step) {
+    for (size_t cell=0;cell<3 && !status;++cell) {
+      status=backward_euler
+          ? chem_backward_euler_solve_with_workspace(&mechanism,&workspace,
+                states[cell],temperature,pressure,density,custom,1.0,
+                &be_options,NULL)
+          : chem_rosenbrock3_solve_with_workspace(&mechanism,&workspace,
+                states[cell],temperature,pressure,density,custom,1.0,
+                &ros_options,NULL);
+      if (status) break;
+      const double t=(double)step, k1=2e-3, k2=3e-3;
+      const double e1=exp(-k1*t), e2=exp(-k2*t);
+      const double expected_a=initial[cell]*e1;
+      const double expected_b=initial[cell]*k1/(k2-k1)*(e1-e2);
+      const double expected_c=initial[cell]*(1.0+(k1*e2-k2*e1)/(k2-k1));
+      const double actual[]={states[cell][0]+states[cell][1],
+                              states[cell][2],states[cell][3]};
+      const double expected[]={expected_a,expected_b,expected_c};
+      for (size_t i=0;i<3;++i)
+        if (fabs(actual[i]-expected[i])>1e-3) status=2;
+    }
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
 int main(void) {
   if (check_rosenbrock_species_tolerances()) return 52;
   { const int status=check_rejected_step_determinism();
     if (status) return 53+status; }
+  { const int status=check_stiff_photolysis_chain(0);
+    if (status) return 60+status; }
+  { const int status=check_stiff_photolysis_chain(1);
+    if (status) return 70+status; }
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
   const double b = chem_arrhenius(3.0e-11, 0.0, -200.0, 300.0, 0.0, t, 0.0);
