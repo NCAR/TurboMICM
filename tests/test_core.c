@@ -2449,6 +2449,49 @@ static int check_linear_solvers(void) {
   if (chem_linear_solve(2,singular,singular_rhs,solution) == 0 ||
       chem_linear_solve_in_place(2,singular,singular_rhs) == 0 ||
       chem_linear_solve(2,NULL,singular_rhs,solution) == 0) return 4;
+  const size_t order = 50;
+  unsigned char pattern[order*order], reordered[order*order];
+  size_t permutation[order];
+  for (size_t row = 0; row < order; ++row)
+    for (size_t column = 0; column < order; ++column)
+      pattern[row*order+column] = (unsigned char)(row == column ||
+          ((row*17+column*31+row*column)%13 < 3));
+  if (chem_markowitz_reorder(order,pattern,permutation)) return 5;
+  unsigned char seen[50] = {0};
+  size_t sum = 0;
+  for (size_t i = 0; i < order; ++i) {
+    if (permutation[i] >= order || seen[permutation[i]]) return 6;
+    seen[permutation[i]] = 1;
+    sum += permutation[i];
+  }
+  if (sum != order*(order-1)/2) return 7;
+  for (size_t row = 0; row < order; ++row)
+    for (size_t column = 0; column < order; ++column)
+      reordered[row*order+column] =
+          pattern[permutation[row]*order+permutation[column]];
+  unsigned char original_factor[order*order], reordered_factor[order*order];
+  memcpy(original_factor,pattern,sizeof(pattern));
+  memcpy(reordered_factor,reordered,sizeof(reordered));
+  for (size_t pivot = 0; pivot < order; ++pivot)
+    for (size_t row = pivot+1; row < order; ++row)
+      if (original_factor[row*order+pivot])
+        for (size_t column = pivot+1; column < order; ++column)
+          if (original_factor[pivot*order+column])
+            original_factor[row*order+column] = 1;
+  for (size_t pivot = 0; pivot < order; ++pivot)
+    for (size_t row = pivot+1; row < order; ++row)
+      if (reordered_factor[row*order+pivot])
+        for (size_t column = pivot+1; column < order; ++column)
+          if (reordered_factor[pivot*order+column])
+            reordered_factor[row*order+column] = 1;
+  size_t original_fill = 0, reordered_fill = 0;
+  for (size_t row = 0; row < order; ++row)
+    for (size_t column = 0; column < order; ++column) {
+      original_fill += original_factor[row*order+column] != 0;
+      reordered_fill += reordered_factor[row*order+column] != 0;
+    }
+  if (original_fill <= reordered_fill ||
+      chem_markowitz_reorder(order,NULL,permutation) == 0) return 8;
   return 0;
 }
 

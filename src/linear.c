@@ -1,6 +1,7 @@
 #include "chemistry.h"
 
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -71,4 +72,67 @@ int chem_linear_solve(size_t dimension, const double *matrix,
   free(matrix_copy);
   free(rhs_copy);
   return status;
+}
+
+int chem_markowitz_reorder(size_t dimension,
+                           const unsigned char *nonzero_pattern,
+                           size_t *new_to_old_permutation) {
+  if (dimension == 0) return 0;
+  if (!nonzero_pattern || !new_to_old_permutation ||
+      dimension > (size_t)-1/dimension) return 1;
+  const size_t count = dimension*dimension;
+  unsigned char *graph = malloc(count);
+  unsigned char *alive = malloc(dimension);
+  size_t *permutation = malloc(dimension*sizeof(size_t));
+  if (!graph || !alive || !permutation) {
+    free(graph); free(alive); free(permutation);
+    return 1;
+  }
+  memcpy(graph,nonzero_pattern,count);
+  memset(alive,1,dimension);
+  for (size_t i = 0; i < dimension; ++i)
+    if (!graph[i*dimension+i]) {
+      free(graph); free(alive); free(permutation);
+      return 1;
+    }
+  for (size_t step = 0; step < dimension; ++step) {
+    size_t pivot = dimension;
+    size_t best_cost = SIZE_MAX;
+    for (size_t candidate = 0; candidate < dimension; ++candidate) {
+      if (!alive[candidate]) continue;
+      size_t row_degree = 0, column_degree = 0;
+      for (size_t other = 0; other < dimension; ++other) {
+        if (!alive[other]) continue;
+        row_degree += graph[candidate*dimension+other] != 0;
+        column_degree += graph[other*dimension+candidate] != 0;
+      }
+      if (!row_degree || !column_degree) {
+        free(graph); free(alive); free(permutation);
+        return 1;
+      }
+      const size_t row_cost = row_degree-1, column_cost = column_degree-1;
+      const size_t cost = column_cost && row_cost > SIZE_MAX/column_cost
+          ? SIZE_MAX : row_cost*column_cost;
+      if (pivot == dimension || cost < best_cost) {
+        pivot = candidate;
+        best_cost = cost;
+      }
+    }
+    if (pivot == dimension) {
+      free(graph); free(alive); free(permutation);
+      return 1;
+    }
+    permutation[step] = pivot;
+    for (size_t row = 0; row < dimension; ++row) {
+      if (!alive[row] || row == pivot || !graph[row*dimension+pivot]) continue;
+      for (size_t column = 0; column < dimension; ++column)
+        if (alive[column] && column != pivot &&
+            graph[pivot*dimension+column])
+          graph[row*dimension+column] = 1;
+    }
+    alive[pivot] = 0;
+  }
+  memcpy(new_to_old_permutation,permutation,dimension*sizeof(size_t));
+  free(graph); free(alive); free(permutation);
+  return 0;
 }

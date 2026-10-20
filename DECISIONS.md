@@ -81,6 +81,9 @@
   independent block and the routines initialize output factors on every call.
 - Provide a pivoted dense Gaussian solve that copies inputs or overwrites the
   matrix and right-hand side, with exact singular-pivot status reporting.
+- Expose diagonal Markowitz ordering as a sparse-pattern permutation. It selects
+  the live row/column pivot with the minimum `(row_degree-1)*(column_degree-1)`
+  cost and adds fill edges before selecting the next pivot.
 
 - Store optional species properties in caller-owned tagged records. Typed C
   getters report missing properties separately from type mismatches, avoiding

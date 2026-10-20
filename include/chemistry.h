@@ -520,6 +520,9 @@ int chem_linear_solve_in_place(size_t dimension, double *matrix,
                                 double *right_hand_side);
 int chem_linear_solve(size_t dimension, const double *matrix,
                        const double *right_hand_side, double *solution);
+int chem_markowitz_reorder(size_t dimension,
+                           const unsigned char *nonzero_pattern,
+                           size_t *new_to_old_permutation);
 
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density);

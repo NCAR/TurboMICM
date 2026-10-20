@@ -446,6 +446,12 @@ for _category, _case_class in (
 ):
     implemented.update(f"{_category}:{_case_class}.{_name}"
                        for _name in _linear_case_names)
+implemented.update({
+    "linear_solver:LinearSolver.DiagonalMarkowitzReorder",
+    "linear_solver:LinearSolver.VectorDiagonalMarkowitzReordering",
+    "linear_solver_in_place:LinearSolverInPlace.DiagonalMarkowitzReorder",
+    "linear_solver_in_place:LinearSolverInPlace.VectorDiagonalMarkowitzReordering",
+})
 not_applicable = {
     "state:State.CopyConstructor":
         "C state views are non-owning, so they have no deep-copy constructor",
