@@ -8,7 +8,11 @@ typedef enum {
   CHEM_PHOTOLYSIS,
   CHEM_USER_DEFINED,
   CHEM_TROE,
-  CHEM_SURFACE
+  CHEM_SURFACE,
+  CHEM_TERNARY_ACTIVATION,
+  CHEM_TUNNELING,
+  CHEM_BRANCHED_ALKOXY,
+  CHEM_BRANCHED_NITRATE
 } chem_rate_kind;
 
 typedef struct {
@@ -23,6 +27,7 @@ typedef struct {
   size_t reactant_count;
   const chem_term *products;
   size_t product_count;
+  size_t surface_species;
   double p[8];
 } chem_reaction;
 

@@ -55,16 +55,28 @@ def read_config(path):
             for name in terms:
                 if name not in index:
                     raise ValueError(f"{path}: reaction uses unknown species {name!r}")
-        normalized.append({
-            "type": rtype,
-            "reactants": [{"name": n, "index": index[n], "coefficient": float(v.get("qty", 1))}
-                          for n, v in reactants.items()],
-            "products": [{"name": n, "index": index[n], "coefficient": float(v.get("yield", 1))}
-                         for n, v in products.items()],
-            "parameters": {k: v for k, v in reaction.items()
-                           if k not in {"type", "reactants", "products", "alkoxy products", "nitrate products",
-                                        "gas-phase reactant", "gas-phase products", "species"}},
-        })
+        branches = []
+        if rtype == "BRANCHED":
+            for branch_name, key in (("alkoxy", "alkoxy products"), ("nitrate", "nitrate products")):
+                branches.append((f"BRANCHED_{branch_name.upper()}", reaction.get(key, {}), branch_name))
+        else:
+            branches.append((rtype, products, None))
+        for normalized_type, branch_products, branch in branches:
+            for name in branch_products:
+                if name not in index:
+                    raise ValueError(f"{path}: reaction uses unknown species {name!r}")
+            normalized.append({
+                "type": "USER_DEFINED" if normalized_type in ("PHOTOLYSIS", "FIRST_ORDER_LOSS", "EMISSION") else normalized_type,
+                "surface_species": reaction.get("gas-phase reactant") if rtype == "SURFACE" else None,
+                "reactants": [{"name": n, "index": index[n], "coefficient": float(v.get("qty", 1))}
+                              for n, v in reactants.items()],
+                "products": [{"name": n, "index": index[n], "coefficient": float(v.get("yield", 1))}
+                             for n, v in branch_products.items()],
+                "parameters": {**{k: v for k, v in reaction.items()
+                                  if k not in {"type", "reactants", "products", "alkoxy products", "nitrate products",
+                                               "gas-phase reactant", "gas-phase products", "species"}},
+                               **({"branch": branch} if branch else {})},
+            })
     return {"format": "c-mechanism-1", "name": path.parent.name,
             "species": species, "reactions": normalized}
 
