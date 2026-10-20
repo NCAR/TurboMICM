@@ -19,3 +19,10 @@
   package in the local prefix environment.
 - Keep C11 and OpenMP selection in the Makefile; optimization remains controlled
   by `OPTFLAGS`.
+- Store rate parameters in a fixed 24-double reaction record, enough for the
+  16-coefficient Taylor series and its six base values. Lambda rates use a C
+  function pointer with temperature, pressure, density, and parameter inputs;
+  a configuration without a C callback evaluates to zero until linked by the
+  mechanism builder.
+- Return a nonzero C status when surface-rate metadata lacks molecular weight
+  or diffusion data, matching the construction-time error in MICM.

@@ -49,6 +49,39 @@ double chem_reaction_rate(const chem_reaction *reaction, double temperature,
   case CHEM_TUNNELING:
     return reaction->p[0] * exp(-reaction->p[1] / temperature +
                                  reaction->p[2] / (temperature * temperature * temperature));
+  case CHEM_TERNARY_ACTIVATION_JPL19: {
+    double k0 = reaction->p[0] * exp(reaction->p[2] / temperature) *
+                pow(temperature / reaction->p[3], reaction->p[1]);
+    double kinf = reaction->p[4] * exp(reaction->p[6] / temperature) *
+                  pow(temperature / reaction->p[7], reaction->p[5]);
+    double kint = reaction->p[8] * exp(reaction->p[10] / temperature) *
+                  pow(temperature / reaction->p[11], reaction->p[9]);
+    double k0_m = k0 * air_density;
+    double ratio = k0_m / kinf;
+    double kf = k0_m / (1.0 + ratio) *
+        pow(reaction->p[12], reaction->p[13] /
+            (reaction->p[13] + pow(log10(ratio), 2.0)));
+    return kf + kint * (1.0 - kf / kinf);
+  }
+  case CHEM_TAYLOR_SERIES: {
+    double polynomial = 0.0, power = 1.0;
+    for (size_t i = 0; i < (size_t)reaction->p[5] && i < 16; ++i) {
+      polynomial += reaction->p[6+i] * power;
+      power *= temperature;
+    }
+    double pressure = air_density * 8.31446261815324 * temperature;
+    return polynomial * reaction->p[0] * exp(reaction->p[2] / temperature) *
+           pow(temperature / reaction->p[3], reaction->p[1]) *
+           (1.0 + reaction->p[4] * pressure);
+  }
+  case CHEM_REVERSIBLE:
+    return reaction->p[0] * exp(reaction->p[1] / temperature) * reaction->p[2];
+  case CHEM_LAMBDA:
+    return reaction->rate_function
+        ? reaction->rate_function(temperature,
+              air_density * 8.31446261815324 * temperature, air_density,
+              rate_parameters)
+        : 0.0;
   case CHEM_BRANCHED_ALKOXY:
   case CHEM_BRANCHED_NITRATE: {
     const double k0 = 2.0e-22 * 6.02214076e23 * 1.0e-6 * exp(reaction->p[3]);
@@ -91,12 +124,31 @@ int chem_rate_constants(const chem_mechanism *mechanism, double temperature,
   for (size_t r = 0; r < mechanism->reaction_count; ++r) {
     const chem_reaction *reaction = &mechanism->reactions[r];
     if (reaction->kind == CHEM_SURFACE) {
+      if (reaction->surface_species >= mechanism->species_count ||
+          mechanism->species[reaction->surface_species].molecular_weight <= 0.0 ||
+          mechanism->species[reaction->surface_species].diffusion <= 0.0)
+        return 1;
       rate_constants[r] = chem_surface_rate(reaction, mechanism->species,
                                             temperature, rate_parameters);
     } else if (reaction->kind == CHEM_ARRHENIUS) {
       rate_constants[r] = reaction->p[0] * exp(reaction->p[2] / temperature) *
           pow(temperature / reaction->p[3], reaction->p[1]) *
           (1.0 + reaction->p[4] * pressure);
+    } else if (reaction->kind == CHEM_TAYLOR_SERIES) {
+      double polynomial = 0.0, power = 1.0;
+      for (size_t i = 0; i < (size_t)reaction->p[5] && i < 16; ++i) {
+        polynomial += reaction->p[6+i] * power;
+        power *= temperature;
+      }
+      rate_constants[r] = polynomial * reaction->p[0] *
+          exp(reaction->p[2] / temperature) *
+          pow(temperature / reaction->p[3], reaction->p[1]) *
+          (1.0 + reaction->p[4] * pressure);
+    } else if (reaction->kind == CHEM_LAMBDA) {
+      rate_constants[r] = reaction->rate_function
+          ? reaction->rate_function(temperature, pressure, air_density,
+                                    rate_parameters)
+          : 0.0;
     } else {
       rate_constants[r] = chem_reaction_rate(reaction, temperature,
                                              air_density, rate_parameters);

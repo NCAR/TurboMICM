@@ -2,6 +2,18 @@
 
 #include <math.h>
 
+static double test_lambda(double temperature, double pressure,
+                          double air_density, const double *parameters) {
+  (void)parameters;
+  (void)pressure;
+  (void)air_density;
+  return 2.0 * temperature;
+}
+
+static int near(double actual, double expected) {
+  return fabs(actual - expected) <= 1e-13 * fabs(expected) + 1e-30;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -10,6 +22,141 @@ int main(void) {
   const double e2 = 3.0e-11 * exp(-200.0 / t);
   if (fabs(a - e1) > 1e-14 * e1) return 1;
   if (fabs(b - e2) > 1e-14 * e2) return 2;
+
+  const double temperature = 301.24;
+  const double pressure = 98765.0;
+  const double air_density = pressure / (8.31446261815324 * temperature);
+  chem_reaction formula = {.p = {1.0, 0.0, 0.0, 300.0, 0.0}};
+  formula.kind = CHEM_REVERSIBLE;
+  formula.p[0] = 1.0; formula.p[1] = 0.0; formula.p[2] = 0.0;
+  if (chem_reaction_rate(&formula, temperature, air_density, NULL) != 0.0) return 16;
+  formula.p[0] = 1.14e-2; formula.p[1] = 2300.0; formula.p[2] = 0.32;
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, NULL),
+            1.14e-2 * exp(2300.0 / temperature) * 0.32)) return 9;
+  formula.p[0] = 1.5; formula.p[1] = 2000.0; formula.p[2] = 0.5;
+  for (size_t i = 0; i < 3; ++i) {
+    const double t = 273.15 + 25.0 * (double)i;
+    if (!near(chem_reaction_rate(&formula, t, air_density, NULL),
+              1.5 * exp(2000.0 / t) * 0.5)) return 17;
+  }
+  formula.p[0] = 3.5; formula.p[1] = 1800.0; formula.p[2] = 1.0;
+  if (!near(chem_reaction_rate(&formula, 298.15, air_density, NULL),
+            3.5 * exp(1800.0 / 298.15))) return 18;
+  formula.p[0] = 5.0; formula.p[1] = 1000.0; formula.p[2] = 0.0;
+  if (chem_reaction_rate(&formula, 298.15, air_density, NULL) != 0.0) return 19;
+
+  formula.kind = CHEM_TAYLOR_SERIES;
+  formula.p[0] = 3.0e-11; formula.p[1] = 0.0; formula.p[2] = -200.0;
+  formula.p[3] = 300.0; formula.p[4] = 0.0; formula.p[5] = 3.0;
+  formula.p[6] = 12.5; formula.p[7] = 1.3e-2; formula.p[8] = 5.2e-4;
+  double polynomial = 12.5 + 1.3e-2 * temperature + 5.2e-4 * temperature * temperature;
+  double expected_taylor = 3.0e-11 * exp(-200.0 / temperature) * polynomial;
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, NULL),
+            expected_taylor)) return 10;
+  double constants[1];
+  chem_mechanism formula_mechanism = {.reactions = &formula, .reaction_count = 1};
+  formula.p[4] = 1e-8;
+  expected_taylor = polynomial * formula.p[0] * exp(formula.p[2] / temperature) *
+      pow(temperature / formula.p[3], formula.p[1]) * (1.0 + formula.p[4] * pressure);
+  if (chem_rate_constants(&formula_mechanism, temperature, pressure, air_density,
+                          NULL, constants) != 0 || !near(constants[0], expected_taylor)) return 11;
+
+  formula.kind = CHEM_TERNARY_ACTIVATION_JPL19;
+  formula.p[0] = 1.2e-30; formula.p[1] = -2.3; formula.p[2] = -302.3; formula.p[3] = 298.0;
+  formula.p[4] = 2.6e-12; formula.p[5] = -3.1; formula.p[6] = -402.1; formula.p[7] = 310.0;
+  formula.p[8] = 3.0e-13; formula.p[9] = 0.0; formula.p[10] = -100.0; formula.p[11] = 300.0;
+  formula.p[12] = 0.9; formula.p[13] = 1.2;
+  double k0 = formula.p[0] * exp(formula.p[2] / temperature) * pow(temperature / formula.p[3], formula.p[1]);
+  double kinf = formula.p[4] * exp(formula.p[6] / temperature) * pow(temperature / formula.p[7], formula.p[5]);
+  double kint = formula.p[8] * exp(formula.p[10] / temperature) * pow(temperature / formula.p[11], formula.p[9]);
+  double ratio = k0 * air_density / kinf;
+  double kf = k0 * air_density / (1.0 + ratio) * pow(formula.p[12], formula.p[13] / (formula.p[13] + pow(log10(ratio), 2.0)));
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, NULL),
+            kf + kint * (1.0 - kf / kinf))) return 12;
+  formula.p[8] = 0.0;
+  const double jpl_zero_kint = chem_reaction_rate(&formula, temperature, air_density, NULL);
+  formula.kind = CHEM_TROE;
+  formula.p[0] = 1.2e-30; formula.p[1] = -2.3; formula.p[2] = -302.3;
+  formula.p[3] = 2.6e-12; formula.p[4] = -3.1; formula.p[5] = -402.1;
+  formula.p[6] = 0.9; formula.p[7] = 1.2;
+  if (!near(jpl_zero_kint, chem_reaction_rate(&formula, temperature, air_density, NULL))) return 20;
+
+  formula.kind = CHEM_LAMBDA;
+  formula.rate_function = test_lambda;
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, NULL),
+            2.0 * temperature)) return 13;
+
+  formula.kind = CHEM_BRANCHED_ALKOXY;
+  formula.p[0] = 1.2; formula.p[1] = 204.3; formula.p[2] = 1.0e-3;
+  formula.p[3] = 2.0; formula.p[4] = 0.25;
+  double branched_a = 2.0e-22 * 6.02214076e23 * 1.0e-6 * exp(2.0) * air_density;
+  double branched_b = 0.43 * pow(temperature / 298.0, -8.0);
+  double branched_av = branched_a / (1.0 + branched_a / branched_b) *
+      pow(0.41, 1.0 / (1.0 + pow(log10(branched_a / branched_b), 2.0)));
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, NULL),
+            1.2 * exp(-204.3 / temperature) * 0.25 / (0.25 + branched_av))) return 14;
+  formula.kind = CHEM_BRANCHED_NITRATE;
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, NULL),
+            1.2 * exp(-204.3 / temperature) * branched_av / (branched_av + 0.25))) return 15;
+
+  formula.kind = CHEM_TROE;
+  formula.p[0] = 1.2; formula.p[1] = 2.3; formula.p[2] = 302.3;
+  formula.p[3] = 2.6; formula.p[4] = -3.1; formula.p[5] = 402.1;
+  formula.p[6] = 0.9; formula.p[7] = 1.2;
+  double troe_k0 = 1.2 * exp(302.3 / temperature) * pow(temperature / 300.0, 2.3);
+  double troe_kinf = 2.6 * exp(402.1 / temperature) * pow(temperature / 300.0, -3.1);
+  double troe_pr = air_density * troe_k0 / troe_kinf;
+  double expected_troe = troe_k0 * air_density / (1.0 + troe_pr) *
+      pow(0.9, 1.2 / (1.2 + pow(log10(troe_pr), 2.0)));
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, NULL), expected_troe)) return 21;
+  formula.kind = CHEM_TERNARY_ACTIVATION;
+  double expected_ternary = troe_k0 / (1.0 + troe_pr) *
+      pow(0.9, 1.2 / (1.2 + pow(log10(troe_pr), 2.0)));
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, NULL), expected_ternary)) return 22;
+
+  formula.kind = CHEM_TUNNELING;
+  formula.p[0] = 1.2; formula.p[1] = 2.3; formula.p[2] = 302.3;
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, NULL),
+            1.2 * exp(-2.3 / temperature + 302.3 / pow(temperature, 3.0)))) return 23;
+  formula.p[0] = 1.0; formula.p[1] = 0.0; formula.p[2] = 0.0;
+  if (chem_reaction_rate(&formula, temperature, air_density, NULL) != 1.0) return 24;
+
+  formula.kind = CHEM_USER_DEFINED;
+  formula.p[0] = 2.0; formula.p[7] = 0.0;
+  const double user_parameter[] = {1.2};
+  if (!near(chem_reaction_rate(&formula, temperature, air_density, user_parameter), 2.4)) return 25;
+
+  const chem_species surface_species[] = {
+      {.name = "aerosol", .molecular_weight = 0.025, .diffusion = 230.0}};
+  formula.kind = CHEM_SURFACE;
+  formula.surface_species = 0;
+  formula.p[0] = 1.0;
+  formula.p[7] = 0.0;
+  formula_mechanism.species = surface_species;
+  formula_mechanism.species_count = 1;
+  const double surface_params[] = {1.0e-7, 2.5e6};
+  const double surface_t = 273.65;
+  const double surface_mean_speed = sqrt(8.0 * 8.31446261815324 * surface_t /
+      (3.14159265358979323846 * 0.025));
+  double expected_surface = 4.0 * 2.5e6 * 3.14159265358979323846 * 1e-14 /
+      (1e-7 / 230.0 + 4.0 / surface_mean_speed);
+  if (chem_rate_constants(&formula_mechanism, surface_t, pressure, air_density,
+                          surface_params, constants) != 0 ||
+      !near(constants[0], expected_surface)) return 26;
+  formula.p[0] = 0.74;
+  expected_surface = 4.0 * 2.5e6 * 3.14159265358979323846 * 1e-14 /
+      (1e-7 / 230.0 + 4.0 / (surface_mean_speed * 0.74));
+  if (chem_rate_constants(&formula_mechanism, surface_t, pressure, air_density,
+                          surface_params, constants) != 0 ||
+      !near(constants[0], expected_surface)) return 27;
+  const chem_species missing_diffusion[] = {{.name = "aerosol", .molecular_weight = 0.025}};
+  formula_mechanism.species = missing_diffusion;
+  if (chem_rate_constants(&formula_mechanism, surface_t, pressure, air_density,
+                          surface_params, constants) == 0) return 28;
+  const chem_species missing_weight[] = {{.name = "aerosol", .diffusion = 230.0}};
+  formula_mechanism.species = missing_weight;
+  if (chem_rate_constants(&formula_mechanism, surface_t, pressure, air_density,
+                          surface_params, constants) == 0) return 29;
 
   const chem_species species[] = {{.name = "A"}, {.name = "B"}};
   const chem_term reactants[] = {{.species = 0, .coefficient = 1.0}};

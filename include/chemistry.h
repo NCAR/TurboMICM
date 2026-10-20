@@ -12,8 +12,16 @@ typedef enum {
   CHEM_TERNARY_ACTIVATION,
   CHEM_TUNNELING,
   CHEM_BRANCHED_ALKOXY,
-  CHEM_BRANCHED_NITRATE
+  CHEM_BRANCHED_NITRATE,
+  CHEM_TERNARY_ACTIVATION_JPL19,
+  CHEM_TAYLOR_SERIES,
+  CHEM_REVERSIBLE,
+  CHEM_LAMBDA
 } chem_rate_kind;
+
+typedef double (*chem_rate_function)(double temperature, double pressure,
+                                     double air_density,
+                                     const double *rate_parameters);
 
 typedef struct {
   size_t species;
@@ -28,7 +36,8 @@ typedef struct {
   const chem_term *products;
   size_t product_count;
   size_t surface_species;
-  double p[8];
+  double p[24];
+  chem_rate_function rate_function;
 } chem_reaction;
 
 typedef struct {

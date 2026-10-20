@@ -13,6 +13,10 @@ KINDS = {
     "SURFACE": "CHEM_SURFACE", "surface": "CHEM_SURFACE",
     "TERNARY_CHEMICAL_ACTIVATION": "CHEM_TERNARY_ACTIVATION",
     "ternary_chemical_activation": "CHEM_TERNARY_ACTIVATION",
+    "TERNARY_CHEMICAL_ACTIVATION_JPL19": "CHEM_TERNARY_ACTIVATION_JPL19",
+    "ternary_chemical_activation_jpl19": "CHEM_TERNARY_ACTIVATION_JPL19",
+    "TAYLOR_SERIES": "CHEM_TAYLOR_SERIES", "taylor_series": "CHEM_TAYLOR_SERIES",
+    "REVERSIBLE": "CHEM_REVERSIBLE", "reversible": "CHEM_REVERSIBLE",
     "TUNNELING": "CHEM_TUNNELING", "tunneling": "CHEM_TUNNELING",
     "BRANCHED_ALKOXY": "CHEM_BRANCHED_ALKOXY",
     "BRANCHED_NITRATE": "CHEM_BRANCHED_NITRATE",
@@ -26,9 +30,10 @@ TYPE_ORDER = {
     "branched_nitrate": 4, "BRANCHED_NITRATE": 4,
     "tunneling": 5, "TUNNELING": 5,
     "taylor_series": 6, "TAYLOR_SERIES": 6,
-    "user_defined": 7, "USER_DEFINED": 7,
-    "photolysis": 7, "PHOTOLYSIS": 7,
-    "surface": 8, "SURFACE": 8,
+    "reversible": 7, "REVERSIBLE": 7,
+    "user_defined": 8, "USER_DEFINED": 8,
+    "photolysis": 8, "PHOTOLYSIS": 8,
+    "surface": 9, "SURFACE": 9,
 }
 
 
@@ -137,7 +142,7 @@ def main():
         params = rxn.get("parameters", {})
         if isinstance(params, dict) and "parameters" in params:
             params = params["parameters"]
-        values = [0.0] * 8
+        values = [0.0] * 24
         if kind == "CHEM_ARRHENIUS":
             for j, key in enumerate(("A", "B", "C", "D", "E")):
                 values[j] = float(params.get(key, {"A": 1.0, "D": 300.0}.get(key, 0.0)))
@@ -147,6 +152,21 @@ def main():
         elif kind == "CHEM_TERNARY_ACTIVATION":
             for j, key in enumerate(("k0_A", "k0_B", "k0_C", "kinf_A", "kinf_B", "kinf_C", "Fc", "N")):
                 values[j] = float(params.get(key, 0.0))
+        elif kind == "CHEM_TERNARY_ACTIVATION_JPL19":
+            for j, key in enumerate(("k0_A", "k0_B", "k0_C", "k0_D",
+                                     "kinf_A", "kinf_B", "kinf_C", "kinf_D",
+                                     "kint_A", "kint_B", "kint_C", "kint_D", "Fc", "N")):
+                values[j] = float(params.get(key, 0.0))
+        elif kind == "CHEM_TAYLOR_SERIES":
+            for j, key in enumerate(("A", "B", "C", "D", "E")):
+                values[j] = float(params.get(key, {"A": 1.0, "D": 300.0}.get(key, 0.0)))
+            coeffs = params.get("coefficients", [1.0])
+            values[5] = min(len(coeffs), 16)
+            for j, value in enumerate(coeffs[:16]): values[6+j] = float(value)
+        elif kind == "CHEM_REVERSIBLE":
+            values[0] = float(params.get("A", 1.0))
+            values[1] = float(params.get("C", 0.0))
+            values[2] = float(params.get("k_r", 0.0))
         elif kind == "CHEM_TUNNELING":
             for j, key in enumerate(("A", "B", "C")):
                 values[j] = float(params.get(key, 1.0 if j == 0 else 0.0))
@@ -182,9 +202,9 @@ def main():
         if surface_name is None and kind == "CHEM_SURFACE" and reactants:
             surface_name = reactants[0].get("name")
         surface_index = names[surface_name] if surface_name is not None else "(size_t)-1"
-        out.append("  {%s, %s, %s, %d, %s, %d, %s, {%s}}," % (
+        out.append("  {%s, %s, %s, %d, %s, %d, %s, {%s}, NULL}," % (
             kind, cstr(str(name)), rptr, len(reactants), pptr, len(products), surface_index,
-            ", ".join(f"{v:.17g}" for v in values)))
+                ", ".join(f"{v:.17g}" for v in values)))
     out.extend(["};", "", "static const char *const custom_labels[] = {"])
     out.extend(f"  {cstr(label)}," for label in custom_labels)
     out.extend(["};", "static const double default_custom_parameters[] = {"])
