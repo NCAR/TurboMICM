@@ -61,6 +61,7 @@ def main() -> int:
         PROJECT / "bin/test_objects", PROJECT / "bin/test_processes", PROJECT / "bin/test_constraints",
         PROJECT / "bin/test_lu", PROJECT / "bin/test_grouped_views", PROJECT / "bin/test_matrix",
         PROJECT / "bin/test_sparse_matrix", PROJECT / "bin/test_backward_euler",
+        PROJECT / "bin/test_analytical_simple",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -124,6 +125,8 @@ def main() -> int:
         "user_defined_rate_constant": {f"UserDefinedRateConstant.{name}" for name in (
             "CalculateWithSystem", "ConstructorWithRate", "ConstructorWithRateAndName", "CustomScalingFactor")},
     }
+    analytical_case_names = {"Troe", "Photolysis", "TernaryChemicalActivation", "Tunneling", "Arrhenius", "Branched"}
+    analytical_case_names |= {name + "SuperStiffButAnalytical" for name in analytical_case_names}
     example_programs = {
         "rate_constants_no_user_defined_example_by_hand": example_no_user_ok,
         "rate_constants_user_defined_example_by_hand": example_user_ok,
@@ -164,6 +167,12 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_backward_euler"), test.split(".", 1)[-1]])
             status, reason = ("PASS", "C implicit backward Euler solve and convergence rule match the reference") if ok else (
                 "FAIL", "C backward Euler state, statistics, or convergence rule differs from the reference")
+        elif suite in {"analytical_backward_euler", "analytical_rosenbrock_integration"} and \
+                test.split(".", 1)[-1] in analytical_case_names:
+            method = "backward_euler" if suite == "analytical_backward_euler" else "rosenbrock"
+            ok = run([str(PROJECT / "bin/test_analytical_simple"), method, test.split(".", 1)[-1]])
+            status, reason = ("PASS", f"C {method} concentrations match the analytical three-species solution") if ok else (
+                "FAIL", f"C {method} concentrations differ from the analytical three-species solution")
         elif suite == "solver_builder":
             name = test.split(".", 1)[-1]
             if name in {"ThrowsUnusedSpecies", "FinalizeReceivesDenseMatrixPolicy", "FinalizeSupportsSparseOnlySignature"}:
