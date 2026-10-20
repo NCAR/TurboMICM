@@ -36,8 +36,15 @@
 
 - Mark the five `ViewCategorySFINAE` cases N/A because they inspect C++
   template substitution and type categories, which have no C equivalent. The
-  algebraic-row masking case remains incomplete because the C solver has no
-  corresponding constraint API, even though its test name includes “CudaMatrix.”
+  CPU `ProcessSetAlgebraicVariables.CudaMatrix` case remains incomplete: the C
+  library has constraint residual and Jacobian utilities, but has not integrated
+  algebraic row replacement into its solver.
+
+- Represent linear and equilibrium constraints as caller-owned C records with
+  species indexes and stoichiometric terms. Keep residual, algebraic-mask,
+  Jacobian-pattern, and negative-Jacobian evaluation separate from solver
+  integration so these primitives can be validated independently. Equilibrium
+  constants use a van't Hoff correction from a reference temperature.
 
 - Give the independent C library an initial version of `0.1.0+0` and expose the
   string and numeric components through `chem_version*` functions.

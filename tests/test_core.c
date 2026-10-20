@@ -874,6 +874,305 @@ static int check_phase_species_metadata(void) {
   return 0;
 }
 
+static int check_constraint_api(void) {
+  const chem_constraint_term ab_terms[] = {
+      {.species=0,.coefficient=1.0}, {.species=1,.coefficient=1.0}};
+  const chem_constraint linear = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .name="A_B_conservation",.algebraic_species=1,.terms=ab_terms,
+      .term_count=2,.constant=1.0};
+  const chem_constraint_set linear_set = {
+      .constraints=&linear,.constraint_count=1,.species_count=2};
+  if (chem_constraint_set_validate(&linear_set)) return 1;
+  unsigned char mask[4] = {0}, pattern[16] = {0};
+  if (chem_constraint_set_algebraic_mask(&linear_set,mask) ||
+      mask[0] || mask[1] != 1 ||
+      chem_constraint_set_jacobian_pattern(&linear_set,pattern) ||
+      pattern[2] != 1 || pattern[3] != 1 || pattern[0] || pattern[1]) return 2;
+  const double states[] = {0.3,0.7, 0.5,0.6};
+  const double temperatures[] = {298.15,298.15};
+  double forcing[4] = {0};
+  if (chem_constraint_set_add_forcing(&linear_set,states,temperatures,2,forcing) ||
+      !near(forcing[1],0.0) || !near(forcing[3],0.1)) return 3;
+  double jacobian[8] = {0};
+  if (chem_constraint_set_add_negative_jacobian(
+          &linear_set,states,temperatures,2,jacobian) ||
+      !near(jacobian[2],-1.0) || !near(jacobian[3],-1.0) ||
+      !near(jacobian[6],-1.0) || !near(jacobian[7],-1.0)) return 4;
+
+  const chem_constraint_term weighted_terms[] = {
+      {.species=0,.coefficient=2.0}, {.species=1,.coefficient=3.0},
+      {.species=2,.coefficient=-1.0}};
+  const chem_constraint weighted = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .name="weighted_sum",.algebraic_species=2,.terms=weighted_terms,
+      .term_count=3,.constant=5.0};
+  if (strcmp(weighted.name,"weighted_sum") != 0 ||
+      weighted.algebraic_species != 2 || weighted.term_count != 3 ||
+      weighted.constant != 5.0 || weighted.terms[0].coefficient != 2.0 ||
+      weighted.terms[1].coefficient != 3.0 ||
+      weighted.terms[2].coefficient != -1.0) return 51;
+  const chem_constraint_set weighted_set = {
+      .constraints=&weighted,.constraint_count=1,.species_count=3};
+  const double weighted_state[] = {1.0,2.0,3.0};
+  double weighted_forcing[3] = {0};
+  double weighted_jacobian[9] = {0};
+  if (chem_constraint_set_add_forcing(&weighted_set,weighted_state,NULL,1,
+                                      weighted_forcing) ||
+      !near(weighted_forcing[2],0.0) ||
+      chem_constraint_set_add_negative_jacobian(
+          &weighted_set,weighted_state,NULL,1,weighted_jacobian) ||
+      !near(weighted_jacobian[6],-2.0) ||
+      !near(weighted_jacobian[7],-3.0) ||
+      !near(weighted_jacobian[8],1.0)) return 5;
+  const double weighted_state_2[] = {9.0,0.2,8.0};
+  double weighted_jacobian_2[9]={0};
+  if (chem_constraint_set_add_negative_jacobian(
+          &weighted_set,weighted_state_2,NULL,1,weighted_jacobian_2)) return 52;
+  for (size_t i=0;i<9;++i)
+    if (weighted_jacobian[i] != weighted_jacobian_2[i]) return 53;
+
+  const chem_constraint_term conservation_terms[] = {
+      {.species=0,.coefficient=1.0}, {.species=1,.coefficient=1.0},
+      {.species=2,.coefficient=1.0}};
+  const chem_constraint conservation = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .name="conservation",.algebraic_species=2,.terms=conservation_terms,
+      .term_count=3,.constant=1.0};
+  const chem_constraint_set conservation_set = {.constraints=&conservation,
+      .constraint_count=1,.species_count=3};
+  const double conservation_state[] = {0.2,0.3,0.5};
+  double conservation_forcing[3]={0};
+  if (chem_constraint_set_add_forcing(&conservation_set,conservation_state,
+                                      NULL,1,conservation_forcing) ||
+      fabs(conservation_forcing[2])>1.0e-14) return 54;
+  const double conservation_other[] = {0.4,0.3,0.2};
+  double conservation_jacobian[9]={0};
+  if (chem_constraint_set_add_negative_jacobian(
+          &conservation_set,conservation_other,NULL,1,conservation_jacobian)) return 60;
+  for (size_t col=0;col<3;++col) {
+    double plus[3],minus[3],fp[3]={0},fm[3]={0};
+    memcpy(plus,conservation_other,sizeof(plus));
+    memcpy(minus,conservation_other,sizeof(minus));
+    plus[col]+=1.0e-7; minus[col]-=1.0e-7;
+    if (chem_constraint_set_add_forcing(&conservation_set,plus,NULL,1,fp) ||
+        chem_constraint_set_add_forcing(&conservation_set,minus,NULL,1,fm) ||
+        fabs(conservation_jacobian[6+col]+(fp[2]-fm[2])/2.0e-7)>1.0e-7) return 61;
+  }
+  const chem_constraint_term zero_terms[] = {
+      {.species=0,.coefficient=1.0}, {.species=1,.coefficient=-1.0}};
+  const chem_constraint zero_linear = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .name="equal",.algebraic_species=1,.terms=zero_terms,.term_count=2,
+      .constant=0.0};
+  const chem_constraint_set zero_set = {.constraints=&zero_linear,
+      .constraint_count=1,.species_count=2};
+  const double equal_state[] = {0.4,0.4};
+  double zero_forcing[2]={0};
+  if (zero_linear.constant != 0.0 ||
+      chem_constraint_set_add_forcing(&zero_set,equal_state,NULL,1,zero_forcing) ||
+      fabs(zero_forcing[1])>1.0e-14) return 55;
+  const chem_constraint_term fractional_terms[] = {
+      {.species=0,.coefficient=0.5}, {.species=1,.coefficient=1.5}};
+  const chem_constraint fractional = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .name="fractional",.algebraic_species=1,.terms=fractional_terms,
+      .term_count=2,.constant=2.0};
+  const chem_constraint_set fractional_set = {.constraints=&fractional,
+      .constraint_count=1,.species_count=2};
+  const double fractional_state[] = {1.0,1.0};
+  double fractional_forcing[2]={0},fractional_jac[4]={0};
+  if (fractional.terms[0].coefficient!=0.5 ||
+      fractional.terms[1].coefficient!=1.5 ||
+      chem_constraint_set_add_forcing(&fractional_set,fractional_state,NULL,1,
+                                      fractional_forcing) ||
+      fabs(fractional_forcing[1])>1.0e-14 ||
+      chem_constraint_set_add_negative_jacobian(&fractional_set,
+          fractional_state,NULL,1,fractional_jac) ||
+      !near(fractional_jac[2],-0.5) || !near(fractional_jac[3],-1.5)) return 56;
+  for (size_t col=0;col<2;++col) {
+    double plus[2]={1.0,1.0},minus[2]={1.0,1.0};
+    double fp[2]={0},fm[2]={0};
+    plus[col]+=1.0e-7; minus[col]-=1.0e-7;
+    if (chem_constraint_set_add_forcing(&fractional_set,plus,NULL,1,fp) ||
+        chem_constraint_set_add_forcing(&fractional_set,minus,NULL,1,fm) ||
+        fabs(fractional_jac[2+col]+(fp[1]-fm[1])/2.0e-7)>1.0e-7) return 57;
+  }
+  for (size_t col=0;col<3;++col) {
+    double plus[3]={1.0,2.0,3.0},minus[3]={1.0,2.0,3.0};
+    double fp[3]={0},fm[3]={0};
+    plus[col]+=1.0e-7; minus[col]-=1.0e-7;
+    if (chem_constraint_set_add_forcing(&weighted_set,plus,NULL,1,fp) ||
+        chem_constraint_set_add_forcing(&weighted_set,minus,NULL,1,fm) ||
+        fabs(weighted_jacobian[6+col]+(fp[2]-fm[2])/2.0e-7)>1.0e-7) return 62;
+  }
+
+  /* Validate multiple constraints, shared dependencies, and batched rows. */
+  const chem_constraint_term second_terms[] = {
+      {.species=0,.coefficient=1.0}, {.species=2,.coefficient=1.0}};
+  const chem_constraint constraints[] = {
+      {.kind=CHEM_CONSTRAINT_LINEAR,.name="first",.algebraic_species=1,
+       .terms=ab_terms,.term_count=2,.constant=1.0},
+      {.kind=CHEM_CONSTRAINT_LINEAR,.name="second",.algebraic_species=3,
+       .terms=second_terms,.term_count=2,.constant=2.0}};
+  const chem_constraint_set set = {.constraints=constraints,
+      .constraint_count=2,.species_count=4};
+  unsigned char set_mask[4], set_pattern[16];
+  if (chem_constraint_set_validate(&set) ||
+      chem_constraint_set_algebraic_mask(&set,set_mask) ||
+      !set_mask[1] || !set_mask[3] || set_mask[0] || set_mask[2] ||
+      chem_constraint_set_jacobian_pattern(&set,set_pattern) ||
+      !set_pattern[4] || !set_pattern[5] || !set_pattern[12] ||
+      !set_pattern[14]) return 6;
+  for (size_t cells=1;cells<=4;++cells) {
+    double y[16]={0}, f[16]={0};
+    for (size_t cell=0;cell<cells;++cell) {
+      y[4*cell]=0.1*(double)(cell+1);
+      y[4*cell+1]=0.8;
+      y[4*cell+2]=0.2*(double)(cell+1);
+      y[4*cell+3]=0.5;
+    }
+    if (chem_constraint_set_add_forcing(&set,y,NULL,cells,f)) return 7;
+    for (size_t cell=0;cell<cells;++cell) {
+      if (!near(f[4*cell+1],y[4*cell]+y[4*cell+1]-1.0) ||
+          !near(f[4*cell+3],y[4*cell]+y[4*cell+2]-2.0)) return 8;
+    }
+  }
+
+  /* Equilibrium residual and analytic derivatives for ordinary and complex stoichiometry. */
+  const chem_constraint_term eq_reactants[] = {
+      {.species=0,.coefficient=1.0}, {.species=1,.coefficient=1.0}};
+  const chem_constraint_term eq_products[] = {{.species=2,.coefficient=1.0}};
+  const chem_constraint equilibrium = {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .name="A_B_equilibrium",.algebraic_species=2,
+      .reactants=eq_reactants,.reactant_count=2,
+      .products=eq_products,.product_count=1,
+      .equilibrium_constant_ref=1000.0,.enthalpy_change=0.0,
+      .reference_temperature=298.15};
+  if (strcmp(equilibrium.name,"A_B_equilibrium") != 0 ||
+      equilibrium.algebraic_species != 2 || equilibrium.reactant_count != 2 ||
+      equilibrium.product_count != 1) return 58;
+  const chem_constraint_set equilibrium_set = {.constraints=&equilibrium,
+      .constraint_count=1,.species_count=3};
+  const double equilibrium_state[] = {0.2,0.4,80.0};
+  double equilibrium_forcing[3]={0}, equilibrium_jacobian[9]={0};
+  if (chem_constraint_set_validate(&equilibrium_set)) return 91;
+  if (chem_constraint_set_add_forcing(&equilibrium_set,equilibrium_state,
+                                      temperatures,1,equilibrium_forcing)) return 92;
+  if (fabs(equilibrium_forcing[2]) > 1.0e-10) return 93;
+  if (chem_constraint_set_add_negative_jacobian(
+          &equilibrium_set,equilibrium_state,temperatures,1,
+          equilibrium_jacobian)) return 94;
+  if (!near(equilibrium_jacobian[6],-400.0)) return 95;
+  if (!near(equilibrium_jacobian[7],-200.0)) return 96;
+  if (!near(equilibrium_jacobian[8],1.0)) return 97;
+  const chem_constraint_term complex_reactant[] = {{.species=0,.coefficient=2.0}};
+  const chem_constraint_term complex_products[] = {
+      {.species=1,.coefficient=1.0}, {.species=2,.coefficient=1.0}};
+  const chem_constraint complex_eq = {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=1,.reactants=complex_reactant,.reactant_count=1,
+      .products=complex_products,.product_count=2,
+      .equilibrium_constant_ref=100.0,.enthalpy_change=0.0,
+      .reference_temperature=298.15};
+  const chem_constraint_set complex_set = {.constraints=&complex_eq,
+      .constraint_count=1,.species_count=3};
+  const double complex_state[] = {0.2,0.4,1.0};
+  double complex_forcing[3]={0}, complex_jacobian[9]={0};
+  if (chem_constraint_set_add_forcing(&complex_set,complex_state,NULL,1,
+                                      complex_forcing) ||
+      !near(complex_forcing[1],3.6) ||
+      chem_constraint_set_add_negative_jacobian(
+          &complex_set,complex_state,NULL,1,complex_jacobian) ||
+      !near(complex_jacobian[3],-40.0) ||
+      !near(complex_jacobian[4],1.0) ||
+      !near(complex_jacobian[5],0.4)) return 10;
+  /* Every analytic equilibrium derivative agrees with a finite difference. */
+  for (size_t column=0;column<3;++column) {
+    double plus[3],minus[3],fp[3]={0},fm[3]={0};
+    memcpy(plus,complex_state,sizeof(plus));
+    memcpy(minus,complex_state,sizeof(minus));
+    const double h=1e-7;
+    plus[column]+=h; minus[column]-=h;
+    if (chem_constraint_set_add_forcing(&complex_set,plus,NULL,1,fp) ||
+        chem_constraint_set_add_forcing(&complex_set,minus,NULL,1,fm)) return 11;
+    const double fd=(fp[1]-fm[1])/(2*h);
+    if (fabs(complex_jacobian[3+column]+fd)>1e-6*fmax(1.0,fabs(fd))) return 12;
+  }
+
+  const chem_constraint_term simple_reactants[] = {{.species=0,.coefficient=1.0}};
+  const chem_constraint_term simple_products[] = {{.species=1,.coefficient=1.0}};
+  const chem_constraint simple_equilibrium = {
+      .kind=CHEM_CONSTRAINT_EQUILIBRIUM,.name="A_B_simple",
+      .algebraic_species=1,.reactants=simple_reactants,.reactant_count=1,
+      .products=simple_products,.product_count=1,
+      .equilibrium_constant_ref=10.0,.enthalpy_change=-2400.0,
+      .reference_temperature=298.15};
+  const chem_constraint_set simple_set = {.constraints=&simple_equilibrium,
+      .constraint_count=1,.species_count=2};
+  const double simple_state[] = {0.2,2.0};
+  double simple_forcing[2]={0}, simple_jacobian[4]={0};
+  if (chem_constraint_set_add_forcing(&simple_set,simple_state,NULL,1,
+                                      simple_forcing) ||
+      fabs(simple_forcing[1])>1.0e-14 ||
+      chem_constraint_set_add_negative_jacobian(&simple_set,simple_state,NULL,
+                                                  1,simple_jacobian) ||
+      !near(simple_jacobian[2],-10.0) || !near(simple_jacobian[3],1.0)) return 59;
+  for (size_t col=0;col<2;++col) {
+    double plus[2]={0.2,2.0},minus[2]={0.2,2.0};
+    double fp[2]={0},fm[2]={0};
+    plus[col]+=1.0e-7; minus[col]-=1.0e-7;
+    if (chem_constraint_set_add_forcing(&simple_set,plus,NULL,1,fp) ||
+        chem_constraint_set_add_forcing(&simple_set,minus,NULL,1,fm) ||
+        fabs(simple_jacobian[2+col]+(fp[1]-fm[1])/2.0e-7)>1.0e-6) return 63;
+  }
+
+  const chem_constraint_set empty_set = {
+      .constraints=NULL,.constraint_count=0,.species_count=3};
+  unsigned char empty_mask[3]={1,1,1}, empty_pattern[9];
+  if (chem_constraint_set_validate(&empty_set) ||
+      chem_constraint_set_algebraic_mask(&empty_set,empty_mask) ||
+      empty_mask[0] || empty_mask[1] || empty_mask[2] ||
+      chem_constraint_set_jacobian_pattern(&empty_set,empty_pattern)) return 13;
+  for (size_t i=0;i<9;++i) if (empty_pattern[i]) return 14;
+
+  const chem_constraint_term invalid_term[] = {{.species=4,.coefficient=1.0}};
+  const chem_constraint bad_linear = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .algebraic_species=0,.terms=invalid_term,.term_count=1};
+  const chem_constraint_set bad_set = {.constraints=&bad_linear,
+      .constraint_count=1,.species_count=3};
+  const chem_constraint invalid_k = {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=1,.reactants=eq_reactants,.reactant_count=2,
+      .products=eq_products,.product_count=1,.equilibrium_constant_ref=0.0,
+      .reference_temperature=298.15};
+  const chem_constraint_set invalid_k_set = {.constraints=&invalid_k,
+      .constraint_count=1,.species_count=3};
+  const chem_constraint invalid_negative_k = {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=1,.reactants=eq_reactants,.reactant_count=2,
+      .products=eq_products,.product_count=1,.equilibrium_constant_ref=-1.0,
+      .reference_temperature=298.15};
+  const chem_constraint_set invalid_negative_k_set = {
+      .constraints=&invalid_negative_k,.constraint_count=1,.species_count=3};
+  const chem_constraint empty_reactants = {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=1,.products=eq_products,.product_count=1,
+      .equilibrium_constant_ref=1.0,.reference_temperature=298.15};
+  const chem_constraint_set empty_reactants_set = {.constraints=&empty_reactants,
+      .constraint_count=1,.species_count=3};
+  const chem_constraint empty_products = {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=1,.reactants=eq_reactants,.reactant_count=2,
+      .equilibrium_constant_ref=1.0,.reference_temperature=298.15};
+  const chem_constraint_set empty_products_set = {.constraints=&empty_products,
+      .constraint_count=1,.species_count=3};
+  const chem_constraint_term invalid_stoich[] = {{.species=0,.coefficient=0.0}};
+  const chem_constraint bad_stoich = {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=1,.reactants=invalid_stoich,.reactant_count=1,
+      .products=eq_products,.product_count=1,.equilibrium_constant_ref=1.0,
+      .reference_temperature=298.15};
+  const chem_constraint_set bad_stoich_set = {.constraints=&bad_stoich,
+      .constraint_count=1,.species_count=3};
+  if (chem_constraint_set_validate(&bad_set)==0 ||
+      chem_constraint_set_validate(&invalid_k_set)==0 ||
+      chem_constraint_set_validate(&invalid_negative_k_set)==0 ||
+      chem_constraint_set_validate(&empty_reactants_set)==0 ||
+      chem_constraint_set_validate(&empty_products_set)==0 ||
+      chem_constraint_set_validate(&bad_stoich_set)==0) return 15;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -1460,5 +1759,6 @@ int main(void) {
   if (check_integrated_reaction_rates() != 0) return 60;
   if (check_lambda_callback_override() != 0) return 61;
   if (check_phase_species_metadata() != 0) return 62;
+  if (check_constraint_api() != 0) return 63;
   return 0;
 }

@@ -22,6 +22,14 @@ all solver schemes and TS1. Rate constants are evaluated before integration
 and cached per workspace until temperature, pressure, density, or custom rates
 change.
 
+`chem_constraint_set` describes caller-owned linear conservation or
+equilibrium constraints using species indexes. Its utilities validate records,
+mark algebraic rows, construct the constraint portion of the Jacobian pattern,
+and add residual and negative-Jacobian terms to cell-major forcing and dense
+Jacobian arrays. Equilibrium constraints use a van't Hoff temperature correction.
+These are evaluation primitives; the solver does not yet use them for DAE
+integration or algebraic-row replacement.
+
 ## Solver and benchmark
 
 `src/solver.c` implements MICM's two-, three-, four-, four-stage DAE-, and

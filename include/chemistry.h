@@ -119,6 +119,52 @@ typedef struct {
   double initial_pressure;
 } chem_mechanism;
 
+typedef enum {
+  CHEM_CONSTRAINT_LINEAR,
+  CHEM_CONSTRAINT_EQUILIBRIUM
+} chem_constraint_kind;
+
+typedef struct {
+  size_t species;
+  double coefficient;
+} chem_constraint_term;
+
+typedef struct {
+  chem_constraint_kind kind;
+  const char *name;
+  size_t algebraic_species;
+  const chem_constraint_term *terms;
+  size_t term_count;
+  double constant;
+  const chem_constraint_term *reactants;
+  size_t reactant_count;
+  const chem_constraint_term *products;
+  size_t product_count;
+  double equilibrium_constant_ref;
+  double enthalpy_change;
+  double reference_temperature;
+} chem_constraint;
+
+typedef struct {
+  const chem_constraint *constraints;
+  size_t constraint_count;
+  size_t species_count;
+} chem_constraint_set;
+
+int chem_constraint_set_validate(const chem_constraint_set *set);
+int chem_constraint_set_algebraic_mask(const chem_constraint_set *set,
+                                       unsigned char *mask);
+int chem_constraint_set_jacobian_pattern(const chem_constraint_set *set,
+                                         unsigned char *pattern);
+int chem_constraint_set_add_forcing(const chem_constraint_set *set,
+                                    const double *states,
+                                    const double *temperatures,
+                                    size_t cell_count, double *forcing);
+int chem_constraint_set_add_negative_jacobian(
+    const chem_constraint_set *set, const double *states,
+    const double *temperatures, size_t cell_count,
+    double *negative_jacobians);
+
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density);
 double chem_reaction_rate(const chem_reaction *reaction, double temperature,
