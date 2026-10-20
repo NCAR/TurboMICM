@@ -468,6 +468,10 @@ implemented.update({
     "solver_builder:SolverBuilder.ThrowsUnusedSpecies",
     "backward_euler:BackwardEuler.CanCallSolve",
     "backward_euler:BackwardEuler.IsConverged",
+    "analytical_backward_euler:AnalyticalExamples.Troe",
+    "analytical_rosenbrock_integration:AnalyticalExamples.Troe",
+    "analytical_backward_euler:AnalyticalExamples.Photolysis",
+    "analytical_rosenbrock_integration:AnalyticalExamples.Photolysis",
 })
 not_applicable = {
     "state:State.CopyConstructor":
@@ -527,6 +531,12 @@ for raw in case_file.read_text().splitlines():
             reason = "C constrained solve projects consistent and inconsistent algebraic initial conditions"
         elif case_id.startswith("backward_euler:"):
             reason = "C backward Euler residual convergence and implicit solve checked"
+        elif case_id == "analytical_backward_euler:AnalyticalExamples.Troe":
+            reason = "C backward Euler integrates the Troe chain against its closed form"
+        elif case_id == "analytical_rosenbrock_integration:AnalyticalExamples.Troe":
+            reason = "C Rosenbrock integrates the Troe chain against its closed form"
+        elif case_id.endswith("AnalyticalExamples.Photolysis"):
+            reason = "C user-defined rates drive backward Euler and Rosenbrock closed-form checks"
         elif case_id.startswith("solver_builder:"):
             reason = "C workspace initialization and strict species-use validation checked"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):

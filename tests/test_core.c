@@ -1209,6 +1209,73 @@ static int check_constraint_api(void) {
   return 0;
 }
 
+static int check_analytical_user_rate_chain(void) {
+  const chem_species species[] = {{.name="A"},{.name="B"},{.name="C"}};
+  const chem_term a[] = {{.species=0,.coefficient=1.0}};
+  const chem_term b[] = {{.species=1,.coefficient=1.0}};
+  const chem_term product_b[] = {{.species=1,.coefficient=1.0}};
+  const chem_term product_c[] = {{.species=2,.coefficient=1.0}};
+  const chem_reaction reactions[] = {
+      {.kind=CHEM_USER_DEFINED,.reactants=a,.reactant_count=1,
+       .products=product_b,.product_count=1,.p={1,0,0,0,0,0,0,0}},
+      {.kind=CHEM_USER_DEFINED,.reactants=b,.reactant_count=1,
+       .products=product_c,.product_count=1,.p={1,0,0,0,0,0,0,1}}};
+  const char *labels[] = {"photoA","photoB"};
+  const chem_mechanism mechanism = {.species=species,.species_count=3,
+      .reactions=reactions,.reaction_count=2,.custom_labels=labels,
+      .custom_parameter_count=2};
+  const double rate_parameters[] = {2e-3,3e-3};
+  double be_states[] = {1,0,0, 2.0/3.0,0,0, 1.0/3.0,0,0};
+  double ros_states[9];
+  memcpy(ros_states,be_states,sizeof(be_states));
+  chem_solver_workspace be_workspace = {0}, ros_workspace = {0};
+  if (chem_solver_workspace_init(&be_workspace,&mechanism) ||
+      chem_solver_workspace_init(&ros_workspace,&mechanism)) {
+    chem_solver_workspace_destroy(&be_workspace);
+    chem_solver_workspace_destroy(&ros_workspace);
+    return 1;
+  }
+  const chem_backward_euler_options be_options =
+      chem_backward_euler_default_options();
+  const chem_solver_options ros_options = chem_solver_default_options();
+  for (size_t step = 1; step < 1000; ++step) {
+    for (size_t cell = 0; cell < 3; ++cell) {
+      chem_solver_stats stats;
+      const int be_status = chem_backward_euler_solve_with_workspace(
+          &mechanism,&be_workspace,be_states+3*cell,298.15,101325.0,40.9,
+          rate_parameters,1.0,&be_options,&stats);
+      const int ros_status = chem_rosenbrock3_solve_with_workspace(
+          &mechanism,&ros_workspace,ros_states+3*cell,298.15,101325.0,40.9,
+          rate_parameters,1.0,&ros_options,NULL);
+      const double initial_a = 1.0-(double)cell/3.0;
+      const double time = (double)step;
+      const double exp1 = exp(-rate_parameters[0]*time);
+      const double exp2 = exp(-rate_parameters[1]*time);
+      const double expected[] = {
+          initial_a*exp1,
+          initial_a*rate_parameters[0]/(rate_parameters[1]-rate_parameters[0])*
+              (exp1-exp2),
+          initial_a*(1.0+(rate_parameters[0]*exp2-rate_parameters[1]*exp1)/
+              (rate_parameters[1]-rate_parameters[0]))};
+      if (be_status || ros_status || stats.accepted == 0) {
+        chem_solver_workspace_destroy(&be_workspace);
+        chem_solver_workspace_destroy(&ros_workspace);
+        return 2;
+      }
+      for (size_t i = 0; i < 3; ++i)
+        if (fabs(be_states[3*cell+i]-expected[i]) > 1e-3 ||
+            fabs(ros_states[3*cell+i]-expected[i]) > 1e-3) {
+          chem_solver_workspace_destroy(&be_workspace);
+          chem_solver_workspace_destroy(&ros_workspace);
+          return 3;
+        }
+    }
+  }
+  chem_solver_workspace_destroy(&be_workspace);
+  chem_solver_workspace_destroy(&ros_workspace);
+  return 0;
+}
+
 static int check_backward_euler(void) {
   const double absolute_tolerances[] = {1e-6,1e-6,1e-6};
   double residual_data[12] = {0}, state_data[12] = {0};
@@ -1290,6 +1357,86 @@ static int check_backward_euler(void) {
   if (status || stats.accepted == 0 || stats.solves == 0 ||
       fabs(concentrations[0]+concentrations[1]+concentrations[2]-1.0)>1e-12 ||
       concentrations[0] >= 1.0 || concentrations[2] <= 0.0) return 12;
+
+  const chem_species troe_species[] = {{.name="A"},{.name="B"},{.name="C"}};
+  const chem_term troe_a[] = {{.species=0,.coefficient=1.0}};
+  const chem_term troe_b[] = {{.species=1,.coefficient=1.0}};
+  const chem_term troe_product_b[] = {{.species=1,.coefficient=1.0}};
+  const chem_term troe_product_c[] = {{.species=2,.coefficient=1.0}};
+  const chem_reaction troe_reactions[] = {
+      {.kind=CHEM_TROE,.reactants=troe_a,.reactant_count=1,
+       .products=troe_product_b,.product_count=1,
+       .p={4.0e-11,0,0,1,0,0,0.6,1}},
+      {.kind=CHEM_TROE,.reactants=troe_b,.reactant_count=1,
+       .products=troe_product_c,.product_count=1,
+       .p={1.2e-3,1.6,3,136,5,24,0.9,0.8}}};
+  const chem_mechanism troe_mechanism = {.species=troe_species,
+      .species_count=3,.reactions=troe_reactions,.reaction_count=2};
+  const double temperatures[] = {272.5,254.7,312.6};
+  const double pressures[] = {101253.3,100672.5,101319.8};
+  const double gas_constant = 8.31446261815324;
+  double troe_states[] = {1.0,0.0,0.0, 2.0/3.0,0.0,0.0, 1.0/3.0,0.0,0.0};
+  double rosenbrock_states[] = {1.0,0.0,0.0, 2.0/3.0,0.0,0.0, 1.0/3.0,0.0,0.0};
+  double troe_rates[3][2];
+  if (chem_solver_workspace_init(&workspace,&troe_mechanism)) return 13;
+  chem_solver_workspace rosenbrock_workspace = {0};
+  if (chem_solver_workspace_init(&rosenbrock_workspace,&troe_mechanism)) {
+    chem_solver_workspace_destroy(&workspace);
+    return 13;
+  }
+  const chem_solver_options rosenbrock_options = chem_solver_default_options();
+  for (size_t cell = 0; cell < 3; ++cell) {
+    const double density = pressures[cell]/(gas_constant*temperatures[cell]);
+    if (chem_rate_constants(&troe_mechanism,temperatures[cell],pressures[cell],
+                            density,NULL,troe_rates[cell])) return 14;
+  }
+  for (size_t step = 1; step < 1000; ++step) {
+    for (size_t cell = 0; cell < 3; ++cell) {
+      const double density = pressures[cell]/(gas_constant*temperatures[cell]);
+      chem_solver_stats one = {0};
+      const int troe_status = chem_backward_euler_solve_with_workspace(
+          &troe_mechanism,&workspace,troe_states+3*cell,temperatures[cell],
+          pressures[cell],density,NULL,1.0,NULL,&one);
+      if (troe_status || !one.accepted) {
+        chem_solver_workspace_destroy(&workspace);
+        chem_solver_workspace_destroy(&rosenbrock_workspace);
+        return 15;
+      }
+      const int rosenbrock_status = chem_rosenbrock3_solve_with_workspace(
+          &troe_mechanism,&rosenbrock_workspace,rosenbrock_states+3*cell,
+          temperatures[cell],pressures[cell],density,NULL,1.0,
+          &rosenbrock_options,NULL);
+      if (rosenbrock_status) {
+        chem_solver_workspace_destroy(&workspace);
+        chem_solver_workspace_destroy(&rosenbrock_workspace);
+        return 17;
+      }
+      const double initial_a = 1.0-(double)cell/3.0;
+      const double k1 = troe_rates[cell][0], k2 = troe_rates[cell][1];
+      const double time = (double)step;
+      const double exp1 = exp(-k1*time), exp2 = exp(-k2*time);
+      const double expected_a = initial_a*exp1;
+      const double expected_b = initial_a*k1/(k2-k1)*(exp1-exp2);
+      const double expected_c = initial_a*(1.0+(k1*exp2-k2*exp1)/(k2-k1));
+      if (fabs(troe_states[3*cell]-expected_a)>1e-6 ||
+          fabs(troe_states[3*cell+1]-expected_b)>1e-6 ||
+          fabs(troe_states[3*cell+2]-expected_c)>1e-6) {
+        chem_solver_workspace_destroy(&workspace);
+        chem_solver_workspace_destroy(&rosenbrock_workspace);
+        return 16;
+      }
+      if (fabs(rosenbrock_states[3*cell]-expected_a)>1e-10 ||
+          fabs(rosenbrock_states[3*cell+1]-expected_b)>1e-10 ||
+          fabs(rosenbrock_states[3*cell+2]-expected_c)>1e-10) {
+        chem_solver_workspace_destroy(&workspace);
+        chem_solver_workspace_destroy(&rosenbrock_workspace);
+        return 16;
+      }
+    }
+  }
+  chem_solver_workspace_destroy(&workspace);
+  chem_solver_workspace_destroy(&rosenbrock_workspace);
+  if (check_analytical_user_rate_chain()) return 18;
   return 0;
 }
 
