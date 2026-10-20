@@ -29,7 +29,7 @@ double chem_reaction_rate(const chem_reaction *reaction, double temperature,
                 pow(temperature / 300.0, reaction->p[1]);
     double kinf = reaction->p[3] * exp(reaction->p[5] / temperature) *
                   pow(temperature / 300.0, reaction->p[4]);
-    double pr = air_density * k0 / kinf;
+    double pr = k0 * air_density / kinf;
     double log_pr = log10(pr);
     return k0 * air_density / (1.0 + pr) *
            pow(reaction->p[6], reaction->p[7] /
@@ -40,7 +40,7 @@ double chem_reaction_rate(const chem_reaction *reaction, double temperature,
                 pow(temperature / 300.0, reaction->p[1]);
     double kinf = reaction->p[3] * exp(reaction->p[5] / temperature) *
                   pow(temperature / 300.0, reaction->p[4]);
-    double ratio = air_density * k0 / kinf;
+    double ratio = k0 * air_density / kinf;
     double lratio = log10(ratio);
     return k0 / (1.0 + ratio) *
            pow(reaction->p[6], reaction->p[7] /
@@ -106,8 +106,9 @@ static double chem_surface_rate(const chem_reaction *reaction,
     return 0.0;
   const double radius = rate_parameters[(size_t)reaction->p[7]];
   const double number = rate_parameters[(size_t)reaction->p[7] + 1];
-  const double mean_speed = sqrt(8.0 * 8.31446261815324 * temperature /
-                                 (3.14159265358979323846 * sp->molecular_weight));
+  const double mean_speed_factor = 8.0 * 8.31446261815324 /
+      (3.14159265358979323846 * sp->molecular_weight);
+  const double mean_speed = sqrt(mean_speed_factor * temperature);
   return 4.0 * number * 3.14159265358979323846 * radius * radius /
          (radius / sp->diffusion + 4.0 / (mean_speed * reaction->p[0]));
 }

@@ -27,11 +27,11 @@ comparison utility with both compilers. The 100-cell seed-1 run also passed:
 | GCC 15 | 165.924 ms | 11.009 ms | 900 | `2.58e-15` |
 
 For 100 seed-1 cells, 100 steps, and four threads, Clang completed in
-4,124.022 ms; the comparison run took 347.269 ms. All 21,100 state values
+4,416.783 ms; the comparison run took 347.269 ms. All 21,100 state values
 passed, with a largest relative difference of `9.70e-13`.
 
 The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
-294,667.123 ms; the reference completed in 27,905.693 ms. The comparison failed
+300,799.575 ms; the reference completed in 27,457.982 ms. The comparison failed
 2,185 of 2,110,000 values across 26 cells; the largest relative difference was
 `5.33e-4` for HO2NO2 in cell 3974. A single-cell run of that input also fails,
 so the discrepancy is not caused by cell grouping. This result is a regression
