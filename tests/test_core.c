@@ -1411,7 +1411,7 @@ static int check_backward_euler(void) {
   const double rates[] = {0.2,0.1};
   double concentrations[] = {1.0,0.0,0.0};
   chem_solver_workspace workspace = {0};
-  if (chem_solver_workspace_init(&workspace,&mechanism)) return 11;
+  if (chem_solver_workspace_init_group(&workspace,&mechanism,4)) return 11;
   chem_backward_euler_options options = chem_backward_euler_default_options();
   options.absolute_tolerances = absolute_tolerances;
   options.absolute_tolerance_count = 3;
@@ -3615,7 +3615,7 @@ int main(void) {
     double scheme_y[] = {1.0, 0.0, 0.0};
     chem_solver_workspace scheme_workspace = {0};
     chem_solver_stats scheme_total = {0};
-    if (chem_solver_workspace_init(&scheme_workspace, &solve_mechanism) != 0)
+    if (chem_solver_workspace_init_group(&scheme_workspace, &solve_mechanism, 4) != 0)
       return 46;
     int scheme_status = 0;
     for (size_t step = 0; step < 10 && !scheme_status; ++step) {

@@ -466,6 +466,10 @@ implemented.update({
     "constraint_initialization:ConstraintInitialization.SolverStateToStringNewValue",
     "solver_builder:SolverBuilder.ThrowsMissingSystem",
     "solver_builder:SolverBuilder.ThrowsUnusedSpecies",
+    "solver_builder:SolverBuilder.CanBuildBackwardEuler",
+    "solver_builder:SolverBuilder.CanBuildRosenbrock",
+    "solver_builder:SolverBuilder.CanBuildBackwardEulerOverloadedSolverMethod",
+    "solver_builder:SolverBuilder.CanBuildRosenbrockOverloadedSolveMethod",
     "backward_euler:BackwardEuler.CanCallSolve",
     "backward_euler:BackwardEuler.IsConverged",
     "analytical_backward_euler:AnalyticalExamples.Troe",
@@ -554,7 +558,7 @@ for raw in case_file.read_text().splitlines():
                                "AnalyticalExamples.TernaryChemicalActivation")):
             reason = "C rate mechanism drives both solvers against the two-step closed form"
         elif case_id.startswith("solver_builder:"):
-            reason = "C workspace initialization and strict species-use validation checked"
+            reason = "C workspace builds, solve entry points, and species-use validation checked"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):
             reason = "C Rosenbrock matrix transforms and normalized error checked"
         elif case_id == "process_set:ProcessSetAlgebraicVariables.CudaMatrix":
