@@ -205,6 +205,43 @@ int chem_const_matrix_view_get(const chem_const_matrix_view *view,
 int chem_const_matrix_view_copy_row_to_vector(
     const chem_const_matrix_view *view, size_t row, double *vector,
     size_t vector_size);
+
+typedef struct {
+  double *data;
+  size_t rows;
+  size_t columns;
+  size_t group_width;
+} chem_vector_matrix_view;
+
+typedef struct {
+  const double *data;
+  size_t rows;
+  size_t columns;
+  size_t group_width;
+} chem_const_vector_matrix_view;
+
+int chem_vector_matrix_view_storage_size(size_t rows, size_t columns,
+                                         size_t group_width,
+                                         size_t *storage_size);
+int chem_vector_matrix_view_init(chem_vector_matrix_view *view, double *data,
+                                 size_t rows, size_t columns,
+                                 size_t group_width);
+int chem_const_vector_matrix_view_init(chem_const_vector_matrix_view *view,
+                                       const double *data, size_t rows,
+                                       size_t columns, size_t group_width);
+size_t chem_vector_matrix_view_group_size(const chem_vector_matrix_view *view);
+size_t chem_vector_matrix_view_number_of_groups(
+    const chem_vector_matrix_view *view);
+size_t chem_vector_matrix_view_row_stride(const chem_vector_matrix_view *view);
+size_t chem_vector_matrix_view_column_stride(const chem_vector_matrix_view *view);
+int chem_vector_matrix_view_fill(chem_vector_matrix_view *view, double value);
+int chem_vector_matrix_view_get(const chem_vector_matrix_view *view,
+                                size_t row, size_t column, double *value);
+int chem_vector_matrix_view_set(chem_vector_matrix_view *view,
+                                size_t row, size_t column, double value);
+int chem_const_vector_matrix_view_get(
+    const chem_const_vector_matrix_view *view, size_t row, size_t column,
+    double *value);
 int chem_matrix_view_get(const chem_matrix_view *view, size_t row,
                          size_t column, double *value);
 int chem_matrix_view_set(chem_matrix_view *view, size_t row,

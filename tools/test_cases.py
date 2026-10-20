@@ -136,6 +136,13 @@ implemented = {
     "matrix:Matrix.FunctionReusability",
     "matrix:Matrix.MultiMatrixDifferentRowsFromCreation",
     "matrix:Matrix.VectorCapture",
+    "vector_matrix:VectorMatrix.SmallVectorMatrix",
+    "vector_matrix:VectorMatrix.SmallConstVectorMatrix",
+    "vector_matrix:VectorMatrix.InitializeVectorMatrix",
+    "vector_matrix:VectorMatrix.InitializeConstVectorMatrix",
+    "vector_matrix:VectorMatrix.LoopOverVectorMatrix",
+    "vector_matrix:VectorMatrix.LoopOverConstVectorMatrix",
+    "vector_matrix:VectorMatrix.Strides",
     "phase:PhaseSpecies.ConstructsWithoutDiffusionCoefficient",
     "phase:PhaseSpecies.ConstructsWithDiffusionCoefficient",
     "phase:PhaseSpecies.SetDiffusionCoefficient",
@@ -239,6 +246,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C masked reaction forcing and Jacobian updates preserve algebraic rows"
         elif case_id.startswith("matrix:"):
             reason = "C strided matrix view, conversion, arithmetic, and reductions checked"
+        elif case_id.startswith("vector_matrix:"):
+            reason = "C grouped vector-matrix view packing, access, and stride behavior checked"
         elif case_id.startswith("version:"):
             reason = "C version API checked"
         elif case_id in {"process_set:ProcessSet.Matrix", "process_set:ProcessSet.VectorMatrix"}:

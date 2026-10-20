@@ -29,6 +29,8 @@ strided storage without imposing an allocator or matrix ownership policy.
 Element traversal accepts a C callback and caller context.
 `chem_const_matrix_view` provides checked read-only access and row conversion
 when the caller holds const storage.
+`chem_vector_matrix_view` packs logical rows into fixed-width lanes, with the
+same row and column strides as MICM's grouped vector matrices.
 
 `chem_constraint_set` describes caller-owned linear conservation or
 equilibrium constraints using species indexes. Its utilities validate records,

@@ -1508,6 +1508,49 @@ static int check_matrix_view_api(void) {
   if (chem_matrix_view_for_each(&iter,matrix_add_captured_vector,
                                 (void *)&captured) ||
       iter_data[4] != 43.0 || iter_data[7] != 49.0) return 36;
+  double vectorized_data[20] = {0};
+  chem_vector_matrix_view vectorized;
+  size_t vectorized_size = 0;
+  if (chem_vector_matrix_view_storage_size(3,5,2,&vectorized_size) ||
+      vectorized_size != 20 ||
+      chem_vector_matrix_view_init(&vectorized,vectorized_data,3,5,2) ||
+      chem_vector_matrix_view_set(&vectorized,1,3,64.7) ||
+      chem_vector_matrix_view_set(&vectorized,0,0,41.2) ||
+      chem_vector_matrix_view_set(&vectorized,2,4,102.3) ||
+      vectorized_data[0] != 41.2 || vectorized_data[7] != 64.7 ||
+      vectorized_data[18] != 102.3 ||
+      chem_vector_matrix_view_group_size(&vectorized) != 10 ||
+      chem_vector_matrix_view_number_of_groups(&vectorized) != 2 ||
+      chem_vector_matrix_view_row_stride(&vectorized) != 1 ||
+      chem_vector_matrix_view_column_stride(&vectorized) != 2) return 37;
+  chem_const_vector_matrix_view const_vectorized;
+  if (chem_const_vector_matrix_view_init(&const_vectorized,vectorized_data,3,5,2) ||
+      chem_const_vector_matrix_view_get(&const_vectorized,1,3,&value) ||
+      value != 64.7) return 38;
+  double initialize_vectorized_data[6] = {0};
+  chem_vector_matrix_view initialize_vectorized;
+  if (chem_vector_matrix_view_init(&initialize_vectorized,
+          initialize_vectorized_data,2,3,1) ||
+      chem_vector_matrix_view_fill(&initialize_vectorized,12.4) ||
+      initialize_vectorized_data[0] != 12.4 ||
+      initialize_vectorized_data[3] != 12.4 ||
+      initialize_vectorized_data[5] != 12.4) return 39;
+  double vectorized_loop_data[20] = {0};
+  chem_vector_matrix_view vectorized_loop;
+  if (chem_vector_matrix_view_init(&vectorized_loop,vectorized_loop_data,3,4,4))
+    return 40;
+  for (size_t row = 0; row < 3; ++row)
+    for (size_t column = 0; column < 4; ++column)
+      if (chem_vector_matrix_view_set(&vectorized_loop,row,column,
+                                      (double)(row*100+column))) return 41;
+  if (chem_vector_matrix_view_get(&vectorized_loop,2,3,&value) || value != 203.0 ||
+      vectorized_loop_data[14] != 203.0 ||
+      chem_vector_matrix_view_number_of_groups(&vectorized_loop) != 1) return 42;
+  chem_const_vector_matrix_view const_vectorized_loop;
+  if (chem_const_vector_matrix_view_init(&const_vectorized_loop,
+          vectorized_loop_data,3,4,4) ||
+      chem_const_vector_matrix_view_get(&const_vectorized_loop,1,2,&value) ||
+      value != 102.0) return 43;
   return 0;
 }
 
