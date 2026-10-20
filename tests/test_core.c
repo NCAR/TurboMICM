@@ -2005,6 +2005,20 @@ static int check_csr_matrix_api(void) {
       csc_values[1] != 25.0 || csc_values[6] != 25.0 ||
       chem_csr_matrix_is_structural_zero(&csc,0,0,&is_zero) || !is_zero)
     return 20;
+  chem_csr_value_view csc_destination;
+  chem_csr_const_value_view csc_sources[2];
+  double csc_copy[2];
+  if (chem_csr_matrix_get_value_view(&csc,2,1,&csc_destination) ||
+      chem_csr_matrix_get_const_value_view(&csc,0,1,&csc_sources[0]) ||
+      chem_csr_matrix_get_const_value_view(&csc,1,1,&csc_sources[1]) ||
+      chem_csr_matrix_apply_blocks(&csc_destination,csc_sources,2,
+                                   csr_sum_sources,NULL) ||
+      csc_values[2] != 49.0 || csc_values[7] != 49.0 ||
+      chem_csr_value_view_copy_to_vector(&csc_sources[0],csc_copy,2) ||
+      csc_copy[0] != 24.0 || csc_copy[1] != 24.0 ||
+      chem_csr_value_view_fill(&csc_destination,3.0) ||
+      csc_values[2] != 3.0 || csc_values[7] != 3.0)
+    return 21;
   return 0;
 }
 
