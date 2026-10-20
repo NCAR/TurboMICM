@@ -463,6 +463,7 @@ implemented.update({
     "matrix:Matrix.WrongColumnCountAtInvocation",
     "vector_matrix:VectorMatrix.WrongColumnCountAtInvocation",
     "constraint_initialization:ConstraintInitialization.PureODESystemUnaffected",
+    "constraint_initialization:ConstraintInitialization.SolverStateToStringNewValue",
 })
 not_applicable = {
     "state:State.CopyConstructor":

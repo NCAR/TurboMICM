@@ -624,6 +624,16 @@ typedef struct {
   size_t max_steps;
 } chem_solver_options;
 
+typedef enum {
+  CHEM_SOLVER_STATUS_OK = 0,
+  CHEM_SOLVER_STATUS_BAD_ARGUMENT = 1,
+  CHEM_SOLVER_STATUS_SINGULAR = 2,
+  CHEM_SOLVER_STATUS_STEP_FAILURE = 3,
+  CHEM_SOLVER_STATUS_NONFINITE = 4,
+  CHEM_SOLVER_STATUS_CONSTRAINT_INITIALIZATION_FAILED = 5
+} chem_solver_status;
+const char *chem_solver_status_string(chem_solver_status status);
+
 typedef struct {
   void *implementation;
 } chem_solver_workspace;

@@ -1174,6 +1174,11 @@ static int check_constraint_api(void) {
 }
 
 static int check_constrained_solver(void) {
+  if (strcmp(chem_solver_status_string(
+                 CHEM_SOLVER_STATUS_CONSTRAINT_INITIALIZATION_FAILED),
+             "Constraint Initialization Failed") ||
+      strcmp(chem_solver_status_string((chem_solver_status)99),"Unknown"))
+    return 16;
   const chem_species species[] = {{.name="X",.initial_concentration=0.0}};
   const chem_mechanism mechanism = {.species=species,.species_count=1};
   const chem_constraint_term terms[] = {{.species=0,.coefficient=1.0}};

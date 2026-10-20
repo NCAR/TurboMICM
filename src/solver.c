@@ -4,8 +4,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum { SOLVER_OK = 0, SOLVER_BAD_ARGUMENT = 1, SOLVER_SINGULAR = 2,
-       SOLVER_STEP_FAILURE = 3, SOLVER_NONFINITE = 4 };
+enum { SOLVER_OK = CHEM_SOLVER_STATUS_OK,
+       SOLVER_BAD_ARGUMENT = CHEM_SOLVER_STATUS_BAD_ARGUMENT,
+       SOLVER_SINGULAR = CHEM_SOLVER_STATUS_SINGULAR,
+       SOLVER_STEP_FAILURE = CHEM_SOLVER_STATUS_STEP_FAILURE,
+       SOLVER_NONFINITE = CHEM_SOLVER_STATUS_NONFINITE };
+
+const char *chem_solver_status_string(chem_solver_status status) {
+  switch (status) {
+  case CHEM_SOLVER_STATUS_OK: return "Converged";
+  case CHEM_SOLVER_STATUS_BAD_ARGUMENT: return "Bad Argument";
+  case CHEM_SOLVER_STATUS_SINGULAR: return "Singular Matrix";
+  case CHEM_SOLVER_STATUS_STEP_FAILURE: return "Step Failure";
+  case CHEM_SOLVER_STATUS_NONFINITE: return "Non-finite Result";
+  case CHEM_SOLVER_STATUS_CONSTRAINT_INITIALIZATION_FAILED:
+    return "Constraint Initialization Failed";
+  }
+  return "Unknown";
+}
 
 typedef struct {
   const chem_mechanism *mechanism;
@@ -498,7 +514,7 @@ static int rosenbrock_solve_impl(
                                          stage_y, jac, o->relative_tolerance,
                                          o->absolute_tolerance,
                                          &local_stats.constraint_init_iterations))
-    return SOLVER_STEP_FAILURE;
+    return CHEM_SOLVER_STATUS_CONSTRAINT_INITIALIZATION_FAILED;
 
   const double eps = 2.2204460492503131e-16;
   const double hmin = 1.0e-15 * duration;
