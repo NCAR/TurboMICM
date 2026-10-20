@@ -26,6 +26,9 @@
 - The C core test ports the vectorized-matrix tutorial's two cell layouts and
   both sparse element orders. The tutorial's solve loop is skipped by its own
   initial converged-state condition, so the layout checks cover its output.
+- The C solver accepts configurable Rosenbrock coefficient sets. The core test
+  checks all 50 printed concentration rows and accumulated work counters for
+  MICM's two-, three-, four-, four-stage DAE-, and six-stage DAE methods.
 - Repeated-reactant Jacobians now match for both separate unit terms (`B + B`)
   and one stoichiometric term (`2 B`), covering a coefficient case that the
   previous negative-Jacobian implementation mishandled.
@@ -34,7 +37,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Forty-eight cases pass; 632 cases still report incomplete ports,
+  statuses. Forty-nine cases pass; 631 cases still report incomplete ports,
   so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -46,8 +49,8 @@ comparison utility with both compilers. The 100-cell seed-1 run also passed:
 | --- | --- | ---: | ---: | ---: | ---: |
 | First cell | Clang | 173.842 ms | 10.767 ms | 900 | `0` |
 | First cell | GCC 15 | 165.693 ms | 10.767 ms | 900 | `5.69e-15` |
-| 100 cells, 4 threads | Clang | 4,371.516 ms | 354.051 ms | 3,600 | `9.70e-13` |
-| 100 cells, 4 threads | GCC 15 | 4,526.347 ms | 354.051 ms | 3,600 | `9.70e-13` |
+| 100 cells, 4 threads | Clang | 4,334.925 ms | 354.051 ms | 3,600 | `9.70e-13` |
+| 100 cells, 4 threads | GCC 15 | 4,069.336 ms | 354.051 ms | 3,600 | `9.70e-13` |
 
 The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 300,799.575 ms; the reference completed in 27,457.982 ms. The comparison failed
@@ -55,5 +58,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 `5.33e-4` for HO2NO2 in cell 3974. A single-cell run of that input also fails,
 so the discrepancy is not caused by cell grouping. This result is a regression
 case for further solver arithmetic work. The implementation is about eleven
-times slower than the reference at this scale, and 632 of the 680 inventory cases
+times slower than the reference at this scale, and 631 of the 680 inventory cases
 remain unported.

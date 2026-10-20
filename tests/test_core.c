@@ -512,5 +512,79 @@ int main(void) {
   for (size_t i = 0; i < 12; ++i)
     if (sparse_standard[i] != expected_standard[i] ||
         sparse_vectorized[i] != expected_vectorized[i]) return 45;
+
+  /* Port test_solver_configuration across all five MICM Rosenbrock sets. */
+  const chem_rosenbrock_parameter_set tutorial_schemes[] = {
+      CHEM_ROSENBROCK_TWO_STAGE, CHEM_ROSENBROCK_THREE_STAGE,
+      CHEM_ROSENBROCK_FOUR_STAGE, CHEM_ROSENBROCK_FOUR_STAGE_DAE,
+      CHEM_ROSENBROCK_SIX_STAGE_DAE};
+  const double scheme_expected[5][10][3] = {
+      {{5.37e-1, 4.50e-6, 4.63e-1}, {4.51e-1, 3.23e-6, 5.49e-1},
+       {4.01e-1, 2.64e-6, 5.99e-1}, {3.65e-1, 2.28e-6, 6.35e-1},
+       {3.38e-1, 2.02e-6, 6.62e-1}, {3.16e-1, 1.83e-6, 6.84e-1},
+       {2.97e-1, 1.68e-6, 7.03e-1}, {2.82e-1, 1.56e-6, 7.18e-1},
+       {2.68e-1, 1.46e-6, 7.32e-1}, {2.56e-1, 1.37e-6, 7.44e-1}},
+      {{5.35e-1, 4.48e-6, 4.65e-1}, {4.50e-1, 3.23e-6, 5.50e-1},
+       {4.00e-1, 2.63e-6, 6.00e-1}, {3.64e-1, 2.27e-6, 6.36e-1},
+       {3.37e-1, 2.01e-6, 6.63e-1}, {3.15e-1, 1.82e-6, 6.85e-1},
+       {2.96e-1, 1.67e-6, 7.04e-1}, {2.81e-1, 1.55e-6, 7.19e-1},
+       {2.67e-1, 1.45e-6, 7.33e-1}, {2.55e-1, 1.37e-6, 7.45e-1}},
+      {{5.36e-1, 4.49e-6, 4.64e-1}, {4.50e-1, 3.20e-6, 5.50e-1},
+       {4.00e-1, 2.62e-6, 6.00e-1}, {3.64e-1, 2.26e-6, 6.36e-1},
+       {3.37e-1, 2.01e-6, 6.63e-1}, {3.15e-1, 1.82e-6, 6.85e-1},
+       {2.97e-1, 1.67e-6, 7.03e-1}, {2.81e-1, 1.55e-6, 7.19e-1},
+       {2.67e-1, 1.45e-6, 7.33e-1}, {2.56e-1, 1.37e-6, 7.44e-1}},
+      {{5.36e-1, 4.49e-6, 4.64e-1}, {4.51e-1, 3.23e-6, 5.49e-1},
+       {4.00e-1, 2.63e-6, 6.00e-1}, {3.64e-1, 2.27e-6, 6.36e-1},
+       {3.37e-1, 2.01e-6, 6.63e-1}, {3.15e-1, 1.82e-6, 6.85e-1},
+       {2.97e-1, 1.68e-6, 7.03e-1}, {2.81e-1, 1.55e-6, 7.19e-1},
+       {2.68e-1, 1.45e-6, 7.32e-1}, {2.56e-1, 1.37e-6, 7.44e-1}},
+      {{5.36e-1, 4.49e-6, 4.64e-1}, {4.51e-1, 3.22e-6, 5.49e-1},
+       {4.00e-1, 2.63e-6, 6.00e-1}, {3.64e-1, 2.27e-6, 6.36e-1},
+       {3.37e-1, 2.01e-6, 6.63e-1}, {3.15e-1, 1.82e-6, 6.85e-1},
+       {2.97e-1, 1.67e-6, 7.03e-1}, {2.81e-1, 1.55e-6, 7.19e-1},
+       {2.67e-1, 1.45e-6, 7.33e-1}, {2.56e-1, 1.37e-6, 7.44e-1}}};
+  const size_t scheme_counts[5][6] = {
+      {149, 298, 149, 149, 298, 0}, {98, 196, 98, 98, 294, 0},
+      {97, 291, 97, 97, 388, 0}, {99, 297, 99, 99, 396, 0},
+      {97, 582, 97, 97, 582, 0}};
+  const chem_solver_options scheme_options = chem_solver_default_options();
+  for (size_t scheme = 0; scheme < 5; ++scheme) {
+    const chem_rosenbrock_parameters parameters =
+        chem_rosenbrock_builtin_parameters(tutorial_schemes[scheme]);
+    double scheme_y[] = {1.0, 0.0, 0.0};
+    chem_solver_workspace scheme_workspace = {0};
+    chem_solver_stats scheme_total = {0};
+    if (chem_solver_workspace_init(&scheme_workspace, &solve_mechanism) != 0)
+      return 46;
+    int scheme_status = 0;
+    for (size_t step = 0; step < 10 && !scheme_status; ++step) {
+      chem_solver_stats one = {0};
+      scheme_status = chem_rosenbrock_solve_with_parameters(
+          &solve_mechanism, &scheme_workspace, scheme_y, 272.5, 101253.3,
+          1e6, solve_rates, 200.0, &parameters, &scheme_options, &one);
+      scheme_total.internal_steps += one.internal_steps;
+      scheme_total.accepted += one.accepted;
+      scheme_total.rejected += one.rejected;
+      scheme_total.function_calls += one.function_calls;
+      scheme_total.jacobian_updates += one.jacobian_updates;
+      scheme_total.decompositions += one.decompositions;
+      scheme_total.solves += one.solves;
+      for (size_t variable = 0; variable < 3 && !scheme_status; ++variable) {
+        const double expected = scheme_expected[scheme][step][variable];
+        const double print_tolerance =
+            0.5 * pow(10.0, floor(log10(expected)) - 2.0);
+        if (fabs(scheme_y[variable] - expected) > print_tolerance)
+          scheme_status = 1;
+      }
+    }
+    chem_solver_workspace_destroy(&scheme_workspace);
+    if (scheme_status || scheme_total.internal_steps != scheme_counts[scheme][0] ||
+        scheme_total.function_calls != scheme_counts[scheme][1] ||
+        scheme_total.jacobian_updates != scheme_counts[scheme][2] ||
+        scheme_total.decompositions != scheme_counts[scheme][3] ||
+        scheme_total.solves != scheme_counts[scheme][4] ||
+        scheme_total.rejected != scheme_counts[scheme][5]) return 47;
+  }
   return 0;
 }

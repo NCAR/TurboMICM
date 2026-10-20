@@ -15,15 +15,25 @@ general density-parameterized species fold their density factors into rate
 constants while remaining distinct from kinetic state dependencies. Evaluation
 uses a rate-kind enum. `chem_forcing` and `chem_jacobian` apply
 mass action and the mechanism's generic reaction terms. The same routines feed
-the generic three-stage Rosenbrock integration path exercised by TS1.
+all solver schemes and TS1. Rate constants are evaluated before integration
+and cached per workspace until temperature, pressure, density, or custom rates
+change.
 
 ## Solver and benchmark
 
-`src/solver.c` implements the three-stage method, adaptive error control,
-symbolic fill construction, natural-order in-place LU, and solver counters.
-Its defaults are relative tolerance `1e-6`, absolute tolerance `1e-3`, initial
-step `1e-6 * DT`, minimum step `1e-15 * DT`, maximum step `DT`, and a 1000-step
-limit. The inert third-body species is excluded from the error norm.
+`src/solver.c` implements MICM's two-, three-, four-, four-stage DAE-, and
+six-stage DAE Rosenbrock parameter sets, adaptive error control, symbolic fill
+construction, natural-order in-place LU, and solver counters. The public
+`chem_rosenbrock_parameters` stores stage count, packed lower-triangular A and C
+coefficients, M and E vectors, gamma, function-evaluation reuse flags, and
+error-estimator order. Add a method by filling this structure and passing it to
+`chem_rosenbrock_solve_with_parameters`; the new set uses the generic solver
+path.
+
+The default controller uses relative tolerance `1e-6`, absolute tolerance
+`1e-3`, initial step `1e-6 * DT`, minimum step `1e-15 * DT`, maximum step `DT`,
+and a 1000-step limit. The inert third-body species is excluded from the error
+norm.
 
 The public `chem_solver_workspace` owns reusable matrix, stage, symbolic fill,
 and group-output buffers for one mechanism. The single-cell API uses one cell
@@ -37,13 +47,13 @@ sequentially inside the group.
 
 ## Extension points
 
-The solver method coefficients and controller are currently localized in
-`src/solver.c`; they should be moved into explicit method and controller
-interfaces before supporting alternate methods. The factorization is similarly
-isolated from rate evaluation and can be replaced behind a linear-solver
-interface. Add a rate type by extending the mechanism enum, its evaluator and
-Jacobian handling, and the configuration-to-C generator. Configuration cases
-should exercise the generated path, not a handwritten mechanism-specific path.
+The controller tolerances live in `chem_solver_options` and its adaptation
+formula is a separate block in `src/solver.c`, so it can be changed without
+changing method coefficients. The factorization is isolated from rate
+evaluation and can be replaced behind a linear-solver interface. Add a rate
+type by extending the mechanism enum, its evaluator and Jacobian handling, and
+the configuration-to-C generator. Configuration cases should exercise the
+generated path, not a handwritten mechanism-specific path.
 
 ## Tuning and portability
 

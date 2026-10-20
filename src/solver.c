@@ -68,7 +68,7 @@ int chem_solver_workspace_init_group(chem_solver_workspace *workspace,
   w->jac = calloc(nn, sizeof(double));
   w->a = calloc(nn, sizeof(double));
   w->forcing = calloc(n, sizeof(double));
-  w->stage = calloc(3*n, sizeof(double));
+  w->stage = calloc(6*n, sizeof(double));
   w->ynew = calloc(n, sizeof(double));
   w->yerror = calloc(n, sizeof(double));
   w->stage_y = calloc(n, sizeof(double));
@@ -114,6 +114,90 @@ void chem_solver_workspace_destroy(chem_solver_workspace *workspace) {
 chem_solver_options chem_solver_default_options(void) {
   chem_solver_options result = {1.0e-6, 1.0e-3, 1000};
   return result;
+}
+
+chem_rosenbrock_parameters chem_rosenbrock_builtin_parameters(
+    chem_rosenbrock_parameter_set parameter_set) {
+  chem_rosenbrock_parameters p = {0};
+  if (parameter_set == CHEM_ROSENBROCK_TWO_STAGE) {
+    const double g = 1.0 + 1.0 / sqrt(2.0);
+    p.stages = 2;
+    p.a[0] = 1.0/g;
+    p.c[0] = -2.0/g;
+    p.m[0] = 3.0/(2.0*g); p.m[1] = 1.0/(2.0*g);
+    p.e[0] = 1.0/(2.0*g); p.e[1] = 1.0/(2.0*g);
+    p.gamma[0] = g; p.gamma[1] = -g;
+    p.new_function_evaluation[0] = 1; p.new_function_evaluation[1] = 1;
+    p.estimator_order = 2.0;
+  } else if (parameter_set == CHEM_ROSENBROCK_FOUR_STAGE) {
+    p.stages = 4;
+    p.a[0] = 2.0; p.a[1] = 1.867943637803922;
+    p.a[2] = 0.2344449711399156; p.a[3] = p.a[1];
+    p.a[4] = p.a[2];
+    p.c[0] = -7.137615036412310; p.c[1] = 2.580708087951457;
+    p.c[2] = 0.6515950076447975; p.c[3] = -2.137148994382534;
+    p.c[4] = -0.3214669691237626; p.c[5] = -0.6949742501781779;
+    p.m[0] = 2.255570073418735; p.m[1] = 0.2870493262186792;
+    p.m[2] = 0.4353179431840180; p.m[3] = 1.093502252409163;
+    p.e[0] = -0.2815431932141155; p.e[1] = -0.07276199124938920;
+    p.e[2] = -0.1082196201495311; p.e[3] = -1.093502252409163;
+    p.gamma[0] = 0.572820; p.gamma[1] = -1.769193891319233;
+    p.gamma[2] = 0.7592633437920482; p.gamma[3] = -0.1049021087100450;
+    p.new_function_evaluation[0] = 1; p.new_function_evaluation[1] = 1;
+    p.new_function_evaluation[2] = 1; p.new_function_evaluation[3] = 0;
+    p.estimator_order = 4.0;
+  } else if (parameter_set == CHEM_ROSENBROCK_FOUR_STAGE_DAE) {
+    p.stages = 4;
+    p.a[0] = 0.0; p.a[1] = 2.0; p.a[2] = 0.0;
+    p.a[3] = 2.0; p.a[4] = 0.0; p.a[5] = 1.0;
+    p.c[0] = 4.0; p.c[1] = 1.0; p.c[2] = -1.0;
+    p.c[3] = 1.0; p.c[4] = -1.0; p.c[5] = -8.0/3.0;
+    p.m[0] = 2.0; p.m[2] = 1.0; p.m[3] = 1.0;
+    p.e[3] = 1.0;
+    p.gamma[0] = 0.5; p.gamma[1] = 1.5;
+    p.new_function_evaluation[0] = 1; p.new_function_evaluation[1] = 0;
+    p.new_function_evaluation[2] = 1; p.new_function_evaluation[3] = 1;
+    p.estimator_order = 3.0;
+  } else if (parameter_set == CHEM_ROSENBROCK_SIX_STAGE_DAE) {
+    p.stages = 6;
+    p.a[0] = 1.544; p.a[1] = 0.9466785280815826;
+    p.a[2] = 0.2557011698983284; p.a[3] = 3.314825187068521;
+    p.a[4] = 2.896124015972201; p.a[5] = 0.9986419139977817;
+    p.a[6] = 1.221224509226641; p.a[7] = 6.019134481288629;
+    p.a[8] = 12.53708332932087; p.a[9] = -0.6878860361058950;
+    p.a[10] = p.a[6]; p.a[11] = p.a[7]; p.a[12] = p.a[8];
+    p.a[13] = p.a[9]; p.a[14] = 1.0;
+    p.c[0] = -5.6688; p.c[1] = -2.430093356833875;
+    p.c[2] = -0.2063599157091915; p.c[3] = -0.1073529058151375;
+    p.c[4] = -9.594562251023355; p.c[5] = -20.47028614809616;
+    p.c[6] = 7.496443313967647; p.c[7] = -10.24680431464352;
+    p.c[8] = -33.99990352819905; p.c[9] = 11.70890893206160;
+    p.c[10] = 8.083246795921522; p.c[11] = -7.981132988064893;
+    p.c[12] = -31.52159432874371; p.c[13] = 16.31930543123136;
+    p.c[14] = -6.058818238834054;
+    p.m[0] = p.a[6]; p.m[1] = p.a[7]; p.m[2] = p.a[8];
+    p.m[3] = p.a[9]; p.m[4] = 1.0; p.m[5] = 1.0;
+    p.e[5] = 1.0;
+    p.gamma[0] = 0.25; p.gamma[1] = -0.1043; p.gamma[2] = 0.1035;
+    p.gamma[3] = -0.0362;
+    for (size_t i = 0; i < 6; ++i) p.new_function_evaluation[i] = 1;
+    p.estimator_order = 4.0;
+  } else {
+    p.stages = 3;
+    p.a[0] = 1.0; p.a[1] = 1.0; p.a[2] = 0.0;
+    p.c[0] = -1.0156171083877702091975600115545;
+    p.c[1] = 4.0759956452537699824805835358067;
+    p.c[2] = 9.2076794298330791242156818474003;
+    p.m[0] = 1.0; p.m[1] = 6.1697947043828245592553615689730;
+    p.m[2] = -0.42772256543218573326238373806514;
+    p.e[0] = 0.5; p.e[1] = -2.9079558716805469821718236208017;
+    p.e[2] = 0.22354069897811569627360909276199;
+    p.gamma[0] = 0.43586652150845899941601945119356;
+    p.new_function_evaluation[0] = 1; p.new_function_evaluation[1] = 1;
+    p.new_function_evaluation[2] = 0;
+    p.estimator_order = 3.0;
+  }
+  return p;
 }
 
 static int make_pattern(const chem_mechanism *m, unsigned char *pattern,
@@ -196,11 +280,12 @@ static void solve_factored(const double *a, size_t n, const size_t *row_counts,
   }
 }
 
-int chem_rosenbrock3_solve_with_workspace(
+int chem_rosenbrock_solve_with_parameters(
     const chem_mechanism *m, chem_solver_workspace *workspace, double *y,
     double temperature, double pressure, double air_density,
     const double *rate_parameters,
-    double duration, const chem_solver_options *requested,
+    double duration, const chem_rosenbrock_parameters *parameters,
+    const chem_solver_options *requested,
     chem_solver_stats *statistics) {
   if (!m || !y || !isfinite(duration) || duration <= 0.0 ||
       !isfinite(temperature) || temperature <= 0.0 ||
@@ -215,6 +300,11 @@ int chem_rosenbrock3_solve_with_workspace(
   const chem_solver_options *o = requested ? requested : &defaults;
   if (o->relative_tolerance <= 0.0 || o->absolute_tolerance <= 0.0 ||
       o->max_steps == 0) return SOLVER_BAD_ARGUMENT;
+  const chem_rosenbrock_parameters default_parameters =
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
+  const chem_rosenbrock_parameters *p = parameters ? parameters : &default_parameters;
+  if (p->stages < 2 || p->stages > 6 || p->gamma[0] == 0.0 ||
+      p->estimator_order <= 0.0) return SOLVER_BAD_ARGUMENT;
   chem_solver_stats local_stats = {0};
   if (statistics) *statistics = local_stats;
   const size_t nn = n*n;
@@ -249,15 +339,6 @@ int chem_rosenbrock3_solve_with_workspace(
   double h = 1.0e-6 * duration;
   double time = 0.0;
   int rejected_previous = 0, rejected_twice = 0;
-  const double aa[3] = {1.0, 1.0, 0.0};
-  const double cc[3] = {-1.0156171083877702091975600115545,
-                         4.0759956452537699824805835358067,
-                         9.2076794298330791242156818474003};
-  const double mm[3] = {1.0, 6.1697947043828245592553615689730,
-                        -0.42772256543218573326238373806514};
-  const double ee[3] = {0.5, -2.9079558716805469821718236208017,
-                        0.22354069897811569627360909276199};
-  const double gamma = 0.43586652150845899941601945119356;
   while (time - duration + eps <= 0.0) {
     if (local_stats.internal_steps > o->max_steps) { status = SOLVER_STEP_FAILURE; break; }
     if (time + 0.1*h == time || h <= fmin(eps, hmin)) { status = SOLVER_STEP_FAILURE; break; }
@@ -274,29 +355,34 @@ int chem_rosenbrock3_solve_with_workspace(
     int accepted = 0;
     while (!accepted) {
       const double used_h = h;
-      const double alpha = 1.0 / (h*gamma);
+      const double alpha = 1.0 / (h*p->gamma[0]);
       for (size_t i = 0; i < nn; ++i) a[i] = jac[i];
       for (size_t i = 0; i < n; ++i) a[i*n + i] += alpha;
       status = factor(a, n, row_counts, col_counts, row_cols, col_rows);
       ++local_stats.decompositions;
       if (status) break;
       for (size_t i = 0; i < n; ++i) stage[i] = forcing[i];
-      for (size_t s = 0; s < 3; ++s) {
-        if (s == 1) {
-          for (size_t i = 0; i < n; ++i) stage_y[i] = y[i] + aa[0]*stage[i];
-          memset(stage+n, 0, n*sizeof(*stage));
+      for (size_t s = 0; s < p->stages; ++s) {
+        double *ks = stage + s*n;
+        const size_t coefficient_offset = s*(s-1)/2;
+        if (s > 0 && p->new_function_evaluation[s]) {
+          for (size_t i = 0; i < n; ++i) {
+            stage_y[i] = y[i];
+            for (size_t j = 0; j < s; ++j)
+              stage_y[i] += p->a[coefficient_offset+j]*stage[j*n+i];
+          }
+          memset(ks, 0, n*sizeof(*ks));
           status = chem_forcing_with_constants(m, stage_y, w->rate_constants,
-                                               air_density, stage+n);
+                                               air_density, ks);
           ++local_stats.function_calls;
           if (status) { status = SOLVER_BAD_ARGUMENT; break; }
-          memcpy(reused_forcing, stage+n, n*sizeof(*reused_forcing));
-        } else if (s == 2) {
-          memcpy(stage + 2*n, reused_forcing, n*sizeof(*stage));
+        } else if (s > 0) {
+          memcpy(ks, reused_forcing, n*sizeof(*ks));
         }
-        double *ks = stage + s*n;
+        if (s + 1 < p->stages && !p->new_function_evaluation[s+1])
+          memcpy(reused_forcing, ks, n*sizeof(*reused_forcing));
         for (size_t j = 0; j < s; ++j) {
-          const size_t ci = s == 1 ? 0 : (j == 0 ? 1 : 2);
-          const double scale = cc[ci] / h;
+          const double scale = p->c[coefficient_offset+j] / h;
           for (size_t i = 0; i < n; ++i) ks[i] += scale*stage[j*n + i];
         }
         solve_factored(a, n, row_counts, row_cols, ks);
@@ -306,9 +392,9 @@ int chem_rosenbrock3_solve_with_workspace(
       for (size_t i = 0; i < n; ++i) {
         ynew[i] = y[i];
         yerror[i] = 0.0;
-        for (size_t s = 0; s < 3; ++s) {
-          ynew[i] += mm[s]*stage[s*n + i];
-          yerror[i] += ee[s]*stage[s*n + i];
+        for (size_t s = 0; s < p->stages; ++s) {
+          ynew[i] += p->m[s]*stage[s*n + i];
+          yerror[i] += p->e[s]*stage[s*n + i];
         }
       }
       double sum = 0.0;
@@ -321,7 +407,7 @@ int chem_rosenbrock3_solve_with_workspace(
         sum += v*v;
       }
       double error = fmax(sqrt(sum/(double)error_variables), 1.0e-10);
-      double fac = fmin(6.0, fmax(0.2, 0.9/pow(error, 1.0/3.0)));
+      double fac = fmin(6.0, fmax(0.2, 0.9/pow(error, 1.0/p->estimator_order)));
       double hnew = h*fac;
       ++local_stats.internal_steps;
       if (!isfinite(error)) { status = SOLVER_NONFINITE; break; }
@@ -348,6 +434,18 @@ int chem_rosenbrock3_solve_with_workspace(
   }
   if (statistics) *statistics = local_stats;
   return status;
+}
+
+int chem_rosenbrock3_solve_with_workspace(
+    const chem_mechanism *m, chem_solver_workspace *workspace, double *y,
+    double temperature, double pressure, double air_density,
+    const double *rate_parameters, double duration,
+    const chem_solver_options *requested, chem_solver_stats *statistics) {
+  const chem_rosenbrock_parameters parameters =
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
+  return chem_rosenbrock_solve_with_parameters(
+      m, workspace, y, temperature, pressure, air_density, rate_parameters,
+      duration, &parameters, requested, statistics);
 }
 
 int chem_rosenbrock3_solve_group_with_workspace(

@@ -98,6 +98,30 @@ typedef struct {
   size_t solves;
 } chem_solver_stats;
 
+/* Lower-triangular Rosenbrock coefficients use row-wise packed indexing:
+   A(i,j) and C(i,j) are at i*(i-1)/2+j for 0 <= j < i < stages. */
+typedef struct {
+  size_t stages;
+  double a[15];
+  double c[15];
+  double m[6];
+  double e[6];
+  double gamma[6];
+  unsigned char new_function_evaluation[6];
+  double estimator_order;
+} chem_rosenbrock_parameters;
+
+typedef enum {
+  CHEM_ROSENBROCK_THREE_STAGE,
+  CHEM_ROSENBROCK_TWO_STAGE,
+  CHEM_ROSENBROCK_FOUR_STAGE,
+  CHEM_ROSENBROCK_FOUR_STAGE_DAE,
+  CHEM_ROSENBROCK_SIX_STAGE_DAE
+} chem_rosenbrock_parameter_set;
+
+chem_rosenbrock_parameters chem_rosenbrock_builtin_parameters(
+    chem_rosenbrock_parameter_set parameter_set);
+
 typedef struct {
   double relative_tolerance;
   double absolute_tolerance;
@@ -119,6 +143,12 @@ int chem_rosenbrock3_solve_with_workspace(
     const chem_mechanism *mechanism, chem_solver_workspace *workspace,
     double *state, double temperature, double pressure, double air_density,
     const double *rate_parameters, double duration,
+    const chem_solver_options *options, chem_solver_stats *statistics);
+int chem_rosenbrock_solve_with_parameters(
+    const chem_mechanism *mechanism, chem_solver_workspace *workspace,
+    double *state, double temperature, double pressure, double air_density,
+    const double *rate_parameters, double duration,
+    const chem_rosenbrock_parameters *parameters,
     const chem_solver_options *options, chem_solver_stats *statistics);
 int chem_rosenbrock3_solve_group_with_workspace(
     const chem_mechanism *mechanism, chem_solver_workspace *workspace,
