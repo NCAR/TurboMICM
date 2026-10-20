@@ -13,12 +13,14 @@
   checking rate-type ordering, parameter defaults and indexes, derived branched
   parameters, surface parameters, density multipliers, and reaction counts in
   generated C.
+- The C core test ports the README tutorial's Foo/Bar/Baz mechanism and checks
+  all ten printed states at the tutorial's three-significant-digit precision.
 - JSON and YAML tutorial mechanisms normalize to 7 species; the input reactions
   expand to 10 and 7 generated reactions, respectively (JSON and YAML).
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Forty-three cases pass; 637 cases still report incomplete ports,
+  statuses. Forty-four cases pass; 636 cases still report incomplete ports,
   so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -41,5 +43,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 `5.33e-4` for HO2NO2 in cell 3974. A single-cell run of that input also fails,
 so the discrepancy is not caused by cell grouping. This result is a regression
 case for further solver arithmetic work. The implementation is about eleven
-times slower than the reference at this scale, and 637 of the 680 inventory cases
+times slower than the reference at this scale, and 636 of the 680 inventory cases
 remain unported.

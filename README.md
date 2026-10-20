@@ -18,9 +18,8 @@ make test-cpu CC=clang
 ```
 
 `make test-cpu` runs the C unit checks and reports each case in the supplied
-MICM inventory. The current implementation passes the two Arrhenius calculation
-cases; other inventory cases remain explicitly unported and the target exits
-nonzero.
+MICM inventory. Implemented cases print `PASS`; unported cases print `FAIL` and
+the target exits nonzero until every non-`N/A` case is implemented.
 
 `make env` creates the pinned Python tooling environment under `.conda/`, with
 its package cache under `.conda-pkgs/`. Use `.conda/bin/python` for YAML input.

@@ -285,5 +285,52 @@ int main(void) {
   if (fabs(chain_y[0] - exact_a) > 1.0e-8 ||
       fabs(chain_y[1] - exact_b) > 1.0e-8 ||
       fabs(chain_y[0] + chain_y[1] + chain_y[2] - 1.0) > 1.0e-9) return 8;
+
+  /* Port of test_README_example: compare the values at the precision printed
+     by the tutorial (three significant digits). */
+  const chem_species foo_species[] = {
+      {.name = "Foo"}, {.name = "Bar"}, {.name = "Baz"}};
+  const chem_term foo_reactant[] = {{.species = 0, .coefficient = 1.0}};
+  const chem_term foo_bar_reactants[] = {
+      {.species = 0, .coefficient = 1.0}, {.species = 1, .coefficient = 1.0}};
+  const chem_term bar_baz_products[] = {
+      {.species = 1, .coefficient = 0.8}, {.species = 2, .coefficient = 0.2}};
+  const chem_term baz_product[] = {{.species = 2, .coefficient = 1.0}};
+  const chem_reaction foo_reactions[] = {
+      {.kind = CHEM_ARRHENIUS, .reactants = foo_reactant, .reactant_count = 1,
+       .products = bar_baz_products, .product_count = 2,
+       .p = {1.0e-3, 0.0, 0.0, 300.0, 0.0}},
+      {.kind = CHEM_ARRHENIUS, .reactants = foo_bar_reactants, .reactant_count = 2,
+       .products = baz_product, .product_count = 1,
+       .p = {1.0e-5, 0.0, 110.0, 300.0, 0.0}},
+  };
+  const chem_mechanism foo_mechanism = {
+      .species = foo_species, .species_count = 3,
+      .reactions = foo_reactions, .reaction_count = 2};
+  const double tutorial_expected[10][3] = {
+      {11.8, 5.90, 1.91}, {6.79, 9.05, 3.32}, {3.83, 10.7, 4.21},
+      {2.14, 11.7, 4.74}, {1.19, 12.2, 5.04}, {0.658, 12.4, 5.21},
+      {0.364, 12.6, 5.31}, {0.201, 12.7, 5.36}, {0.111, 12.7, 5.39},
+      {0.0613, 12.8, 5.41}};
+  double tutorial_y[] = {20.0, 0.0, 0.0};
+  const double tutorial_t = 287.45, tutorial_p = 101319.9;
+  const double tutorial_density = tutorial_p / (8.31446261815324 * tutorial_t);
+  chem_solver_workspace tutorial_workspace;
+  if (chem_solver_workspace_init(&tutorial_workspace, &foo_mechanism) != 0) return 35;
+  int tutorial_error = 0;
+  for (size_t step = 0; step < 10 && !tutorial_error; ++step) {
+    tutorial_error = chem_rosenbrock3_solve_with_workspace(
+        &foo_mechanism, &tutorial_workspace, tutorial_y, tutorial_t, tutorial_p,
+        tutorial_density, NULL, 500.0, NULL, NULL);
+    for (size_t species_index = 0; species_index < 3 && !tutorial_error;
+         ++species_index) {
+      const double expected = tutorial_expected[step][species_index];
+      const double print_tolerance = 0.5 * pow(10.0, floor(log10(expected)) - 2.0);
+      if (fabs(tutorial_y[species_index] - expected) > print_tolerance)
+        tutorial_error = 1;
+    }
+  }
+  chem_solver_workspace_destroy(&tutorial_workspace);
+  if (tutorial_error) return 36;
   return 0;
 }

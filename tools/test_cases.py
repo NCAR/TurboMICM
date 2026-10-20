@@ -48,6 +48,7 @@ implemented = {
     "reaction_rate_store:ReactionRateConstantStore.SurfaceMissingDiffusionCoefficientThrows",
     "reaction_rate_store:ReactionRateConstantStore.SurfaceMissingMolecularWeightThrows",
     "reaction_rate_store:ReactionRateConstantStore.ParameterizedMultipliers",
+    "README_example",
 }
 
 failed = False
@@ -57,7 +58,8 @@ for raw in case_file.read_text().splitlines():
         continue
     case_id, kind = line.split()
     if case_id in implemented:
-        print(f"{case_id} PASS C rate formula checked")
+        reason = "C tutorial output checked" if case_id == "README_example" else "C rate formula checked"
+        print(f"{case_id} PASS {reason}")
     elif kind == "program":
         failed = True
         print(f"{case_id} FAIL C program port incomplete")
