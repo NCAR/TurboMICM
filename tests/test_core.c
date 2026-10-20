@@ -238,6 +238,40 @@ int main(void) {
       parameterized_jacobian[0] != 1.0 || parameterized_jacobian[2] != -1.0 ||
       parameterized_jacobian[1] != 0.0 || parameterized_jacobian[3] != 0.0) return 34;
 
+  const chem_term repeated_reactants[] = {
+      {.species = 0, .coefficient = 1.0},
+      {.species = 0, .coefficient = 1.0}};
+  const chem_term repeated_reactant_coefficient[] = {
+      {.species = 0, .coefficient = 2.0}};
+  const chem_term repeated_products[] = {
+      {.species = 0, .coefficient = 1.0},
+      {.species = 1, .coefficient = 1.0}};
+  const chem_reaction repeated_form_reactions[] = {
+      {.kind = CHEM_ARRHENIUS, .reactants = repeated_reactants,
+       .reactant_count = 2, .products = repeated_products, .product_count = 2,
+       .p = {3.0, 0.0, 0.0, 300.0, 0.0}},
+      {.kind = CHEM_ARRHENIUS, .reactants = repeated_reactant_coefficient,
+       .reactant_count = 1, .products = repeated_products, .product_count = 2,
+       .p = {3.0, 0.0, 0.0, 300.0, 0.0}}};
+  const chem_mechanism repeated_mechanisms[] = {
+      {.species = species, .species_count = 2,
+       .reactions = &repeated_form_reactions[0], .reaction_count = 1},
+      {.species = species, .species_count = 2,
+       .reactions = &repeated_form_reactions[1], .reaction_count = 1}};
+  const double repeated_state[] = {2.0, 0.0};
+  double repeated_rates[2], repeated_jacobians[8];
+  for (size_t form = 0; form < 2; ++form) {
+    if (chem_rate_constants(&repeated_mechanisms[form], 300.0, 101325.0,
+                            0.0, NULL, &repeated_rates[form]) != 0 ||
+        chem_negative_jacobian_with_constants(&repeated_mechanisms[form],
+            repeated_state, &repeated_rates[form],
+            &repeated_jacobians[4*form]) != 0) return 37;
+  }
+  for (size_t i = 0; i < 4; ++i)
+    if (repeated_jacobians[i] != repeated_jacobians[4+i]) return 38;
+  if (repeated_jacobians[0] != 12.0 || repeated_jacobians[2] != -12.0 ||
+      repeated_jacobians[1] != 0.0 || repeated_jacobians[3] != 0.0) return 39;
+
   const chem_reaction decay = {
       .kind = CHEM_ARRHENIUS,
       .reactants = reactants,
@@ -332,5 +366,53 @@ int main(void) {
   }
   chem_solver_workspace_destroy(&tutorial_workspace);
   if (tutorial_error) return 36;
+
+  /* Port of test_solver_results: grouped cells share one adaptive controller,
+     and the printed solver counters are part of this plain-program case. */
+  const chem_term solve_a[] = {{.species = 0, .coefficient = 1.0}};
+  const chem_term solve_b[] = {{.species = 1, .coefficient = 1.0}};
+  const chem_term solve_bb[] = {{.species = 1, .coefficient = 2.0}};
+  const chem_term solve_bc[] = {
+      {.species = 1, .coefficient = 1.0},
+      {.species = 2, .coefficient = 1.0}};
+  const chem_term solve_ac[] = {
+      {.species = 0, .coefficient = 1.0},
+      {.species = 2, .coefficient = 1.0}};
+  const chem_reaction solve_reactions[] = {
+      {.kind = CHEM_USER_DEFINED, .label = "r1", .reactants = solve_a,
+       .reactant_count = 1, .products = solve_b, .product_count = 1,
+       .p = {1.0, 0, 0, 0, 0, 0, 0, 0}},
+      {.kind = CHEM_USER_DEFINED, .label = "r2", .reactants = solve_bb,
+       .reactant_count = 1, .products = solve_bc, .product_count = 2,
+       .p = {1.0, 0, 0, 0, 0, 0, 0, 1}},
+      {.kind = CHEM_USER_DEFINED, .label = "r3", .reactants = solve_bc,
+       .reactant_count = 2, .products = solve_ac, .product_count = 2,
+       .p = {1.0, 0, 0, 0, 0, 0, 0, 2}},
+  };
+  const char *solve_labels[] = {"r1", "r2", "r3"};
+  const chem_mechanism solve_mechanism = {
+      .species = species3, .species_count = 3,
+      .reactions = solve_reactions, .reaction_count = 3,
+      .custom_labels = solve_labels, .custom_parameter_count = 3};
+  double solve_states[] = {1.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.5, 0.0, 0.0};
+  const double solve_temperatures[] = {272.5, 272.5, 272.5};
+  const double solve_pressures[] = {101253.3, 101253.3, 101253.3};
+  const double solve_densities[] = {1e6, 1e6, 1e6};
+  const double solve_rates[] = {
+      0.04, 3e7, 1e4, 0.04, 3e7, 1e4, 0.04, 3e7, 1e4};
+  chem_solver_workspace solve_workspace = {0};
+  chem_solver_stats solve_stats;
+  int solve_status = chem_solver_workspace_init_group(
+      &solve_workspace, &solve_mechanism, 3);
+  if (!solve_status)
+    solve_status = chem_rosenbrock3_solve_group_with_workspace(
+        &solve_mechanism, &solve_workspace, solve_states, solve_temperatures,
+        solve_pressures, solve_densities, solve_rates, 3, 200.0, NULL,
+        &solve_stats);
+  chem_solver_workspace_destroy(&solve_workspace);
+  if (solve_status != 0 || solve_stats.internal_steps != 18 ||
+      solve_stats.accepted != 18 || solve_stats.rejected != 0 ||
+      solve_stats.function_calls != 36 || solve_stats.jacobian_updates != 18 ||
+      solve_stats.decompositions != 18 || solve_stats.solves != 54) return 40;
   return 0;
 }

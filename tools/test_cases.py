@@ -49,6 +49,7 @@ implemented = {
     "reaction_rate_store:ReactionRateConstantStore.SurfaceMissingMolecularWeightThrows",
     "reaction_rate_store:ReactionRateConstantStore.ParameterizedMultipliers",
     "README_example",
+    "solve_results",
 }
 
 failed = False
@@ -58,7 +59,10 @@ for raw in case_file.read_text().splitlines():
         continue
     case_id, kind = line.split()
     if case_id in implemented:
-        reason = "C tutorial output checked" if case_id == "README_example" else "C rate formula checked"
+        if case_id in {"README_example", "solve_results"}:
+            reason = "C tutorial output checked"
+        else:
+            reason = "C rate formula checked"
         print(f"{case_id} PASS {reason}")
     elif kind == "program":
         failed = True

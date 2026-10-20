@@ -15,12 +15,18 @@
   generated C.
 - The C core test ports the README tutorial's Foo/Bar/Baz mechanism and checks
   all ten printed states at the tutorial's three-significant-digit precision.
+- The C core test ports `test_solver_results` with three grouped cells and
+  checks the printed solver state and counters. Its 18 accepted steps, 36
+  function calls, 18 Jacobian updates/decompositions, and 54 solves match MICM.
+- Repeated-reactant Jacobians now match for both separate unit terms (`B + B`)
+  and one stoichiometric term (`2 B`), covering a coefficient case that the
+  previous negative-Jacobian implementation mishandled.
 - JSON and YAML tutorial mechanisms normalize to 7 species; the input reactions
   expand to 10 and 7 generated reactions, respectively (JSON and YAML).
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Forty-four cases pass; 636 cases still report incomplete ports,
+  statuses. Forty-five cases pass; 635 cases still report incomplete ports,
   so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -28,14 +34,12 @@
 The seed-1 first cell, 100 steps at `DT = 30 s`, passed the supplied MICM
 comparison utility with both compilers. The 100-cell seed-1 run also passed:
 
-| Compiler | C elapsed time | MICM elapsed time | Solver steps | Largest relative difference |
-| --- | ---: | ---: | ---: | ---: |
-| Clang | 142.861 ms | 10.430 ms | 900 | `1.13e-14` |
-| GCC 15 | 165.924 ms | 11.009 ms | 900 | `2.58e-15` |
-
-For 100 seed-1 cells, 100 steps, and four threads, Clang completed in
-4,416.783 ms; the comparison run took 347.269 ms. All 21,100 state values
-passed, with a largest relative difference of `9.70e-13`.
+| Run | Compiler | C elapsed time | MICM elapsed time | Solver steps | Largest relative difference |
+| --- | --- | ---: | ---: | ---: | ---: |
+| First cell | Clang | 173.842 ms | 10.767 ms | 900 | `0` |
+| First cell | GCC 15 | 165.693 ms | 10.767 ms | 900 | `5.69e-15` |
+| 100 cells, 4 threads | Clang | 4,371.516 ms | 354.051 ms | 3,600 | `9.70e-13` |
+| 100 cells, 4 threads | GCC 15 | 4,526.347 ms | 354.051 ms | 3,600 | `9.70e-13` |
 
 The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 300,799.575 ms; the reference completed in 27,457.982 ms. The comparison failed
@@ -43,5 +47,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 `5.33e-4` for HO2NO2 in cell 3974. A single-cell run of that input also fails,
 so the discrepancy is not caused by cell grouping. This result is a regression
 case for further solver arithmetic work. The implementation is about eleven
-times slower than the reference at this scale, and 636 of the 680 inventory cases
+times slower than the reference at this scale, and 635 of the 680 inventory cases
 remain unported.

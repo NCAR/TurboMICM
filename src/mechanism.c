@@ -330,27 +330,24 @@ int chem_negative_jacobian_with_constants(
         if (independent->species != col ||
             chem_density_parameterized(&mechanism->species[col])) continue;
         double derivative = rate_constants[r];
-        int skipped_independent = 0;
         for (size_t i = 0; i < reaction->reactant_count; ++i) {
+          if (i == q) continue;
           const chem_term *term = &reaction->reactants[i];
-          if (!skipped_independent && term->species == col) {
-            skipped_independent = 1;
-            continue;
-          }
           if (!chem_density_parameterized(&mechanism->species[term->species]))
             derivative *= pow(concentration[term->species], term->coefficient);
         }
-        skipped_independent = 0;
+        derivative *= independent->coefficient;
+        if (independent->coefficient != 1.0)
+          derivative *= pow(concentration[col], independent->coefficient - 1.0);
         for (size_t i = 0; i < reaction->reactant_count; ++i) {
+          if (i == q) continue;
           const chem_term *term = &reaction->reactants[i];
-          if (!skipped_independent && term->species == col) {
-            skipped_independent = 1;
-            continue;
-          }
           if (!mechanism->species[term->species].third_body)
-            negative_jacobian[term->species*n + col] += derivative;
+            negative_jacobian[term->species*n + col] +=
+                term->coefficient * derivative;
         }
-        negative_jacobian[col*n + col] += derivative;
+        negative_jacobian[col*n + col] +=
+            independent->coefficient * derivative;
         for (size_t i = 0; i < reaction->product_count; ++i) {
           const chem_term *term = &reaction->products[i];
           if (!mechanism->species[term->species].third_body)
