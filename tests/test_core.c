@@ -1551,6 +1551,33 @@ static int check_matrix_view_api(void) {
           vectorized_loop_data,3,4,4) ||
       chem_const_vector_matrix_view_get(&const_vectorized_loop,1,2,&value) ||
       value != 102.0) return 43;
+  double operations_data[12] = {0};
+  chem_vector_matrix_view operations;
+  const double flat_values[] = {1,2,3,4,5,6};
+  double flat_copy[6];
+  if (chem_vector_matrix_view_init(&operations,operations_data,2,3,2) ||
+      chem_vector_matrix_view_copy_from_vector(&operations,flat_values,6) ||
+      chem_vector_matrix_view_copy_to_vector(&operations,flat_copy,6)) return 44;
+  for (size_t i = 0; i < 6; ++i) if (flat_copy[i] != flat_values[i]) return 45;
+  chem_const_vector_matrix_view const_operations;
+  if (chem_const_vector_matrix_view_init(&const_operations,operations_data,2,3,2) ||
+      chem_const_vector_matrix_view_copy_to_vector(&const_operations,flat_copy,6))
+    return 46;
+  double other_operations_data[6];
+  chem_vector_matrix_view other_operations;
+  if (chem_vector_matrix_view_init(&other_operations,other_operations_data,2,3,1) ||
+      chem_vector_matrix_view_fill(&other_operations,10.0) ||
+      chem_vector_matrix_view_axpy(&operations,&other_operations,2.0) ||
+      chem_vector_matrix_view_axpy(&operations,&other_operations,NAN) == 0 ||
+      chem_vector_matrix_view_min(&operations,&value) || value != 21.0 ||
+      chem_vector_matrix_view_max(&operations,&value) || value != 26.0) return 47;
+  if (chem_vector_matrix_view_for_each(&operations,matrix_add_index,
+                                       (void *)&scale) ||
+      chem_vector_matrix_view_get(&operations,1,2,&value) || value != 38.0)
+    return 48;
+  if (chem_vector_matrix_view_copy_to_vector(&operations,flat_copy,5) == 0 ||
+      chem_vector_matrix_view_axpy(&operations,&vectorized_loop,1.0) == 0)
+    return 49;
   return 0;
 }
 

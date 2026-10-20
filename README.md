@@ -65,7 +65,8 @@ python3 ../reference/compare_final.py ts1_final.csv path/to/reference.csv
 mutable and read-only strided matrix views, rate evaluation, forcing and Jacobian
 routines, linear and equilibrium constraint evaluation helpers, version API, and
 solver interface.
-Grouped vector-matrix views expose MICM-style lane packing for batched rows.
+Grouped vector-matrix views expose MICM-style lane packing for batched rows,
+with vector conversion, AXPY, fill, reductions, and element callbacks.
 Matrix views support checked element access, row-major vector conversion,
 row and column vector copies, element traversal, fill, AXPY, and min/max/sum
 reductions.
