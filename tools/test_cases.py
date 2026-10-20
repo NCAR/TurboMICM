@@ -40,6 +40,8 @@ implemented = {
     "process:Process.VectorMatrix",
     "process_set:ProcessSetFiniteDifferenceJacobian.Matrix",
     "process_set:RandomProcessSet.Matrix",
+    "process_set:ProcessSet.Matrix",
+    "process_set:ProcessSet.VectorMatrix",
     "process:Process.BuildsChemicalReaction",
     "process:Process.ChemicalReactionCopyAssignmentSucceeds",
     "reaction_rate_store:ReactionRateConstantStore.OffsetsAreContiguousCumulativeSizes",
@@ -135,6 +137,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C finite-difference Jacobian checks"
         elif case_id.startswith("version:"):
             reason = "C version API checked"
+        elif case_id in {"process_set:ProcessSet.Matrix", "process_set:ProcessSet.VectorMatrix"}:
+            reason = "C forcing and Jacobian match grouped-process reference values"
         elif case_id == "process_set:RandomProcessSet.Matrix":
             reason = "C random process mechanisms evaluate across the reference sizes"
         elif case_id == "process_set:ProcessSetFiniteDifferenceJacobian.Matrix":

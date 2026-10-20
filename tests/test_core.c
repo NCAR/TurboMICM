@@ -559,6 +559,83 @@ static int check_random_process_sets(void) {
          check_random_process_set(400, 100, 80);
 }
 
+static int check_process_set_forcing_and_jacobian(void) {
+  const chem_species species[] = {
+      {.name = "foo"}, {.name = "bar"}, {.name = "baz"}, {.name = "quz"},
+      {.name = "quuz"}, {.name = "corge"},
+      {.name = "qux", .density_parameterized = 1, .density_factor = 0.72}};
+  const chem_term foo_baz[] = {{.species = 0, .coefficient = 1.0},
+                               {.species = 2, .coefficient = 1.0}};
+  const chem_term bar_qux[] = {{.species = 1, .coefficient = 1.0},
+                               {.species = 6, .coefficient = 1.0}};
+  const chem_term quz[] = {{.species = 3, .coefficient = 1.0}};
+  const chem_term baz_qux[] = {{.species = 2, .coefficient = 1.0},
+                               {.species = 6, .coefficient = 1.0}};
+  const chem_term bar_quuz[] = {{.species = 1, .coefficient = 1.0},
+                                {.species = 4, .coefficient = 2.4}};
+  const chem_term foo_quz[] = {{.species = 0, .coefficient = 1.0},
+                               {.species = 3, .coefficient = 1.4}};
+  const chem_term bar_quz[] = {{.species = 1, .coefficient = 1.0},
+                               {.species = 3, .coefficient = 2.5}};
+  const chem_reaction reactions[] = {
+      {.kind = CHEM_ARRHENIUS, .reactants = foo_baz, .reactant_count = 2,
+       .products = bar_quuz, .product_count = 2},
+      {.kind = CHEM_ARRHENIUS, .reactants = bar_qux, .reactant_count = 2,
+       .products = foo_quz, .product_count = 2},
+      {.kind = CHEM_ARRHENIUS, .reactants = quz, .reactant_count = 1,
+       .products = NULL, .product_count = 0},
+      {.kind = CHEM_ARRHENIUS, .reactants = baz_qux, .reactant_count = 2,
+       .products = bar_quz, .product_count = 2}};
+  const chem_mechanism mechanism = {
+      .species = species, .species_count = 7,
+      .reactions = reactions, .reaction_count = 4};
+  const double y[2][7] = {{0.1, 0.2, 0.3, 0.4, 0.5, 0.0, 0.0},
+                          {1.1, 1.2, 1.3, 1.4, 1.5, 0.0, 0.0}};
+  const double rates[2][4] = {{10.0, 20.0*70.0*0.72, 30.0,
+                               40.0*70.0*0.72},
+                              {110.0, 120.0*80.0*0.72, 130.0,
+                               140.0*80.0*0.72}};
+  const double expected[2][6] = {
+      {1000.0 - 10.0*0.1*0.3 + 20.0*70.0*0.72*0.2,
+       1000.0 + 10.0*0.1*0.3 - 20.0*0.2*70.0*0.72 + 40.0*70.0*0.72*0.3,
+       1000.0 - 10.0*0.1*0.3 - 40.0*70.0*0.72*0.3,
+       1000.0 + 20.0*70.0*0.72*0.2*1.4 - 30.0*0.4 + 40.0*70.0*0.72*2.5*0.3,
+       1000.0 + 10.0*0.1*0.3*2.4, 1000.0},
+      {1000.0 - 110.0*1.1*1.3 + 120.0*80.0*0.72*1.2,
+       1000.0 + 110.0*1.1*1.3 - 120.0*1.2*80.0*0.72 + 140.0*80.0*0.72*1.3,
+       1000.0 - 110.0*1.1*1.3 - 140.0*80.0*0.72*1.3,
+       1000.0 + 120.0*80.0*0.72*1.2*1.4 - 130.0*1.4 + 140.0*80.0*0.72*2.5*1.3,
+       1000.0 + 110.0*1.1*1.3*2.4, 1000.0}};
+  for (size_t cell = 0; cell < 2; ++cell) {
+    double forcing[7] = {0};
+    if (chem_forcing_with_constants(&mechanism, y[cell], rates[cell],
+                                    70.0 + 10.0*cell, forcing)) return 1;
+    for (size_t row = 0; row < 6; ++row)
+      if (!near(1000.0 + forcing[row], expected[cell][row])) return 2;
+    double negative_jacobian[49] = {0};
+    if (chem_negative_jacobian_with_constants(&mechanism, y[cell], rates[cell],
+                                              negative_jacobian)) return 3;
+    for (size_t col = 0; col < 7; ++col) {
+      double plus[7], minus[7], f_plus[7], f_minus[7];
+      memcpy(plus, y[cell], sizeof(plus));
+      memcpy(minus, y[cell], sizeof(minus));
+      const double h = 1.0e-7 * fmax(1.0, fabs(y[cell][col]));
+      plus[col] += h;
+      minus[col] -= h;
+      if (chem_forcing_with_constants(&mechanism, plus, rates[cell], 70.0,
+                                      f_plus) ||
+          chem_forcing_with_constants(&mechanism, minus, rates[cell], 70.0,
+                                      f_minus)) return 4;
+      for (size_t row = 0; row < 7; ++row) {
+        const double fd = (f_plus[row] - f_minus[row]) / (2*h);
+        if (fabs(negative_jacobian[row*7 + col] + fd) >
+            1.0e-7 * fmax(1.0, fabs(fd))) return 5;
+      }
+    }
+  }
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -1139,5 +1216,6 @@ int main(void) {
   if (check_process_rate_constant_layouts() != 0) return 54;
   if (check_process_set_finite_difference_jacobian() != 0) return 55;
   if (check_random_process_sets() != 0) return 56;
+  if (check_process_set_forcing_and_jacobian() != 0) return 57;
   return 0;
 }
