@@ -18,6 +18,12 @@ typedef struct {
 } chem_jacobian_job;
 
 typedef struct {
+  size_t target_position;
+  size_t lower_position;
+  size_t upper_position;
+} chem_lu_update;
+
+typedef struct {
   size_t species_count;
   size_t reaction_count;
   size_t job_count;
@@ -26,10 +32,20 @@ typedef struct {
   unsigned char *pattern;
   size_t *position;
   size_t nonzero_count;
+  size_t *permutation;
+  size_t *inverse_permutation;
   size_t *lower;
   size_t *upper;
   size_t *lower_count;
   size_t *upper_count;
+  size_t *row_lower;
+  size_t *row_upper;
+  size_t *row_lower_count;
+  size_t *row_upper_count;
+  size_t *update_offset;
+  size_t *update_count;
+  chem_lu_update *updates;
+  size_t total_updates;
 } chem_symbolic;
 
 static double chem_falloff(
@@ -128,51 +144,207 @@ static double chem_rate_value(
   return value;
 }
 
+int chem_evaluate_rate(
+    const chem_mechanism *mechanism,
+    size_t reaction_index,
+    const double *parameters,
+    double temperature,
+    double pressure,
+    double *rate_constant) {
+  if (!mechanism || !rate_constant || reaction_index >= mechanism->reaction_count ||
+      temperature <= 0.0 || pressure < 0.0)
+    return -1;
+  const chem_reaction *reaction = &mechanism->reactions[reaction_index];
+  if (reaction->rate.kind == CHEM_RATE_USER &&
+      (!parameters || reaction->rate.custom_parameter >= mechanism->parameter_count))
+    return -1;
+  if (reaction->rate.kind == CHEM_RATE_SURFACE) {
+    if (reaction->rate.surface_species >= mechanism->species_count || !parameters ||
+        reaction->rate.custom_parameter >= mechanism->parameter_count ||
+        reaction->rate.custom_parameter + 1u >= mechanism->parameter_count)
+      return -1;
+    const chem_species *species = &mechanism->species[reaction->rate.surface_species];
+    if (species->molecular_weight <= 0.0 || species->diffusion_coefficient <= 0.0)
+      return -2;
+  }
+  const double air_density = pressure / (CHEM_GAS_CONSTANT * temperature);
+  *rate_constant = chem_rate_value(mechanism, reaction, parameters, 0, 1,
+                                   temperature, pressure, air_density);
+  return isfinite(*rate_constant) ? 0 : -1;
+}
+
 static void chem_symbolic_destroy(chem_symbolic *symbolic) {
   free(symbolic->jobs);
   free(symbolic->dependent_species);
   free(symbolic->pattern);
   free(symbolic->position);
+  free(symbolic->permutation);
+  free(symbolic->inverse_permutation);
   free(symbolic->lower);
   free(symbolic->upper);
   free(symbolic->lower_count);
   free(symbolic->upper_count);
+  free(symbolic->row_lower);
+  free(symbolic->row_upper);
+  free(symbolic->row_lower_count);
+  free(symbolic->row_upper_count);
+  free(symbolic->update_offset);
+  free(symbolic->update_count);
+  free(symbolic->updates);
   memset(symbolic, 0, sizeof(*symbolic));
+}
+
+static int chem_markowitz_order(const unsigned char *pattern, size_t n, size_t *permutation) {
+  unsigned char *graph = malloc(n * n * sizeof(unsigned char));
+  size_t *row_degree = calloc(n, sizeof(size_t));
+  size_t *column_degree = calloc(n, sizeof(size_t));
+  unsigned char *alive = malloc(n * sizeof(unsigned char));
+  size_t *columns = malloc(n * sizeof(size_t));
+  size_t *incoming = malloc(n * sizeof(size_t));
+  if (!graph || !row_degree || !column_degree || !alive || !columns || !incoming) {
+    free(graph); free(row_degree); free(column_degree); free(alive); free(columns); free(incoming);
+    return -1;
+  }
+  memcpy(graph, pattern, n * n * sizeof(unsigned char));
+  memset(alive, 1, n * sizeof(unsigned char));
+  for (size_t i = 0; i < n; ++i) {
+    for (size_t j = 0; j < n; ++j) {
+      if (graph[i * n + j]) {
+        ++row_degree[i];
+        ++column_degree[j];
+      }
+    }
+  }
+  for (size_t step = 0; step < n; ++step) {
+    size_t pivot = n;
+    size_t best_cost = SIZE_MAX;
+    for (size_t v = 0; v < n; ++v) {
+      if (!alive[v])
+        continue;
+      const size_t cost = (row_degree[v] - 1u) * (column_degree[v] - 1u);
+      if (pivot == n || cost < best_cost) {
+        best_cost = cost;
+        pivot = v;
+      }
+    }
+    permutation[step] = pivot;
+    alive[pivot] = 0;
+    size_t column_count = 0, incoming_count = 0;
+    for (size_t c = 0; c < n; ++c)
+      if (c != pivot && alive[c] && graph[pivot * n + c])
+        columns[column_count++] = c;
+    for (size_t i = 0; i < n; ++i)
+      if (i != pivot && alive[i] && graph[i * n + pivot])
+        incoming[incoming_count++] = i;
+    for (size_t i = 0; i < incoming_count; ++i) {
+      const size_t row = incoming[i];
+      for (size_t j = 0; j < column_count; ++j) {
+        const size_t col = columns[j];
+        if (!graph[row * n + col]) {
+          graph[row * n + col] = 1;
+          ++row_degree[row];
+          ++column_degree[col];
+        }
+      }
+    }
+    for (size_t j = 0; j < column_count; ++j) {
+      const size_t col = columns[j];
+      graph[pivot * n + col] = 0;
+      --column_degree[col];
+    }
+    for (size_t i = 0; i < incoming_count; ++i) {
+      const size_t row = incoming[i];
+      graph[row * n + pivot] = 0;
+      --row_degree[row];
+    }
+  }
+  free(graph); free(row_degree); free(column_degree); free(alive); free(columns); free(incoming);
+  return 0;
 }
 
 static int chem_symbolic_build(const chem_mechanism *mechanism, chem_symbolic *symbolic) {
   const size_t n = mechanism->species_count;
   size_t jobs = 0, dependent_count = 0;
   memset(symbolic, 0, sizeof(*symbolic));
+  if (n == 0 || n > SIZE_MAX / n || n * n > SIZE_MAX / sizeof(size_t))
+    return -1;
   symbolic->species_count = n;
   symbolic->reaction_count = mechanism->reaction_count;
   for (size_t r = 0; r < mechanism->reaction_count; ++r) {
-    jobs += mechanism->reactions[r].reactant_count;
-    dependent_count += mechanism->reactions[r].reactant_count * mechanism->reactions[r].reactant_count;
+    const size_t reactants = mechanism->reactions[r].reactant_count;
+    if (jobs > SIZE_MAX - reactants || (reactants && reactants > SIZE_MAX / reactants))
+      return -1;
+    const size_t dependencies = reactants * reactants;
+    if (dependent_count > SIZE_MAX - dependencies)
+      return -1;
+    jobs += reactants;
+    dependent_count += dependencies;
   }
+  if (jobs > SIZE_MAX / sizeof(*symbolic->jobs) || dependent_count > SIZE_MAX / sizeof(size_t))
+    return -1;
   symbolic->jobs = calloc(jobs ? jobs : 1, sizeof(*symbolic->jobs));
   symbolic->dependent_species = malloc((dependent_count ? dependent_count : 1) * sizeof(size_t));
   symbolic->pattern = calloc(n * n, sizeof(unsigned char));
+  symbolic->permutation = malloc(n * sizeof(size_t));
+  symbolic->inverse_permutation = malloc(n * sizeof(size_t));
   symbolic->lower = malloc(n * n * sizeof(size_t));
   symbolic->upper = malloc(n * n * sizeof(size_t));
   symbolic->lower_count = calloc(n, sizeof(size_t));
   symbolic->upper_count = calloc(n, sizeof(size_t));
-  if (!symbolic->jobs || !symbolic->dependent_species || !symbolic->pattern || !symbolic->lower ||
-      !symbolic->upper || !symbolic->lower_count || !symbolic->upper_count) {
+  symbolic->row_lower = malloc(n * n * sizeof(size_t));
+  symbolic->row_upper = malloc(n * n * sizeof(size_t));
+  symbolic->row_lower_count = calloc(n, sizeof(size_t));
+  symbolic->row_upper_count = calloc(n, sizeof(size_t));
+  symbolic->update_offset = calloc(n, sizeof(size_t));
+  symbolic->update_count = calloc(n, sizeof(size_t));
+  if (!symbolic->jobs || !symbolic->dependent_species || !symbolic->pattern || !symbolic->permutation ||
+      !symbolic->inverse_permutation || !symbolic->lower ||
+      !symbolic->upper || !symbolic->lower_count || !symbolic->upper_count || !symbolic->row_lower ||
+      !symbolic->row_upper || !symbolic->row_lower_count || !symbolic->row_upper_count ||
+      !symbolic->update_offset || !symbolic->update_count) {
     chem_symbolic_destroy(symbolic);
     return -1;
   }
   symbolic->job_count = jobs;
   for (size_t i = 0; i < n; ++i)
     symbolic->pattern[i * n + i] = 1;
+  for (size_t r = 0; r < mechanism->reaction_count; ++r) {
+    const chem_reaction *reaction = &mechanism->reactions[r];
+    for (size_t q = 0; q < reaction->reactant_count; ++q) {
+      const size_t column = mechanism->reactant_terms[reaction->reactant_offset + q].species;
+      for (size_t d = 0; d < reaction->reactant_count; ++d)
+        symbolic->pattern[mechanism->reactant_terms[reaction->reactant_offset + d].species * n + column] = 1;
+      for (size_t d = 0; d < reaction->product_count; ++d)
+        symbolic->pattern[mechanism->product_terms[reaction->product_offset + d].species * n + column] = 1;
+    }
+  }
+
+  if (chem_markowitz_order(symbolic->pattern, n, symbolic->permutation) != 0) {
+    chem_symbolic_destroy(symbolic);
+    return -1;
+  }
+  for (size_t i = 0; i < n; ++i)
+    symbolic->inverse_permutation[symbolic->permutation[i]] = i;
+  unsigned char *permuted_pattern = calloc(n * n, sizeof(unsigned char));
+  if (!permuted_pattern) {
+    chem_symbolic_destroy(symbolic);
+    return -1;
+  }
+  for (size_t row = 0; row < n; ++row)
+    for (size_t col = 0; col < n; ++col)
+      if (symbolic->pattern[symbolic->permutation[row] * n + symbolic->permutation[col]])
+        permuted_pattern[row * n + col] = 1;
+  memcpy(symbolic->pattern, permuted_pattern, n * n * sizeof(unsigned char));
+  free(permuted_pattern);
 
   size_t job_pos = 0, dep_pos = 0;
   for (size_t independent = 0; independent < n; ++independent) {
+    const size_t original_independent = symbolic->permutation[independent];
     for (size_t r = 0; r < mechanism->reaction_count; ++r) {
       const chem_reaction *reaction = &mechanism->reactions[r];
       for (size_t q = 0; q < reaction->reactant_count; ++q) {
         const size_t column = mechanism->reactant_terms[reaction->reactant_offset + q].species;
-        if (column != independent)
+        if (column != original_independent)
           continue;
         size_t found = 0;
         chem_jacobian_job *job = &symbolic->jobs[job_pos++];
@@ -180,18 +352,13 @@ static int chem_symbolic_build(const chem_mechanism *mechanism, chem_symbolic *s
         job->independent = independent;
         job->dependent_offset = dep_pos;
         for (size_t d = 0; d < reaction->reactant_count; ++d) {
-          const size_t row = mechanism->reactant_terms[reaction->reactant_offset + d].species;
-          if (row == independent && !found) {
+          const size_t original_row = mechanism->reactant_terms[reaction->reactant_offset + d].species;
+          if (original_row == original_independent && !found) {
             found = 1;
             continue;
           }
-          symbolic->dependent_species[dep_pos++] = row;
+          symbolic->dependent_species[dep_pos++] = symbolic->inverse_permutation[original_row];
           ++job->dependent_count;
-          symbolic->pattern[row * n + independent] = 1;
-        }
-        for (size_t d = 0; d < reaction->product_count; ++d) {
-          const size_t row = mechanism->product_terms[reaction->product_offset + d].species;
-          symbolic->pattern[row * n + independent] = 1;
         }
       }
     }
@@ -225,6 +392,47 @@ static int chem_symbolic_build(const chem_mechanism *mechanism, chem_symbolic *s
       if (symbolic->pattern[k * n + j])
         symbolic->upper[k * n + symbolic->upper_count[k]++] = j;
   }
+  for (size_t row = 0; row < n; ++row) {
+    for (size_t col = 0; col < row; ++col)
+      if (symbolic->pattern[row * n + col])
+        symbolic->row_lower[row * n + symbolic->row_lower_count[row]++] = col;
+    for (size_t col = row + 1; col < n; ++col)
+      if (symbolic->pattern[row * n + col])
+        symbolic->row_upper[row * n + symbolic->row_upper_count[row]++] = col;
+  }
+  for (size_t k = 0; k < n; ++k) {
+    symbolic->update_offset[k] = symbolic->total_updates;
+    for (size_t uj = 0; uj < symbolic->upper_count[k]; ++uj) {
+      const size_t col = symbolic->upper[k * n + uj];
+      for (size_t li = 0; li < symbolic->lower_count[k]; ++li) {
+        const size_t row = symbolic->lower[k * n + li];
+        if (symbolic->pattern[row * n + col])
+          ++symbolic->total_updates;
+      }
+    }
+    symbolic->update_count[k] = symbolic->total_updates - symbolic->update_offset[k];
+  }
+  symbolic->updates = malloc((symbolic->total_updates ? symbolic->total_updates : 1) * sizeof(*symbolic->updates));
+  if (!symbolic->updates) {
+    chem_symbolic_destroy(symbolic);
+    return -1;
+  }
+  size_t update_pos = 0;
+  for (size_t k = 0; k < n; ++k) {
+    for (size_t uj = 0; uj < symbolic->upper_count[k]; ++uj) {
+      const size_t col = symbolic->upper[k * n + uj];
+      for (size_t li = 0; li < symbolic->lower_count[k]; ++li) {
+        const size_t row = symbolic->lower[k * n + li];
+        if (symbolic->pattern[row * n + col]) {
+          symbolic->updates[update_pos++] = (chem_lu_update){
+            symbolic->position[row * n + col],
+            symbolic->position[row * n + k],
+            symbolic->position[k * n + col],
+          };
+        }
+      }
+    }
+  }
   return 0;
 }
 
@@ -248,6 +456,7 @@ static void chem_calculate_rates(
 
 static void chem_add_forcing(
     const chem_mechanism *mechanism,
+    const chem_symbolic *symbolic,
     size_t cell_count,
     const double *restrict y,
     const double *restrict rates,
@@ -260,13 +469,15 @@ static void chem_add_forcing(
     for (size_t c = 0; c < cell_count; ++c) {
       double rate = rate_row[c];
       for (size_t q = 0; q < reaction->reactant_count; ++q) {
-        const size_t species = mechanism->reactant_terms[reaction->reactant_offset + q].species;
+        const size_t species = symbolic->inverse_permutation[
+            mechanism->reactant_terms[reaction->reactant_offset + q].species];
         rate *= y[species * cell_count + c];
       }
       flux[c] = rate;
     }
     for (size_t q = 0; q < reaction->reactant_count; ++q) {
-      const size_t species = mechanism->reactant_terms[reaction->reactant_offset + q].species;
+      const size_t species = symbolic->inverse_permutation[
+          mechanism->reactant_terms[reaction->reactant_offset + q].species];
       double *forcing_row = forcing + species * cell_count;
       #pragma omp simd
       for (size_t c = 0; c < cell_count; ++c)
@@ -274,7 +485,7 @@ static void chem_add_forcing(
     }
     for (size_t q = 0; q < reaction->product_count; ++q) {
       const chem_term *product = &mechanism->product_terms[reaction->product_offset + q];
-      double *forcing_row = forcing + product->species * cell_count;
+      double *forcing_row = forcing + symbolic->inverse_permutation[product->species] * cell_count;
       #pragma omp simd
       for (size_t c = 0; c < cell_count; ++c)
         forcing_row[c] += product->coefficient * flux[c];
@@ -317,7 +528,7 @@ static void chem_build_jacobian(
       const chem_term *product = &mechanism->product_terms[reaction->product_offset + q];
       #pragma omp simd
       for (size_t c = 0; c < cell_count; ++c)
-        jacobian[symbolic->position[product->species * n + job->independent] * cell_count + c] -=
+      jacobian[symbolic->position[symbolic->inverse_permutation[product->species] * n + job->independent] * cell_count + c] -=
             product->coefficient * scratch[c];
     }
   }
@@ -343,26 +554,20 @@ static int chem_factor(
       inverse[c] = 1.0 / diagonal[c];
     }
     const size_t *lower = symbolic->lower + k * n;
-    const size_t *upper = symbolic->upper + k * n;
     for (size_t i = 0; i < symbolic->lower_count[k]; ++i) {
       double *lower_entry = matrix + symbolic->position[lower[i] * n + k] * cell_count;
       #pragma omp simd
       for (size_t c = 0; c < cell_count; ++c)
         lower_entry[c] *= inverse[c];
     }
-    for (size_t j = 0; j < symbolic->upper_count[k]; ++j) {
-      const size_t col = upper[j];
-      const double *pivot_row_value = matrix + symbolic->position[k * n + col] * cell_count;
-      for (size_t i = 0; i < symbolic->lower_count[k]; ++i) {
-        const size_t row = lower[i];
-        if (symbolic->pattern[row * n + col]) {
-          double *entry = matrix + symbolic->position[row * n + col] * cell_count;
-          const double *lower_entry = matrix + symbolic->position[row * n + k] * cell_count;
-          #pragma omp simd
-          for (size_t c = 0; c < cell_count; ++c)
-            entry[c] -= lower_entry[c] * pivot_row_value[c];
-        }
-      }
+    for (size_t i = 0; i < symbolic->update_count[k]; ++i) {
+      const chem_lu_update *update = &symbolic->updates[symbolic->update_offset[k] + i];
+      double *target = matrix + update->target_position * cell_count;
+      const double *lower_entry = matrix + update->lower_position * cell_count;
+      const double *upper_entry = matrix + update->upper_position * cell_count;
+      #pragma omp simd
+      for (size_t c = 0; c < cell_count; ++c)
+        target[c] -= lower_entry[c] * upper_entry[c];
     }
   }
   return 0;
@@ -372,26 +577,24 @@ static void chem_solve(const chem_symbolic *symbolic, size_t cell_count, const d
   const size_t n = symbolic->species_count;
   for (size_t i = 0; i < n; ++i) {
     double *rhs_i = rhs + i * cell_count;
-    for (size_t j = 0; j < i; ++j) {
-      if (symbolic->pattern[i * n + j]) {
-        const double *entry = matrix + symbolic->position[i * n + j] * cell_count;
-        const double *rhs_j = rhs + j * cell_count;
-        #pragma omp simd
-        for (size_t c = 0; c < cell_count; ++c)
-          rhs_i[c] -= entry[c] * rhs_j[c];
-      }
+    for (size_t q = 0; q < symbolic->row_lower_count[i]; ++q) {
+      const size_t j = symbolic->row_lower[i * n + q];
+      const double *entry = matrix + symbolic->position[i * n + j] * cell_count;
+      const double *rhs_j = rhs + j * cell_count;
+      #pragma omp simd
+      for (size_t c = 0; c < cell_count; ++c)
+        rhs_i[c] -= entry[c] * rhs_j[c];
     }
   }
   for (size_t ii = n; ii-- > 0;) {
     double *rhs_i = rhs + ii * cell_count;
-    for (size_t j = ii + 1; j < n; ++j) {
-      if (symbolic->pattern[ii * n + j]) {
-        const double *entry = matrix + symbolic->position[ii * n + j] * cell_count;
-        const double *rhs_j = rhs + j * cell_count;
-        #pragma omp simd
-        for (size_t c = 0; c < cell_count; ++c)
-          rhs_i[c] -= entry[c] * rhs_j[c];
-      }
+    for (size_t q = 0; q < symbolic->row_upper_count[ii]; ++q) {
+      const size_t j = symbolic->row_upper[ii * n + q];
+      const double *entry = matrix + symbolic->position[ii * n + j] * cell_count;
+      const double *rhs_j = rhs + j * cell_count;
+      #pragma omp simd
+      for (size_t c = 0; c < cell_count; ++c)
+        rhs_i[c] -= entry[c] * rhs_j[c];
     }
     const double *diagonal = matrix + symbolic->position[ii * n + ii] * cell_count;
     #pragma omp simd
@@ -402,6 +605,7 @@ static void chem_solve(const chem_symbolic *symbolic, size_t cell_count, const d
 
 static double chem_normalized_error(
     const chem_mechanism *mechanism,
+    const chem_symbolic *symbolic,
     size_t cell_count,
     const double *restrict y,
     const double *restrict ynew,
@@ -409,7 +613,7 @@ static double chem_normalized_error(
   const size_t n = mechanism->species_count;
   double sum = 0.0;
   for (size_t species = 0; species < n; ++species) {
-    const chem_species *item = &mechanism->species[species];
+    const chem_species *item = &mechanism->species[symbolic->permutation[species]];
     const double atol = item->absolute_tolerance;
     const double *yrow = y + species * cell_count;
     const double *newrow = ynew + species * cell_count;
@@ -450,7 +654,6 @@ int chem_integrate_group_steps(
   chem_symbolic symbolic;
   if (chem_symbolic_build(mechanism, &symbolic) != 0)
     return -1;
-
   double *y = NULL, *ynew = NULL, *initial_forcing = NULL, *error = NULL;
   double *k[3] = { NULL, NULL, NULL };
   double *parameters = NULL, *rates = NULL, *jacobian = NULL, *scratch = NULL;
@@ -466,7 +669,7 @@ int chem_integrate_group_steps(
   }
   for (size_t c = 0; c < cell_count; ++c)
     for (size_t s = 0; s < n; ++s)
-      y[s * cell_count + c] = y_external[c * n + s];
+      y[s * cell_count + c] = y_external[c * n + symbolic.permutation[s]];
   if (parameters_external)
     for (size_t c = 0; c < cell_count; ++c)
       for (size_t p = 0; p < mechanism->parameter_count; ++p)
@@ -497,108 +700,119 @@ int chem_integrate_group_steps(
     int reject_last_h = 0, reject_more_h = 0;
     size_t step_attempts = 0, accepted_this_interval = 0;
     while ((present_time - interval + round_off) <= 0.0) {
-    if (step_attempts > 1000) {
-      fprintf(stderr, "solver exceeded 1000 internal steps\n");
-      failed = 1;
-      goto cleanup;
-    }
-    if ((present_time + 0.1 * h) == present_time || h <= fmin(round_off, h_min)) {
-      fprintf(stderr, "solver step size too small: t=%.17g h=%.17g\n", present_time, h);
-      failed = 1;
-      goto cleanup;
-    }
-    h = fmin(h, fabs(interval - present_time));
-    chem_add_forcing(mechanism, cell_count, y, rates, initial_forcing, scratch);
-    if (statistics) ++statistics->function_calls;
-    chem_build_jacobian(mechanism, &symbolic, cell_count, y, rates, jacobian, scratch);
-    if (statistics) ++statistics->jacobian_updates;
-
-    int accepted = 0;
-    while (!accepted) {
-      const double alpha = 1.0 / (h * gamma0);
-      for (size_t s = 0; s < n; ++s) {
-        double *diagonal = jacobian + symbolic.position[s * n + s] * cell_count;
-        #pragma omp simd
-        for (size_t c = 0; c < cell_count; ++c)
-          diagonal[c] += alpha;
-      }
-      size_t bad_pivot = 0, bad_cell = 0;
-      if (chem_factor(&symbolic, cell_count, jacobian, scratch, &bad_pivot, &bad_cell) != 0) {
-        const double bad_value = jacobian[symbolic.position[bad_pivot * n + bad_pivot] * cell_count + bad_cell];
-        fprintf(stderr, "linear factorization failed at cell %zu time %.17g h %.17g pivot %zu value %.17g\n",
-                bad_cell, present_time, h, bad_pivot, bad_value);
+      if (step_attempts > 1000) {
+        fprintf(stderr, "solver exceeded 1000 internal steps\n");
         failed = 1;
         goto cleanup;
       }
-      if (statistics) ++statistics->decompositions;
-
-      memcpy(k[0], initial_forcing, n * cell_count * sizeof(double));
-      chem_solve(&symbolic, cell_count, jacobian, k[0]);
-      if (statistics) ++statistics->solves;
-      memcpy(ynew, y, n * cell_count * sizeof(double));
-      for (size_t i = 0; i < n * cell_count; ++i)
-        ynew[i] += a10 * k[0][i];
-      chem_add_forcing(mechanism, cell_count, ynew, rates, k[1], scratch);
+      if ((present_time + 0.1 * h) == present_time || h <= fmin(round_off, h_min)) {
+        fprintf(stderr, "solver step size too small: t=%.17g h=%.17g\n", present_time, h);
+        failed = 1;
+        goto cleanup;
+      }
+      h = fmin(h, fabs(interval - present_time));
+      chem_add_forcing(mechanism, &symbolic, cell_count, y, rates, initial_forcing, scratch);
       if (statistics) ++statistics->function_calls;
-      memcpy(k[2], k[1], n * cell_count * sizeof(double));
-      const double c0 = c10 / h;
-      for (size_t i = 0; i < n * cell_count; ++i)
-        k[1][i] += c0 * k[0][i];
-      chem_solve(&symbolic, cell_count, jacobian, k[1]);
-      if (statistics) ++statistics->solves;
+      chem_build_jacobian(mechanism, &symbolic, cell_count, y, rates, jacobian, scratch);
+      if (statistics) ++statistics->jacobian_updates;
 
-      const double c20_over_h = c20 / h;
-      const double c21_over_h = c21 / h;
-      for (size_t i = 0; i < n * cell_count; ++i)
-        k[2][i] += c20_over_h * k[0][i] + c21_over_h * k[1][i];
-      chem_solve(&symbolic, cell_count, jacobian, k[2]);
-      if (statistics) ++statistics->solves;
+      int accepted = 0;
+      while (!accepted) {
+        const double alpha = 1.0 / (h * gamma0);
+        for (size_t s = 0; s < n; ++s) {
+          double *diagonal = jacobian + symbolic.position[s * n + s] * cell_count;
+          #pragma omp simd
+          for (size_t c = 0; c < cell_count; ++c)
+            diagonal[c] += alpha;
+        }
+        size_t bad_pivot = 0, bad_cell = 0;
+        if (chem_factor(&symbolic, cell_count, jacobian, scratch, &bad_pivot, &bad_cell) != 0) {
+          const double bad_value = jacobian[symbolic.position[bad_pivot * n + bad_pivot] * cell_count + bad_cell];
+          fprintf(stderr, "linear factorization failed at cell %zu time %.17g h %.17g pivot %zu value %.17g\n",
+                  bad_cell, present_time, h, bad_pivot, bad_value);
+          failed = 1;
+          goto cleanup;
+        }
+        if (statistics) ++statistics->decompositions;
 
-      for (size_t i = 0; i < n * cell_count; ++i) {
-        ynew[i] = y[i] + m[0] * k[0][i] + m[1] * k[1][i] + m[2] * k[2][i];
-        error[i] = e[0] * k[0][i] + e[1] * k[1][i] + e[2] * k[2][i];
-      }
-      const double normalized_error = chem_normalized_error(mechanism, cell_count, y, ynew, error);
-      double factor = 0.9 / pow(normalized_error, 1.0 / 3.0);
-      factor = fmin(6.0, fmax(0.2, factor));
-      double hnew = h * factor;
-      if (statistics) ++statistics->internal_steps;
-      ++step_attempts;
-      if (!isfinite(normalized_error)) {
-        fprintf(stderr, "non-finite normalized error %.17g at time %.17g h %.17g\n", normalized_error, present_time, h);
-        failed = 1;
-        goto cleanup;
-      }
-      if (normalized_error < 1.0 || h < h_min) {
-        ++accepted_this_interval;
-        if (statistics) ++statistics->accepted;
-        present_time += h;
-        memcpy(y, ynew, n * cell_count * sizeof(double));
-        hnew = fmax(h_min, fmin(hnew, h_max));
-        if (reject_last_h)
-          hnew = fmin(hnew, h);
-        reject_last_h = 0;
-        reject_more_h = 0;
-        h = hnew;
-        accepted = 1;
-      } else {
-        if (reject_more_h)
-          hnew = h * 0.1;
-        reject_more_h = reject_last_h;
-        reject_last_h = 1;
-        h = hnew;
-        if (statistics && accepted_this_interval >= 1)
-          ++statistics->rejected;
-        chem_build_jacobian(mechanism, &symbolic, cell_count, y, rates, jacobian, scratch);
-        if (statistics) ++statistics->jacobian_updates;
+        memcpy(k[0], initial_forcing, n * cell_count * sizeof(double));
+        chem_solve(&symbolic, cell_count, jacobian, k[0]);
+        if (statistics) ++statistics->solves;
+        memcpy(ynew, y, n * cell_count * sizeof(double));
+        for (size_t i = 0; i < n * cell_count; ++i)
+          ynew[i] += a10 * k[0][i];
+        chem_add_forcing(mechanism, &symbolic, cell_count, ynew, rates, k[1], scratch);
+        if (statistics) ++statistics->function_calls;
+        memcpy(k[2], k[1], n * cell_count * sizeof(double));
+        const double c0 = c10 / h;
+        for (size_t i = 0; i < n * cell_count; ++i)
+          k[1][i] += c0 * k[0][i];
+        chem_solve(&symbolic, cell_count, jacobian, k[1]);
+        if (statistics) ++statistics->solves;
+
+        const double c20_over_h = c20 / h;
+        const double c21_over_h = c21 / h;
+        for (size_t i = 0; i < n * cell_count; ++i)
+          k[2][i] += c20_over_h * k[0][i] + c21_over_h * k[1][i];
+        chem_solve(&symbolic, cell_count, jacobian, k[2]);
+        if (statistics) ++statistics->solves;
+
+        for (size_t i = 0; i < n * cell_count; ++i) {
+          ynew[i] = y[i] + m[0] * k[0][i] + m[1] * k[1][i] + m[2] * k[2][i];
+          error[i] = e[0] * k[0][i] + e[1] * k[1][i] + e[2] * k[2][i];
+        }
+        const double normalized_error = chem_normalized_error(mechanism, &symbolic, cell_count, y, ynew, error);
+        double factor = 0.9 / pow(normalized_error, 1.0 / 3.0);
+        factor = fmin(6.0, fmax(0.2, factor));
+        double hnew = h * factor;
+        if (statistics) ++statistics->internal_steps;
+        ++step_attempts;
+        if (!isfinite(normalized_error)) {
+          fprintf(stderr, "non-finite normalized error %.17g at time %.17g h %.17g\n", normalized_error, present_time, h);
+          failed = 1;
+          goto cleanup;
+        }
+        if (normalized_error < 1.0 || h < h_min) {
+          ++accepted_this_interval;
+          if (statistics) ++statistics->accepted;
+          present_time += h;
+          memcpy(y, ynew, n * cell_count * sizeof(double));
+          hnew = fmax(h_min, fmin(hnew, h_max));
+          if (reject_last_h)
+            hnew = fmin(hnew, h);
+          reject_last_h = 0;
+          reject_more_h = 0;
+          h = hnew;
+          accepted = 1;
+        } else {
+          if (reject_more_h)
+            hnew = h * 0.1;
+          reject_more_h = reject_last_h;
+          reject_last_h = 1;
+          h = hnew;
+          if (statistics && accepted_this_interval >= 1)
+            ++statistics->rejected;
+          chem_build_jacobian(mechanism, &symbolic, cell_count, y, rates, jacobian, scratch);
+          if (statistics) ++statistics->jacobian_updates;
+        }
       }
     }
-  }
+    /* Remove accepted roundoff undershoots within the configured tolerance at
+       interval boundaries, so they cannot become artificial sources in the
+       next interval through very fast reactions. */
+    for (size_t species = 0; species < n; ++species) {
+      const double atol = mechanism->species[symbolic.permutation[species]].absolute_tolerance;
+      double *row = y + species * cell_count;
+      #pragma omp simd
+      for (size_t c = 0; c < cell_count; ++c)
+        if (row[c] < 0.0 && row[c] >= -atol)
+          row[c] = 0.0;
+    }
   }
 
   for (size_t c = 0; c < cell_count; ++c)
     for (size_t s = 0; s < n; ++s)
-      y_external[c * n + s] = y[s * cell_count + c];
+      y_external[c * n + symbolic.permutation[s]] = y[s * cell_count + c];
 
 cleanup:
   free(y);

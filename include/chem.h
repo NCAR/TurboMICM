@@ -90,6 +90,18 @@ typedef struct {
 
 const chem_mechanism *chem_generated_mechanism(void);
 
+/* Evaluate one reaction's rate coefficient for one cell. Parameters are in
+   descriptor order; pass NULL when the mechanism has no custom parameters.
+   Returns 0 on success, -1 for invalid input, and -2 when a surface-rate
+   species lacks its required molecular weight or diffusion coefficient. */
+int chem_evaluate_rate(
+    const chem_mechanism *mechanism,
+    size_t reaction_index,
+    const double *parameters,
+    double temperature,
+    double pressure,
+    double *rate_constant);
+
 /* Integrate each row of y in place for one chemistry interval.  State layout
    is cell-major: y[cell * species_count + species].  Parameters use the same
    cell-major convention.  A separate call owns a separate adaptive history. */

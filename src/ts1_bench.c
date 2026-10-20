@@ -272,8 +272,8 @@ int main(int argc, char **argv) {
   const size_t steps = (size_t)parse_double(argv[arg + 1], "step count");
   const double interval = parse_double(argv[arg + 2], "time step");
   const char *csv_path = argv[arg + 3];
-  if (!cells || !steps || interval <= 0.0) {
-    fprintf(stderr, "cells, steps, and DT must be positive\n");
+  if (!cells || interval <= 0.0) {
+    fprintf(stderr, "cells and DT must be positive\n");
     return 2;
   }
 
@@ -353,16 +353,18 @@ int main(int argc, char **argv) {
   }
 
   const double start = wall_time();
-  #pragma omp parallel for schedule(static) num_threads(threads)
-  for (int g = 0; g < group_count; ++g) {
-    const size_t first = cells * (size_t)g / (size_t)group_count;
-    const size_t last = cells * (size_t)(g + 1) / (size_t)group_count;
-    const size_t count = last - first;
-    double *group_y = state + first * mechanism->species_count;
-    double *group_parameters = mechanism->parameter_count ? parameters + first * mechanism->parameter_count : NULL;
-    if (chem_integrate_group_steps(mechanism, count, group_y, group_parameters, temperature + first,
-                                   pressure + first, interval, steps, &group_stats[g]) != 0)
-      group_status[g] = -1;
+  if (steps) {
+    #pragma omp parallel for schedule(static) num_threads(threads)
+    for (int g = 0; g < group_count; ++g) {
+      const size_t first = cells * (size_t)g / (size_t)group_count;
+      const size_t last = cells * (size_t)(g + 1) / (size_t)group_count;
+      const size_t count = last - first;
+      double *group_y = state + first * mechanism->species_count;
+      double *group_parameters = mechanism->parameter_count ? parameters + first * mechanism->parameter_count : NULL;
+      if (chem_integrate_group_steps(mechanism, count, group_y, group_parameters, temperature + first,
+                                     pressure + first, interval, steps, &group_stats[g]) != 0)
+        group_status[g] = -1;
+    }
   }
   const double elapsed_ms = (wall_time() - start) * 1000.0;
   for (int g = 0; g < group_count; ++g) {

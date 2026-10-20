@@ -11,6 +11,10 @@ LIBSRC := src/chem.c
 LIBHDR := include/chem.h
 CONFIG := config/ts1.json
 GENSRC := $(GEN)/ts1.c
+NO_USER_CONFIG := config/rate_constants_no_user_defined/config.yaml
+USER_CONFIG := config/rate_constants_user_defined/config.json
+NO_USER_GEN := $(GEN)/rate_constants_no_user_defined.c
+USER_GEN := $(GEN)/rate_constants_user_defined.c
 
 UNAME_S := $(shell uname -s)
 CC_VERSION := $(shell $(CC) --version 2>/dev/null | head -1)
@@ -63,7 +67,42 @@ $(BIN)/libchem.a: $(BUILD)/chem.o
 $(BIN)/ts1_bench_cpu: $(BUILD)/ts1.o $(BUILD)/ts1_mechanism.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu:
+$(BUILD)/test_rates.o: tests/test_rates.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_rates: $(BUILD)/test_rates.o $(BUILD)/ts1_mechanism.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+$(NO_USER_GEN): $(NO_USER_CONFIG) config/rate_constants_no_user_defined/species.yaml config/rate_constants_no_user_defined/reactions.yaml tools/generate.py
+	@mkdir -p $(GEN)
+	$(PYTHON) tools/generate.py $(NO_USER_CONFIG) $@
+
+$(USER_GEN): $(USER_CONFIG) config/rate_constants_user_defined/species.json config/rate_constants_user_defined/reactions.json tools/generate.py
+	@mkdir -p $(GEN)
+	$(PYTHON) tools/generate.py $(USER_CONFIG) $@
+
+$(BUILD)/test_example_no_user.o: tests/test_example_descriptor.c $(LIBHDR)
+	@mkdir -p $(BUILD)
+	$(CC) $(CFLAGS) -DEXPECT_USER_DEFINED=0 -c $< -o $@
+
+$(BUILD)/test_example_user.o: tests/test_example_descriptor.c $(LIBHDR)
+	@mkdir -p $(BUILD)
+	$(CC) $(CFLAGS) -DEXPECT_USER_DEFINED=1 -c $< -o $@
+
+$(BUILD)/no_user_mechanism.o: $(NO_USER_GEN) $(LIBHDR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/user_mechanism.o: $(USER_GEN) $(LIBHDR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_example_no_user: $(BUILD)/test_example_no_user.o $(BUILD)/no_user_mechanism.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+$(BIN)/test_example_user: $(BUILD)/test_example_user.o $(BUILD)/user_mechanism.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu

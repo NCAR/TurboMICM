@@ -11,18 +11,6 @@ from pathlib import Path
 import yaml
 
 
-RATE_ORDER = {
-    "ArrheniusRateConstant": 0,
-    "TroeRateConstant": 1,
-    "TernaryChemicalActivationRateConstant": 2,
-    "TernaryChemicalActivationJPL19": 3,
-    "BranchedRateConstant": 4,
-    "TunnelingRateConstant": 5,
-    "TaylorSeriesRateConstant": 6,
-    "ReversibleRateConstant": 7,
-    "UserDefinedRateConstant": 8,
-    "SurfaceRateConstant": 9,
-}
 RATE_ENUM = {
     "ArrheniusRateConstant": "CHEM_RATE_ARRHENIUS",
     "TroeRateConstant": "CHEM_RATE_TROE",
@@ -136,6 +124,16 @@ def from_camp(config_path: Path) -> dict:
             "k_r": item.get("k_r", 0), "scaling_factor": item.get("scaling factor", 1),
             "reaction_probability": item.get("reaction probability", 1),
         }
+        # The tutorial configuration examples express Troe low/high-pressure
+        # coefficients in molecule/cm units. Normalize them to the mol/m3
+        # convention used by the rate evaluator and the matching hand-built
+        # example parameters.
+        molecule_cm3 = 1.0e-6 * 6.02214076e23
+        if raw_type == "TROE":
+            fields["k0_A"] *= molecule_cm3 * molecule_cm3
+            fields["kinf_A"] *= molecule_cm3
+        elif raw_type == "TERNARY_CHEMICAL_ACTIVATION":
+            fields["kinf_A"] /= molecule_cm3
         if kind == "BranchedRateConstant":
             for branch_key, branch_name in (("alkoxy products", "alkoxy"), ("nitrate products", "nitrate")):
                 if branch_key in item:
@@ -174,7 +172,7 @@ def emit(config: dict, output: Path) -> None:
     integrated = [s for s in all_species if not s.get("third_body", False)]
     species_names = {s["name"]: i for i, s in enumerate(integrated)}
     third_bodies = {s["name"] for s in all_species if s.get("third_body", False)}
-    reactions = sorted(config["reactions"], key=lambda r: RATE_ORDER[r["type"]])
+    reactions = list(config["reactions"])
     params = dict(config.get("parameters", {}))
     for reaction in reactions:
         if reaction["type"] == "UserDefinedRateConstant":

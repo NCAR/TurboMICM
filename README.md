@@ -1,23 +1,56 @@
 # C CPU chemistry port
 
-This repository is the ISO C11 CPU port of MICM for the task described in
-[PROMPT.md](PROMPT.md). The library is compiled as C and has no runtime Python
-dependency. Python reads JSON/YAML configurations during the build and emits C
-mechanism descriptors.
+This repository contains an ISO C11 chemistry library, a TS1 benchmark driver,
+and Python build tooling for generating C mechanism descriptors from MICM-style
+YAML or JSON configuration files. Python is used only while building and testing;
+the library and benchmark link no Python runtime.
 
-## Build and run
+## Build
 
-Create the local tooling environment with `make env`, then build with either
-`make cpu CC=clang` or `make cpu CC=gcc-15`. The default optimization setting is
-`OPTFLAGS=-O3 -DNDEBUG`. The benchmark command is:
+Create the local, pinned Python environment once, then build the C library and
+benchmark with either supported compiler:
 
-```text
+```sh
+make env
+make cpu CC=clang
+make cpu CC=gcc-15
+```
+
+`OPTFLAGS` defaults to `-O3 -DNDEBUG`. On macOS the Makefile selects the SDK and
+OpenMP flags for Apple Clang; GCC uses `-fopenmp`. Build the test executables and
+print one PASS/FAIL/N/A line for every case in the supplied MICM case list with:
+
+```sh
+make test-cpu CC=clang
+make test-cpu CC=gcc-15
+```
+
+The runner exits nonzero while any case fails. The current coverage and known
+unported cases are recorded in [RESULTS.md](RESULTS.md).
+
+## Run TS1
+
+The benchmark accepts a CSV with a header naming temperature, pressure, species,
+and rate parameters. Unspecified values use TS1 defaults. It performs one
+untimed warm-up interval, then the requested timed intervals, prints elapsed
+milliseconds and summed solver statistics, and writes `ts1_final.csv` in the
+current directory.
+
+```sh
 bin/ts1_bench_cpu [--threads N] CELLS STEPS DT CELLS_CSV
 ```
 
-It writes `ts1_final.csv` in the current directory and reports elapsed time and
-solver statistics. `make test-cpu` reports the MICM case list in the required
-one-line format. `make micm-ref` builds the reference executable when needed.
+For example, from the repository root:
 
-See [DESIGN.md](DESIGN.md) for the architecture and [DECISIONS.md](DECISIONS.md)
-for format and porting decisions. Results are tracked in [RESULTS.md](RESULTS.md).
+```sh
+bin/ts1_bench_cpu --threads 4 100 100 30 ../reference/ts1_cells_100_seed1.csv
+```
+
+`make bench` builds the benchmark. `make micm-ref` builds the reference program
+from the read-only MICM checkout for comparison. `tools/translate_ts1.py` keeps
+the TS1 source-to-configuration translation reproducible; `tools/generate.py`
+turns TS1 or either tutorial example configuration into a C descriptor.
+
+See [DESIGN.md](DESIGN.md) for the architecture and extension points,
+[DECISIONS.md](DECISIONS.md) for format choices, and [RESULTS.md](RESULTS.md)
+for current verification data.
