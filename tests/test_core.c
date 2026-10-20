@@ -182,6 +182,31 @@ int main(void) {
                    forcing) != 0) return 3;
   if (forcing[0] != -6.0 || forcing[1] != 6.0) return 4;
 
+  const chem_species reaction_species[] = {
+      {.name = "O3"}, {.name = "NO"}, {.name = "NO2"}, {.name = "O2"}};
+  const chem_term built_reactants[] = {
+      {.species = 0, .coefficient = 1.0}, {.species = 1, .coefficient = 1.0}};
+  const chem_term built_products[] = {
+      {.species = 2, .coefficient = 1.0}, {.species = 3, .coefficient = 1.0}};
+  const chem_reaction built_reaction = {
+      .kind = CHEM_ARRHENIUS, .label = "O3 + NO -> NO2 + O2",
+      .reactants = built_reactants, .reactant_count = 2,
+      .products = built_products, .product_count = 2,
+      .p = {1.0, 0.0, 0.0, 300.0, 0.0}};
+  const chem_mechanism built_mechanism = {
+      .species = reaction_species, .species_count = 4,
+      .reactions = &built_reaction, .reaction_count = 1};
+  if (built_mechanism.reaction_count != 1 ||
+      built_mechanism.reactions[0].reactant_count != 2 ||
+      built_mechanism.reactions[0].product_count != 2 ||
+      built_mechanism.species[built_mechanism.reactions[0].products[0].species].name[2] != '2') return 30;
+  const chem_reaction copied_reaction = built_reaction;
+  if (copied_reaction.reactants != built_reaction.reactants ||
+      copied_reaction.products != built_reaction.products ||
+      copied_reaction.kind != built_reaction.kind ||
+      copied_reaction.p[0] != built_reaction.p[0] ||
+      copied_reaction.reactants[1].species != built_reaction.reactants[1].species) return 31;
+
   const chem_reaction decay = {
       .kind = CHEM_ARRHENIUS,
       .reactants = reactants,

@@ -36,6 +36,8 @@ implemented = {
     "user_defined_rate_constant:UserDefinedRateConstant.ConstructorWithRate",
     "user_defined_rate_constant:UserDefinedRateConstant.ConstructorWithRateAndName",
     "user_defined_rate_constant:UserDefinedRateConstant.CustomScalingFactor",
+    "process:Process.BuildsChemicalReaction",
+    "process:Process.ChemicalReactionCopyAssignmentSucceeds",
 }
 
 failed = False
