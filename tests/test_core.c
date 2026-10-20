@@ -38,6 +38,36 @@ static int check_solver_workspace_argument_errors(void) {
          chem_solver_workspace_init(NULL,NULL) != 0 ? 0 : 1;
 }
 
+static int check_mechanism_species_usage(void) {
+  const chem_species species[] = {
+      {.name="A"}, {.name="B"}, {.name="C"}, {.name="D"}};
+  const chem_term reactants[] = {{.species=0,.coefficient=1.0}};
+  const chem_term products[] = {{.species=1,.coefficient=1.0}};
+  const chem_reaction reaction = {.kind=CHEM_USER_DEFINED,
+      .reactants=reactants,.reactant_count=1,
+      .products=products,.product_count=1};
+  const chem_mechanism mechanism = {.species=species,.species_count=4,
+      .reactions=&reaction,.reaction_count=1};
+  unsigned char used[4];
+  if (chem_mechanism_validate_species_usage(&mechanism,used,4) != 2 ||
+      used[0] != 1 || used[1] != 1 || used[2] != 0 || used[3] != 0 ||
+      chem_mechanism_validate_species_usage(&mechanism,used,3) == 0)
+    return 1;
+  const chem_term c_reactant[] = {{.species=0,.coefficient=1.0},
+                                  {.species=2,.coefficient=1.0}};
+  const chem_term cd_products[] = {{.species=1,.coefficient=1.0},
+                                   {.species=3,.coefficient=1.0}};
+  const chem_reaction all_species_reaction = {.kind=CHEM_USER_DEFINED,
+      .reactants=c_reactant,.reactant_count=2,
+      .products=cd_products,.product_count=2};
+  const chem_mechanism all_used = {.species=species,.species_count=4,
+      .reactions=&all_species_reaction,.reaction_count=1};
+  if (chem_mechanism_validate_species_usage(&all_used,used,4) != 0 ||
+      used[0] != 1 || used[1] != 1 || used[2] != 1 || used[3] != 1)
+    return 2;
+  return 0;
+}
+
 static int check_rate_constants_no_user_tutorial(void) {
   const chem_species species[] = {
       {.name="A"}, {.name="B"},
@@ -3212,6 +3242,7 @@ int main(void) {
         scheme_total.rejected != scheme_counts[scheme][5]) return 47;
   }
   if (check_solver_workspace_argument_errors() != 0) return 72;
+  if (check_mechanism_species_usage() != 0) return 73;
   if (check_rate_constants_no_user_tutorial() != 0) return 48;
   if (check_lambda_rate_constant_position() != 0) return 49;
   if (check_jacobian_verification() != 0) return 50;

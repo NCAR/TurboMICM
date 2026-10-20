@@ -465,6 +465,7 @@ implemented.update({
     "constraint_initialization:ConstraintInitialization.PureODESystemUnaffected",
     "constraint_initialization:ConstraintInitialization.SolverStateToStringNewValue",
     "solver_builder:SolverBuilder.ThrowsMissingSystem",
+    "solver_builder:SolverBuilder.ThrowsUnusedSpecies",
 })
 not_applicable = {
     "state:State.CopyConstructor":

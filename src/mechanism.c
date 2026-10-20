@@ -78,6 +78,33 @@ DEFINE_PROPERTY_GETTER(chem_species_get_string_property,const char *,
 
 #undef DEFINE_PROPERTY_GETTER
 
+int chem_mechanism_validate_species_usage(const chem_mechanism *mechanism,
+                                          unsigned char *used_species,
+                                          size_t used_species_count) {
+  if (!mechanism || !mechanism->species || !mechanism->species_count ||
+      used_species_count != mechanism->species_count || !used_species ||
+      (mechanism->reaction_count && !mechanism->reactions)) return 1;
+  memset(used_species,0,used_species_count*sizeof(*used_species));
+  for (size_t r = 0; r < mechanism->reaction_count; ++r) {
+    const chem_reaction *reaction = &mechanism->reactions[r];
+    if ((reaction->reactant_count && !reaction->reactants) ||
+        (reaction->product_count && !reaction->products)) return 1;
+    for (size_t i = 0; i < reaction->reactant_count; ++i) {
+      const size_t species = reaction->reactants[i].species;
+      if (species >= mechanism->species_count) return 1;
+      used_species[species] = 1;
+    }
+    for (size_t i = 0; i < reaction->product_count; ++i) {
+      const size_t species = reaction->products[i].species;
+      if (species >= mechanism->species_count) return 1;
+      used_species[species] = 1;
+    }
+  }
+  for (size_t i = 0; i < used_species_count; ++i)
+    if (!used_species[i]) return 2;
+  return 0;
+}
+
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density) {
   const double pressure = air_density * 8.31446261815324 * temperature;

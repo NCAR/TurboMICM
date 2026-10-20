@@ -190,6 +190,11 @@ typedef struct {
   double initial_temperature;
   double initial_pressure;
 } chem_mechanism;
+/* Returns 0 when every species occurs in a reaction, 2 when at least one is
+   unused, and 1 for an invalid mechanism or output buffer. */
+int chem_mechanism_validate_species_usage(const chem_mechanism *mechanism,
+                                          unsigned char *used_species,
+                                          size_t used_species_count);
 
 typedef enum {
   CHEM_CONSTRAINT_LINEAR,
