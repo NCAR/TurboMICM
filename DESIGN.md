@@ -26,6 +26,7 @@ change.
 strides. It provides checked element access, fill, conversion to and from a
 row-major vector, shape-checked AXPY, and min/max/sum reductions. It supports
 strided storage without imposing an allocator or matrix ownership policy.
+Element traversal accepts a C callback and caller context.
 
 `chem_constraint_set` describes caller-owned linear conservation or
 equilibrium constraints using species indexes. Its utilities validate records,

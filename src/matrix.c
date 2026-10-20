@@ -50,6 +50,17 @@ int chem_matrix_view_fill(chem_matrix_view *view, double value) {
   return 0;
 }
 
+int chem_matrix_view_for_each(chem_matrix_view *view,
+                              chem_matrix_element_function function,
+                              void *context) {
+  if (!valid_view(view) || function == NULL) return 1;
+  for (size_t i = 0; i < view->rows; ++i)
+    for (size_t j = 0; j < view->columns; ++j)
+      function(i, j, &view->data[i * view->row_stride + j * view->column_stride],
+               context);
+  return 0;
+}
+
 static int vector_dimensions(const chem_matrix_view *view, size_t vector_size) {
   return valid_view(view) && view->rows <= (size_t)-1 / (view->columns ? view->columns : 1) &&
       view->rows * view->columns == vector_size;

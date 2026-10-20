@@ -1173,6 +1173,12 @@ static int check_constraint_api(void) {
   return 0;
 }
 
+static void matrix_add_index(size_t row, size_t column, double *value,
+                             void *context) {
+  const double scale = *(const double *)context;
+  *value += scale * (double)(row * 10 + column);
+}
+
 static int check_matrix_view_api(void) {
   double storage[] = {1.0, 99.0, 2.0, 99.0, 3.0, 99.0,
                       4.0, 99.0, 5.0, 99.0, 6.0, 99.0};
@@ -1198,19 +1204,23 @@ static int check_matrix_view_api(void) {
   if (chem_matrix_view_sum(&view, &value) || value != 33.0) return 9;
   if (chem_matrix_view_fill(&view, 2.5)) return 10;
   if (chem_matrix_view_sum(&view, &value) || value != 15.0) return 11;
+  const double scale = 1.0;
+  if (chem_matrix_view_for_each(&view, matrix_add_index, (void *)&scale) ||
+      chem_matrix_view_get(&view, 1, 2, &value) || value != 14.5) return 12;
   if (chem_matrix_view_get(&view, 2, 0, &value) == 0 ||
       chem_matrix_view_init(&view, storage, (size_t)-1, 2, (size_t)-1, 1) == 0)
-    return 12;
+    return 13;
   chem_matrix_view wrong_rows, wrong_columns;
   double mismatch_storage[8] = {0};
   if (chem_matrix_view_init(&wrong_rows, mismatch_storage, 3, 3, 3, 1) ||
       chem_matrix_view_init(&wrong_columns, mismatch_storage, 2, 2, 2, 1) ||
       chem_matrix_view_axpy(&view, &wrong_rows, 1.0) == 0 ||
-      chem_matrix_view_axpy(&view, &wrong_columns, 1.0) == 0) return 13;
+      chem_matrix_view_axpy(&view, &wrong_columns, 1.0) == 0) return 14;
   chem_matrix_view empty;
   if (chem_matrix_view_init(&empty, NULL, 0, 0, 0, 0) ||
       chem_matrix_view_fill(&empty, 0.0) ||
-      chem_matrix_view_sum(&empty, &value) == 0) return 14;
+      chem_matrix_view_sum(&empty, &value) == 0 ||
+      chem_matrix_view_for_each(&empty, matrix_add_index, (void *)&scale)) return 15;
   return 0;
 }
 
