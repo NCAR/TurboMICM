@@ -59,7 +59,7 @@ def main() -> int:
         PROJECT / "bin/test_jacobian_verification", PROJECT / "bin/test_solver_configuration",
         PROJECT / "bin/test_integration_equivalents", PROJECT / "bin/test_state", PROJECT / "bin/test_chapman",
         PROJECT / "bin/test_objects", PROJECT / "bin/test_processes", PROJECT / "bin/test_constraints",
-        PROJECT / "bin/test_lu", PROJECT / "bin/test_grouped_views",
+        PROJECT / "bin/test_lu", PROJECT / "bin/test_grouped_views", PROJECT / "bin/test_matrix",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -201,6 +201,10 @@ def main() -> int:
             ok = grouped_view_results[test.split(".", 1)[-1]]
             status, reason = ("PASS", "C strided group views match the grouped access, transform, fill, and copy results") if ok else (
                 "FAIL", "C grouped pointer, stride, transform, fill, or copy result differs from the reference")
+        elif suite in {"matrix", "vector_matrix"}:
+            ok = run([str(PROJECT / "bin/test_matrix"), suite, test])
+            status, reason = ("PASS", "C owning matrices preserve layout, view, elementwise, validation, and reduction behavior") if ok else (
+                "FAIL", "C matrix layout, view, operation, validation, or reduction differs from the reference")
         elif suite in integration_results:
             ok = integration_results[suite]
             status, reason = ("PASS", "C integration preserves the reference analytic or chemical invariant") if ok else (

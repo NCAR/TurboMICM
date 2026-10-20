@@ -66,6 +66,14 @@ transforms work for both dense and sparse block layouts; transforms stage
 results before writing so overlapping views are safe. A stride of zero models
 a scalar broadcast.
 
+`chem_matrix.h` builds an owning dense matrix on those views. Row-major matrices
+store each row contiguously. Grouped matrices store each lane group contiguously
+by column and pad only the last partial group; `chem_matrix_get` and `set` hide
+that layout. The API includes checked row and column-group views, copy, AXPY,
+scalar bounds, reductions, and callback-based transforms. Transform calls check
+row/column counts and return status codes, which lets C callers reuse callbacks
+across matrices with different row counts while catching mismatches at use.
+
 `chem_state` is an owning C state container for clients that want state
 management as well as the lower-level solver arrays. Initialization copies
 species and custom-parameter names and allocates cell-major concentrations,

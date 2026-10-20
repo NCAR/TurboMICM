@@ -35,7 +35,9 @@ rate-parameter setters. It also provides dense Mozart and Doolittle LU
 factorization and solve routines, plus coordinate sparse LU and matrix-vector
 operations for caller-supplied patterns. [chem_views.h](include/chem_views.h)
 provides checked non-owning strided group views with fill, copy, and unary or
-binary transforms. The forcing API supports accumulation and algebraic-row
+binary transforms; [chem_matrix.h](include/chem_matrix.h) provides owned
+row-major or grouped dense matrices with bounds-checked access and reductions.
+The forcing API supports accumulation and algebraic-row
 masking and can build a dense negative Jacobian. C object initialization uses
 zero-initialized structs; functions return status codes, and name lists and
 states have explicit destroy functions. [chem_constraints.h](include/chem_constraints.h)
