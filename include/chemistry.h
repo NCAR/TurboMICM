@@ -420,6 +420,7 @@ typedef struct {
   const size_t *column_indices;
   double *values;
   int compressed_by_column;
+  size_t group_width;
 } chem_csr_matrix;
 
 int chem_csr_matrix_init(chem_csr_matrix *matrix, size_t dimension,
@@ -430,6 +431,11 @@ int chem_csr_matrix_init_csc(chem_csr_matrix *matrix, size_t dimension,
                              size_t block_count, size_t nonzero_count,
                              const size_t *column_offsets,
                              const size_t *row_indices, double *values);
+int chem_csr_matrix_init_vector(chem_csr_matrix *matrix, size_t dimension,
+                                size_t block_count, size_t nonzero_count,
+                                const size_t *offsets,
+                                const size_t *indices, double *values,
+                                size_t group_width, int compressed_by_column);
 int chem_csr_matrix_get(const chem_csr_matrix *matrix, size_t block,
                         size_t row, size_t column, double *value);
 int chem_csr_matrix_set(chem_csr_matrix *matrix, size_t block, size_t row,
@@ -447,11 +453,13 @@ typedef struct {
   double *data;
   size_t count;
   size_t stride;
+  size_t group_width;
 } chem_csr_value_view;
 typedef struct {
   const double *data;
   size_t count;
   size_t stride;
+  size_t group_width;
 } chem_csr_const_value_view;
 typedef void (*chem_csr_block_function)(size_t block, double *destination,
                                        const chem_csr_const_value_view *sources,
@@ -467,6 +475,8 @@ int chem_csr_matrix_apply_blocks(chem_csr_value_view *destination,
                                  size_t source_count,
                                  chem_csr_block_function function,
                                  void *context);
+int chem_csr_const_value_view_get(const chem_csr_const_value_view *view,
+                                  size_t block, double *value);
 int chem_csr_value_view_fill(chem_csr_value_view *view, double value);
 int chem_csr_value_view_copy(chem_csr_value_view *destination,
                              const chem_csr_const_value_view *source);

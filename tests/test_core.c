@@ -1853,8 +1853,11 @@ static void csr_sum_sources(size_t block, double *destination,
                             size_t source_count, void *context) {
   (void)context;
   double sum = 0.0;
-  for (size_t i = 0; i < source_count; ++i)
-    sum += sources[i].data[block*sources[i].stride];
+  for (size_t i = 0; i < source_count; ++i) {
+    double value = 0.0;
+    (void)chem_csr_const_value_view_get(&sources[i],block,&value);
+    sum += value;
+  }
   *destination = sum;
 }
 
@@ -1862,8 +1865,10 @@ static void csr_scale_source(size_t block, double *destination,
                              const chem_csr_const_value_view *sources,
                              size_t source_count, void *context) {
   const double scale = context ? *(const double *)context : 1.0;
-  *destination = source_count ? scale*sources[0].data[
-      block*sources[0].stride] : 0.0;
+  double value = 0.0;
+  if (source_count)
+    (void)chem_csr_const_value_view_get(&sources[0],block,&value);
+  *destination = source_count ? scale*value : 0.0;
 }
 
 static void csr_count_blocks(size_t block, double *destination,
@@ -1871,6 +1876,72 @@ static void csr_count_blocks(size_t block, double *destination,
                              size_t source_count, void *context) {
   (void)block; (void)destination; (void)sources; (void)source_count;
   ++*(size_t *)context;
+}
+
+static int check_vector_sparse_layout(size_t width, int compressed_by_column) {
+  const size_t empty_offsets[] = {0,0,0,0,0};
+  chem_csr_matrix empty;
+  int is_zero = 0;
+  size_t invalid_index = 0;
+  if (chem_csr_matrix_init_vector(&empty,4,width+1,0,empty_offsets,NULL,NULL,
+                                 width,compressed_by_column) ||
+      chem_csr_matrix_fill(&empty,3.0) ||
+      chem_csr_matrix_is_structural_zero(&empty,0,0,&is_zero) || !is_zero ||
+      chem_csr_matrix_vector_index(&empty,0,0,0,&invalid_index) == 0)
+    return 10;
+  const size_t rows[] = {0,2,3,4,4};
+  const size_t row_columns[] = {0,1,1,3};
+  const size_t columns[] = {0,1,3,3,4};
+  const size_t column_rows[] = {0,0,1,2};
+  const size_t blocks = width + 1, nonzeros = 4;
+  const size_t groups = (blocks + width - 1)/width;
+  const size_t storage_size = groups*width*nonzeros;
+  double values[64] = {0};
+  chem_csr_matrix matrix;
+  if (storage_size > sizeof(values)/sizeof(values[0]) ||
+      chem_csr_matrix_init_vector(&matrix,4,blocks,nonzeros,
+          compressed_by_column ? columns : rows,
+          compressed_by_column ? column_rows : row_columns,values,width,
+          compressed_by_column)) return 1;
+  const size_t entry_rows[] = {0,0,1,2};
+  const size_t entry_columns[] = {0,1,1,3};
+  for (size_t block = 0; block < blocks; ++block)
+    for (size_t entry = 0; entry < nonzeros; ++entry) {
+      const size_t expected_index = (block/width)*nonzeros*width +
+                                    entry*width + block%width;
+      size_t actual_index = 0;
+      const double value = (double)(block*10 + entry + 1);
+      if (chem_csr_matrix_vector_index(&matrix,block,entry_rows[entry],
+              entry_columns[entry],&actual_index) ||
+          actual_index != expected_index ||
+          chem_csr_matrix_set(&matrix,block,entry_rows[entry],
+                              entry_columns[entry],value) ||
+          values[expected_index] != value) return 2;
+    }
+  for (size_t block = 0; block < blocks; ++block)
+    for (size_t entry = 0; entry < nonzeros; ++entry) {
+      double value = 0.0;
+      if (chem_csr_matrix_get(&matrix,block,entry_rows[entry],
+                              entry_columns[entry],&value) ||
+          value != (double)(block*10 + entry + 1)) return 3;
+    }
+  double diagonal_before[blocks];
+  for (size_t block = 0; block < blocks; ++block)
+    diagonal_before[block] = values[(block/width)*nonzeros*width + block%width];
+  if (chem_csr_matrix_add_to_diagonal(&matrix,1.0)) return 4;
+  for (size_t block = 0; block < blocks; ++block)
+    if (values[(block/width)*nonzeros*width + block%width] !=
+            diagonal_before[block] + 1.0) return 5;
+  chem_csr_const_value_view view;
+  double copied[10];
+  if (chem_csr_matrix_get_const_value_view(&matrix,0,0,&view) ||
+      chem_csr_value_view_copy_to_vector(&view,copied,blocks)) return 6;
+  for (size_t block = 0; block < blocks; ++block)
+    if (copied[block] != diagonal_before[block] + 1.0) return 7;
+  if (chem_csr_matrix_fill(&matrix,2.0)) return 8;
+  for (size_t i = 0; i < storage_size; ++i)
+    if (values[i] != 2.0) return 9;
+  return 0;
 }
 
 static int check_csr_matrix_api(void) {
@@ -1934,16 +2005,16 @@ static int check_csr_matrix_api(void) {
       chem_csr_matrix_get_const_value_view(&matrix,1,1,&sources[1]) ||
       chem_csr_matrix_get_const_value_view(&matrix,2,2,&sources[2]) ||
       chem_csr_matrix_get_const_value_view(&matrix,2,3,&sources[3])) return 13;
-  temporary_view = (chem_csr_value_view){temporary,3,1};
+  temporary_view = (chem_csr_value_view){temporary,3,1,1};
   if (chem_csr_matrix_apply_blocks(&temporary_view,sources,4,
                                    csr_sum_sources,NULL)) return 14;
   if (chem_csr_matrix_get_value_view(&matrix,2,3,&output_view) ||
       chem_csr_matrix_apply_blocks(&output_view,
-          (chem_csr_const_value_view[1]){{temporary,3,1}},1,
+          (chem_csr_const_value_view[1]){{temporary,3,1,1}},1,
           csr_scale_source,(void *)&(const double){2.0}) ||
       array_values[3] != 8.0 || array_values[8] != 10.0 ||
       array_values[13] != 18.0) return 15;
-  chem_csr_const_value_view wrong_source = {temporary,2,1};
+  chem_csr_const_value_view wrong_source = {temporary,2,1,1};
   if (chem_csr_matrix_apply_blocks(&output_view,&wrong_source,1,
                                    csr_scale_source,NULL) == 0) return 16;
   const size_t a_offsets[] = {0,1,2,2};
@@ -2089,6 +2160,10 @@ static int check_csr_matrix_api(void) {
   const size_t bad_csc_rows[] = {3};
   if (chem_csr_matrix_init_csc(&csc,3,1,1,bad_csc_offsets,bad_csc_rows,
                                print_values) == 0) return 33;
+  const size_t widths[] = {1,2,4,8};
+  for (size_t i = 0; i < sizeof(widths)/sizeof(widths[0]); ++i)
+    if (check_vector_sparse_layout(widths[i],0) ||
+        check_vector_sparse_layout(widths[i],1)) return 34;
   return 0;
 }
 

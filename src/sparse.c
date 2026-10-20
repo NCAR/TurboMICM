@@ -7,10 +7,18 @@ static int csr_valid(const chem_csr_matrix *matrix) {
       (matrix->nonzero_count && !matrix->column_indices) ||
       (matrix->block_count && matrix->nonzero_count && !matrix->values) ||
       matrix->dimension == (size_t)-1 ||
+      matrix->group_width == 0 ||
       (matrix->compressed_by_column != 0 &&
        matrix->compressed_by_column != 1) ||
-      (matrix->block_count && matrix->nonzero_count >
-          (size_t)-1 / matrix->block_count) ||
+      (matrix->nonzero_count && matrix->group_width >
+          (size_t)-1 / matrix->nonzero_count) ||
+      (matrix->block_count && matrix->block_count >
+          (size_t)-1 - (matrix->group_width - 1)) ||
+      ((matrix->block_count + matrix->group_width - 1) / matrix->group_width &&
+       matrix->nonzero_count &&
+       matrix->group_width * matrix->nonzero_count >
+           (size_t)-1 / ((matrix->block_count + matrix->group_width - 1) /
+                         matrix->group_width)) ||
       matrix->row_offsets[0] != 0 ||
       matrix->row_offsets[matrix->dimension] != matrix->nonzero_count)
     return 0;
@@ -30,21 +38,27 @@ int chem_csr_matrix_init(chem_csr_matrix *matrix, size_t dimension,
                          size_t block_count, size_t nonzero_count,
                          const size_t *row_offsets,
                          const size_t *column_indices, double *values) {
-  if (!matrix) return 1;
-  chem_csr_matrix candidate = {dimension, block_count, nonzero_count,
-                               row_offsets, column_indices, values, 0};
-  if (!csr_valid(&candidate)) return 1;
-  *matrix = candidate;
-  return 0;
+  return chem_csr_matrix_init_vector(matrix,dimension,block_count,
+      nonzero_count,row_offsets,column_indices,values,1,0);
 }
 
 int chem_csr_matrix_init_csc(chem_csr_matrix *matrix, size_t dimension,
                              size_t block_count, size_t nonzero_count,
                              const size_t *column_offsets,
                              const size_t *row_indices, double *values) {
+  return chem_csr_matrix_init_vector(matrix,dimension,block_count,
+      nonzero_count,column_offsets,row_indices,values,1,1);
+}
+
+int chem_csr_matrix_init_vector(chem_csr_matrix *matrix, size_t dimension,
+                                size_t block_count, size_t nonzero_count,
+                                const size_t *offsets,
+                                const size_t *indices, double *values,
+                                size_t group_width, int compressed_by_column) {
   if (!matrix) return 1;
-  chem_csr_matrix candidate = {dimension, block_count, nonzero_count,
-                               column_offsets, row_indices, values, 1};
+  chem_csr_matrix candidate = {dimension, block_count, nonzero_count, offsets,
+                               indices, values, compressed_by_column,
+                               group_width};
   if (!csr_valid(&candidate)) return 1;
   *matrix = candidate;
   return 0;
@@ -53,13 +67,20 @@ int chem_csr_matrix_init_csc(chem_csr_matrix *matrix, size_t dimension,
 static int csr_entry(const chem_csr_matrix *matrix, size_t row, size_t column,
                      size_t *entry);
 
+static size_t csr_data_offset(const chem_csr_matrix *matrix, size_t block,
+                              size_t entry) {
+  const size_t width = matrix->group_width;
+  return (block / width) * matrix->nonzero_count * width +
+         entry * width + block % width;
+}
+
 int chem_csr_matrix_vector_index(const chem_csr_matrix *matrix, size_t block,
                                  size_t row, size_t column, size_t *index) {
   if (!csr_valid(matrix) || !index || block >= matrix->block_count ||
       row >= matrix->dimension || column >= matrix->dimension) return 1;
   size_t entry = 0;
   if (csr_entry(matrix,row,column,&entry)) return 1;
-  *index = block * matrix->nonzero_count + entry;
+  *index = csr_data_offset(matrix,block,entry);
   return 0;
 }
 
@@ -86,9 +107,10 @@ int chem_csr_matrix_get_value_view(const chem_csr_matrix *matrix, size_t row,
                                    size_t column, chem_csr_value_view *view) {
   size_t entry = 0;
   if (!view || csr_entry(matrix,row,column,&entry)) return 1;
-  view->data = matrix->values ? matrix->values + entry : NULL;
+  view->data = matrix->values ? matrix->values + entry*matrix->group_width : NULL;
   view->count = matrix->block_count;
-  view->stride = matrix->nonzero_count;
+  view->stride = matrix->nonzero_count*matrix->group_width;
+  view->group_width = matrix->group_width;
   return 0;
 }
 
@@ -97,9 +119,23 @@ int chem_csr_matrix_get_const_value_view(const chem_csr_matrix *matrix,
                                         chem_csr_const_value_view *view) {
   size_t entry = 0;
   if (!view || csr_entry(matrix,row,column,&entry)) return 1;
-  view->data = matrix->values ? matrix->values + entry : NULL;
+  view->data = matrix->values ? matrix->values + entry*matrix->group_width : NULL;
   view->count = matrix->block_count;
-  view->stride = matrix->nonzero_count;
+  view->stride = matrix->nonzero_count*matrix->group_width;
+  view->group_width = matrix->group_width;
+  return 0;
+}
+
+static size_t csr_value_offset(size_t stride, size_t group_width,
+                               size_t block) {
+  const size_t width = group_width ? group_width : 1;
+  return (block / width) * stride + block % width;
+}
+
+int chem_csr_const_value_view_get(const chem_csr_const_value_view *view,
+                                  size_t block, double *value) {
+  if (!view || !value || block >= view->count || !view->data) return 1;
+  *value = view->data[csr_value_offset(view->stride,view->group_width,block)];
   return 0;
 }
 
@@ -114,15 +150,15 @@ int chem_csr_matrix_apply_blocks(chem_csr_value_view *destination,
     if (sources[i].count != destination->count ||
         (sources[i].count && !sources[i].data)) return 1;
   for (size_t block = 0; block < destination->count; ++block)
-    function(block,destination->data + block*destination->stride,sources,
-             source_count,context);
+    function(block,destination->data + csr_value_offset(destination->stride,
+        destination->group_width,block),sources,source_count,context);
   return 0;
 }
 
 int chem_csr_value_view_fill(chem_csr_value_view *view, double value) {
   if (!view || (view->count && !view->data)) return 1;
   for (size_t block = 0; block < view->count; ++block)
-    view->data[block*view->stride] = value;
+    view->data[csr_value_offset(view->stride,view->group_width,block)] = value;
   return 0;
 }
 
@@ -131,8 +167,9 @@ int chem_csr_value_view_copy(chem_csr_value_view *destination,
   if (!destination || !source || destination->count != source->count ||
       (destination->count && (!destination->data || !source->data))) return 1;
   for (size_t block = 0; block < destination->count; ++block)
-    destination->data[block*destination->stride] =
-        source->data[block*source->stride];
+    destination->data[csr_value_offset(destination->stride,
+        destination->group_width,block)] = source->data[csr_value_offset(
+            source->stride,source->group_width,block)];
   return 0;
 }
 
@@ -142,7 +179,8 @@ int chem_csr_value_view_copy_to_vector(
   if (!view || vector_size != view->count ||
       (vector_size && (!vector || !view->data))) return 1;
   for (size_t block = 0; block < view->count; ++block)
-    vector[block] = view->data[block*view->stride];
+    vector[block] = view->data[csr_value_offset(view->stride,
+                                                view->group_width,block)];
   return 0;
 }
 
@@ -152,7 +190,8 @@ int chem_csr_value_view_copy_from_vector(chem_csr_value_view *view,
   if (!view || vector_size != view->count ||
       (vector_size && (!vector || !view->data))) return 1;
   for (size_t block = 0; block < view->count; ++block)
-    view->data[block*view->stride] = vector[block];
+    view->data[csr_value_offset(view->stride,view->group_width,block)] =
+        vector[block];
   return 0;
 }
 
@@ -185,7 +224,9 @@ int chem_csr_matrix_is_structural_zero(const chem_csr_matrix *matrix,
 
 int chem_csr_matrix_fill(chem_csr_matrix *matrix, double value) {
   if (!csr_valid(matrix) || !isfinite(value)) return 1;
-  const size_t count = matrix->block_count * matrix->nonzero_count;
+  const size_t groups = (matrix->block_count + matrix->group_width - 1) /
+                        matrix->group_width;
+  const size_t count = groups * matrix->nonzero_count * matrix->group_width;
   for (size_t k = 0; k < count; ++k) matrix->values[k] = value;
   return 0;
 }
@@ -196,7 +237,7 @@ int chem_csr_matrix_add_to_diagonal(chem_csr_matrix *matrix, double value) {
     size_t entry = 0;
     if (!csr_entry(matrix,row,row,&entry))
       for (size_t block = 0; block < matrix->block_count; ++block)
-        matrix->values[block*matrix->nonzero_count + entry] += value;
+        matrix->values[csr_data_offset(matrix,block,entry)] += value;
   }
   return 0;
 }

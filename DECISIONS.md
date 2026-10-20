@@ -67,6 +67,8 @@
   with block headers, matching the corresponding CPU utility output.
   The same interface accepts CSC patterns by searching column offsets and row
   indices, while keeping the block-value layout unchanged.
+  Vector orderings add a runtime lane width; their entry index is group-major,
+  then nonzero, then lane, with the last group padded to the full width.
   Block callbacks and vector transfers validate block counts and exact vector
   lengths at invocation, and zero-block views execute without visiting entries.
 
