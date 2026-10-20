@@ -45,6 +45,14 @@
 - Process forcing and the dense negative Jacobian are additive C operations.
   Their optional species mask skips output rows while leaving masked species
   in the rate law, matching algebraic-variable handling in process sets.
+- Linear and equilibrium constraints are borrowed, immutable C descriptors
+  indexed by the mechanism's state order. Each equilibrium constraint names a
+  state-parameter column for per-cell K_eq, and set operations provide a dense
+  sparsity mask, algebraic rows, residual replacement, and negative Jacobian
+  accumulation. Set validation rejects duplicate algebraic rows, matching
+  MICM's construction check. This keeps construction and formula checks
+  independent of the solver; full DAE integration remains a separate porting
+  item.
 - Tiny negative accepted concentrations are set to zero at interval boundaries
   only when their magnitude is within the configured absolute tolerance. This
   addresses roundoff undershoots that otherwise propagate through fast

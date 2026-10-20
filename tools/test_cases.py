@@ -55,7 +55,7 @@ def main() -> int:
         PROJECT / "bin/test_example_user", PROJECT / "bin/test_tutorial_programs",
         PROJECT / "bin/test_jacobian_verification", PROJECT / "bin/test_solver_configuration",
         PROJECT / "bin/test_integration_equivalents", PROJECT / "bin/test_state", PROJECT / "bin/test_chapman",
-        PROJECT / "bin/test_objects", PROJECT / "bin/test_processes",
+        PROJECT / "bin/test_objects", PROJECT / "bin/test_processes", PROJECT / "bin/test_constraints",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -154,6 +154,10 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_processes"), test])
             status, reason = ("PASS", "C reaction descriptors, forcing, and Jacobians match the reference behavior") if ok else (
                 "FAIL", "C reaction construction, accumulation, masking, or Jacobian behavior differs from the reference")
+        elif suite in {"constraint_set", "equilibrium", "linear"}:
+            ok = run([str(PROJECT / "bin/test_constraints"), test])
+            status, reason = ("PASS", "C linear/equilibrium constraints and algebraic Jacobians match the reference behavior") if ok else (
+                "FAIL", "C constraint validation, residual, row mapping, or Jacobian differs from the reference")
         elif suite == "chapman_ode_solver" and test.split(".", 1)[-1] in {
             "DefaultConstructor", "ReactionNames", "PhotolysisNames", "SpeciesNames",
             "simple_force", "smaller_force", "Solve", "solve_10_times_larger",

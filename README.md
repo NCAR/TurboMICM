@@ -34,8 +34,9 @@ container with deep copy, move, named concentration access, and custom
 rate-parameter setters. The forcing API supports accumulation and algebraic-row
 masking and can build a dense negative Jacobian. C object initialization uses
 zero-initialized structs; functions return status codes, and name lists and
-states have explicit destroy functions. See [DESIGN.md](DESIGN.md) for storage
-and ownership rules.
+states have explicit destroy functions. [chem_constraints.h](include/chem_constraints.h)
+provides linear and equilibrium residual/Jacobian evaluation for algebraic
+rows. See [DESIGN.md](DESIGN.md) for storage and ownership rules.
 
 ## Run TS1
 

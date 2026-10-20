@@ -33,6 +33,17 @@ dense `-df/dy` for each cell and accepts the same row mask. Masked species
 values still contribute to rates. These additive APIs let C callers preserve
 MICM's ProcessSet-style accumulation without an expression-template layer.
 
+`chem_constraints.h` defines borrowed linear and equilibrium constraint
+descriptors indexed against the mechanism's integrated species order. A
+constraint set validates algebraic rows, state-parameter indices, and species
+dependencies, then exposes its algebraic mask and dense sparsity pattern. Its
+forcing operation overwrites algebraic rows with residuals; its Jacobian
+operation adds `-dG/dy` to a dense cell-major matrix. Equilibrium residuals use
+the Van't Hoff constant supplied in each cell's state-parameter row and clamp
+negative concentrations to zero. These APIs support independent constraint
+construction and numerical checks; the ODE integrator does not yet assemble
+these constraints into a full DAE solve.
+
 `chem_state` is an owning C state container for clients that want state
 management as well as the lower-level solver arrays. Initialization copies
 species and custom-parameter names and allocates cell-major concentrations,
