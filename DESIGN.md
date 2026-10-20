@@ -18,7 +18,11 @@ with `chem_integrate_group_with_parameters`; the public struct stores up to six
 stages, row-wise `a` and `c` coefficients, weights, and step controls. The
 constructors include two-, three-, four-, four-stage DA, and six-stage DA sets.
 The parameter set also selects Doolittle LU or the in-place Mozart LU used by
-the TS1 benchmark.
+the TS1 benchmark. The separate `chem_integrate_group_backward_euler` API uses
+fully implicit Newton corrections, the configured residual/absolute/relative
+convergence check, nonnegative updates, and repeated step reduction after a
+failed Newton solve. Its public parameter struct controls the initial step,
+iteration limit, and reduction sequence.
 The public `jacobian_verification.h` helpers use a C forcing callback to compute
 finite-difference Jacobians and compare them with a sparse pattern; they support
 central differences and forward differences at the nonnegative boundary.

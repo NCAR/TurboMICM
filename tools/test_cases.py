@@ -60,7 +60,7 @@ def main() -> int:
         PROJECT / "bin/test_integration_equivalents", PROJECT / "bin/test_state", PROJECT / "bin/test_chapman",
         PROJECT / "bin/test_objects", PROJECT / "bin/test_processes", PROJECT / "bin/test_constraints",
         PROJECT / "bin/test_lu", PROJECT / "bin/test_grouped_views", PROJECT / "bin/test_matrix",
-        PROJECT / "bin/test_sparse_matrix",
+        PROJECT / "bin/test_sparse_matrix", PROJECT / "bin/test_backward_euler",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -160,6 +160,26 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_solver_configuration")])
             status, reason = ("PASS", "five C Rosenbrock parameter sets match the MICM tutorial") if ok else (
                 "FAIL", "C Rosenbrock tutorial output or solver statistics differ from MICM")
+        elif suite == "backward_euler":
+            ok = run([str(PROJECT / "bin/test_backward_euler"), test.split(".", 1)[-1]])
+            status, reason = ("PASS", "C implicit backward Euler solve and convergence rule match the reference") if ok else (
+                "FAIL", "C backward Euler state, statistics, or convergence rule differs from the reference")
+        elif suite == "solver_builder":
+            name = test.split(".", 1)[-1]
+            if name in {"ThrowsUnusedSpecies", "FinalizeReceivesDenseMatrixPolicy", "FinalizeSupportsSparseOnlySignature"}:
+                status, reason = "N/A", "C has no solver builder or compile-time matrix policy dispatch"
+            elif name == "ThrowsMissingSystem":
+                ok = run([str(PROJECT / "bin/test_backward_euler"), name])
+                status, reason = ("PASS", "C solver rejects a missing mechanism with an error code") if ok else (
+                    "FAIL", "C solver accepted a missing mechanism")
+            elif name in {"CanBuildBackwardEuler", "CanBuildBackwardEulerOverloadedSolverMethod"}:
+                ok = run([str(PROJECT / "bin/test_backward_euler"), name])
+                status, reason = ("PASS", "C backward Euler direct-call API preserves the solver behavior") if ok else (
+                    "FAIL", "C backward Euler direct-call integration differs from the reference")
+            elif name in {"CanBuildRosenbrock", "CanBuildRosenbrockOverloadedSolveMethod"}:
+                ok = run([str(PROJECT / "bin/test_solver_configuration")])
+                status, reason = ("PASS", "C Rosenbrock direct-call API solves the configured mechanisms") if ok else (
+                    "FAIL", "C Rosenbrock direct-call integration differs from the reference")
         elif suite == "state":
             ok = run([str(PROJECT / "bin/test_state"), test])
             status, reason = ("PASS", "C state storage and named access match the reference behavior") if ok else (

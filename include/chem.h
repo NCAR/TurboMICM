@@ -241,6 +241,14 @@ typedef struct {
   unsigned long solves;
 } chem_statistics;
 
+typedef struct {
+  double small;
+  double h_start;
+  size_t max_iterations;
+  size_t reduction_count;
+  double time_step_reductions[5];
+} chem_backward_euler_parameters;
+
 /* Mutable, cell-major state storage. The state owns its name copies and arrays;
    initialize an empty instance with {0} before calling init/copy/destroy. */
 typedef struct {
@@ -324,6 +332,36 @@ chem_rosenbrock_parameters chem_rosenbrock_two_stage_parameters(void);
 chem_rosenbrock_parameters chem_rosenbrock_four_stage_parameters(void);
 chem_rosenbrock_parameters chem_rosenbrock_four_stage_da_parameters(void);
 chem_rosenbrock_parameters chem_rosenbrock_six_stage_da_parameters(void);
+
+/* Fully implicit backward Euler parameters and integration entry points.
+   State arrays use the same cell-major layout as the Rosenbrock integrator.
+   A NULL parameter vector uses each mechanism parameter's initial value. */
+chem_backward_euler_parameters chem_backward_euler_default_parameters(void);
+int chem_backward_euler_is_converged(
+    const chem_backward_euler_parameters *solver_parameters,
+    size_t cell_count, size_t species_count,
+    const double *residual, const double *next_state,
+    const double *absolute_tolerances, double relative_tolerance,
+    int *is_converged);
+int chem_integrate_group_backward_euler_with_parameters(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    double *restrict y,
+    const double *restrict parameters,
+    const double *restrict temperature,
+    const double *restrict pressure,
+    double interval,
+    const chem_backward_euler_parameters *solver_parameters,
+    chem_statistics *statistics);
+int chem_integrate_group_backward_euler(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    double *restrict y,
+    const double *restrict parameters,
+    const double *restrict temperature,
+    const double *restrict pressure,
+    double interval,
+    chem_statistics *statistics);
 
 /* Evaluate one reaction's rate coefficient for one cell. Parameters are in
    descriptor order; pass NULL when the mechanism has no custom parameters.
