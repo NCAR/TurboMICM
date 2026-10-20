@@ -460,6 +460,8 @@ implemented.update({
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.solve_10_times_larger",
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.solve_with_random_number_densities",
     "chapman_ode_solver:RegressionChapmanODESolver.solve_10_times_smaller",
+    "regression:RosenbrockRegression.FlowTube",
+    "regression:BackwardEulerRegression.FlowTube",
     "regression_test_rosenbrock_dforce_dy:RegressionRosenbrock.Jacobian",
     "regression_test_rosenbrock_dforce_dy:RegressionRosenbrock.VectorJacobian",
     "analytical_rosenbrock_integration:AnalyticalExamples.E5",
@@ -604,6 +606,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C workspace builds, solve entry points, and species-use validation checked"
         elif case_id.startswith("regression_test_rosenbrock_p_force:"):
             reason = "generic C Chapman mechanism rates and forcing match independent formulas"
+        elif case_id.startswith("regression:") and case_id.endswith("FlowTube"):
+            reason = "C Rosenbrock and backward Euler flow-tube states match the reference"
         elif case_id.startswith("chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral."):
             reason = ("C Rosenbrock alpha-minus-Jacobian transforms checked"
                       if case_id.endswith("factored_alpha_minus_jac") else

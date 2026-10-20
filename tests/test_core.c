@@ -1022,6 +1022,74 @@ static int check_integrated_reaction_rates(void) {
   return result;
 }
 
+static int check_flow_tube_reference(int backward_euler) {
+  static const double expected[2][10][4] = {
+      {{0,0,8e-8,2e-5},
+       {1.51776e-11,7.43233e-12,7.99153e-8,1.99999e-5},
+       {3.01881e-11,1.44946e-11,7.98306e-8,1.99998e-5},
+       {4.50332e-11,2.12049e-11,7.97460e-8,1.99997e-5},
+       {5.97144e-11,2.75804e-11,7.96616e-8,1.99997e-5},
+       {7.42334e-11,3.36373e-11,7.95772e-8,1.99996e-5},
+       {8.85919e-11,3.93913e-11,7.94929e-8,1.99995e-5},
+       {1.02791e-10,4.48570e-11,7.94087e-8,1.99994e-5},
+       {1.16834e-10,5.00486e-11,7.93245e-8,1.99993e-5},
+       {1.30720e-10,5.49794e-11,7.92405e-8,1.99992e-5}},
+      {{0,0,8e-8,2e-5},
+       {1.50953e-11,7.26014e-12,7.99153e-8,1.99999e-5},
+       {3.00252e-11,1.41668e-11,7.98307e-8,1.99998e-5},
+       {4.47911e-11,2.07369e-11,7.97462e-8,1.99997e-5},
+       {5.93949e-11,2.69865e-11,7.96617e-8,1.99997e-5},
+       {7.38381e-11,3.29307e-11,7.95774e-8,1.99996e-5},
+       {8.81223e-11,3.85842e-11,7.94931e-8,1.99995e-5},
+       {1.02249e-10,4.39608e-11,7.94090e-8,1.99994e-5},
+       {1.16220e-10,4.90738e-11,7.93249e-8,1.99993e-5},
+       {1.30037e-10,5.39355e-11,7.92409e-8,1.99992e-5}}};
+  const chem_species species[] = {{.name="SOA1"}, {.name="SOA2"},
+      {.name="a-pinene"}, {.name="O3"}};
+  const chem_term soa1[] = {{.species=0,.coefficient=1.0}};
+  const chem_term soa2[] = {{.species=1,.coefficient=1.0}};
+  const chem_term oxidation[] = {{.species=2,.coefficient=1.0},
+                                  {.species=3,.coefficient=1.0}};
+  const chem_term soa_products[] = {{.species=0,.coefficient=0.18},
+                                     {.species=1,.coefficient=0.09}};
+  const chem_reaction reactions[] = {
+      {.kind=CHEM_USER_DEFINED,.label="r1",.reactants=soa1,.reactant_count=1,
+       .p={1,0,0,0,0,0,0,0}},
+      {.kind=CHEM_USER_DEFINED,.label="r2",.reactants=soa2,.reactant_count=1,
+       .p={1,0,0,0,0,0,0,0}},
+      {.kind=CHEM_ARRHENIUS,.reactants=oxidation,.reactant_count=2,
+       .products=soa_products,.product_count=2,
+       .p={8.8e-17*6.02214076e17,0,0,298.15,0}}};
+  const char *labels[] = {"r1","r2"};
+  const chem_mechanism mechanism = {.species=species,.species_count=4,
+      .reactions=reactions,.reaction_count=3,.custom_labels=labels,
+      .custom_parameter_count=2};
+  const double rates[] = {0.01,0.05};
+  const double temperature=298.15, pressure=101325.0;
+  const double density=pressure/(8.31446261815324*temperature);
+  double state[] = {0.0,0.0,8e-8,2e-5};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  int status=0;
+  for (size_t step=1;step<10 && !status;++step) {
+    if (backward_euler) {
+      const chem_backward_euler_options options=chem_backward_euler_default_options();
+      status=chem_backward_euler_solve_with_workspace(
+          &mechanism,&workspace,state,temperature,pressure,density,rates,1.0,
+          &options,NULL);
+    } else {
+      const chem_solver_options options=chem_solver_default_options();
+      status=chem_rosenbrock3_solve_with_workspace(
+          &mechanism,&workspace,state,temperature,pressure,density,rates,1.0,
+          &options,NULL);
+    }
+    for (size_t i=0;i<4 && !status;++i)
+      if (fabs(state[i]-expected[backward_euler][step][i])>1e-10) status=2;
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
 static int check_lambda_callback_override(void) {
   const chem_species species[] = {{.name="A"}, {.name="B"}};
   const chem_term a[] = {{.species=0,.coefficient=1.0}};
@@ -4348,6 +4416,8 @@ int main(void) {
   { const int status=check_chapman_integration();
     if (status) return 59+status; }
   if (check_integrated_reaction_rates() != 0) return 60;
+  if (check_flow_tube_reference(0) != 0) return 74;
+  if (check_flow_tube_reference(1) != 0) return 75;
   if (check_lambda_callback_override() != 0) return 61;
   if (check_phase_species_metadata() != 0) return 62;
   if (check_constraint_api() != 0) return 63;

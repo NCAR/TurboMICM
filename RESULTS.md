@@ -25,6 +25,9 @@
   the tutorial's three-significant-digit precision.
 - The C core test ports `test_openmp` with three worker-owned states and solver
   workspaces, checking each thread's final concentrations against MICM output.
+- The C core test reproduces the first ten one-second FlowTube regression states
+  for both the two-stage Rosenbrock solver and backward Euler, matching the
+  checked-in MICM CSV values within the reference tolerance.
 - The C core test ports the vectorized-matrix tutorial's two cell layouts and
   both sparse element orders. The tutorial's solve loop is skipped by its own
   initial converged-state condition, so the layout checks cover its output.
@@ -80,7 +83,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Five hundred ninety-four cases pass, eighteen are marked N/A, and 68 cases
+  statuses. Five hundred ninety-six cases pass, eighteen are marked N/A, and 66 cases
   still report incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison
