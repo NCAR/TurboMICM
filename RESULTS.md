@@ -8,17 +8,19 @@ lines. Results for the current source are:
 
 | Compiler | PASS | FAIL | N/A | TS1 serial / parallel |
 | --- | ---: | ---: | ---: | --- |
-| Apple clang 21, macOS arm64 | 43 | 625 | 12 | PASS / PASS |
-| GCC 15.2, macOS arm64 | 43 | 625 | 12 | PASS / PASS |
+| Apple clang 21, macOS arm64 | 47 | 621 | 12 | PASS / PASS |
+| GCC 15.2, macOS arm64 | 47 | 621 | 12 | PASS / PASS |
 
-The 43 passing case lines cover implemented rate-constant formulas, rate
+The 47 passing case lines cover implemented rate-constant formulas, rate
 parameter descriptor references, the two configuration-versus-hand-built
-examples, and the OpenMP TS1 path. The 12 N/A cases cover C++ callable storage,
-template type traits, and release metadata with no meaningful equivalent in
-the current C API. The remaining 625 cases are explicitly reported as FAIL;
-they cover unimplemented MICM builder/state APIs, generic matrix and view
-utilities, standalone linear algebra cases, constraint/DAE and alternate
-integration paths, and external/aerosol model APIs. The per-case reasons are
+examples, the README chemistry example, multiple grid cells, the OpenMP tutorial,
+the vectorized storage example, and the OpenMP TS1 path. The 12 N/A cases cover
+C++ callable storage, template type traits, and release metadata with no
+meaningful equivalent in the current C API. The remaining 621 cases are
+explicitly reported as FAIL; they cover unimplemented MICM builder/state APIs,
+generic matrix and view utilities, standalone linear algebra cases,
+constraint/DAE and alternate integration paths, external/aerosol model APIs,
+and one tutorial statistics mismatch. The per-case reasons are
 printed by the runner. These results do not satisfy the prompt's all-cases
 correctness gate.
 
@@ -42,8 +44,10 @@ maximum relative error `9.7e-13`.
 ## Build verification
 
 Clean `make test-cpu` builds completed with Apple clang 21 and GCC 15.2. Both
-compiler runs reported the same 43/625/12 case split and passed the serial and
-four-thread TS1 checks. The target exits with status 1 because the 625
-unimplemented cases are reported as FAIL. Neither build emitted compiler
+compiler runs reported the same 47/621/12 case split and passed the serial and
+four-thread TS1 checks. The target exits with status 1 because the 621
+unported cases are reported as FAIL. The `solve_results` tutorial also remains
+FAIL: its C run accepts 17 steps for the 200-second interval while MICM accepts
+18, although the TS1 benchmark statistics match. Neither build emitted compiler
 warnings. The benchmark and library contain no Python linkage. The gate remains
 incomplete because the majority of MICM test cases have not been ported.

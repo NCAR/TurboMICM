@@ -50,7 +50,10 @@ def failure_reason(case_id: str) -> str:
 
 
 def main() -> int:
-    required = [PROJECT / "bin/test_rates", PROJECT / "bin/test_example_no_user", PROJECT / "bin/test_example_user"]
+    required = [
+        PROJECT / "bin/test_rates", PROJECT / "bin/test_example_no_user",
+        PROJECT / "bin/test_example_user", PROJECT / "bin/test_tutorial_programs",
+    ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
         return 2
@@ -58,6 +61,10 @@ def main() -> int:
     rate_ok = run([str(PROJECT / "bin/test_rates")])
     example_no_user_ok = run([str(PROJECT / "bin/test_example_no_user")])
     example_user_ok = run([str(PROJECT / "bin/test_example_user")])
+    tutorial_programs = {
+        name: run([str(PROJECT / "bin/test_tutorial_programs"), name])
+        for name in ("README_example", "multiple_grid_cells", "openmp_tutorial", "vectorized_matrix_solver")
+    }
     serial_ok = compare_ts1(1, PROJECT / "build/ts1_ours_1.csv")
     parallel_ok = compare_ts1(4, PROJECT / "build/ts1_ours_4.csv")
     rates = {
@@ -101,6 +108,13 @@ def main() -> int:
         elif suite in example_programs:
             ok = example_programs[suite]
             status, reason = ("PASS", "generated configuration descriptor matches the hand-built rate structure") if ok else ("FAIL", "configuration descriptor check failed")
+        elif suite == "solve_results":
+            ok = run([str(PROJECT / "bin/test_tutorial_programs"), suite])
+            status, reason = ("PASS", "C solver statistics match the MICM tutorial") if ok else (
+                "FAIL", "C solver accepts 17 steps for 200 s; MICM accepts 18")
+        elif suite in tutorial_programs:
+            ok = tutorial_programs[suite]
+            status, reason = ("PASS", "C example matches the MICM reference result or storage behavior") if ok else ("FAIL", "C tutorial example differs from the MICM reference")
         elif suite == "openmp" and case_id.endswith("OpenMP.OneSolverManyStates"):
             status, reason = ("PASS", "threaded C groups match the reference final state") if parallel_ok else ("FAIL", "threaded C state differs from the reference")
         elif suite == "version":

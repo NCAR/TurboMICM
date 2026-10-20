@@ -102,7 +102,14 @@ $(BIN)/test_example_no_user: $(BUILD)/test_example_no_user.o $(BUILD)/no_user_me
 $(BIN)/test_example_user: $(BUILD)/test_example_user.o $(BUILD)/user_mechanism.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user
+$(BUILD)/test_tutorial_programs.o: tests/test_tutorial_programs.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_tutorial_programs: $(BUILD)/test_tutorial_programs.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu
