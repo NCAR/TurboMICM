@@ -550,6 +550,10 @@ implemented.update(
 implemented.update({
     "equilibrium_constraint:EquilibriumIntegration.SetConstraintsAPIWorks",
     "equilibrium_constraint:EquilibriumIntegration.SetConstraintsAPIMultipleConstraints",
+    "equilibrium_constraint:EquilibriumIntegration.DAESolveWithConstraint",
+    "equilibrium_constraint:EquilibriumIntegration.DAESolveWithConstraintAndReorderState",
+    "equilibrium_constraint:EquilibriumIntegration.DAESolveWithTwoCoupledConstraints",
+    "equilibrium_constraint:EquilibriumIntegration.DAESolveWithNonUnitStoichiometry",
 })
 
 not_applicable = {
@@ -610,9 +614,11 @@ for raw in case_file.read_text().splitlines():
             reason = "C finite-difference Jacobian checks"
         elif case_id.startswith(("constraint_set:", "linear:", "equilibrium:")):
             reason = "C linear/equilibrium constraint residual and Jacobian behavior checked"
-        elif case_id.startswith("equilibrium_constraint:") and case_id.endswith((
-                "SetConstraintsAPIWorks", "SetConstraintsAPIMultipleConstraints")):
-            reason = "C constraint sets, algebraic rows, and equilibrium parameters checked"
+        elif case_id.startswith("equilibrium_constraint:"):
+            reason = ("C constraint sets, algebraic rows, and equilibrium parameters checked"
+                      if case_id.endswith(("SetConstraintsAPIWorks",
+                                           "SetConstraintsAPIMultipleConstraints")) else
+                      "C constrained Rosenbrock integration maintains the equilibrium manifold")
         elif case_id.startswith("constraint_initialization:"):
             reason = "C constrained solve projects consistent and inconsistent algebraic initial conditions"
         elif case_id.startswith("backward_euler:"):

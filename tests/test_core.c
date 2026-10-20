@@ -2120,6 +2120,95 @@ static int check_constrained_solver(void) {
   return 0;
 }
 
+static int check_equilibrium_dae_case(int mode) {
+  chem_species species[4]={{.name="A"},{.name="B"},{.name="C"},{.name="D"}};
+  chem_term reactant={.species=0,.coefficient=1.0};
+  chem_term reaction_products={.species=1,.coefficient=1.0};
+  chem_reaction reaction={.kind=CHEM_ARRHENIUS,.reactants=&reactant,
+      .reactant_count=1,.products=&reaction_products,.product_count=1,
+      .p={1.0,0,0,300,0}};
+  chem_constraint_term eq1_reactants[2],eq1_products[1],eq2_products[1];
+  chem_constraint constraints[2]={0};
+  size_t constraint_count=1, species_count=3, steps=100;
+  double state[4]={1.0,0.0,0.0,0.0};
+  if (mode==1) {
+    /* Same mechanism with algebraic C first in the caller's ordering. */
+    species[0].name="C"; species[1].name="A"; species[2].name="B";
+    state[0]=0.0; state[1]=1.0; state[2]=0.0;
+    reactant.species=1; reaction_products.species=2;
+    eq1_reactants[0]=(chem_constraint_term){.species=2,.coefficient=1.0};
+    eq1_products[0]=(chem_constraint_term){.species=0,.coefficient=1.0};
+    constraints[0]=(chem_constraint){.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+        .name="B_C_eq",.algebraic_species=0,.reactants=eq1_reactants,
+        .reactant_count=1,.products=eq1_products,.product_count=1,
+        .equilibrium_constant_ref=2.0,.enthalpy_change=-2400.0,
+        .reference_temperature=298.15};
+  } else if (mode==2) {
+    species_count=4; constraint_count=2;
+    eq1_reactants[0]=(chem_constraint_term){.species=1,.coefficient=1.0};
+    eq1_products[0]=(chem_constraint_term){.species=2,.coefficient=1.0};
+    eq2_products[0]=(chem_constraint_term){.species=3,.coefficient=1.0};
+    constraints[0]=(chem_constraint){.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+        .name="B_C_eq",.algebraic_species=2,.reactants=eq1_reactants,
+        .reactant_count=1,.products=eq1_products,.product_count=1,
+        .equilibrium_constant_ref=3.0,.enthalpy_change=-2400.0,
+        .reference_temperature=298.15};
+    constraints[1]=constraints[0];
+    constraints[1].name="B_D_eq"; constraints[1].algebraic_species=3;
+    constraints[1].products=eq2_products;
+    constraints[1].equilibrium_constant_ref=5.0;
+    state[0]=1.0; state[1]=0.0;
+  } else if (mode==3) {
+    reaction.reactants=&(chem_term){.species=2,.coefficient=1.0};
+    reaction_products.species=0;
+    reactant.species=2; reaction.reactants=&reactant;
+    reaction_products.species=0;
+    reaction.p[0]=0.5;
+    eq1_reactants[0]=(chem_constraint_term){.species=0,.coefficient=2.0};
+    eq1_products[0]=(chem_constraint_term){.species=1,.coefficient=1.0};
+    constraints[0]=(chem_constraint){.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+        .name="A2_B_eq",.algebraic_species=1,.reactants=eq1_reactants,
+        .reactant_count=1,.products=eq1_products,.product_count=1,
+        .equilibrium_constant_ref=10.0,.enthalpy_change=-2400.0,
+        .reference_temperature=298.15};
+    state[0]=0.1; state[1]=0.1; state[2]=1.0; steps=50;
+  } else {
+    eq1_reactants[0]=(chem_constraint_term){.species=1,.coefficient=1.0};
+    eq1_products[0]=(chem_constraint_term){.species=2,.coefficient=1.0};
+    constraints[0]=(chem_constraint){.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+        .name="B_C_eq",.algebraic_species=2,.reactants=eq1_reactants,
+        .reactant_count=1,.products=eq1_products,.product_count=1,
+        .equilibrium_constant_ref=2.0,.enthalpy_change=-2400.0,
+        .reference_temperature=298.15};
+  }
+  reaction.reactants=&reactant;
+  const chem_mechanism mechanism={.species=species,.species_count=species_count,
+      .reactions=&reaction,.reaction_count=1};
+  const chem_constraint_set set={.constraints=constraints,
+      .constraint_count=constraint_count,.species_count=species_count};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  const chem_rosenbrock_parameters parameters=
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
+  int status=0;
+  for (size_t i=0;i<steps && !status;++i) {
+    status=chem_rosenbrock_solve_constrained_with_parameters(&mechanism,
+        &workspace,state,mode==1?270.0:mode==2?300.0:mode==3?298.0:270.0,
+        101325.0,40.0,NULL,0.001,&parameters,&set,NULL,NULL);
+    double residual[4]={0};
+    if (!status && chem_constraint_set_add_forcing(&set,state,
+            &(double){mode==1?270.0:mode==2?300.0:mode==3?298.0:270.0},
+            1,residual)) status=2;
+    if (!status)
+      for (size_t j=0;j<constraint_count;++j)
+        if (fabs(residual[constraints[j].algebraic_species])>1e-6) status=3;
+  }
+  chem_solver_workspace_destroy(&workspace);
+  if (!status && mode!=3 && fabs(state[0]+state[1]-1.0)>0.01 && mode!=1)
+    status=4;
+  return status;
+}
+
 static int check_process_algebraic_mask(void) {
   const chem_species species[] = {
       {.name="A"},{.name="B"},{.name="C"},{.name="D"}};
@@ -4559,6 +4648,8 @@ int main(void) {
   if (check_phase_species_metadata() != 0) return 62;
   if (check_constraint_api() != 0) return 63;
   if (check_constrained_solver() != 0) return 65;
+  for (int mode=0;mode<4;++mode)
+    if (check_equilibrium_dae_case(mode)!=0) return 120+mode;
   if (check_process_algebraic_mask() != 0) return 66;
   if (check_phase_system_metadata() != 0) return 67;
   if (check_species_properties() != 0) return 68;

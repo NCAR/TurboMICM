@@ -34,6 +34,10 @@
   partitioning results. Backward Euler tests check single and three-cell solves
   with one aerosol process at 2e-4 tolerance and both processes at 1e-1, matching
   the reference case tolerances.
+- The C constrained solver integrates simple equilibrium DAE cases with a
+  temperature dependent equilibrium constant, a reordered species array, two
+  coupled algebraic species, and non-unit stoichiometry. It checks the
+  equilibrium residual after every 0.001 second solve interval.
 - The C core test ports the vectorized-matrix tutorial's two cell layouts and
   both sparse element orders. The tutorial's solve loop is skipped by its own
   initial converged-state condition, so the layout checks cover its output.
@@ -89,7 +93,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Six hundred sixteen cases pass, eighteen are marked N/A, and 46 cases
+  statuses. Six hundred twenty cases pass, eighteen are marked N/A, and 42 cases
   still report incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison
