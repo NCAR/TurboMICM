@@ -510,6 +510,13 @@ int chem_csr_value_view_scale_from_int_vector(chem_csr_value_view *view,
                                               size_t vector_size,
                                               double scale);
 
+int chem_lu_decompose_doolittle(size_t dimension, const double *matrix,
+                                double *lower, double *upper);
+int chem_lu_decompose_mozart(size_t dimension, const double *matrix,
+                             double *lower, double *upper);
+int chem_lu_decompose_doolittle_in_place(size_t dimension, double *matrix);
+int chem_lu_decompose_mozart_in_place(size_t dimension, double *matrix);
+
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density);
 double chem_reaction_rate(const chem_reaction *reaction, double temperature,

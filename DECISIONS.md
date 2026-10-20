@@ -76,6 +76,10 @@
   Block callbacks and vector transfers validate block counts and exact vector
   lengths at invocation, and zero-block views execute without visiting entries.
 
+- Provide dense Doolittle and Mozart LU factorization in separated and combined
+  storage. Both use natural ordering without pivoting; caller buffers hold each
+  independent block and the routines initialize output factors on every call.
+
 - Store optional species properties in caller-owned tagged records. Typed C
   getters report missing properties separately from type mismatches, avoiding
   unchecked casts from the C++ property API.

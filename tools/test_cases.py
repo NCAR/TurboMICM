@@ -420,6 +420,20 @@ implemented.update(f"grouped_views:GroupedView.{_name}" for _name in (
     "FillAndCopySparseVectorCSC_L4", "FillAndCopySparseVectorCSR_L8",
     "FillCopyCrossGroupViewSources",
 ))
+_lu_case_names = (
+    "DenseMatrixStandardOrdering", "RandomMatrixStandardOrdering",
+    "DiagonalMatrixStandardOrdering", "AgnosticToInitialValueStandardOrdering",
+    "DenseMatrixVectorOrdering", "RandomMatrixVectorOrdering",
+    "DiagonalMatrixVectorOrdering", "AgnosticToInitialValueVectorOrdering",
+)
+for _category, _case_class in (
+    ("lu_decomposition_doolittle", "LuDecompositionDoolittle"),
+    ("lu_decomposition_mozart", "LuDecompositionMozart"),
+    ("lu_decomposition_doolittle_in_place", "LuDecompositionDoolittleInPlace"),
+    ("lu_decomposition_mozart_in_place", "LuDecompositionMozartInPlace"),
+):
+    implemented.update(f"{_category}:{_case_class}.{_name}"
+                       for _name in _lu_case_names)
 not_applicable = {
     "state:State.CopyConstructor":
         "C state views are non-owning, so they have no deep-copy constructor",

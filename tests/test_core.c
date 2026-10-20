@@ -2315,6 +2315,86 @@ static int check_csr_matrix_api(void) {
   return 0;
 }
 
+static int lu_reconstruction_matches(const double *matrix, const double *lower,
+                                     const double *upper, size_t n) {
+  for (size_t row = 0; row < n; ++row)
+    for (size_t column = 0; column < n; ++column) {
+      if (row < column && lower[row*n+column] != 0.0) return 0;
+      if (column < row && upper[row*n+column] != 0.0) return 0;
+      double value = 0.0;
+      for (size_t k = 0; k < n; ++k)
+        value += lower[row*n+k]*upper[k*n+column];
+      const double error = fabs(value-matrix[row*n+column]);
+      const double tolerance = 1e-9*(1.0+fabs(matrix[row*n+column]));
+      if (error > tolerance) return 0;
+    }
+  return 1;
+}
+
+static int check_lu_input(size_t n, size_t blocks, int kind) {
+  double original[5*100], lower[100], upper[100], work[100];
+  const size_t matrix_size = n*n;
+  for (size_t block = 0; block < blocks; ++block) {
+    double *matrix = original + block*matrix_size;
+    for (size_t row = 0; row < n; ++row)
+      for (size_t column = 0; column < n; ++column) {
+        double value = 0.0;
+        if (kind == 0 && n == 3) {
+          const double example[9] = {2,-1,-2,-4,6,3,-4,-2,8};
+          value = example[row*n+column];
+        } else if (kind == 2) {
+          value = row == column ? 2.0+(double)row : 0.0;
+        } else {
+          const int pattern = (int)((row*13+column*7+block*3)%17)-8;
+          value = row == column ? 20.0+(double)(row+block) :
+                  0.1*(double)pattern;
+        }
+        matrix[row*n+column] = value;
+      }
+    for (size_t i = 0; i < matrix_size; ++i) lower[i] = upper[i] = INFINITY;
+    if (chem_lu_decompose_doolittle(n,matrix,lower,upper) ||
+        !lu_reconstruction_matches(matrix,lower,upper,n)) return 1;
+    for (size_t i = 0; i < matrix_size; ++i) lower[i] = upper[i] = NAN;
+    if (chem_lu_decompose_mozart(n,matrix,lower,upper) ||
+        !lu_reconstruction_matches(matrix,lower,upper,n)) return 2;
+    for (size_t i = 0; i < matrix_size; ++i) work[i] = matrix[i];
+    if (chem_lu_decompose_doolittle_in_place(n,work)) return 3;
+    for (size_t row = 0; row < n; ++row)
+      for (size_t column = 0; column < n; ++column) {
+        double value = 0.0;
+        for (size_t k = 0; k <= column; ++k) {
+          if (row == k) value += work[k*n+column];
+          else if (k < row) value += work[row*n+k]*work[k*n+column];
+        }
+        if (fabs(value-matrix[row*n+column]) >
+            1e-9*(1.0+fabs(matrix[row*n+column]))) return 4;
+      }
+    for (size_t i = 0; i < matrix_size; ++i) work[i] = matrix[i];
+    if (chem_lu_decompose_mozart_in_place(n,work)) return 5;
+    for (size_t row = 0; row < n; ++row)
+      for (size_t column = 0; column < n; ++column) {
+        double value = 0.0;
+        for (size_t k = 0; k <= column; ++k) {
+          if (row == k) value += work[k*n+column];
+          else if (k < row) value += work[row*n+k]*work[k*n+column];
+        }
+        if (fabs(value-matrix[row*n+column]) >
+            1e-9*(1.0+fabs(matrix[row*n+column]))) return 6;
+      }
+  }
+  return 0;
+}
+
+static int check_lu_decomposition(void) {
+  if (check_lu_input(3,1,0) || check_lu_input(10,1,1) ||
+      check_lu_input(10,5,1) || check_lu_input(5,5,2)) return 1;
+  double singular[] = {1.0,2.0,2.0,4.0}, lower[4], upper[4];
+  if (chem_lu_decompose_doolittle(2,singular,lower,upper) == 0 ||
+      chem_lu_decompose_mozart_in_place(2,singular) == 0 ||
+      chem_lu_decompose_doolittle(2,NULL,lower,upper) == 0) return 2;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -2908,5 +2988,6 @@ int main(void) {
   if (check_species_properties() != 0) return 68;
   if (check_matrix_view_api() != 0) return 64;
   if (check_csr_matrix_api() != 0) return 69;
+  if (check_lu_decomposition() != 0) return 70;
   return 0;
 }
