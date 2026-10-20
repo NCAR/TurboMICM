@@ -432,6 +432,8 @@ int chem_rosenbrock_solve_with_parameters(
     }
     if (status) break;
   }
+  for (size_t i = 0; i < n; ++i)
+    if (!m->species[i].third_body && y[i] < 0.0) y[i] = 0.0;
   if (statistics) *statistics = local_stats;
   return status;
 }
@@ -614,6 +616,10 @@ int chem_rosenbrock3_solve_group_with_workspace(
     }
     if (status) break;
   }
+  for (size_t c = 0; c < cell_count; ++c)
+    for (size_t i = 0; i < n; ++i)
+      if (!m->species[i].third_body && states[c*n+i] < 0.0)
+        states[c*n+i] = 0.0;
   if (statistics) *statistics = local;
   return status;
 }

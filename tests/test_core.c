@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <omp.h>
+#include <string.h>
 
 static double test_lambda(double temperature, double pressure,
                           double air_density, const double *parameters) {
@@ -13,6 +14,134 @@ static double test_lambda(double temperature, double pressure,
 
 static int near(double actual, double expected) {
   return fabs(actual - expected) <= 1e-13 * fabs(expected) + 1e-30;
+}
+
+static int tutorial_print_match(double actual, double expected) {
+  if (expected == 0.0) return actual == 0.0;
+  const double tolerance = 0.5 * pow(10.0, floor(log10(expected)) - 2.0);
+  return fabs(actual - expected) <= tolerance;
+}
+
+static int check_rate_constants_no_user_tutorial(void) {
+  const chem_species species[] = {
+      {.name="A"}, {.name="B"},
+      {.name="C", .molecular_weight=0.025, .diffusion=230.0},
+      {.name="D"}, {.name="E"}, {.name="F"}, {.name="G"}};
+  const chem_term a[] = {{.species=0, .coefficient=1.0}};
+  const chem_term b[] = {{.species=1, .coefficient=1.0}};
+  const chem_term c[] = {{.species=2, .coefficient=1.0}};
+  const chem_term d[] = {{.species=3, .coefficient=1.0}};
+  const chem_term e_e[] = {
+      {.species=4, .coefficient=1.0}, {.species=4, .coefficient=1.0}};
+  const chem_term f[] = {{.species=5, .coefficient=1.0}};
+  const chem_term product_b[] = {{.species=1, .coefficient=1.0}};
+  const chem_term product_a[] = {{.species=0, .coefficient=1.0}};
+  const chem_term product_c[] = {{.species=2, .coefficient=1.0}};
+  const chem_term product_d[] = {{.species=3, .coefficient=1.0}};
+  const chem_term product_e[] = {{.species=4, .coefficient=1.0}};
+  const chem_term product_f2[] = {{.species=5, .coefficient=2.0}};
+  const chem_term product_g[] = {{.species=6, .coefficient=1.0}};
+  const double conversion = 6.02214076e17;
+  const double reference_a =
+      2.0e-22 * 6.02214076e23 * 1.0e-6 * exp(2.0) * (2.45e19/conversion);
+  const double reference_b = 0.43 * pow(293.0/298.0, -8.0);
+  const double reference_ratio = reference_a/reference_b;
+  const double av = reference_a/(1.0+reference_ratio) *
+      pow(0.41, 1.0/(1.0+pow(log10(reference_ratio), 2.0)));
+  const double branch_z = av * (1.0-1.0e-3)/1.0e-3;
+  const chem_reaction reactions[] = {
+      {.kind=CHEM_ARRHENIUS, .reactants=a, .reactant_count=1,
+       .products=product_b, .product_count=1,
+       .p={2.15e-4, 0.0, 110.0, 300.0, 0.0}},
+      {.kind=CHEM_BRANCHED_ALKOXY, .reactants=b, .reactant_count=1,
+       .products=product_c, .product_count=1,
+       .p={1.2, 204.3, 1.0e-3, 2.0, branch_z}},
+      {.kind=CHEM_BRANCHED_NITRATE, .reactants=b, .reactant_count=1,
+       .products=product_d, .product_count=1,
+       .p={1.2, 204.3, 1.0e-3, 2.0, branch_z}},
+      {.kind=CHEM_SURFACE, .reactants=c, .reactant_count=1,
+       .products=product_e, .product_count=1, .surface_species=2,
+       .p={0.90, 0, 0, 0, 0, 0, 0, 0}},
+      {.kind=CHEM_TERNARY_ACTIVATION, .reactants=d, .reactant_count=1,
+       .products=product_f2, .product_count=1,
+       .p={1.2, 2.3, 302.3, 2.6/conversion, -3.1, 402.1, 0.9, 1.2}},
+      {.kind=CHEM_TROE, .reactants=e_e, .reactant_count=2,
+       .products=product_g, .product_count=1,
+       .p={1.8e-30*conversion*conversion, -3.0, 0.0,
+           2.8e-11*conversion, 0.0, 0.0, 0.6, 1.0}},
+      {.kind=CHEM_TUNNELING, .reactants=f, .reactant_count=1,
+       .products=product_g, .product_count=1, .p={1.2, 2.3, 302.3}},
+  };
+  const chem_mechanism mechanism = {
+      .species=species, .species_count=7,
+      .reactions=reactions, .reaction_count=7};
+  const double rate_parameters[] = {1.0e-7, 2.5e6};
+  const double expected[10][7] = {
+      {8.54e-1, 4.57e-4, 1.44e-1, 1.55e-4, 0.0, 1.23e-22, 6.44e-4},
+      {7.30e-1, 3.90e-4, 2.65e-1, 2.89e-4, 8.18e-7, 2.28e-22, 2.44e-3},
+      {6.23e-1, 3.33e-4, 3.66e-1, 4.02e-4, 9.66e-7, 3.18e-22, 5.20e-3},
+      {5.32e-1, 2.85e-4, 4.49e-1, 5.00e-4, 1.07e-6, 3.95e-22, 8.77e-3},
+      {4.55e-1, 2.43e-4, 5.18e-1, 5.83e-4, 1.15e-6, 4.61e-22, 1.30e-2},
+      {3.88e-1, 2.08e-4, 5.75e-1, 6.54e-4, 1.21e-6, 5.17e-22, 1.78e-2},
+      {3.32e-1, 1.77e-4, 6.21e-1, 7.14e-4, 1.26e-6, 5.65e-22, 2.30e-2},
+      {2.83e-1, 1.52e-4, 6.59e-1, 7.66e-4, 1.30e-6, 6.06e-22, 2.86e-2},
+      {2.42e-1, 1.29e-4, 6.88e-1, 8.10e-4, 1.33e-6, 6.41e-22, 3.45e-2},
+      {2.07e-1, 1.11e-4, 7.11e-1, 8.48e-4, 1.35e-6, 6.71e-22, 4.06e-2}};
+  double state[] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  const double temperature = 287.45, pressure = 101319.9;
+  const double density = pressure/(8.31446261815324*temperature);
+  chem_solver_workspace workspace = {0};
+  if (chem_solver_workspace_init(&workspace, &mechanism) != 0) return 1;
+  int result = 0;
+  for (size_t step = 0; step < 10 && !result; ++step) {
+    result = chem_rosenbrock3_solve_with_workspace(
+        &mechanism, &workspace, state, temperature, pressure, density,
+        rate_parameters, 500.0, NULL, NULL);
+    for (size_t i = 0; i < 7 && !result; ++i)
+      if (!tutorial_print_match(state[i], expected[step][i])) result = 1;
+  }
+  chem_solver_workspace_destroy(&workspace);
+  if (result) return result;
+
+  /* The user-defined variant adds changing photolysis and fixed emission/loss
+     rates to the same seven base reactions. */
+  chem_reaction user_reactions[10];
+  memcpy(user_reactions, reactions, sizeof(reactions));
+  user_reactions[7] = (chem_reaction){
+      .kind=CHEM_USER_DEFINED, .label="my photolysis rate",
+      .reactants=c, .reactant_count=1, .products=product_g,
+      .product_count=1, .p={1, 0, 0, 0, 0, 0, 0, 2}};
+  user_reactions[8] = (chem_reaction){
+      .kind=CHEM_USER_DEFINED, .label="my emission rate",
+      .reactants=NULL, .reactant_count=0, .products=product_a,
+      .product_count=1, .p={1, 0, 0, 0, 0, 0, 0, 3}};
+  user_reactions[9] = (chem_reaction){
+      .kind=CHEM_USER_DEFINED, .label="my loss rate",
+      .reactants=b, .reactant_count=1, .products=NULL,
+      .product_count=0, .p={1, 0, 0, 0, 0, 0, 0, 4}};
+  const char *custom_labels[] = {
+      "C.effective radius [m]", "C.particle number concentration [# m-3]",
+      "my photolysis rate", "my emission rate", "my loss rate"};
+  const chem_mechanism user_mechanism = {
+      .species=species, .species_count=7,
+      .reactions=user_reactions, .reaction_count=10,
+      .custom_labels=custom_labels, .custom_parameter_count=5};
+  const chem_solver_options options = chem_solver_default_options();
+  double user_state[] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  double photo_rate = 1.0e-10;
+  chem_solver_workspace user_workspace = {0};
+  if (chem_solver_workspace_init(&user_workspace, &user_mechanism) != 0) return 2;
+  for (size_t step = 0; step < 10 && !result; ++step) {
+    const double user_rates[] = {1.0e-7, 2.5e6, photo_rate, 1.0e-20, 1.0e-23};
+    result = chem_rosenbrock3_solve_with_workspace(
+        &user_mechanism, &user_workspace, user_state, temperature, pressure,
+        density, user_rates, 500.0, &options, NULL);
+    for (size_t i = 0; i < 7 && !result; ++i)
+      if (!tutorial_print_match(user_state[i], expected[step][i])) result = 1;
+    photo_rate *= 1.5;
+  }
+  chem_solver_workspace_destroy(&user_workspace);
+  return result;
 }
 
 int main(void) {
@@ -586,5 +715,6 @@ int main(void) {
         scheme_total.solves != scheme_counts[scheme][4] ||
         scheme_total.rejected != scheme_counts[scheme][5]) return 47;
   }
+  if (check_rate_constants_no_user_tutorial() != 0) return 48;
   return 0;
 }

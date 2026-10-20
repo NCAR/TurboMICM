@@ -54,6 +54,8 @@ implemented = {
     "openmp_tutorial",
     "vectorized_matrix_solver",
     "solver_configuration",
+    "rate_constants_no_user_defined_example_by_hand",
+    "rate_constants_user_defined_example_by_hand",
 }
 
 failed = False
@@ -65,7 +67,9 @@ for raw in case_file.read_text().splitlines():
     if case_id in implemented:
         if case_id in {"README_example", "solve_results", "multiple_grid_cells",
                        "openmp_tutorial", "vectorized_matrix_solver",
-                       "solver_configuration"}:
+                       "solver_configuration",
+                       "rate_constants_no_user_defined_example_by_hand",
+                       "rate_constants_user_defined_example_by_hand"}:
             reason = "C tutorial output checked"
         else:
             reason = "C rate formula checked"

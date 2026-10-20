@@ -90,3 +90,40 @@ if re.findall(r'"([^"]+)"', labels) != [
         "user", "aerosol.effective radius [m]",
         "aerosol.particle number concentration [# m-3]"]:
     raise SystemExit("custom parameter labels or indexes differ")
+
+# CAMP tutorial reader results must agree with the corresponding hand-built
+# mechanisms, including the concentration-unit conversions done by MICM.
+configs = ROOT.parent / "micm" / "test" / "tutorial" / "configs" / "rate_constants_no_user_defined"
+with tempfile.TemporaryDirectory() as tmp:
+    tmp = Path(tmp)
+    no_user_path = tmp / "no-user.json"
+    user_path = tmp / "user.json"
+    subprocess.run([sys.executable, str(ROOT / "tools/read_config.py"),
+                    str(configs / "config.yaml"), str(no_user_path)], check=True)
+    user_configs = ROOT.parent / "micm" / "test" / "tutorial" / "configs" / "rate_constants_user_defined"
+    subprocess.run([sys.executable, str(ROOT / "tools/read_config.py"),
+                    str(user_configs / "config.json"), str(user_path)], check=True)
+    no_user = json.loads(no_user_path.read_text())
+    user = json.loads(user_path.read_text())
+    for source, output in ((no_user_path, tmp / "no-user.c"),
+                           (user_path, tmp / "user.c")):
+        subprocess.run([sys.executable, str(ROOT / "tools/generate_c.py"),
+                        str(source), str(output)], check=True)
+        generated_text = output.read_text()
+        if generated_text.count("CHEM_") < 7:
+            raise SystemExit("tutorial configuration did not generate C reaction definitions")
+
+if no_user["species"] != user["species"] or no_user["reactions"] != user["reactions"][:7]:
+    raise SystemExit("by-hand tutorial configurations do not share the same seven base reactions")
+if len(no_user["species"]) != 7 or len(no_user["reactions"]) != 7 or len(user["reactions"]) != 10:
+    raise SystemExit("rate-constants tutorial configurations have an unexpected mechanism size")
+rate_conv = 1.0e-6 * 6.02214076e23
+ternary = no_user["reactions"][4]["parameters"]
+troe = no_user["reactions"][5]["parameters"]
+if ternary["kinf_A"] != 2.6 / rate_conv:
+    raise SystemExit("ternary concentration units do not match the hand-built tutorial")
+if troe["k0_A"] != 1.8e-30 * rate_conv**2 or troe["kinf_A"] != 2.8e-11 * rate_conv:
+    raise SystemExit("Troe concentration units do not match the hand-built tutorial")
+if [reaction["type"] for reaction in user["reactions"][7:]] != [
+        "USER_DEFINED", "USER_DEFINED", "USER_DEFINED"]:
+    raise SystemExit("photolysis, emission, and loss entries were not normalized as custom rates")

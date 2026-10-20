@@ -1,7 +1,7 @@
 CC ?= cc
 CXX = clang++
 OPTFLAGS ?= -O3 -DNDEBUG
-PYTHON ?= python3
+PYTHON ?= $(if $(wildcard $(CURDIR)/.conda/bin/python),$(CURDIR)/.conda/bin/python,python3)
 UNAME_S := $(shell uname -s)
 
 CPPFLAGS += -Iinclude

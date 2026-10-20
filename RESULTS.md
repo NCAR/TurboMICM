@@ -29,6 +29,12 @@
 - The C solver accepts configurable Rosenbrock coefficient sets. The core test
   checks all 50 printed concentration rows and accumulated work counters for
   MICM's two-, three-, four-, four-stage DAE-, and six-stage DAE methods.
+- The no-user and user-defined rate tutorials now check all ten printed states
+  against MICM. YAML/JSON reader tests confirm that the two configurations share
+  the same seven base reactions and convert Troe/ternary parameters to the
+  values used by the hand-built mechanisms.
+- Scalar and grouped solves clamp ordinary state rows to nonnegative values
+  after each solver call, matching MICM's `PostSolveClamp` behavior.
 - Repeated-reactant Jacobians now match for both separate unit terms (`B + B`)
   and one stoichiometric term (`2 B`), covering a coefficient case that the
   previous negative-Jacobian implementation mishandled.
@@ -37,7 +43,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Forty-nine cases pass; 631 cases still report incomplete ports,
+  statuses. Fifty-one cases pass; 629 cases still report incomplete ports,
   so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -47,10 +53,10 @@ comparison utility with both compilers. The 100-cell seed-1 run also passed:
 
 | Run | Compiler | C elapsed time | MICM elapsed time | Solver steps | Largest relative difference |
 | --- | --- | ---: | ---: | ---: | ---: |
-| First cell | Clang | 173.842 ms | 10.767 ms | 900 | `0` |
-| First cell | GCC 15 | 165.693 ms | 10.767 ms | 900 | `5.69e-15` |
-| 100 cells, 4 threads | Clang | 4,334.925 ms | 354.051 ms | 3,600 | `9.70e-13` |
-| 100 cells, 4 threads | GCC 15 | 4,069.336 ms | 354.051 ms | 3,600 | `9.70e-13` |
+| First cell | Clang | 168.976 ms | 10.767 ms | 900 | `0` |
+| First cell | GCC 15 | 156.311 ms | 10.767 ms | 900 | `5.69e-15` |
+| 100 cells, 4 threads | Clang | 4,398.141 ms | 354.051 ms | 3,600 | `1.32e-14` |
+| 100 cells, 4 threads | GCC 15 | 4,068.024 ms | 354.051 ms | 3,600 | `3.27e-14` |
 
 The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 300,799.575 ms; the reference completed in 27,457.982 ms. The comparison failed
@@ -58,5 +64,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 `5.33e-4` for HO2NO2 in cell 3974. A single-cell run of that input also fails,
 so the discrepancy is not caused by cell grouping. This result is a regression
 case for further solver arithmetic work. The implementation is about eleven
-times slower than the reference at this scale, and 631 of the 680 inventory cases
+times slower than the reference at this scale, and 629 of the 680 inventory cases
 remain unported.
