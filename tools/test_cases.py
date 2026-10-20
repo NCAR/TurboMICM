@@ -62,6 +62,7 @@ def main() -> int:
         PROJECT / "bin/test_lu", PROJECT / "bin/test_grouped_views", PROJECT / "bin/test_matrix",
         PROJECT / "bin/test_sparse_matrix", PROJECT / "bin/test_backward_euler",
         PROJECT / "bin/test_analytical_simple", PROJECT / "bin/test_rosenbrock_utilities",
+        PROJECT / "bin/test_analytical_additional",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -173,6 +174,14 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_analytical_simple"), method, test.split(".", 1)[-1]])
             status, reason = ("PASS", f"C {method} concentrations match the analytical three-species solution") if ok else (
                 "FAIL", f"C {method} concentrations differ from the analytical three-species solution")
+        elif suite in {"analytical_backward_euler", "analytical_rosenbrock_integration"} and \
+                (test_name := test.split(".", 1)[-1]) in {
+                    "SurfaceRxn", "HIRES", "Oregonator", "Robertson", "E5"} and \
+                not (suite == "analytical_backward_euler" and test_name in {"Robertson", "E5"}):
+            method = "backward_euler" if suite == "analytical_backward_euler" else "rosenbrock"
+            ok = run([str(PROJECT / "bin/test_analytical_additional"), method, test_name])
+            status, reason = ("PASS", f"C {method} mechanism matches the analytical {test_name} solution") if ok else (
+                "FAIL", f"C {method} mechanism differs from the analytical {test_name} solution")
         elif suite == "rosenbrock" and test.split(".", 1)[-1] in {
             "StandardAlphaMinusJacobian", "VectorAlphaMinusJacobian", "CanSetTolerances",
             "StandardNormalizedError", "VectorNormalizedError", "StandardNormalizedErrorWithConstraints",

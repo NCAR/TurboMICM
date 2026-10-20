@@ -215,7 +215,14 @@ $(BUILD)/test_rosenbrock_utilities.o: tests/test_rosenbrock_utilities.c $(LIBHDR
 $(BIN)/test_rosenbrock_utilities: $(BUILD)/test_rosenbrock_utilities.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_objects $(BIN)/test_processes $(BIN)/test_constraints $(BIN)/test_lu $(BIN)/test_chapman $(BIN)/test_grouped_views $(BIN)/test_matrix $(BIN)/test_sparse_matrix $(BIN)/test_backward_euler $(BIN)/test_analytical_simple $(BIN)/test_rosenbrock_utilities
+$(BUILD)/test_analytical_additional.o: tests/test_analytical_additional.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_analytical_additional: $(BUILD)/test_analytical_additional.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_objects $(BIN)/test_processes $(BIN)/test_constraints $(BIN)/test_lu $(BIN)/test_chapman $(BIN)/test_grouped_views $(BIN)/test_matrix $(BIN)/test_sparse_matrix $(BIN)/test_backward_euler $(BIN)/test_analytical_simple $(BIN)/test_rosenbrock_utilities $(BIN)/test_analytical_additional
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu
