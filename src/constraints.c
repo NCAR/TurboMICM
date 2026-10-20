@@ -132,8 +132,9 @@ static double equilibrium_derivative(
     double scale) {
   const chem_constraint_term *selected = &terms[term_index];
   const double selected_value = state[selected->species];
-  if (selected_value <= 0.0) return 0.0;
-  double derivative = scale * selected->coefficient * pow(selected_value, selected->coefficient - 1.0);
+  if (selected_value <= 0.0 && selected->coefficient != 1.0) return 0.0;
+  double derivative = scale * (selected->coefficient == 1.0 ? 1.0 :
+      selected->coefficient * pow(selected_value, selected->coefficient - 1.0));
   for (size_t i = 0; i < term_count; ++i) {
     if (i == term_index) continue;
     const chem_constraint_term *other = &terms[i];

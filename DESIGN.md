@@ -44,8 +44,13 @@ negative concentrations to zero. These APIs support independent constraint
 construction and numerical checks. The initialization operation projects only
 algebraic species with damped Newton steps, measures correction against the
 state tolerances, supports multiple cells, and restores the original state if
-projection fails. The ODE integrator does not yet assemble these constraints
-into a full DAE solve.
+projection fails. `chem_integrate_group_with_constraints` assembles these
+residuals and Jacobians into the Rosenbrock DAE system: algebraic rows have zero
+mass diagonal, stage coupling applies only to differential species, and the
+error norm uses algebraic step changes. The caller supplies per-cell state
+parameters such as temperature-adjusted equilibrium constants. The DAE path
+uses dense cell matrices with the selected Mozart or Doolittle factorization;
+the unconstrained mechanism path retains its sparse symbolic factorization.
 
 `chem_state` is an owning C state container for clients that want state
 management as well as the lower-level solver arrays. Initialization copies

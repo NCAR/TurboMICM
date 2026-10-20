@@ -34,8 +34,11 @@ def compare_ts1(threads: int, destination: Path) -> bool:
 
 def failure_reason(case_id: str) -> str:
     suite = case_id.split(":", 1)[0]
-    if "constraint" in suite or suite in {"equilibrium", "linear"} or suite.startswith("dae_"):
-        return "full DAE integration is not implemented"
+    if suite in {
+        "constraint_set", "equilibrium", "linear", "constraint_initialization", "equilibrium_constraint",
+        "linear_constraint", "dae_constraint_overshoot", "dae_algebraic_error_insensitivity",
+    }:
+        return "constraint solver case is not implemented"
     if "aerosol_model" in suite or "external_model" in suite:
         return "external and aerosol model APIs are not implemented"
     if suite in {"matrix", "vector_matrix"} or suite.startswith("sparse_matrix") or suite in {"grouped_views", "view_category_sfinae"}:
@@ -154,10 +157,13 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_processes"), test])
             status, reason = ("PASS", "C reaction descriptors, forcing, and Jacobians match the reference behavior") if ok else (
                 "FAIL", "C reaction construction, accumulation, masking, or Jacobian behavior differs from the reference")
-        elif suite in {"constraint_set", "equilibrium", "linear", "constraint_initialization"}:
+        elif suite in {
+            "constraint_set", "equilibrium", "linear", "constraint_initialization", "equilibrium_constraint",
+            "linear_constraint", "dae_constraint_overshoot", "dae_algebraic_error_insensitivity",
+        }:
             ok = run([str(PROJECT / "bin/test_constraints"), test])
-            status, reason = ("PASS", "C constraint residuals, Jacobians, and algebraic initialization match the reference behavior") if ok else (
-                "FAIL", "C constraint validation, projection, residual, row mapping, or Jacobian differs from the reference")
+            status, reason = ("PASS", "C constraint construction, evaluation, initialization, and integration match the reference behavior") if ok else (
+                "FAIL", "C constraint validation, projection, residual, row mapping, Jacobian, or integration differs from the reference")
         elif suite == "chapman_ode_solver" and test.split(".", 1)[-1] in {
             "DefaultConstructor", "ReactionNames", "PhotolysisNames", "SpeciesNames",
             "simple_force", "smaller_force", "Solve", "solve_10_times_larger",

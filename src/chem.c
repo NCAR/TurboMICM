@@ -207,6 +207,11 @@ chem_rosenbrock_parameters chem_rosenbrock_default_parameters(void) {
   parameters.h_min_fraction = 1.0e-15;
   parameters.h_max_fraction = 1.0;
   parameters.max_internal_steps = 1000u;
+  parameters.constraint_init_max_updates = 10u;
+  parameters.constraint_init_tolerance = 0.1;
+  parameters.constraint_init_max_backtracks = 24u;
+  parameters.constraint_init_backtrack_factor = 0.5;
+  parameters.constraint_init_sufficient_decrease = 1.0e-4;
   return parameters;
 }
 
@@ -329,7 +334,13 @@ static int chem_rosenbrock_parameters_valid(const chem_rosenbrock_parameters *pa
       !isfinite(parameters->h_min_fraction) || parameters->h_min_fraction <= 0.0 ||
       !isfinite(parameters->h_max_fraction) || parameters->h_max_fraction < parameters->h_min_fraction ||
       parameters->h_max_fraction <= 0.0 ||
-      !parameters->max_internal_steps)
+      !parameters->max_internal_steps || parameters->constraint_init_max_updates == SIZE_MAX ||
+      !isfinite(parameters->constraint_init_tolerance) || parameters->constraint_init_tolerance < 0.0 ||
+      parameters->constraint_init_max_backtracks == SIZE_MAX ||
+      !isfinite(parameters->constraint_init_backtrack_factor) ||
+      parameters->constraint_init_backtrack_factor <= 0.0 || parameters->constraint_init_backtrack_factor >= 1.0 ||
+      !isfinite(parameters->constraint_init_sufficient_decrease) ||
+      parameters->constraint_init_sufficient_decrease < 0.0 || parameters->constraint_init_sufficient_decrease >= 1.0)
     return 0;
   const size_t coefficient_count = parameters->stage_count * (parameters->stage_count - 1u) / 2u;
   for (size_t i = 0; i < parameters->stage_count; ++i) {
@@ -950,6 +961,77 @@ static void chem_solve(const chem_symbolic *symbolic, size_t cell_count, const d
   }
 }
 
+static int chem_dense_factor_mozart(double *matrix, size_t n) {
+  for (size_t k = 0; k < n; ++k) {
+    const double pivot = matrix[k * n + k];
+    if (pivot == 0.0 || !isfinite(pivot)) return -1;
+    for (size_t row = k + 1u; row < n; ++row) {
+      matrix[row * n + k] /= pivot;
+      for (size_t column = k + 1u; column < n; ++column)
+        matrix[row * n + column] -= matrix[row * n + k] * matrix[k * n + column];
+    }
+  }
+  return 0;
+}
+
+static int chem_dense_factor_doolittle(double *matrix, size_t n) {
+  for (size_t row = 0; row < n; ++row) {
+    for (size_t column = row; column < n; ++column) {
+      double value = matrix[row * n + column];
+      for (size_t inner = 0; inner < row; ++inner)
+        value -= matrix[row * n + inner] * matrix[inner * n + column];
+      matrix[row * n + column] = value;
+    }
+    const double pivot = matrix[row * n + row];
+    if (pivot == 0.0 || !isfinite(pivot)) return -1;
+    for (size_t lower_row = row + 1u; lower_row < n; ++lower_row) {
+      double value = matrix[lower_row * n + row];
+      for (size_t inner = 0; inner < row; ++inner)
+        value -= matrix[lower_row * n + inner] * matrix[inner * n + row];
+      matrix[lower_row * n + row] = value / pivot;
+    }
+  }
+  return 0;
+}
+
+static int chem_dense_factor(double *matrix, size_t n, chem_lu_method method) {
+  return method == CHEM_LU_DOOLITTLE
+      ? chem_dense_factor_doolittle(matrix, n)
+      : chem_dense_factor_mozart(matrix, n);
+}
+
+static int chem_dense_solve(const double *matrix, size_t n, double *rhs) {
+  for (size_t row = 0; row < n; ++row)
+    for (size_t column = 0; column < row; ++column)
+      rhs[row] -= matrix[row * n + column] * rhs[column];
+  for (size_t row = n; row-- > 0u;) {
+    for (size_t column = row + 1u; column < n; ++column)
+      rhs[row] -= matrix[row * n + column] * rhs[column];
+    rhs[row] /= matrix[row * n + row];
+    if (!isfinite(rhs[row])) return -1;
+  }
+  return 0;
+}
+
+static double chem_dae_normalized_error(
+    const chem_mechanism *mechanism,
+    size_t cell_count,
+    const double *y,
+    const double *ynew,
+    const double *error) {
+  const size_t n = mechanism->species_count;
+  double sum = 0.0;
+  for (size_t cell = 0; cell < cell_count; ++cell) {
+    for (size_t species = 0; species < n; ++species) {
+      const chem_species *item = &mechanism->species[species];
+      const double maximum = fmax(fabs(y[cell * n + species]), fabs(ynew[cell * n + species]));
+      const double scaled = error[cell * n + species] / (item->absolute_tolerance + mechanism->relative_tolerance * maximum);
+      sum += scaled * scaled;
+    }
+  }
+  return fmax(sqrt(sum / (double)(cell_count * n)), 1.0e-10);
+}
+
 static double chem_normalized_error(
     const chem_mechanism *mechanism,
     const chem_symbolic *symbolic,
@@ -1193,6 +1275,253 @@ cleanup:
   free(jacobian);
   free(scratch);
   chem_symbolic_destroy(&symbolic);
+  return failed ? -1 : 0;
+}
+
+static int chem_dae_evaluate_forcing(
+    const chem_mechanism *mechanism,
+    const chem_constraint_set *constraints,
+    size_t cell_count,
+    const double *y,
+    const double *rate_constants,
+    const double *constraint_parameters,
+    double *forcing) {
+  if (chem_evaluate_forcing(mechanism, cell_count, y, rate_constants, forcing) != 0) return -1;
+  return chem_constraint_set_apply_forcing(
+      constraints, cell_count, y, constraint_parameters, forcing);
+}
+
+int chem_integrate_group_with_constraints(
+    const chem_mechanism *mechanism,
+    const chem_constraint_set *constraints,
+    size_t cell_count,
+    double *restrict y_external,
+    double *restrict parameters_external,
+    const double *constraint_parameters,
+    const double *restrict temperature,
+    const double *restrict pressure,
+    double interval,
+    const chem_rosenbrock_parameters *solver_parameters,
+    chem_statistics *statistics) {
+  if (!mechanism || !constraints || !cell_count || !y_external || !temperature || !pressure ||
+      !isfinite(interval) || interval <= 0.0 || !mechanism->species_count ||
+      !mechanism->reaction_count || mechanism->species == NULL || mechanism->reactions == NULL ||
+      (mechanism->parameter_count != 0u && mechanism->parameters == NULL) ||
+      constraints->species_count != mechanism->species_count ||
+      chem_constraint_set_validate(constraints) != 0 || !chem_rosenbrock_parameters_valid(solver_parameters) ||
+      mechanism->species_count > SIZE_MAX / cell_count / sizeof(double) ||
+      mechanism->reaction_count > SIZE_MAX / cell_count / sizeof(double) ||
+      constraints->state_parameter_count > SIZE_MAX / cell_count / sizeof(double)) return -1;
+
+  const size_t n = mechanism->species_count;
+  const size_t nr = mechanism->reaction_count;
+  const size_t cells = cell_count;
+  const size_t state_size = n * cells;
+  if (n > SIZE_MAX / n || cells > SIZE_MAX / (n * n) / sizeof(double)) return -1;
+  const size_t dense_width = n * n;
+  const size_t dense_size = dense_width * cells;
+
+  double *state = NULL, *ynew = NULL, *initial_forcing = NULL, *stage_forcing = NULL, *error = NULL;
+  double *parameters = NULL, *rates_major = NULL, *rates = NULL, *jacobian = NULL, *matrix = NULL;
+  double *absolute_tolerances = NULL;
+  double *k[CHEM_ROSENBROCK_MAX_STAGES] = { NULL };
+  unsigned char *differential = NULL;
+  int failed = 0;
+  if (chem_allocate(n, cells, &state) || chem_allocate(n, cells, &ynew) ||
+      chem_allocate(n, cells, &initial_forcing) || chem_allocate(n, cells, &stage_forcing) ||
+      chem_allocate(n, cells, &error) || chem_allocate(mechanism->parameter_count, cells, &parameters) ||
+      chem_allocate(nr, cells, &rates_major) || chem_allocate(cells, nr, &rates) ||
+      chem_allocate(dense_width, cells, &jacobian) || chem_allocate(dense_width, cells, &matrix)) {
+    failed = 1;
+    goto cleanup;
+  }
+  absolute_tolerances = malloc(n * sizeof(*absolute_tolerances));
+  differential = malloc(n * sizeof(*differential));
+  if (absolute_tolerances == NULL || differential == NULL) {
+    failed = 1;
+    goto cleanup;
+  }
+  if (chem_validate_forcing_inputs(mechanism, cells, y_external, rates, rates) != 0) {
+    failed = 1;
+    goto cleanup;
+  }
+  for (size_t species = 0; species < n; ++species)
+    absolute_tolerances[species] = mechanism->species[species].absolute_tolerance;
+  if (chem_constraint_set_species_mask(constraints, differential) != 0) {
+    failed = 1;
+    goto cleanup;
+  }
+  for (size_t stage = 0; stage < solver_parameters->stage_count; ++stage)
+    if (chem_allocate(n, cells, &k[stage]) != 0) {
+      failed = 1;
+      goto cleanup;
+    }
+
+  if (parameters_external) {
+    for (size_t cell = 0; cell < cells; ++cell)
+      for (size_t parameter = 0; parameter < mechanism->parameter_count; ++parameter)
+        parameters[parameter * cells + cell] =
+            parameters_external[cell * mechanism->parameter_count + parameter];
+  } else {
+    for (size_t cell = 0; cell < cells; ++cell)
+      for (size_t parameter = 0; parameter < mechanism->parameter_count; ++parameter)
+        parameters[parameter * cells + cell] = mechanism->parameters[parameter].initial_value;
+  }
+  chem_calculate_rates(mechanism, cells, parameters, temperature, pressure, rates_major);
+  for (size_t cell = 0; cell < cells; ++cell)
+    for (size_t reaction = 0; reaction < nr; ++reaction)
+      rates[cell * nr + reaction] = rates_major[reaction * cells + cell];
+
+  size_t initialization_iterations = 0u;
+  const chem_constraint_init_status init_status = chem_constraint_set_initialize(
+      constraints, cells, constraint_parameters, y_external, absolute_tolerances,
+      mechanism->relative_tolerance, solver_parameters->constraint_init_max_updates,
+      solver_parameters->constraint_init_tolerance, solver_parameters->constraint_init_max_backtracks,
+      solver_parameters->constraint_init_backtrack_factor, solver_parameters->constraint_init_sufficient_decrease,
+      &initialization_iterations);
+  if (init_status != CHEM_CONSTRAINT_INIT_CONVERGED) {
+    failed = 1;
+    goto cleanup;
+  }
+  memcpy(state, y_external, state_size * sizeof(*state));
+
+  const double h_min = solver_parameters->h_min_fraction * interval;
+  const double h_max = fmin(solver_parameters->h_max_fraction * interval, interval);
+  const double h_start = fmin(solver_parameters->h_start_fraction * interval, h_max);
+  const double round_off = solver_parameters->round_off;
+  double h = fmin(fmax(h_min, h_start), h_max);
+  double present_time = 0.0;
+  int reject_last_h = 0, reject_more_h = 0;
+  size_t step_attempts = 0u, accepted_this_interval = 0u;
+
+  while ((present_time - interval + round_off) <= 0.0) {
+    if (step_attempts > solver_parameters->max_internal_steps ||
+        (present_time + 0.1 * h) == present_time || h <= fmin(round_off, h_min)) {
+      failed = 1;
+      goto cleanup;
+    }
+    h = fmin(h, fabs(interval - present_time));
+    if (chem_dae_evaluate_forcing(
+            mechanism, constraints, cells, state, rates, constraint_parameters, initial_forcing) != 0) {
+      failed = 1;
+      goto cleanup;
+    }
+    if (statistics) ++statistics->function_calls;
+
+    memset(jacobian, 0, dense_size * sizeof(*jacobian));
+    if (chem_accumulate_negative_jacobian(
+            mechanism, cells, state, rates, differential, jacobian) != 0 ||
+        chem_constraint_set_accumulate_negative_jacobian(
+            constraints, cells, state, constraint_parameters, jacobian) != 0) {
+      failed = 1;
+      goto cleanup;
+    }
+    if (statistics) ++statistics->jacobian_updates;
+
+    int accepted = 0;
+    while (!accepted) {
+      memcpy(matrix, jacobian, dense_size * sizeof(*matrix));
+      const double alpha = 1.0 / (h * solver_parameters->gamma0);
+      for (size_t cell = 0; cell < cells; ++cell)
+        for (size_t species = 0; species < n; ++species)
+          if (differential[species] != 0u)
+            matrix[cell * dense_width + species * n + species] += alpha;
+
+      for (size_t cell = 0; cell < cells; ++cell) {
+        if (chem_dense_factor(
+                matrix + cell * dense_width, n, solver_parameters->lu_method) != 0) {
+          failed = 1;
+          goto cleanup;
+        }
+      }
+      if (statistics) ++statistics->decompositions;
+
+      memcpy(stage_forcing, initial_forcing, state_size * sizeof(*stage_forcing));
+      for (size_t stage = 0; stage < solver_parameters->stage_count; ++stage) {
+        if (stage == 0u) {
+          memcpy(k[stage], initial_forcing, state_size * sizeof(*k[stage]));
+        } else {
+          const size_t coefficient_offset = stage * (stage - 1u) / 2u;
+          if (solver_parameters->new_function_evaluation[stage] != 0u) {
+            memcpy(ynew, state, state_size * sizeof(*ynew));
+            for (size_t previous = 0; previous < stage; ++previous) {
+              const double coefficient = solver_parameters->a[coefficient_offset + previous];
+              for (size_t item = 0; item < state_size; ++item)
+                ynew[item] += coefficient * k[previous][item];
+            }
+            if (chem_dae_evaluate_forcing(
+                    mechanism, constraints, cells, ynew, rates, constraint_parameters, stage_forcing) != 0) {
+              failed = 1;
+              goto cleanup;
+            }
+            if (statistics) ++statistics->function_calls;
+          }
+          memcpy(k[stage], stage_forcing, state_size * sizeof(*k[stage]));
+          for (size_t previous = 0; previous < stage; ++previous) {
+            const double coefficient = solver_parameters->c[coefficient_offset + previous] / h;
+            for (size_t cell = 0; cell < cells; ++cell)
+              for (size_t species = 0; species < n; ++species)
+                if (differential[species] != 0u)
+                  k[stage][cell * n + species] += coefficient * k[previous][cell * n + species];
+          }
+        }
+        for (size_t cell = 0; cell < cells; ++cell)
+          if (chem_dense_solve(matrix + cell * dense_width, n, k[stage] + cell * n) != 0) {
+            failed = 1;
+            goto cleanup;
+          }
+        if (statistics) ++statistics->solves;
+      }
+
+      memcpy(ynew, state, state_size * sizeof(*ynew));
+      memset(error, 0, state_size * sizeof(*error));
+      for (size_t stage = 0; stage < solver_parameters->stage_count; ++stage)
+        for (size_t item = 0; item < state_size; ++item) {
+          ynew[item] += solver_parameters->m[stage] * k[stage][item];
+          error[item] += solver_parameters->e[stage] * k[stage][item];
+        }
+      for (size_t cell = 0; cell < cells; ++cell)
+        for (size_t species = 0; species < n; ++species)
+          if (differential[species] == 0u)
+            error[cell * n + species] = ynew[cell * n + species] - state[cell * n + species];
+
+      const double normalized_error = chem_dae_normalized_error(
+          mechanism, cells, state, ynew, error);
+      if (!isfinite(normalized_error)) {
+        failed = 1;
+        goto cleanup;
+      }
+      double new_h = h * chem_step_size_factor(solver_parameters, normalized_error);
+      if (statistics) ++statistics->internal_steps;
+      ++step_attempts;
+      if (normalized_error < 1.0 || h < h_min) {
+        ++accepted_this_interval;
+        if (statistics) ++statistics->accepted;
+        present_time += h;
+        memcpy(state, ynew, state_size * sizeof(*state));
+        new_h = fmax(h_min, fmin(new_h, h_max));
+        if (reject_last_h) new_h = fmin(new_h, h);
+        reject_last_h = 0;
+        reject_more_h = 0;
+        h = new_h;
+        accepted = 1;
+      } else {
+        if (reject_more_h) new_h = h * solver_parameters->rejection_factor_decrease;
+        reject_more_h = reject_last_h;
+        reject_last_h = 1;
+        h = new_h;
+        if (statistics && accepted_this_interval >= 1u) ++statistics->rejected;
+      }
+    }
+  }
+
+  memcpy(y_external, state, state_size * sizeof(*y_external));
+
+cleanup:
+  free(state); free(ynew); free(initial_forcing); free(stage_forcing); free(error);
+  free(parameters); free(rates_major); free(rates); free(jacobian); free(matrix);
+  free(absolute_tolerances); free(differential);
+  for (size_t stage = 0; stage < CHEM_ROSENBROCK_MAX_STAGES; ++stage) free(k[stage]);
   return failed ? -1 : 0;
 }
 

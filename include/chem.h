@@ -1,6 +1,8 @@
 #ifndef CHEM_H
 #define CHEM_H
 
+#include "chem_constraints.h"
+
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -277,6 +279,11 @@ typedef struct {
   double h_min_fraction;
   double h_max_fraction;
   size_t max_internal_steps;
+  size_t constraint_init_max_updates;
+  double constraint_init_tolerance;
+  size_t constraint_init_max_backtracks;
+  double constraint_init_backtrack_factor;
+  double constraint_init_sufficient_decrease;
 } chem_rosenbrock_parameters;
 
 const chem_mechanism *chem_generated_mechanism(void);
@@ -381,6 +388,23 @@ int chem_integrate_group_steps_with_parameters(
     const double *restrict pressure,
     double interval,
     size_t interval_count,
+    const chem_rosenbrock_parameters *solver_parameters,
+    chem_statistics *statistics);
+
+/* Integrate a constrained DAE system with algebraic rows supplied by a
+   chem_constraint_set. constraint_parameters uses [cell][state_parameter]
+   (for example, precomputed K_eq values); the mechanism's rate parameters
+   retain their usual cell-major layout. */
+int chem_integrate_group_with_constraints(
+    const chem_mechanism *mechanism,
+    const chem_constraint_set *constraints,
+    size_t cell_count,
+    double *restrict y,
+    double *restrict parameters,
+    const double *constraint_parameters,
+    const double *restrict temperature,
+    const double *restrict pressure,
+    double interval,
     const chem_rosenbrock_parameters *solver_parameters,
     chem_statistics *statistics);
 

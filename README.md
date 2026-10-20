@@ -36,8 +36,9 @@ masking and can build a dense negative Jacobian. C object initialization uses
 zero-initialized structs; functions return status codes, and name lists and
 states have explicit destroy functions. [chem_constraints.h](include/chem_constraints.h)
 provides linear and equilibrium residual/Jacobian evaluation, plus damped
-Newton initialization of algebraic species. See [DESIGN.md](DESIGN.md) for
-storage and ownership rules.
+Newton initialization and Rosenbrock integration of algebraic species. Callers
+provide per-cell state-parameter values such as K_eq. See [DESIGN.md](DESIGN.md)
+for storage and ownership rules.
 
 ## Run TS1
 

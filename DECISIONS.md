@@ -52,7 +52,9 @@
   accumulation. Set validation rejects duplicate algebraic rows, matching
   MICM's construction check. Algebraic initialization is a separate operation
   that uses damped Newton projection and restores the input state on failure;
-  this keeps projection tests independent of full DAE time integration.
+  the constrained Rosenbrock entry point then consumes the same descriptors
+  with caller-supplied per-cell equilibrium parameters. The constrained path
+  uses a dense factorization while the unconstrained path keeps sparse LU.
 - Tiny negative accepted concentrations are set to zero at interval boundaries
   only when their magnitude is within the configured absolute tolerance. This
   addresses roundoff undershoots that otherwise propagate through fast

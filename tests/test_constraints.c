@@ -1,4 +1,5 @@
 #include "chem_constraints.h"
+#include "chem.h"
 #include "jacobian_verification.h"
 
 #include <math.h>
@@ -863,6 +864,407 @@ static int initialization_weighted_tolerances(void) {
   return 0;
 }
 
+static int dae_equilibrium_simple(void) {
+  const chem_species species[] = {
+    { "A", 0.0, 0.0, 0.0, 1e-3, 0u },
+    { "B", 0.0, 0.0, 0.0, 1e-3, 0u },
+    { "C", 0.0, 0.0, 0.0, 1e-3, 0u },
+  };
+  const chem_term reactants[] = { { 0u, 1.0 } };
+  const chem_term products[] = { { 1u, 1.0 } };
+  const chem_reaction reactions[] = {
+    { 0u, 1u, 0u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .label = "A_to_B", .p = { [0] = 1.0, [3] = 300.0 } } }
+  };
+  const chem_mechanism mechanism = {
+    .name = "small DAE",
+    .species_count = 3u,
+    .reaction_count = 1u,
+    .reactant_term_count = 1u,
+    .product_term_count = 1u,
+    .species = species,
+    .reactions = reactions,
+    .reactant_terms = reactants,
+    .product_terms = products,
+    .temperature = 300.0,
+    .pressure = 101325.0,
+    .relative_tolerance = 1e-4
+  };
+  const chem_constraint_term constraint_reactants[] = { { 1u, 1.0 } };
+  const chem_constraint_term constraint_products[] = { { 2u, 1.0 } };
+  const chem_constraint item = equilibrium(
+      "B_C_eq", 2u, constraint_reactants, 1u, constraint_products, 1u, 2.0, -2400.0, 0u);
+  const chem_constraint_set set = constraint_set(3u, &item, 1u, 1u);
+  const double constraint_parameters[] = { 2.0 }, temperature[] = { 300.0 }, pressure[] = { 101325.0 };
+  double expected_keq = 0.0;
+  CHECK(chem_constraint_equilibrium_parameter(&item, 270.0, &expected_keq) == 0);
+  NEAR(expected_keq, 2.0 * exp((-2400.0 / GAS_CONSTANT) * (1.0 / 270.0 - 1.0 / REFERENCE_TEMPERATURE)), 1e-14);
+  unsigned char differential[] = { 1u, 1u, 1u };
+  CHECK(chem_constraint_set_species_mask(&set, differential) == 0);
+  CHECK(differential[0] == 1u && differential[1] == 1u && differential[2] == 0u);
+  for (int method = CHEM_LU_MOZART_IN_PLACE; method <= CHEM_LU_DOOLITTLE; ++method) {
+    double state[] = { 1.0, 0.0, 0.0 };
+    chem_rosenbrock_parameters solver = chem_rosenbrock_default_parameters();
+    solver.h_start_fraction = 0.005;
+    solver.h_max_fraction = 0.5;
+    solver.lu_method = (chem_lu_method)method;
+    CHECK(chem_integrate_group_with_constraints(
+        &mechanism, &set, 1u, state, NULL, constraint_parameters, temperature, pressure,
+        0.1, &solver, NULL) == 0);
+    NEAR(state[0] + state[1], 1.0, 1e-7);
+    NEAR(state[2], 2.0 * state[1], 1e-10);
+    NEAR(state[0], exp(-0.1), 1e-5);
+  }
+  return 0;
+}
+
+static int dae_equilibrium_reordered(void) {
+  const chem_species species[] = {
+    { "C", 0.0, 0.0, 0.0, 1e-3, 0u },
+    { "B", 0.0, 0.0, 0.0, 1e-3, 0u },
+    { "A", 0.0, 0.0, 0.0, 1e-3, 0u },
+  };
+  const chem_term reactants[] = { { 2u, 1.0 } };
+  const chem_term products[] = { { 1u, 1.0 } };
+  const chem_reaction reactions[] = {
+    { 0u, 1u, 0u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .label = "A_to_B", .p = { [0] = 1.0, [3] = 300.0 } } }
+  };
+  const chem_mechanism mechanism = {
+    .name = "reordered DAE", .species_count = 3u, .reaction_count = 1u,
+    .reactant_term_count = 1u, .product_term_count = 1u, .species = species,
+    .reactions = reactions, .reactant_terms = reactants, .product_terms = products,
+    .temperature = 300.0, .pressure = 101325.0, .relative_tolerance = 1e-4
+  };
+  const chem_constraint_term cr[] = { { 1u, 1.0 } }, cp[] = { { 0u, 1.0 } };
+  const chem_constraint item = equilibrium("B_C_eq", 0u, cr, 1u, cp, 1u, 2.0, -2400.0, 0u);
+  const chem_constraint_set set = constraint_set(3u, &item, 1u, 1u);
+  const double constraint_parameters[] = { 2.0 }, temperature[] = { 400.0 }, pressure[] = { 101325.0 };
+  double state[] = { 0.0, 0.0, 1.0 };
+  chem_rosenbrock_parameters solver = chem_rosenbrock_default_parameters();
+  solver.h_start_fraction = 0.005;
+  solver.h_max_fraction = 0.5;
+  CHECK(chem_integrate_group_with_constraints(
+      &mechanism, &set, 1u, state, NULL, constraint_parameters, temperature, pressure,
+      0.1, &solver, NULL) == 0);
+  NEAR(state[1] + state[2], 1.0, 0.01);
+  NEAR(state[0], 2.0 * state[1], 1e-10);
+  return 0;
+}
+
+static int dae_equilibrium_coupled(void) {
+  const chem_species species[] = {
+    { "A", 0.0, 0.0, 0.0, 1e-3, 0u }, { "B", 0.0, 0.0, 0.0, 1e-3, 0u },
+    { "C", 0.0, 0.0, 0.0, 1e-3, 0u }, { "D", 0.0, 0.0, 0.0, 1e-3, 0u },
+  };
+  const chem_term reactants[] = { { 0u, 1.0 } }, products[] = { { 1u, 1.0 } };
+  const chem_reaction reactions[] = {
+    { 0u, 1u, 0u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .label = "A_to_B", .p = { [0] = 1.0, [3] = 300.0 } } }
+  };
+  const chem_mechanism mechanism = {
+    .name = "coupled DAE", .species_count = 4u, .reaction_count = 1u,
+    .reactant_term_count = 1u, .product_term_count = 1u, .species = species,
+    .reactions = reactions, .reactant_terms = reactants, .product_terms = products,
+    .temperature = 300.0, .pressure = 101325.0, .relative_tolerance = 1e-4
+  };
+  const chem_constraint_term b[] = { { 1u, 1.0 } }, c[] = { { 2u, 1.0 } }, d[] = { { 3u, 1.0 } };
+  const chem_constraint items[] = {
+    { .name = "B_C_eq", .kind = CHEM_CONSTRAINT_EQUILIBRIUM, .algebraic_species = 2u,
+      .reactants = b, .reactant_count = 1u, .products = c, .product_count = 1u,
+      .equilibrium_constant_ref = 3.0, .delta_enthalpy = -2400.0,
+      .gas_constant = GAS_CONSTANT, .reference_temperature = REFERENCE_TEMPERATURE, .parameter_index = 0u },
+    { .name = "B_D_eq", .kind = CHEM_CONSTRAINT_EQUILIBRIUM, .algebraic_species = 3u,
+      .reactants = b, .reactant_count = 1u, .products = d, .product_count = 1u,
+      .equilibrium_constant_ref = 5.0, .delta_enthalpy = -2400.0,
+      .gas_constant = GAS_CONSTANT, .reference_temperature = REFERENCE_TEMPERATURE, .parameter_index = 1u },
+  };
+  const chem_constraint_set set = constraint_set(4u, items, 2u, 2u);
+  const double constraint_parameters[] = { 3.0, 5.0 }, temperature[] = { 300.0 }, pressure[] = { 101325.0 };
+  double state[] = { 1.0, 0.0, 0.0, 0.0 };
+  chem_rosenbrock_parameters solver = chem_rosenbrock_default_parameters();
+  solver.h_start_fraction = 0.005;
+  solver.h_max_fraction = 0.5;
+  CHECK(chem_integrate_group_with_constraints(
+      &mechanism, &set, 1u, state, NULL, constraint_parameters, temperature, pressure,
+      0.1, &solver, NULL) == 0);
+  NEAR(state[0] + state[1], 1.0, 0.01);
+  NEAR(state[2], 3.0 * state[1], 1e-10);
+  NEAR(state[3], 5.0 * state[1], 1e-10);
+  return 0;
+}
+
+static int dae_equilibrium_nonunit(void) {
+  const chem_species species[] = {
+    { "A", 0.0, 0.0, 0.0, 1e-3, 0u }, { "B", 0.0, 0.0, 0.0, 1e-3, 0u },
+    { "C", 0.0, 0.0, 0.0, 1e-3, 0u },
+  };
+  const chem_term reactants[] = { { 2u, 1.0 } }, products[] = { { 0u, 1.0 } };
+  const chem_reaction reactions[] = {
+    { 0u, 1u, 0u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .label = "C_to_A", .p = { [0] = 0.5, [3] = 300.0 } } }
+  };
+  const chem_mechanism mechanism = {
+    .name = "nonunit DAE", .species_count = 3u, .reaction_count = 1u,
+    .reactant_term_count = 1u, .product_term_count = 1u, .species = species,
+    .reactions = reactions, .reactant_terms = reactants, .product_terms = products,
+    .temperature = 298.0, .pressure = 101325.0, .relative_tolerance = 1e-4
+  };
+  const chem_constraint_term ar[] = { { 0u, 2.0 } }, bp[] = { { 1u, 1.0 } };
+  const chem_constraint item = equilibrium("A2_B_eq", 1u, ar, 1u, bp, 1u, 10.0, -2400.0, 0u);
+  const chem_constraint_set set = constraint_set(3u, &item, 1u, 1u);
+  double equilibrium_constant = 0.0;
+  CHECK(chem_constraint_equilibrium_parameter(&item, 298.0, &equilibrium_constant) == 0);
+  const double constraint_parameters[] = { equilibrium_constant }, temperature[] = { 298.0 }, pressure[] = { 101325.0 };
+  double state[] = { 0.1, equilibrium_constant * 0.01, 1.0 };
+  chem_rosenbrock_parameters solver = chem_rosenbrock_default_parameters();
+  solver.h_start_fraction = 0.005;
+  solver.h_max_fraction = 0.5;
+  for (size_t step = 0; step < 50u; ++step) {
+    CHECK(chem_integrate_group_with_constraints(
+        &mechanism, &set, 1u, state, NULL, constraint_parameters, temperature, pressure,
+        0.001, &solver, NULL) == 0);
+    NEAR(equilibrium_constant * state[0] * state[0], state[1], 1e-5);
+  }
+  NEAR(state[0] + state[2], 1.1, 0.01);
+  return 0;
+}
+
+static int run_linear_budget(const chem_rosenbrock_parameters *solver_parameters) {
+  const chem_species species[] = {
+    { "A", 0.0, 0.0, 0.0, 1e-12, 0u }, { "B", 0.0, 0.0, 0.0, 1e-12, 0u },
+    { "C", 0.0, 0.0, 0.0, 1e-12, 0u },
+  };
+  const chem_term reactants[] = { { 0u, 1.0 } }, products[] = { { 1u, 1.0 } };
+  const chem_reaction reactions[] = {
+    { 0u, 1u, 0u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .label = "A_to_B_fast", .p = { [0] = 1e4, [3] = 300.0 } } }
+  };
+  const chem_mechanism mechanism = {
+    .name = "linear budget DAE", .species_count = 3u, .reaction_count = 1u,
+    .reactant_term_count = 1u, .product_term_count = 1u, .species = species,
+    .reactions = reactions, .reactant_terms = reactants, .product_terms = products,
+    .temperature = 298.0, .pressure = 101325.0, .relative_tolerance = 1e-6
+  };
+  const chem_constraint_term terms[] = { { 0u, 1.0 }, { 1u, 1.0 }, { 2u, 1.0 } };
+  const chem_constraint item = linear("mass", 2u, terms, 3u, 1e-6);
+  const chem_constraint_set set = constraint_set(3u, &item, 1u, 0u);
+  const double temperature[] = { 298.0 }, pressure[] = { 101325.0 };
+  double state[] = { 0.9e-6, 0.0, 0.1e-6 };
+  CHECK(chem_integrate_group_with_constraints(
+      &mechanism, &set, 1u, state, NULL, NULL, temperature, pressure,
+      30.0, solver_parameters, NULL) == 0);
+  NEAR(state[0] + state[1] + state[2], 1e-6, 1e-12);
+  CHECK(state[2] >= -1e-18);
+  CHECK(state[0] < 1e-12);
+  NEAR(state[1], 0.9e-6, 1e-10);
+  NEAR(state[2], 0.1e-6, 1e-10);
+  return 0;
+}
+
+static int dae_linear_budget(void) {
+  const chem_rosenbrock_parameters solver = chem_rosenbrock_four_stage_da_parameters();
+  return run_linear_budget(&solver);
+}
+
+static int dae_equilibrium_conservation(void) {
+  const chem_species species[] = {
+    { "A_gas", 0.0, 0.0, 0.0, 1e-8, 0u }, { "A_aq", 0.0, 0.0, 0.0, 1e-8, 0u },
+    { "P", 0.0, 0.0, 0.0, 1e-12, 0u },
+  };
+  const chem_term reactants[] = { { 1u, 1.0 } }, products[] = { { 2u, 1.0 } };
+  const chem_reaction reactions[] = {
+    { 0u, 1u, 0u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .label = "A_aq_to_P", .p = { [0] = 1e3, [3] = 300.0 } } }
+  };
+  const chem_mechanism mechanism = {
+    .name = "equilibrium and conservation DAE", .species_count = 3u, .reaction_count = 1u,
+    .reactant_term_count = 1u, .product_term_count = 1u, .species = species,
+    .reactions = reactions, .reactant_terms = reactants, .product_terms = products,
+    .temperature = 298.0, .pressure = 101325.0, .relative_tolerance = 1e-6
+  };
+  const chem_constraint_term er[] = { { 0u, 1.0 } }, ep[] = { { 1u, 1.0 } };
+  const chem_constraint_term lt[] = { { 0u, 1.0 }, { 1u, 1.0 }, { 2u, 1.0 } };
+  const chem_constraint items[] = {
+    { .name = "gas_aq_eq", .kind = CHEM_CONSTRAINT_EQUILIBRIUM, .algebraic_species = 1u,
+      .reactants = er, .reactant_count = 1u, .products = ep, .product_count = 1u,
+      .equilibrium_constant_ref = 10.0, .delta_enthalpy = 0.0,
+      .gas_constant = GAS_CONSTANT, .reference_temperature = REFERENCE_TEMPERATURE, .parameter_index = 0u },
+    { .name = "mass", .kind = CHEM_CONSTRAINT_LINEAR, .algebraic_species = 0u,
+      .terms = lt, .term_count = 3u, .constant = 1e-6 },
+  };
+  const chem_constraint_set set = constraint_set(3u, items, 2u, 1u);
+  const double constraint_parameters[] = { 10.0 }, temperature[] = { 298.0 }, pressure[] = { 101325.0 };
+  double state[] = { 1e-6 / 11.0, 10e-6 / 11.0, 0.0 };
+  chem_rosenbrock_parameters solver = chem_rosenbrock_four_stage_da_parameters();
+  CHECK(chem_integrate_group_with_constraints(
+      &mechanism, &set, 1u, state, NULL, constraint_parameters, temperature, pressure,
+      30.0, &solver, NULL) == 0);
+  NEAR(state[0] + state[1] + state[2], 1e-6, 1e-12);
+  CHECK(state[0] >= -1e-18 && state[1] >= -1e-18);
+  NEAR(state[2], 1e-6, 1e-8);
+  return 0;
+}
+
+static int dae_all_rosenbrock_orders(void) {
+  chem_rosenbrock_parameters solver = chem_rosenbrock_default_parameters();
+  solver.h_start_fraction = 1e-6;
+  CHECK(run_linear_budget(&solver) == 0);
+  solver = chem_rosenbrock_four_stage_parameters();
+  CHECK(run_linear_budget(&solver) == 0);
+  solver = chem_rosenbrock_four_stage_da_parameters();
+  CHECK(run_linear_budget(&solver) == 0);
+  solver = chem_rosenbrock_six_stage_da_parameters();
+  CHECK(run_linear_budget(&solver) == 0);
+  return 0;
+}
+
+static int run_cascade_error_case(
+    double balance_tolerance, double rate, double k1, double k2,
+    double *balance_final, double *product_final, unsigned long *accepted) {
+  chem_species species[] = {
+    { "A_gas", 0.0, 0.0, 0.0, balance_tolerance, 0u },
+    { "A_aq", 0.0, 0.0, 0.0, 1e-8, 0u },
+    { "B_aq", 0.0, 0.0, 0.0, 1e-8, 0u },
+    { "P", 0.0, 0.0, 0.0, 1e-12, 0u },
+  };
+  const chem_term reactants[] = { { 2u, 1.0 } }, products[] = { { 3u, 1.0 } };
+  const chem_reaction reactions[] = {
+    { 0u, 1u, 0u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .label = "B_to_P", .p = { [0] = rate, [3] = 300.0 } } }
+  };
+  const chem_mechanism mechanism = {
+    .name = "cascade DAE", .species_count = 4u, .reaction_count = 1u,
+    .reactant_term_count = 1u, .product_term_count = 1u, .species = species,
+    .reactions = reactions, .reactant_terms = reactants, .product_terms = products,
+    .temperature = 298.0, .pressure = 101325.0, .relative_tolerance = 1e-6
+  };
+  const chem_constraint_term r1[] = { { 0u, 1.0 } }, p1[] = { { 1u, 1.0 } };
+  const chem_constraint_term r2[] = { { 1u, 1.0 } }, p2[] = { { 2u, 1.0 } };
+  const chem_constraint_term mass[] = { { 0u, 1.0 }, { 1u, 1.0 }, { 2u, 1.0 }, { 3u, 1.0 } };
+  const chem_constraint items[] = {
+    { .name = "eq1", .kind = CHEM_CONSTRAINT_EQUILIBRIUM, .algebraic_species = 1u,
+      .reactants = r1, .reactant_count = 1u, .products = p1, .product_count = 1u,
+      .equilibrium_constant_ref = k1, .delta_enthalpy = 0.0,
+      .gas_constant = GAS_CONSTANT, .reference_temperature = REFERENCE_TEMPERATURE, .parameter_index = 0u },
+    { .name = "eq2", .kind = CHEM_CONSTRAINT_EQUILIBRIUM, .algebraic_species = 2u,
+      .reactants = r2, .reactant_count = 1u, .products = p2, .product_count = 1u,
+      .equilibrium_constant_ref = k2, .delta_enthalpy = 0.0,
+      .gas_constant = GAS_CONSTANT, .reference_temperature = REFERENCE_TEMPERATURE, .parameter_index = 1u },
+    { .name = "mass", .kind = CHEM_CONSTRAINT_LINEAR, .algebraic_species = 0u,
+      .terms = mass, .term_count = 4u, .constant = 1e-6 },
+  };
+  const chem_constraint_set set = constraint_set(4u, items, 3u, 2u);
+  const double constraint_parameters[] = { k1, k2 }, temperature[] = { 298.0 }, pressure[] = { 101325.0 };
+  const double denominator = 1.0 + k1 + k1 * k2;
+  double state[] = { 1e-6 / denominator, k1 * 1e-6 / denominator,
+      k1 * k2 * 1e-6 / denominator, 0.0 };
+  chem_rosenbrock_parameters solver = chem_rosenbrock_four_stage_da_parameters();
+  solver.h_start_fraction = 1e-6;
+  chem_statistics stats = { 0 };
+  if (chem_integrate_group_with_constraints(
+          &mechanism, &set, 1u, state, NULL, constraint_parameters, temperature, pressure,
+          30.0, &solver, &stats) != 0) return -1;
+  *balance_final = state[0];
+  *product_final = state[3];
+  *accepted = stats.accepted;
+  return 0;
+}
+
+static int dae_error_sensitive_to_balance_tolerance(void) {
+  double loose_balance = 0.0, loose_product = 0.0, tight_balance = 0.0, tight_product = 0.0;
+  unsigned long loose_steps = 0u, tight_steps = 0u;
+  CHECK(run_cascade_error_case(1e-3, 100.0, 2.0, 2.0, &loose_balance, &loose_product, &loose_steps) == 0);
+  CHECK(run_cascade_error_case(1e-8, 100.0, 2.0, 2.0, &tight_balance, &tight_product, &tight_steps) == 0);
+  (void)loose_balance; (void)loose_product; (void)tight_balance; (void)tight_product;
+  CHECK(tight_steps > loose_steps);
+  return 0;
+}
+
+static int dae_error_prevents_overshoot(void) {
+  double balance = 0.0, product = 0.0;
+  unsigned long accepted = 0u;
+  CHECK(run_cascade_error_case(1e-8, 1e4, 100.0, 50.0, &balance, &product, &accepted) == 0);
+  (void)accepted;
+  CHECK(balance >= -1e-8);
+  NEAR(product, 1e-6, 1e-8);
+  NEAR(balance, 0.0, 1e-10);
+  return 0;
+}
+
+static int dae_terminator_and_robertson(void) {
+  const chem_species species[] = {
+    { "Cl2", 0.0, 0.0, 0.0, 1e-20, 0u },
+    { "Cl", 0.0, 0.0, 0.0, 1e-20, 0u },
+    { "A", 0.0, 0.0, 0.0, 1e-3, 0u },
+    { "B", 0.0, 0.0, 0.0, 1e-3, 0u },
+    { "C", 0.0, 0.0, 0.0, 1e-3, 0u },
+  };
+  const chem_term reactants[] = {
+    { 0u, 1.0 }, { 1u, 1.0 }, { 1u, 1.0 },
+    { 2u, 1.0 }, { 3u, 1.0 }, { 3u, 1.0 }, { 3u, 1.0 }, { 4u, 1.0 },
+  };
+  const chem_term products[] = {
+    { 1u, 2.0 }, { 0u, 1.0 },
+    { 3u, 1.0 }, { 3u, 1.0 }, { 4u, 1.0 }, { 2u, 1.0 }, { 4u, 1.0 },
+  };
+  const chem_parameter parameters[] = {
+    { "terminator_k1", 0.0 }, { "robertson_r1", 0.04 },
+    { "robertson_r2", 3.0e7 }, { "robertson_r3", 1.0e4 },
+  };
+  const chem_reaction reactions[] = {
+    { 0u, 1u, 0u, 1u, { .kind = CHEM_RATE_USER, .p = { [1] = 1.0 }, .custom_parameter = 0u } },
+    { 1u, 2u, 1u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .p = { [0] = 1.0, [3] = 298.0 } } },
+    { 3u, 1u, 2u, 1u, { .kind = CHEM_RATE_USER, .p = { [1] = 1.0 }, .custom_parameter = 1u } },
+    { 4u, 2u, 3u, 2u, { .kind = CHEM_RATE_USER, .p = { [1] = 1.0 }, .custom_parameter = 2u } },
+    { 6u, 2u, 5u, 2u, { .kind = CHEM_RATE_USER, .p = { [1] = 1.0 }, .custom_parameter = 3u } },
+  };
+  const chem_mechanism mechanism = {
+    .name = "Terminator and Robertson", .species_count = 5u, .reaction_count = 5u,
+    .reactant_term_count = 8u, .product_term_count = 7u, .parameter_count = 4u,
+    .species = species, .reactions = reactions, .reactant_terms = reactants,
+    .product_terms = products, .parameters = parameters, .temperature = 298.0,
+    .pressure = 101300.0, .relative_tolerance = 1e-8
+  };
+  const chem_constraint_term conservation[] = { { 2u, 1.0 }, { 3u, 1.0 }, { 4u, 1.0 } };
+  const chem_constraint item = linear("mass_conservation", 4u, conservation, 3u, 1.0);
+  const chem_constraint_set set = constraint_set(5u, &item, 1u, 0u);
+  const double temperatures[] = { 298.0 }, pressures[] = { 101300.0 };
+  double state[] = { 1.8e-10, 1.2e-6, 1.0, 0.0, 0.0 };
+  double rate_parameters[] = { 0.0, 0.04, 3.0e7, 1.0e4 };
+  const double total_chlorine = 2.0 * state[0] + state[1];
+  chem_rosenbrock_parameters solver = chem_rosenbrock_four_stage_da_parameters();
+  solver.max_internal_steps = 100000u;
+
+  double interval = 1.0;
+  for (size_t step = 0; step < 12u; ++step) {
+    chem_statistics stats = { 0 };
+    if (chem_integrate_group_with_constraints(
+            &mechanism, &set, 1u, state, rate_parameters, NULL, temperatures, pressures,
+            interval, &solver, &stats) != 0) {
+      fprintf(stderr, "Terminator/Robertson integration failed at interval %.17g s after %lu accepted steps\n",
+          interval, stats.accepted);
+      return 1;
+    }
+
+    NEAR(state[2] + state[3] + state[4], 1.0, 1e-10);
+    if (fabs(2.0 * state[0] + state[1] - total_chlorine) > 1e-6 * total_chlorine) {
+      fprintf(stderr, "chlorine drift at interval %.17g: Cl2=%.17g Cl=%.17g total=%.17g expected=%.17g\n",
+          interval, state[0], state[1], 2.0 * state[0] + state[1], total_chlorine);
+      return 1;
+    }
+    for (size_t species_index = 0; species_index < 5u; ++species_index) {
+      CHECK(isfinite(state[species_index]));
+      CHECK(state[species_index] >= -1e-18);
+    }
+    if (step == 0u) {
+      CHECK(state[2] < 0.99);
+      CHECK(state[3] > 0.0);
+      CHECK(state[4] > 1e-3);
+    }
+    interval *= 10.0;
+  }
+
+  CHECK(state[4] > 0.95);
+  CHECK(state[2] < 0.05);
+  CHECK(state[0] > 0.4 * total_chlorine);
+  CHECK(state[1] < 0.1 * total_chlorine);
+  return 0;
+}
+
 typedef struct { const char *name; int (*run)(void); } test_case;
 
 int main(int argc, char **argv) {
@@ -921,6 +1323,19 @@ int main(int argc, char **argv) {
     { "ConstraintInitialization.SuccessfulInitializationKeepsTheCorrection", initialization_damped_success_and_limits },
     { "ConstraintInitialization.WeightedCorrectionIsInvariantToConstraintRowScaling", initialization_weighted_row_scale },
     { "ConstraintInitialization.WeightedCorrectionUsesStateTolerances", initialization_weighted_tolerances },
+    { "DAEIntegration.SimpleEquilibrium", dae_equilibrium_simple },
+    { "EquilibriumIntegration.DAESolveWithConstraint", dae_equilibrium_simple },
+    { "EquilibriumIntegration.SetConstraintsAPIWorks", dae_equilibrium_simple },
+    { "EquilibriumIntegration.DAESolveWithConstraintAndReorderState", dae_equilibrium_reordered },
+    { "EquilibriumIntegration.SetConstraintsAPIMultipleConstraints", dae_equilibrium_coupled },
+    { "EquilibriumIntegration.DAESolveWithTwoCoupledConstraints", dae_equilibrium_coupled },
+    { "EquilibriumIntegration.DAESolveWithNonUnitStoichiometry", dae_equilibrium_nonunit },
+    { "DAEConstraintOvershoot.AlgebraicVariableStaysNonNegative", dae_linear_budget },
+    { "DAEConstraintOvershoot.EquilibriumPlusConservation", dae_equilibrium_conservation },
+    { "DAEConstraintOvershoot.AllRosenbrockOrdersConstrained", dae_all_rosenbrock_orders },
+    { "DAEAlgebraicError.ErrorSensitiveToBalanceAtol", dae_error_sensitive_to_balance_tolerance },
+    { "DAEAlgebraicError.AlgebraicVariableDoesNotOvershootDeeply", dae_error_prevents_overshoot },
+    { "DAESolveWithConstraint.TerminatorAndRobertson", dae_terminator_and_robertson },
   };
   if (argc != 2) return 2;
   for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); ++i) {

@@ -8,10 +8,10 @@ lines. Results for the current source are:
 
 | Compiler | PASS | FAIL | N/A | TS1 serial / parallel |
 | --- | ---: | ---: | ---: | --- |
-| Apple clang 21, macOS arm64 | 172 | 498 | 10 | PASS / PASS |
-| GCC 15.2, macOS arm64 | 172 | 498 | 10 | PASS / PASS |
+| Apple clang 21, macOS arm64 | 184 | 486 | 10 | PASS / PASS |
+| GCC 15.2, macOS arm64 | 184 | 486 | 10 | PASS / PASS |
 
-The 172 passing case lines cover implemented rate-constant formulas, rate
+The 184 passing case lines cover implemented rate-constant formulas, rate
 parameter descriptor references, the two configuration-versus-hand-built
 examples, the README chemistry example, multiple grid cells, the OpenMP tutorial,
 the vectorized storage example, the solve_results and solver_configuration
@@ -21,14 +21,16 @@ oxygen conservation, integrated intermediate monotonicity, condition-dependent
 callback rates and override, seven Jacobian verification cases, C array
 iteration, 14 owning species/phase/system cases, nine reaction/process-set
 construction, forcing, algebraic-row masking, and Jacobian cases, 42 linear and
-equilibrium constraint construction/residual/Jacobian cases, and the OpenMP
-TS1 path. Twelve algebraic initialization cases cover consistent and
+equilibrium constraint construction/residual/Jacobian cases, six equilibrium
+DAE integration cases, the linear-constraint Terminator and Robertson DAE case,
+five DAE overshoot and error-control cases, and the OpenMP TS1 path. Twelve algebraic
+initialization cases cover consistent and
 inconsistent states, multi-cell projection, rollback, row scaling, weighted
 tolerances, and damped Newton updates. The DA tutorial output table was corrected against the
 copied MICM tutorial executable: both DA methods print `0.703` at 1400 s. The 10 N/A
 cases cover a rate-store callback entry, four compile-time view-category
 traits, and release metadata with no meaningful equivalent in the current C
-API. The 498 remaining FAIL cases cover
+API. The 486 remaining FAIL cases cover
 unimplemented MICM builders, generic matrix and view utilities, standalone
 linear algebra cases, three private packed Chapman linear-algebra cases,
 constraint/DAE and alternate integration paths, and external/aerosol model
@@ -56,7 +58,7 @@ maximum relative error `9.7e-13`.
 ## Build verification
 
 Clean `make test-cpu` builds completed with Apple clang 21 and GCC 15.2. Both
-compiler runs reported 172 PASS, 498 FAIL, and 10 N/A, and passed the serial and
+compiler runs reported 184 PASS, 486 FAIL, and 10 N/A, and passed the serial and
 four-thread TS1 checks. The target exits nonzero while failed cases remain. The
 benchmark and library contain no Python linkage. The gate remains incomplete
 because many MICM cases have not been ported.
