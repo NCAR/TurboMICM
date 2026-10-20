@@ -109,7 +109,7 @@ Transcripts
 | astra-max | gpt-6-astra | max | Codex CLI 0.163.0, interactive | 2026-10-16 01:04-02:46 | `0dc7f67`, 02:46 (7 commits) | finished |
 | luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-16 06:47-08:11 | `217bf6e`, 08:10 (23 commits) | stopped; to rerun |
 | luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14-21:05 | `da2d722`, 21:05 (5 commits) | finished |
-| luna-xhigh | gpt-6-luna | xhigh | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-20 09:31- | | running |
+| luna-xhigh | gpt-6-luna | xhigh | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-20 09:31-12:20 | `ada55d5`, 12:20 (28 commits) | finished |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -324,6 +324,32 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Codex session `01a159f0-2065-7583-b7c2-91934e443647`. Codex's weekly usage
   window stood at 9 % at the start (it had reset since luna-max; next reset
   2026-10-27 00:33).
+- The SSE repeated, at 09:33, the authorization to stop a floundering Luna run.
+- Progress, from Claude Code's checks every 20 minutes: the 10,000-cell TS1
+  comparison passing at 38 minutes (10:09), with 43 cases passing at 41; 55 at
+  61; 95 at 81, when the first turn ended (10:49) reporting the acceptance gate
+  not met; 172 at 101; 245 at 121; 580 at 141, after dense and sparse matrix
+  storage; 663 passing and none failing at 159. The count rose at every check;
+  no sign of floundering.
+- Session end: the second turn ended at 12:16:46 with DONE: 662 PASS, 0 FAIL, 18
+  N/A with both compilers, TS1 serial and four-thread checks passing. The goal
+  started a third, which found that its earlier `CC=gcc` runs had used Apple
+  clang, reran the cases with `gcc-15`, refreshed its TS1 comparison (largest
+  relative difference 1.77e-13; 21,397 ms against MICM's 27,851 ms in one
+  10-thread run), and ended at 12:20:38 with DONE. The record was idle 10
+  minutes by 12:31; Claude Code quit Codex (`/quit`) and closed the tmux
+  session.
+- Final commit `ada55d5` (12:20), 28 commits; collected as `runs/luna/xhigh`.
+- Tokens: 4,278,572 total; input 3,223,268 (plus 227,209,088 cached); output
+  1,055,304 (563,811 reasoning). Codex's weekly usage window read 9 % at the
+  start and at the end.
+- Other load during the session: Claude Code's read-only progress checks; the
+  SSE noted at 10:13 that an agent in another session was working on the wiki's
+  slides (no such process ran on this machine at that check). No builds, tests,
+  or timing by the experimenter.
+- Transcript archived as `transcripts/luna-xhigh.jsonl.gz`. The credential scan's
+  only matches (53 of the `sk-` pattern, one of `ghp_`) were inside encrypted
+  content.
 
 # Tier 3
 
