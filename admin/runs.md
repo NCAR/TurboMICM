@@ -350,6 +350,20 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Transcript archived as `transcripts/luna-xhigh.jsonl.gz`. The credential scan's
   only matches (53 of the `sk-` pattern, one of `ghp_`) were inside encrypted
   content.
+- Verified, 12:32, with `admin/verify_tier3.py --stages build,tests,ts1,audit`
+  (`results/2026-10-20-luna-xhigh-verification`): 662 PASS, 0 FAIL, 18 N/A with
+  each compiler, every id once (11 of the N/A cases N/A in no other entry); the
+  TS1 gate passes (1.77e-13 with clang, 2.33e-13 with gcc-15); the audit finds
+  nothing outside the rules (the banned-construct scan's three matches are a
+  test variable named `vector_size`); no warnings with either compiler. The
+  benchmark keeps MICM's default grouping, one group per thread, and does
+  MICM's default solver work.
+- Timed with all entries, 12:45 to 14:24, once the machine had been idle for 10
+  minutes (`~/NSF-NCAR/tier1-work/time-when-idle.sh`, waiting from 12:34). All
+  110 runs passed the gate. luna-xhigh: 21,443 ms at 10 threads and 59,916 ms
+  on one, 1.32 and 2.41 times MICM's default (28,198 and 144,435 ms), scaling
+  2.79 times from 1 to 10 threads, the least of any program; the other seven
+  keep their order, their medians within 2.2 % of the 2026-10-19 session.
 
 # Tier 3
 

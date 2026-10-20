@@ -294,7 +294,7 @@ Tier-2-Results.
 - Time each new entry with all the others in one session (`admin/time_entries.py`,
   5 rounds at 10 and 1 threads), alongside `micm-standard-in-place-mozart`, its
   `-g32` variant, and `micm-vector8-in-place-mozart-g32`, as in
-  `results/2026-10-19-luna-max-verification`.
+  `results/2026-10-20-luna-xhigh-verification`.
   - `admin/leaderboard.py` regenerates the wiki's Leaderboard: at 10 threads from
     every session's `timings.csv` except the Sol verification's, whose MICM names
     it does not parse; at 1 thread from the sessions that ran it.
@@ -305,8 +305,9 @@ Tier-2-Results.
   SSE's order, 2026-10-19), each verified and timed with all entries before the
   next starts. luna-max is done: finished 21:05, verified, and timed overnight
   (`results/2026-10-19-luna-max-verification`), correct but 0.90 times MICM's
-  default. luna-xhigh started 2026-10-20 09:31 (record
-  `01a159f0-…`); luna-high follows it. The first luna-high attempt was stopped at 08:11
+  default. luna-xhigh is done: finished 12:20 on 2026-10-20, verified, and timed
+  (`results/2026-10-20-luna-xhigh-verification`), 1.32 times MICM's default at
+  10 threads and 2.41 on one, scaling only 2.79 times. luna-high is next. The first luna-high attempt was stopped at 08:11
   on 2026-10-16, after 1 h 23 min, far from done (615 failing cases at its 07:51
   checkpoint); it is kept, outside the run root, at
   `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/` was recreated.
