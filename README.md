@@ -25,8 +25,8 @@ make test-cpu CC=clang
 make test-cpu CC=gcc-15
 ```
 
-The runner exits nonzero while any case fails. The current coverage and known
-unported cases are recorded in [RESULTS.md](RESULTS.md).
+The runner exits nonzero while any case fails. Coverage and the API-specific
+N/A cases are recorded in [RESULTS.md](RESULTS.md).
 
 `include/chem.h` exposes the low-level integration API, owning species/phase/
 system definitions for code-built mechanisms, and an owning `chem_state`

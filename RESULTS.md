@@ -24,26 +24,28 @@ DAE conservation, algebraic-row forcing/Jacobians, combined constraints,
 multi-cell solves, equilibrium and conservation behavior, temperature-dependent
 parameters, and finite-difference Jacobians.
 
-The 18 N/A cases describe C++-specific API behavior with no C counterpart:
-the rate-store lambda callback entry, compile-time view/category traits,
-release metadata, and solver-builder type dispatch; two sparse algebraic-row
-pattern tests (the C DAE solver uses dense Jacobian storage and has no sparse
-callback element-access path); a reusable solver-builder lifetime test (C
-passes mechanism and constraint descriptors directly); and an external-model
-insertion-order test (C has no external-model registry or model-order mask).
-Every other case in the supplied list passes.
+The 18 N/A cases describe C++-specific behavior with no meaningful C counterpart:
+one rate-store lambda callback entry; four compile-time view-category checks and
+one grouped-view category-tag check; five version metadata checks; three
+solver-builder type/matrix-policy checks; two sparse algebraic-row pattern
+checks (the C DAE solver uses dense Jacobian storage and has no sparse callback
+element-access path); one reusable solver-builder lifetime check (C passes
+mechanism and constraint descriptors directly); and one external-model
+insertion-order check (C has no model registry or order-dependent mask). Every
+other case in the supplied list passes.
 
 ## TS1 comparisons
 
 All results below use `-O3 -DNDEBUG`, double precision, and the same TS1 input
 and 10-thread setting on the provided Apple arm64 machine. For the 10,000-cell
 seed 2026 comparison, C used **21,199.606 ms** and MICM used **28,453.001 ms**
-in one local run. Both reported 9,000 internal steps, with matching
+in an earlier local run. A fresh comparison used **21,397.132 ms** for C and
+**27,850.738 ms** for MICM. Both runs reported 9,000 internal steps, with matching
 accepted/rejected counts, function calls, Jacobian updates, decompositions,
 and solves. All 2,110,000 final cell/species values passed
 `../reference/compare_final.py`; maximum relative error was `1.77e-13`
 (BCARY, cell 6848). The task's hidden seed and five-run median were not measured
-here, so this timing is an indicative local comparison, not the ranked result.
+here, so these timings are indicative local comparisons, not the ranked result.
 
 The fixed 100-cell, 100-step, 30-second seed 1 input passes for one and four
 threads. A 1,000-cell seed 2026 run passed all 211,000 values with maximum
@@ -54,5 +56,7 @@ maximum relative error `9.7e-13`.
 
 Clean `make test-cpu` builds completed with Apple clang 21 and GCC 15.2. Both
 reported 662 PASS, 0 FAIL, and 18 N/A, and passed the serial and four-thread
-TS1 checks. The C library and benchmark have no Python linkage. All cases in
-the supplied list are now accounted for as PASS or an API-specific N/A.
+TS1 checks. `make cpu` and `make bench` also built the benchmark with both
+compilers. The linked benchmark depends on the C runtime, libm, and OpenMP only;
+it has no Python linkage. All cases in the supplied list are accounted for as
+PASS or an API-specific N/A.
