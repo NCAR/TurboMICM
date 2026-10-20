@@ -38,6 +38,8 @@ stage equations or algebraic-row replacement. The optional constrained solve
 projects algebraic variables by Newton iteration at the start and after each
 accepted ODE step, using the constraint Jacobian restricted to algebraic columns.
 The initial Newton iteration count is reported in solver statistics.
+Projection stops when the algebraic correction is at most ten percent of the
+configured absolute-plus-relative state error scale.
 The constrained group entry point currently runs cells sequentially with an
 independent scalar controller for each cell.
 

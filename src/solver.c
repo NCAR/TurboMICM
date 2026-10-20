@@ -303,7 +303,8 @@ static int row_is_algebraic(const chem_constraint_set *constraints, size_t row) 
 static int project_constraints(const chem_constraint_set *constraints,
                                double *state, double temperature,
                                double *residual, double *negative_jacobian,
-                               size_t *iterations) {
+                               double relative_tolerance,
+                               double absolute_tolerance, size_t *iterations) {
   if (constraints == NULL || constraints->constraint_count == 0) return 0;
   if (iterations) *iterations = 0;
   const size_t n = constraints->species_count;
@@ -312,16 +313,22 @@ static int project_constraints(const chem_constraint_set *constraints,
   size_t *variables = malloc(count*sizeof(*variables));
   double *original = malloc(count*sizeof(*original));
   double *matrix = malloc(count*count*sizeof(*matrix));
+  double *row_norms = malloc(count*sizeof(*row_norms));
   double *rhs = malloc(count*sizeof(*rhs));
-  if (!variables || !original || !matrix || !rhs) {
-    free(variables); free(original); free(matrix); free(rhs);
+  double *trial = malloc(n*sizeof(*trial));
+  double *trial_residual = malloc(n*sizeof(*trial_residual));
+  if (!variables || !original || !matrix || !row_norms || !rhs ||
+      !trial || !trial_residual) {
+    free(variables); free(original); free(matrix); free(row_norms); free(rhs);
+    free(trial); free(trial_residual);
     return 1;
   }
   for (size_t i = 0; i < count; ++i) {
     variables[i] = constraints->constraints[i].algebraic_species;
     for (size_t j = 0; j < i; ++j)
       if (variables[j] == variables[i]) {
-        free(variables); free(original); free(matrix); free(rhs);
+        free(variables); free(original); free(matrix); free(row_norms); free(rhs);
+        free(trial); free(trial_residual);
         return 1;
       }
     original[i] = state[variables[i]];
@@ -334,18 +341,21 @@ static int project_constraints(const chem_constraint_set *constraints,
                                         residual) ||
         chem_constraint_set_add_negative_jacobian(
             constraints, state, &temperature, 1, negative_jacobian)) break;
-    double maximum_residual = 0.0, scale = 1.0;
-    for (size_t i = 0; i < n; ++i) if (fabs(state[i]) > scale) scale = fabs(state[i]);
+    double maximum_residual = 0.0;
     for (size_t i = 0; i < count; ++i) {
       const size_t row = variables[i];
       if (fabs(residual[row]) > maximum_residual)
         maximum_residual = fabs(residual[row]);
       rhs[i] = -residual[row];
-      for (size_t j = 0; j < count; ++j)
+      row_norms[i] = 0.0;
+      for (size_t j = 0; j < count; ++j) {
         matrix[i*count+j] = -negative_jacobian[row*n + variables[j]];
+        if (fabs(matrix[i*count+j]) > row_norms[i])
+          row_norms[i] = fabs(matrix[i*count+j]);
+      }
     }
     if (maximum_residual == 0.0) {
-      if (iterations) *iterations = iteration;
+      if (iterations) *iterations = iteration + 1;
       result = 0;
       break;
     }
@@ -373,25 +383,56 @@ static int project_constraints(const chem_constraint_set *constraints,
       for (size_t j = ii+1; j < count; ++j) rhs[ii] -= matrix[ii*count+j]*rhs[j];
       rhs[ii] /= matrix[ii*count+ii];
     }
-    double maximum_update = 0.0;
+    int correction_is_small = 1;
     for (size_t i = 0; i < count; ++i) {
       if (!isfinite(rhs[i])) goto done;
-      if (fabs(rhs[i]) > maximum_update) maximum_update = fabs(rhs[i]);
+      const double tolerance = 0.1 * (absolute_tolerance +
+          relative_tolerance * fabs(state[variables[i]]));
+      if (fabs(rhs[i]) > tolerance) correction_is_small = 0;
     }
-    if (maximum_update <= 1.0e-12*scale) {
-      if (iterations) *iterations = iteration;
+    if (correction_is_small) {
+      if (iterations) *iterations = iteration + 1;
       result = 0;
       break;
     }
+    double current_error = 0.0;
     for (size_t i = 0; i < count; ++i) {
-      state[variables[i]] += rhs[i];
-      if (!isfinite(state[variables[i]])) goto done;
+      if (row_norms[i] < 1.0e-30) goto done;
+      const double normalized = fabs(residual[variables[i]])/row_norms[i];
+      if (normalized > current_error) current_error = normalized;
     }
+    double damping = 1.0;
+    int accepted = 0;
+    for (size_t backtrack = 0; backtrack < 40; ++backtrack, damping *= 0.5) {
+      memcpy(trial, state, n*sizeof(*trial));
+      int valid = 1;
+      for (size_t i = 0; i < count; ++i) {
+        trial[variables[i]] += damping*rhs[i];
+        if (!isfinite(trial[variables[i]]) || trial[variables[i]] < 0.0)
+          valid = 0;
+      }
+      if (!valid) continue;
+      memset(trial_residual, 0, n*sizeof(*trial_residual));
+      if (chem_constraint_set_add_forcing(constraints, trial, &temperature, 1,
+                                          trial_residual)) continue;
+      double trial_error = 0.0;
+      for (size_t i = 0; i < count; ++i) {
+        const double normalized = fabs(trial_residual[variables[i]])/row_norms[i];
+        if (normalized > trial_error) trial_error = normalized;
+      }
+      if (trial_error < current_error) {
+        memcpy(state, trial, n*sizeof(*state));
+        accepted = 1;
+        break;
+      }
+    }
+    if (!accepted) goto done;
   }
 done:
   if (result != 0)
     for (size_t i = 0; i < count; ++i) state[variables[i]] = original[i];
-  free(variables); free(original); free(matrix); free(rhs);
+  free(variables); free(original); free(matrix); free(row_norms); free(rhs);
+  free(trial); free(trial_residual);
   return result;
 }
 
@@ -454,7 +495,8 @@ static int rosenbrock_solve_impl(
     w->rate_constants_valid = 1;
   }
   if (constraints && project_constraints(constraints, y, temperature,
-                                         stage_y, jac,
+                                         stage_y, jac, o->relative_tolerance,
+                                         o->absolute_tolerance,
                                          &local_stats.constraint_init_iterations))
     return SOLVER_STEP_FAILURE;
 
@@ -523,7 +565,9 @@ static int rosenbrock_solve_impl(
         }
       }
       if (constraints && project_constraints(constraints, ynew, temperature,
-                                             stage_y, jac, NULL)) {
+                                             stage_y, jac,
+                                             o->relative_tolerance,
+                                             o->absolute_tolerance, NULL)) {
         status = SOLVER_STEP_FAILURE;
         break;
       }

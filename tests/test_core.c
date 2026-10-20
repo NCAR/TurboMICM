@@ -1241,6 +1241,49 @@ static int check_constrained_solver(void) {
   if (repeat_status || fabs(pair_state[1]-1.0)>1.0e-12 ||
       stats.constraint_init_iterations == 0) return 6;
 
+  const chem_constraint_term weighted_terms[] = {
+      {.species=0,.coefficient=1.0},{.species=1,.coefficient=-1.0}};
+  const chem_constraint weighted_constraint = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .algebraic_species=1,.terms=weighted_terms,.term_count=2};
+  const chem_constraint_set weighted_set = {.constraints=&weighted_constraint,
+      .constraint_count=1,.species_count=2};
+  chem_solver_workspace weighted_workspace = {0};
+  if (chem_solver_workspace_init(&weighted_workspace,&pair_mechanism)) return 7;
+  const double deviation = 5.0e-8;
+  double weighted_state[] = {1.0,1.0+deviation};
+  const chem_solver_options loose = {1.0e-6,1.0e-8,1000};
+  const int loose_status = chem_rosenbrock_solve_constrained_with_parameters(
+      &pair_mechanism,&weighted_workspace,weighted_state,298.15,101325.0,
+      40.0,NULL,0.1,NULL,&weighted_set,&loose,&stats);
+  if (loose_status || weighted_state[1] != 1.0+deviation ||
+      stats.constraint_init_iterations != 1) return 8;
+  weighted_state[0] = 1.0; weighted_state[1] = 1.0+deviation;
+  const chem_solver_options tight = {1.0e-8,1.0e-12,1000};
+  const int tight_status = chem_rosenbrock_solve_constrained_with_parameters(
+      &pair_mechanism,&weighted_workspace,weighted_state,298.15,101325.0,
+      40.0,NULL,0.1,NULL,&weighted_set,&tight,&stats);
+  chem_solver_workspace_destroy(&weighted_workspace);
+  if (tight_status || fabs(weighted_state[1]-1.0)>1.0e-12 ||
+      stats.constraint_init_iterations != 2) return 9;
+
+  const chem_constraint_term squared_reactants[] = {{.species=0,.coefficient=1.0}};
+  const chem_constraint_term squared_products[] = {{.species=1,.coefficient=2.0}};
+  const chem_constraint squared_constraint = {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=1,.reactants=squared_reactants,.reactant_count=1,
+      .products=squared_products,.product_count=1,.equilibrium_constant_ref=2.0,
+      .reference_temperature=298.15};
+  const chem_constraint_set squared_set = {.constraints=&squared_constraint,
+      .constraint_count=1,.species_count=2};
+  chem_solver_workspace squared_workspace = {0};
+  if (chem_solver_workspace_init(&squared_workspace,&pair_mechanism)) return 10;
+  double squared_state[] = {0.5,1.0e-6};
+  const int squared_status = chem_rosenbrock_solve_constrained_with_parameters(
+      &pair_mechanism,&squared_workspace,squared_state,298.15,101325.0,40.0,
+      NULL,0.1,NULL,&squared_set,NULL,&stats);
+  chem_solver_workspace_destroy(&squared_workspace);
+  if (squared_status || fabs(squared_state[1]-1.0)>1.0e-3 ||
+      stats.constraint_init_iterations <= 1) return 11;
+
   const chem_species singular_species[] = {{.name="X"},{.name="Y"}};
   const chem_mechanism singular_mechanism = {
       .species=singular_species,.species_count=2};
@@ -1250,17 +1293,17 @@ static int check_constrained_solver(void) {
   const chem_constraint_set singular_set = {.constraints=&singular_constraint,
       .constraint_count=1,.species_count=2};
   chem_solver_workspace singular_workspace = {0};
-  if (chem_solver_workspace_init(&singular_workspace,&singular_mechanism)) return 7;
+  if (chem_solver_workspace_init(&singular_workspace,&singular_mechanism)) return 12;
   double singular_state[] = {7.0,0.0};
   const int singular_status = chem_rosenbrock_solve_constrained_with_parameters(
       &singular_mechanism,&singular_workspace,singular_state,298.15,101325.0,
       40.0,NULL,0.1,NULL,&singular_set,NULL,NULL);
   chem_solver_workspace_destroy(&singular_workspace);
   if (singular_status == 0 || singular_state[0] != 7.0 || singular_state[1] != 0.0)
-    return 8;
+    return 13;
 
   chem_solver_workspace group_workspace = {0};
-  if (chem_solver_workspace_init_group(&group_workspace,&mechanism,3)) return 9;
+  if (chem_solver_workspace_init_group(&group_workspace,&mechanism,3)) return 14;
   double group_states[] = {0.0,2.0,-1.0};
   const double group_temperatures[] = {298.15,300.0,280.0};
   const double group_pressures[] = {101325.0,101325.0,101325.0};
@@ -1271,7 +1314,7 @@ static int check_constrained_solver(void) {
   chem_solver_workspace_destroy(&group_workspace);
   if (group_status || fabs(group_states[0]-1.0)>1.0e-12 ||
       fabs(group_states[1]-1.0)>1.0e-12 || fabs(group_states[2]-1.0)>1.0e-12 ||
-      stats.constraint_init_iterations < 3) return 10;
+      stats.constraint_init_iterations < 3) return 15;
   return 0;
 }
 
