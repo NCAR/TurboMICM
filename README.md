@@ -70,9 +70,11 @@ build algebraic masks and Jacobian patterns and add residual and negative-Jacobi
 terms to caller-provided arrays. The optional constrained Rosenbrock entry point
 projects algebraic variables with Newton iterations before integration and after
 each accepted step, and reports the initial projection iteration count in
-`chem_solver_stats.constraint_init_iterations`. The implementation covers
+`chem_solver_stats.constraint_init_iterations`. The mechanism evaluator covers
 Arrhenius, photolysis, user-defined, Troe, surface, ternary activation (including
 JPL19), tunneling, branched, Taylor-series, reversible, and callback rates.
+Constrained calls support scalar and sequential per-cell grouped operation; each
+grouped cell has its own adaptive controller.
 `chem_rosenbrock_builtin_parameters` supplies MICM's two-, three-, four-, and
 DAE parameter sets; pass a parameter structure to
 `chem_rosenbrock_solve_with_parameters` to use a built-in or custom method. The

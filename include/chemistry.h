@@ -295,6 +295,14 @@ int chem_rosenbrock_solve_constrained_with_parameters(
     const chem_rosenbrock_parameters *parameters,
     const chem_constraint_set *constraints,
     const chem_solver_options *options, chem_solver_stats *statistics);
+int chem_rosenbrock_solve_constrained_group_with_parameters(
+    const chem_mechanism *mechanism, chem_solver_workspace *workspace,
+    double *states, const double *temperatures, const double *pressures,
+    const double *air_densities, const double *rate_parameters,
+    size_t cell_count, double duration,
+    const chem_rosenbrock_parameters *parameters,
+    const chem_constraint_set *constraints,
+    const chem_solver_options *options, chem_solver_stats *statistics);
 int chem_rosenbrock3_solve_group_with_workspace(
     const chem_mechanism *mechanism, chem_solver_workspace *workspace,
     double *states, const double *temperatures, const double *pressures,

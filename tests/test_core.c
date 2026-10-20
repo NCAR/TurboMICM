@@ -1258,6 +1258,20 @@ static int check_constrained_solver(void) {
   chem_solver_workspace_destroy(&singular_workspace);
   if (singular_status == 0 || singular_state[0] != 7.0 || singular_state[1] != 0.0)
     return 8;
+
+  chem_solver_workspace group_workspace = {0};
+  if (chem_solver_workspace_init_group(&group_workspace,&mechanism,3)) return 9;
+  double group_states[] = {0.0,2.0,-1.0};
+  const double group_temperatures[] = {298.15,300.0,280.0};
+  const double group_pressures[] = {101325.0,101325.0,101325.0};
+  const double group_densities[] = {40.0,40.0,40.0};
+  const int group_status = chem_rosenbrock_solve_constrained_group_with_parameters(
+      &mechanism,&group_workspace,group_states,group_temperatures,
+      group_pressures,group_densities,NULL,3,0.1,NULL,&constraints,NULL,&stats);
+  chem_solver_workspace_destroy(&group_workspace);
+  if (group_status || fabs(group_states[0]-1.0)>1.0e-12 ||
+      fabs(group_states[1]-1.0)>1.0e-12 || fabs(group_states[2]-1.0)>1.0e-12 ||
+      stats.constraint_init_iterations < 3) return 10;
   return 0;
 }
 

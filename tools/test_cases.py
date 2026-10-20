@@ -97,6 +97,7 @@ implemented = {
     "constraint_initialization:ConstraintInitialization.ScaledConstraintRowsSolveIdenticallyThroughSolve",
     "constraint_initialization:ConstraintInitialization.WeightedCorrectionIsInvariantToConstraintRowScaling",
     "constraint_initialization:ConstraintInitialization.SubsequentSolveCallsReinitialize",
+    "constraint_initialization:ConstraintInitialization.MultiCellSystems",
     "matrix:Matrix.Strides",
     "matrix:Matrix.ConversionToVector",
     "matrix:Matrix.ConversionFromVector",

@@ -594,6 +594,45 @@ int chem_rosenbrock_solve_constrained_with_parameters(
                                parameters, constraints, requested, statistics);
 }
 
+int chem_rosenbrock_solve_constrained_group_with_parameters(
+    const chem_mechanism *m, chem_solver_workspace *workspace, double *states,
+    const double *temperatures, const double *pressures,
+    const double *air_densities, const double *rate_parameters,
+    size_t cell_count, double duration,
+    const chem_rosenbrock_parameters *parameters,
+    const chem_constraint_set *constraints,
+    const chem_solver_options *requested, chem_solver_stats *statistics) {
+  solver_workspace_data *w = workspace ? workspace->implementation : NULL;
+  if (!m || !w || !states || !temperatures || !pressures || !air_densities ||
+      cell_count > w->capacity || w->mechanism != m ||
+      (m->custom_parameter_count && rate_parameters == NULL))
+    return SOLVER_BAD_ARGUMENT;
+  chem_solver_stats total = {0};
+  for (size_t cell = 0; cell < cell_count; ++cell) {
+    chem_solver_stats one = {0};
+    const double *parameters_for_cell = rate_parameters
+        ? rate_parameters + cell*m->custom_parameter_count : NULL;
+    const int status = rosenbrock_solve_impl(
+        m, workspace, states + cell*m->species_count, temperatures[cell],
+        pressures[cell], air_densities[cell], parameters_for_cell, duration,
+        parameters, constraints, requested, &one);
+    total.internal_steps += one.internal_steps;
+    total.accepted += one.accepted;
+    total.rejected += one.rejected;
+    total.function_calls += one.function_calls;
+    total.jacobian_updates += one.jacobian_updates;
+    total.decompositions += one.decompositions;
+    total.solves += one.solves;
+    total.constraint_init_iterations += one.constraint_init_iterations;
+    if (status) {
+      if (statistics) *statistics = total;
+      return status;
+    }
+  }
+  if (statistics) *statistics = total;
+  return SOLVER_OK;
+}
+
 int chem_rosenbrock3_solve_with_workspace(
     const chem_mechanism *m, chem_solver_workspace *workspace, double *y,
     double temperature, double pressure, double air_density,

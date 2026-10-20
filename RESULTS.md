@@ -49,7 +49,8 @@
   unchanged, reports initial projection iterations, and restores the caller's
   state when projection fails. Row-scaled constraints and repeated solve calls
   also preserve the corrected manifold. Full DAE stage equations remain
-  incomplete.
+  incomplete. A grouped constrained call projects all cells and aggregates
+  statistics while using an independent scalar controller per cell.
 - The dense matrix view test covers strided indexing, conversion to and from a
   flat vector, AXPY, fill, min/max/sum reductions, and invalid dimensions. AXPY
   rejects row and column shape mismatches. Callback traversal works for both
@@ -59,7 +60,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. One hundred sixty-four cases pass, nine are marked N/A, and 507 cases still report
+  statuses. One hundred sixty-five cases pass, nine are marked N/A, and 506 cases still report
   incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -79,5 +80,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 all 2,110,000 values; the largest relative difference was `5.34e-14` for
 BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
 MICM at this scale. The 100-cell and first-cell runs above also pass for both
-compilers. Overall, 507 of the 680 inventory cases remain incomplete; nine
+compilers. Overall, 506 of the 680 inventory cases remain incomplete; nine
 C++-only cases are marked N/A.
