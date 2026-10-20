@@ -35,8 +35,9 @@
   forcing, Jacobian, and factorization.
 
 - Mark the five `ViewCategorySFINAE` cases N/A because they inspect C++
-  template substitution and type categories, which have no C equivalent. Mark
-  the CUDA matrix case N/A because CUDA is outside the CPU-only port scope.
+  template substitution and type categories, which have no C equivalent. The
+  algebraic-row masking case remains incomplete because the C solver has no
+  corresponding constraint API, even though its test name includes “CudaMatrix.”
 
 - Give the independent C library an initial version of `0.1.0+0` and expose the
   string and numeric components through `chem_version*` functions.

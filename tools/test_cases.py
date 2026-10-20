@@ -104,8 +104,6 @@ not_applicable = {
         "C state views are non-owning and have no move constructor",
     "state:State.MoveAssignmentOperator":
         "C state views are non-owning and have no move assignment",
-    "process_set:ProcessSetAlgebraicVariables.CudaMatrix":
-        "CUDA backend is outside the CPU-only port scope",
     "view_category_sfinae:ViewCategorySFINAE.VectorTypes":
         "C has no template type-trait or SFINAE behavior",
     "view_category_sfinae:ViewCategorySFINAE.MatrixViews":
