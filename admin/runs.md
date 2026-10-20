@@ -103,6 +103,7 @@ Transcripts
 | astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17-23:35 | `fbd365c`, 23:35 (11 commits) | finished |
 | astra-max | gpt-6-astra | max | Codex CLI 0.163.0, interactive | 2026-10-16 01:04-02:46 | `0dc7f67`, 02:46 (7 commits) | finished |
 | luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-16 06:47-08:11 | `217bf6e`, 08:10 (23 commits) | stopped; to rerun |
+| luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14- | | running |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -250,6 +251,19 @@ Token counts are as Codex reports them: total = uncached input + output.
   paths, was moved intact to `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`,
   outside the run root, and `luna-high/` was recreated from its prompt with
   `admin/setup_runs.py` for a fresh run, overnight.
+
+## luna-max
+
+- Order: on 2026-10-19 the SSE chose to run Luna's three entries fresh, one at a
+  time, at max, then xhigh, then high (luna-high's rerun last). Each is collected,
+  verified, and timed with all entries before the next launches.
+- Session start: 2026-10-19 19:14:52, launched by Claude Code with
+  `admin/launch_codex_run.sh luna-max gpt-6-luna max`, in a detached tmux
+  session (socket `turbomicm`, session `luna-max`); the goal was sent at
+  19:14:56. The session record shows gpt-6-luna at max, base instructions from
+  gpt-6-luna, Codex 0.163.0, and no model switch; the process's environment holds
+  no Claude Code variables besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
+- Codex session `01a156e0-2dbb-7742-9165-1f8fc55480ba`.
 
 # Tier 3
 

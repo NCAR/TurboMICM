@@ -297,11 +297,13 @@ Tier-2-Results.
   - Add each entry's grouping to `ENTRY_GROUPING` in `admin/leaderboard.py`.
   - When building in parallel, make the `micm/` and `reference/` links first, or
     with `ln -sn`: a racing `ln -s` writes a link inside the run root.
-- Luna: run all three overnight, fresh, one after another, each verified and timed
-  with all entries before the next starts. The first luna-high attempt was stopped
-  at 08:11 on 2026-10-16, after 1 h 23 min, far from done (615 failing cases at
-  its 07:51 checkpoint); it is kept, outside the run root, at
-  `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/` was recreated.
+- Luna: run all three fresh, one after another, at max, xhigh, then high (the
+  SSE's order, 2026-10-19), each verified and timed with all entries before the
+  next starts. luna-max launched 2026-10-19 19:14 (`admin/runs.md`). The first
+  luna-high attempt was stopped at 08:11 on 2026-10-16, after 1 h 23 min, far
+  from done (615 failing cases at its 07:51 checkpoint); it is kept, outside the
+  run root, at `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/`
+  was recreated.
   For each run: `admin/launch_codex_run.sh <run> gpt-6-luna <effort>`, then arm
   `admin/run_state.py` (a monitor does not outlive its Claude Code session).
 - Next: an analysis pass on every entry. The wiki's Tier-1-Implementations page
