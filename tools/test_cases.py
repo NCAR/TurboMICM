@@ -399,6 +399,16 @@ for _category, _case_class in (
     implemented.update(f"{_category}:{_case_class}.{_name}"
                        for _name in _vector_sparse_case_names)
     implemented.add(f"{_category}:SparseMatrixBuilder.BadConfiguration")
+implemented.update(f"vector_matrix:VectorMatrix.{_name}" for _name in (
+    "Print", "MismatchedColumnDimensions", "WrongMatrixDimensions",
+    "MultipleTemporaries", "ConstMatrixFunction", "EmptyMatrixFunction",
+    "MatrixVectorDifferentRowsFromCreation", "MultipleMatricesMismatchedRowsAtInvocation",
+    "MultipleMatricesOneVector", "MultipleMatricesDifferentRowsVector",
+    "VectorSizeMatchesOneMatrixOnly", "ConstVector", "MutableVector",
+    "FunctionInvocationWithWrongSizedVector", "MixedVectorColumnViewRowVariable",
+    "FunctionWithConstSignature", "IntegerVector", "ReduceSum", "ReduceLOr",
+    "ReduceLAnd", "ReduceStrict", "VectorCapture",
+))
 not_applicable = {
     "state:State.CopyConstructor":
         "C state views are non-owning, so they have no deep-copy constructor",

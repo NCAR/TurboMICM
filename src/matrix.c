@@ -349,6 +349,31 @@ int chem_vector_matrix_view_for_each_row(
   return 0;
 }
 
+int chem_vector_matrix_view_for_each_row_const_sources(
+    chem_vector_matrix_view *destination,
+    const chem_const_vector_matrix_view *first,
+    const chem_const_vector_matrix_view *second,
+    chem_matrix_row_function function, void *context) {
+  if (!vector_matrix_view_valid(destination) ||
+      !const_vector_matrix_view_valid(first) ||
+      !const_vector_matrix_view_valid(second) || !function ||
+      destination->rows != first->rows || destination->rows != second->rows)
+    return 1;
+  for (size_t row = 0; row < destination->rows; ++row) {
+    double *dst_row = destination->data ? destination->data +
+        vector_matrix_offset(row,0,destination->columns,
+                             destination->group_width) : NULL;
+    const double *first_row = first->data ? first->data +
+        vector_matrix_offset(row,0,first->columns,first->group_width) : NULL;
+    const double *second_row = second->data ? second->data +
+        vector_matrix_offset(row,0,second->columns,second->group_width) : NULL;
+    function(row,dst_row,destination->columns,destination->group_width,
+        first_row,first->columns,first->group_width,
+        second_row,second->columns,second->group_width,context);
+  }
+  return 0;
+}
+
 static int vector_matrix_reduce(const chem_vector_matrix_view *view,
                                 double *value, int maximum) {
   if (!vector_matrix_view_valid(view) || value == NULL || view->rows == 0 ||
@@ -373,6 +398,77 @@ int chem_vector_matrix_view_min(const chem_vector_matrix_view *view,
 int chem_vector_matrix_view_max(const chem_vector_matrix_view *view,
                                 double *value) {
   return vector_matrix_reduce(view,value,1);
+}
+
+int chem_vector_matrix_view_write(FILE *file,
+                                  const chem_vector_matrix_view *view) {
+  if (!file || !vector_matrix_view_valid(view)) return 1;
+  for (size_t row = 0; row < view->rows; ++row) {
+    for (size_t column = 0; column < view->columns; ++column) {
+      const double value = view->data[vector_matrix_offset(
+          row,column,view->columns,view->group_width)];
+      if (fprintf(file,"%g%s",value,
+                  column + 1 == view->columns ? "\n" : ",") < 0) return 1;
+    }
+  }
+  return ferror(file) ? 1 : 0;
+}
+
+int chem_vector_matrix_view_scale_from_int_vector(
+    chem_vector_matrix_view *view, const int *vector, size_t vector_size,
+    double scale) {
+  if (!vector_matrix_view_valid(view) ||
+      !vector_matrix_vector_size(view->rows,view->columns,vector_size) ||
+      (vector_size && !vector)) return 1;
+  size_t index = 0;
+  for (size_t row = 0; row < view->rows; ++row)
+    for (size_t column = 0; column < view->columns; ++column)
+      view->data[vector_matrix_offset(row,column,view->columns,
+                                      view->group_width)] =
+          (double)vector[index++]*scale;
+  return 0;
+}
+
+static int vector_matrix_reduce_predicate(
+    const chem_const_vector_matrix_view *view,
+    chem_matrix_predicate predicate, void *context, int initial,
+    int *value, int conjunction) {
+  if (!const_vector_matrix_view_valid(view) || !predicate || !value) return 1;
+  int result = initial != 0;
+  for (size_t row = 0; row < view->rows; ++row)
+    for (size_t column = 0; column < view->columns; ++column) {
+      const int item = predicate(view->data[vector_matrix_offset(
+          row,column,view->columns,view->group_width)],context) != 0;
+      if (conjunction) result &= item;
+      else result |= item;
+    }
+  *value = result;
+  return 0;
+}
+
+int chem_vector_matrix_view_reduce_or(
+    const chem_const_vector_matrix_view *view,
+    chem_matrix_predicate predicate, void *context, int initial, int *value) {
+  return vector_matrix_reduce_predicate(view,predicate,context,initial,value,0);
+}
+
+int chem_vector_matrix_view_reduce_and(
+    const chem_const_vector_matrix_view *view,
+    chem_matrix_predicate predicate, void *context, int initial, int *value) {
+  return vector_matrix_reduce_predicate(view,predicate,context,initial,value,1);
+}
+
+int chem_vector_matrix_view_reduce_strict(
+    const chem_const_vector_matrix_view *view, chem_matrix_combine combine,
+    void *context, double initial, double *value) {
+  if (!const_vector_matrix_view_valid(view) || !combine || !value) return 1;
+  double result = initial;
+  for (size_t row = 0; row < view->rows; ++row)
+    for (size_t column = 0; column < view->columns; ++column)
+      result = combine(result,view->data[vector_matrix_offset(
+          row,column,view->columns,view->group_width)],context);
+  *value = result;
+  return 0;
 }
 
 int chem_matrix_view_get(const chem_matrix_view *view, size_t row,

@@ -56,6 +56,8 @@
   widths 1, 2, 4, and 8 against identical logical row-major values.
   A const-source row callback handles read-only matrices and one-column vector
   views; row-count mismatches are rejected at invocation.
+  Lane-packed views share the row callback and reducer APIs. Reductions iterate
+  only logical rows and columns, skipping padded lanes in the final group.
 
 - Represent sparse matrices as non-owning block CSR views. A block shares one
   sorted, duplicate-free row/column pattern; values are contiguous block-major

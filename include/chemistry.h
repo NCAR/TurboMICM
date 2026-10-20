@@ -356,10 +356,29 @@ int chem_vector_matrix_view_for_each_row(
     const chem_vector_matrix_view *first,
     const chem_vector_matrix_view *second,
     chem_matrix_row_function function, void *context);
+int chem_vector_matrix_view_for_each_row_const_sources(
+    chem_vector_matrix_view *destination,
+    const chem_const_vector_matrix_view *first,
+    const chem_const_vector_matrix_view *second,
+    chem_matrix_row_function function, void *context);
 int chem_vector_matrix_view_min(const chem_vector_matrix_view *view,
                                 double *value);
 int chem_vector_matrix_view_max(const chem_vector_matrix_view *view,
                                 double *value);
+int chem_vector_matrix_view_write(FILE *file,
+                                  const chem_vector_matrix_view *view);
+int chem_vector_matrix_view_scale_from_int_vector(
+    chem_vector_matrix_view *view, const int *vector, size_t vector_size,
+    double scale);
+int chem_vector_matrix_view_reduce_or(
+    const chem_const_vector_matrix_view *view,
+    chem_matrix_predicate predicate, void *context, int initial, int *value);
+int chem_vector_matrix_view_reduce_and(
+    const chem_const_vector_matrix_view *view,
+    chem_matrix_predicate predicate, void *context, int initial, int *value);
+int chem_vector_matrix_view_reduce_strict(
+    const chem_const_vector_matrix_view *view, chem_matrix_combine combine,
+    void *context, double initial, double *value);
 int chem_matrix_view_get(const chem_matrix_view *view, size_t row,
                          size_t column, double *value);
 int chem_matrix_view_set(chem_matrix_view *view, size_t row,

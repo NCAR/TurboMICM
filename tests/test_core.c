@@ -1460,6 +1460,12 @@ static double matrix_count(double accumulator, double value, void *context) {
   return accumulator + 1.0;
 }
 
+static double matrix_sum_squares(double accumulator, double value,
+                                 void *context) {
+  (void)context;
+  return accumulator + value*value;
+}
+
 static void matrix_add_vector_rows(size_t row, double *destination,
     size_t destination_columns, size_t destination_stride,
     const double *first, size_t first_columns, size_t first_stride,
@@ -1733,6 +1739,11 @@ static int check_matrix_view_api(void) {
       chem_vector_matrix_view_copy(&copied,&operations) ||
       chem_vector_matrix_view_get(&copied,1,2,&value) || value != 41.0 ||
       chem_vector_matrix_view_copy(&copied,&vectorized_loop) == 0) return 56;
+  double wrong_column_data[4] = {0};
+  chem_vector_matrix_view wrong_column_count;
+  if (chem_vector_matrix_view_init(&wrong_column_count,wrong_column_data,2,2,2) ||
+      chem_vector_matrix_view_axpy(&operations,&wrong_column_count,1.0) == 0)
+    return 81;
   if (chem_vector_matrix_view_for_each(&vectorized_loop,matrix_add_index,
                                        (void *)&scale) ||
       chem_vector_matrix_view_get(&vectorized_loop,2,3,&value) || value != 226.0)
@@ -1817,6 +1828,51 @@ static int check_matrix_view_api(void) {
             flat_packed[row*columns+column] != got) return 67;
       }
   }
+  double packed_reduce_data[8] = {0};
+  chem_vector_matrix_view packed_reduce;
+  chem_const_vector_matrix_view packed_reduce_const;
+  int any_large = 0, all_finite = 0;
+  const double reduce_threshold = 5.0;
+  if (chem_vector_matrix_view_init(&packed_reduce,packed_reduce_data,3,2,2))
+    return 70;
+  for (size_t row = 0; row < 3; ++row)
+    for (size_t column = 0; column < 2; ++column)
+      if (chem_vector_matrix_view_set(&packed_reduce,row,column,
+                                      (double)(row*2+column+1))) return 71;
+  if (chem_const_vector_matrix_view_init(&packed_reduce_const,
+          packed_reduce_data,3,2,2) ||
+      chem_vector_matrix_view_reduce_strict(&packed_reduce_const,
+          matrix_sum_squares,NULL,0.0,&value) || value != 91.0 ||
+      chem_vector_matrix_view_reduce_strict(&packed_reduce_const,
+          matrix_count,NULL,0.0,&value) || value != 6.0 ||
+      chem_vector_matrix_view_reduce_or(&packed_reduce_const,
+          matrix_greater_than,(void *)&reduce_threshold,0,&any_large) || !any_large ||
+      chem_vector_matrix_view_reduce_and(&packed_reduce_const,
+          matrix_is_finite,NULL,1,&all_finite) || !all_finite)
+    return 72;
+  const int integer_matrix_values[] = {1,2,3,4,5,6};
+  if (chem_vector_matrix_view_scale_from_int_vector(&packed_reduce,
+          integer_matrix_values,6,1.5)) return 76;
+  FILE *matrix_output_file = tmpfile();
+  char matrix_output[128];
+  const char *matrix_expected_output =
+      "1.5,3\n4.5,6\n7.5,9\n";
+  if (!matrix_output_file ||
+      chem_vector_matrix_view_write(matrix_output_file,&packed_reduce) ||
+      fflush(matrix_output_file) || fseek(matrix_output_file,0,SEEK_SET) ||
+      fread(matrix_output,1,sizeof(matrix_output)-1,matrix_output_file) == 0)
+    return 77;
+  const size_t matrix_output_length = ftell(matrix_output_file);
+  if (matrix_output_length >= sizeof(matrix_output)) return 78;
+  matrix_output[matrix_output_length] = '\0';
+  fclose(matrix_output_file);
+  if (strcmp(matrix_output,matrix_expected_output) ||
+      chem_vector_matrix_view_scale_from_int_vector(&packed_reduce,
+          integer_matrix_values,5,1.5) == 0) return 79;
+  chem_vector_matrix_view empty_packed_view;
+  if (chem_vector_matrix_view_init(&empty_packed_view,NULL,0,0,2) ||
+      chem_vector_matrix_view_for_each(&empty_packed_view,matrix_add_index,
+                                       (void *)&scale)) return 80;
   double vector_a[] = {1,2,3}, vector_b[] = {10,20,30};
   double vector_out[3] = {0}, vector_mutable[] = {0,0,0};
   chem_const_matrix_view vector_a_view, vector_b_view;
@@ -1845,6 +1901,26 @@ static int check_matrix_view_api(void) {
       chem_matrix_view_for_each_row_const_sources(&vector_out_view,
           &vector_a_again_view,&vector_b_view,matrix_add_vector_rows,NULL) ||
       vector_out[0] != 15 || vector_out[2] != 37) return 69;
+  double grouped_a_data[8] = {0}, grouped_b_data[8] = {0},
+         grouped_out_data[8] = {0};
+  chem_vector_matrix_view grouped_a_mut, grouped_b_mut;
+  chem_const_vector_matrix_view grouped_a_view, grouped_b_view;
+  chem_vector_matrix_view grouped_out_view;
+  if (chem_vector_matrix_view_init(&grouped_out_view,grouped_out_data,3,1,2) ||
+      chem_vector_matrix_view_init(&grouped_a_mut,grouped_a_data,3,1,2) ||
+      chem_vector_matrix_view_init(&grouped_b_mut,grouped_b_data,3,1,2))
+    return 73;
+  for (size_t row = 0; row < 3; ++row)
+    if (chem_vector_matrix_view_set(&grouped_a_mut,row,0,(double)(row+1)) ||
+        chem_vector_matrix_view_set(&grouped_b_mut,row,0,(double)(10*(row+1))))
+      return 74;
+  if (chem_const_vector_matrix_view_init(&grouped_a_view,grouped_a_data,3,1,2) ||
+      chem_const_vector_matrix_view_init(&grouped_b_view,grouped_b_data,3,1,2) ||
+      chem_vector_matrix_view_for_each_row_const_sources(&grouped_out_view,
+          &grouped_a_view,&grouped_b_view,matrix_add_vector_rows,NULL) ||
+      chem_vector_matrix_view_get(&grouped_out_view,0,0,&value) || value != 11.0 ||
+      chem_vector_matrix_view_get(&grouped_out_view,2,0,&value) || value != 33.0)
+    return 75;
   return 0;
 }
 
