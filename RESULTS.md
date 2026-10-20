@@ -59,10 +59,8 @@ comparison utility with both compilers. The 100-cell seed-1 run also passed:
 | 100 cells, 4 threads | GCC 15 | 4,068.024 ms | 354.051 ms | 3,600 | `3.27e-14` |
 
 The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
-300,799.575 ms; the reference completed in 27,457.982 ms. The comparison failed
-2,185 of 2,110,000 values across 26 cells; the largest relative difference was
-`5.33e-4` for HO2NO2 in cell 3974. A single-cell run of that input also fails,
-so the discrepancy is not caused by cell grouping. This result is a regression
-case for further solver arithmetic work. The implementation is about eleven
-times slower than the reference at this scale, and 628 of the 680 inventory cases
-remain unported.
+298,417.976 ms; the reference completed in 26,129.420 ms. The comparison passed
+all 2,110,000 values; the largest relative difference was `5.34e-14` for
+BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
+MICM at this scale. The 100-cell and first-cell runs above also pass for both
+compilers. Overall, 628 of the 680 inventory cases remain incomplete.
