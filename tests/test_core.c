@@ -1563,6 +1563,33 @@ static int check_matrix_view_api(void) {
   if (chem_const_vector_matrix_view_init(&const_operations,operations_data,2,3,2) ||
       chem_const_vector_matrix_view_copy_to_vector(&const_operations,flat_copy,6))
     return 46;
+  double access_data[12] = {0};
+  chem_vector_matrix_view access;
+  const double access_flat[] = {1,2,3,4,5,6};
+  const double access_row[] = {7,8,9};
+  const double access_column[] = {10,11};
+  double row_result[3], column_result[2];
+  if (chem_vector_matrix_view_init(&access,access_data,2,3,2) ||
+      chem_vector_matrix_view_copy_from_vector(&access,access_flat,6) ||
+      chem_vector_matrix_view_copy_row_to_vector(&access,1,row_result,3) ||
+      row_result[0] != 4.0 || row_result[2] != 6.0 ||
+      chem_vector_matrix_view_copy_row_from_vector(&access,1,access_row,3) ||
+      chem_vector_matrix_view_copy_column_to_vector(&access,2,column_result,2) ||
+      column_result[0] != 3.0 || column_result[1] != 9.0 ||
+      chem_vector_matrix_view_copy_column_from_vector(&access,2,access_column,2) ||
+      access_data[4] != 10.0 || access_data[5] != 11.0 ||
+      chem_vector_matrix_view_copy_row_to_vector(&access,0,row_result,2) == 0 ||
+      chem_vector_matrix_view_copy_column_to_vector(&access,0,column_result,3) == 0)
+    return 53;
+  if (chem_vector_matrix_view_copy_column_to_vector(&access,0,column_result,2) ||
+      chem_vector_matrix_view_copy_column_to_vector(&access,1,column_result,2) ||
+      column_result[0] != 2.0 || column_result[1] != 8.0) return 54;
+  chem_vector_matrix_view empty_vectorized;
+  if (chem_vector_matrix_view_init(&empty_vectorized,NULL,0,0,2) ||
+      chem_vector_matrix_view_copy_to_vector(&empty_vectorized,NULL,0) ||
+      chem_vector_matrix_view_copy_from_vector(&empty_vectorized,NULL,0) ||
+      chem_vector_matrix_view_copy_to_vector(&access,NULL,0) == 0 ||
+      chem_vector_matrix_view_copy_from_vector(&access,NULL,0) == 0) return 55;
   double other_operations_data[6];
   chem_vector_matrix_view other_operations;
   if (chem_vector_matrix_view_init(&other_operations,other_operations_data,2,3,1) ||
