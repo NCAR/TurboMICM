@@ -1362,6 +1362,18 @@ static void matrix_add_index(size_t row, size_t column, double *value,
   *value += scale * (double)(row * 10 + column);
 }
 
+typedef struct {
+  const double *values;
+  size_t count;
+} matrix_vector_context;
+
+static void matrix_add_captured_vector(size_t row, size_t column, double *value,
+                                       void *context) {
+  (void)row;
+  const matrix_vector_context *vector = context;
+  if (column < vector->count) *value += vector->values[column];
+}
+
 static int check_matrix_view_api(void) {
   double storage[] = {1.0, 99.0, 2.0, 99.0, 3.0, 99.0,
                       4.0, 99.0, 5.0, 99.0, 6.0, 99.0};
@@ -1475,6 +1487,27 @@ static int check_matrix_view_api(void) {
       chem_matrix_view_copy_to_vector(&empty,NULL,0) ||
       chem_matrix_view_copy_from_vector(&empty,NULL,0)) return 30;
   if (chem_matrix_view_max(&columns,&value) || value != 9.0) return 31;
+  double reused_a[15] = {0}, reused_b[9] = {0};
+  chem_matrix_view reuse_a, reuse_b;
+  if (chem_matrix_view_init(&reuse_a,reused_a,5,3,3,1) ||
+      chem_matrix_view_init(&reuse_b,reused_b,3,3,3,1) ||
+      chem_matrix_view_for_each(&reuse_a,matrix_add_index,(void *)&scale) ||
+      chem_matrix_view_for_each(&reuse_b,matrix_add_index,(void *)&scale) ||
+      chem_matrix_view_get(&reuse_a,4,2,&value) || value != 42.0 ||
+      chem_matrix_view_get(&reuse_b,2,1,&value) || value != 21.0) return 32;
+  double iter_data[12] = {0};
+  chem_matrix_view iter;
+  if (chem_matrix_view_init(&iter,iter_data,3,4,4,1)) return 33;
+  double row_four[4];
+  if (chem_matrix_view_copy_row_to_vector(&loop,1,row_four,4)) return 34;
+  for (size_t j = 0; j < 4; ++j) row_four[j] = 42.0+(double)j;
+  if (chem_matrix_view_copy_row_from_vector(&iter,1,row_four,4) ||
+      iter_data[4] != 42.0 || iter_data[7] != 45.0) return 35;
+  const double captured_values[] = {1.0,2.0,3.0,4.0};
+  const matrix_vector_context captured = {captured_values,4};
+  if (chem_matrix_view_for_each(&iter,matrix_add_captured_vector,
+                                (void *)&captured) ||
+      iter_data[4] != 43.0 || iter_data[7] != 49.0) return 36;
   return 0;
 }
 
