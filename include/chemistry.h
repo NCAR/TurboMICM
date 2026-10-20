@@ -2,6 +2,7 @@
 #define CHEM_H
 
 #include <stddef.h>
+#include <stdio.h>
 
 #define CHEM_VERSION_MAJOR 0
 #define CHEM_VERSION_MINOR 1
@@ -440,6 +441,8 @@ int chem_csr_matrix_is_structural_zero(const chem_csr_matrix *matrix,
                                        int *is_zero);
 int chem_csr_matrix_fill(chem_csr_matrix *matrix, double value);
 int chem_csr_matrix_add_to_diagonal(chem_csr_matrix *matrix, double value);
+int chem_csr_matrix_write(FILE *file, const chem_csr_matrix *matrix,
+                          int nonzero_only);
 typedef struct {
   double *data;
   size_t count;

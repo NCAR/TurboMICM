@@ -63,6 +63,8 @@
   Entry views span blocks with an explicit stride; block callbacks can combine
   entries from matrices with different sparsity patterns when block counts match.
   Entry views also provide fill, copy, and dense-vector transfer operations.
+  Sparse matrix text output writes either dense rows or only nonzero coordinates
+  with block headers, matching the corresponding CPU utility output.
   The same interface accepts CSC patterns by searching column offsets and row
   indices, while keeping the block-value layout unchanged.
   Block callbacks and vector transfers validate block counts and exact vector

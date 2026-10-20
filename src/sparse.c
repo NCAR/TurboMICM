@@ -200,3 +200,32 @@ int chem_csr_matrix_add_to_diagonal(chem_csr_matrix *matrix, double value) {
   }
   return 0;
 }
+
+int chem_csr_matrix_write(FILE *file, const chem_csr_matrix *matrix,
+                          int nonzero_only) {
+  if (!file || !csr_valid(matrix) || (nonzero_only != 0 && nonzero_only != 1))
+    return 1;
+  for (size_t block = 0; block < matrix->block_count; ++block) {
+    if (fprintf(file,"Block %zu\n",block) < 0) return 1;
+    for (size_t row = 0; row < matrix->dimension; ++row) {
+      for (size_t column = 0; column < matrix->dimension; ++column) {
+        int is_zero = 0;
+        double value = 0.0;
+        if (chem_csr_matrix_is_structural_zero(matrix,row,column,&is_zero))
+          return 1;
+        if (nonzero_only) {
+          if (is_zero) continue;
+          if (chem_csr_matrix_get(matrix,block,row,column,&value) ||
+              fprintf(file,"%zu, %zu, %g\n",row,column,value) < 0) return 1;
+        } else {
+          if (!is_zero && chem_csr_matrix_get(matrix,block,row,column,&value))
+            return 1;
+          if (fprintf(file,"%g%s",value,
+                      column + 1 == matrix->dimension ? "\n" : ",") < 0)
+            return 1;
+        }
+      }
+    }
+  }
+  return ferror(file) ? 1 : 0;
+}

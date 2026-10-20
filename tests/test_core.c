@@ -2031,6 +2031,60 @@ static int check_csr_matrix_api(void) {
       csc_values[2] != 24.0 || csc_values[7] != 24.0 ||
       chem_csr_value_view_copy_to_vector(&csc_sources[0],csc_copy,1) == 0)
     return 21;
+  double print_values[15];
+  for (size_t i = 0; i < 15; ++i) print_values[i] = 24.0;
+  chem_csr_matrix print_matrix;
+  if (chem_csr_matrix_init(&print_matrix,4,3,5,offsets,columns,print_values) ||
+      chem_csr_matrix_set(&print_matrix,0,1,1,1.0) ||
+      chem_csr_matrix_set(&print_matrix,1,1,1,3.0) ||
+      chem_csr_matrix_set(&print_matrix,2,1,1,5.0) ||
+      chem_csr_matrix_add_to_diagonal(&print_matrix,7.0)) return 22;
+  const char *dense_expected =
+      "Block 0\n0,24,0,0\n0,8,0,0\n0,24,0,24\n0,0,24,0\n"
+      "Block 1\n0,24,0,0\n0,10,0,0\n0,24,0,24\n0,0,24,0\n"
+      "Block 2\n0,24,0,0\n0,12,0,0\n0,24,0,24\n0,0,24,0\n";
+  FILE *stream = tmpfile();
+  char output[1024];
+  if (!stream || chem_csr_matrix_write(stream,&print_matrix,0) ||
+      fflush(stream) || fseek(stream,0,SEEK_SET) ||
+      fread(output,1,sizeof(output)-1,stream) == 0) return 23;
+  const size_t dense_length = ftell(stream);
+  if (dense_length >= sizeof(output)) return 24;
+  output[dense_length] = '\0';
+  fclose(stream);
+  if (strcmp(output,dense_expected)) return 25;
+  const char *nonzero_expected =
+      "Block 0\n0, 1, 24\n1, 1, 8\n2, 1, 24\n2, 3, 24\n3, 2, 24\n"
+      "Block 1\n0, 1, 24\n1, 1, 10\n2, 1, 24\n2, 3, 24\n3, 2, 24\n"
+      "Block 2\n0, 1, 24\n1, 1, 12\n2, 1, 24\n2, 3, 24\n3, 2, 24\n";
+  stream = tmpfile();
+  if (!stream || chem_csr_matrix_write(stream,&print_matrix,1) ||
+      fflush(stream) || fseek(stream,0,SEEK_SET) ||
+      fread(output,1,sizeof(output)-1,stream) == 0) return 26;
+  const size_t nonzero_length = ftell(stream);
+  if (nonzero_length >= sizeof(output)) return 27;
+  output[nonzero_length] = '\0';
+  fclose(stream);
+  if (strcmp(output,nonzero_expected)) return 28;
+  const size_t print_csc_offsets[] = {0,0,3,4,5};
+  const size_t print_csc_rows[] = {0,1,2,3,2};
+  double print_csc_values[15];
+  for (size_t i = 0; i < 15; ++i) print_csc_values[i] = 24.0;
+  chem_csr_matrix print_csc;
+  if (chem_csr_matrix_init_csc(&print_csc,4,3,5,print_csc_offsets,
+                                print_csc_rows,print_csc_values) ||
+      chem_csr_matrix_set(&print_csc,0,1,1,8.0) ||
+      chem_csr_matrix_set(&print_csc,1,1,1,10.0) ||
+      chem_csr_matrix_set(&print_csc,2,1,1,12.0)) return 29;
+  stream = tmpfile();
+  if (!stream || chem_csr_matrix_write(stream,&print_csc,0) || fflush(stream) ||
+      fseek(stream,0,SEEK_SET) || fread(output,1,sizeof(output)-1,stream) == 0)
+    return 30;
+  const size_t csc_length = ftell(stream);
+  if (csc_length >= sizeof(output)) return 31;
+  output[csc_length] = '\0';
+  fclose(stream);
+  if (strcmp(output,dense_expected)) return 32;
   return 0;
 }
 
