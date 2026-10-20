@@ -44,6 +44,7 @@ implemented = {
     "process_set:ProcessSet.VectorMatrix",
     "terminator:RosenbrockSolver.Terminator",
     "terminator:RosenbrockSolver.VectorTerminator",
+    "chapman_integration:ChapmanIntegration.CanBuildChapmanSystem",
     "process:Process.BuildsChemicalReaction",
     "process:Process.ChemicalReactionCopyAssignmentSucceeds",
     "reaction_rate_store:ReactionRateConstantStore.OffsetsAreContiguousCumulativeSizes",
@@ -139,6 +140,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C version API checked"
         elif case_id in {"process_set:ProcessSet.Matrix", "process_set:ProcessSet.VectorMatrix"}:
             reason = "C forcing and Jacobian match grouped-process reference values"
+        elif case_id == "chapman_integration:ChapmanIntegration.CanBuildChapmanSystem":
+            reason = "C Chapman integration conserves oxygen and photolyzes O2"
         elif case_id.startswith("terminator:RosenbrockSolver."):
             reason = "C scalar and grouped solvers match the analytic terminator solution"
         elif case_id == "process_set:RandomProcessSet.Matrix":

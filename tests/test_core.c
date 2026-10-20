@@ -730,6 +730,68 @@ static int check_terminator_cases(void) {
   return 0;
 }
 
+static int check_chapman_integration(void) {
+  const chem_species species[] = {
+      {.name = "O"}, {.name = "O1D"}, {.name = "O2"}, {.name = "O3"},
+      {.name = "M"}, {.name = "Ar"}, {.name = "N2"}, {.name = "H2O"},
+      {.name = "CO2"}};
+  const chem_term o1d_n2[] = {{.species=1,.coefficient=1}, {.species=6,.coefficient=1}};
+  const chem_term o1d_o2[] = {{.species=1,.coefficient=1}, {.species=2,.coefficient=1}};
+  const chem_term o_o3[] = {{.species=0,.coefficient=1}, {.species=3,.coefficient=1}};
+  const chem_term o_o2_m[] = {{.species=0,.coefficient=1}, {.species=2,.coefficient=1}, {.species=4,.coefficient=1}};
+  const chem_term o2[] = {{.species=2,.coefficient=1}};
+  const chem_term o3[] = {{.species=3,.coefficient=1}};
+  const chem_term o_n2[] = {{.species=0,.coefficient=1}, {.species=6,.coefficient=1}};
+  const chem_term o_o2[] = {{.species=0,.coefficient=1}, {.species=2,.coefficient=1}};
+  const chem_term two_o2[] = {{.species=2,.coefficient=2}};
+  const chem_term o3_m[] = {{.species=3,.coefficient=1}, {.species=4,.coefficient=1}};
+  const chem_term two_o[] = {{.species=0,.coefficient=2}};
+  const chem_term o1d_o2_product[] = {{.species=1,.coefficient=1}, {.species=2,.coefficient=1}};
+  const chem_term o_o2_product[] = {{.species=0,.coefficient=1}, {.species=2,.coefficient=1}};
+  const chem_reaction reactions[] = {
+      {.kind=CHEM_ARRHENIUS,.reactants=o1d_n2,.reactant_count=2,.products=o_n2,.product_count=2,.p={2.15e-11,0,110,300,0}},
+      {.kind=CHEM_ARRHENIUS,.reactants=o1d_o2,.reactant_count=2,.products=o_o2,.product_count=2,.p={3.3e-11,0,55,300,0}},
+      {.kind=CHEM_ARRHENIUS,.reactants=o_o3,.reactant_count=2,.products=two_o2,.product_count=1,.p={8e-12,0,-2060,300,0}},
+      {.kind=CHEM_ARRHENIUS,.reactants=o_o2_m,.reactant_count=3,.products=o3_m,.product_count=2,.p={6e-34,0,2.4,300,0}},
+      {.kind=CHEM_USER_DEFINED,.label="jO2",.reactants=o2,.reactant_count=1,.products=two_o,.product_count=1,.p={1,0,0,0,0,0,0,0}},
+      {.kind=CHEM_USER_DEFINED,.label="jO3a",.reactants=o3,.reactant_count=1,.products=o1d_o2_product,.product_count=2,.p={1,0,0,0,0,0,0,1}},
+      {.kind=CHEM_USER_DEFINED,.label="jO3b",.reactants=o3,.reactant_count=1,.products=o_o2_product,.product_count=2,.p={1,0,0,0,0,0,0,2}}};
+  const chem_mechanism mechanism = {
+      .species=species,.species_count=9,.reactions=reactions,.reaction_count=7,
+      .custom_parameter_count=3};
+  double state[] = {0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3,0.3};
+  double initial[9];
+  memcpy(initial, state, sizeof(state));
+  const double photo_rates[] = {0.1,0.2,0.3};
+  const double oxygen_initial = state[0] + state[1] + 2.0*state[2] + 3.0*state[3];
+  chem_solver_workspace workspace = {0};
+  if (chem_solver_workspace_init(&workspace, &mechanism)) return 1;
+  chem_solver_options options = chem_solver_default_options();
+  options.max_steps = 100000;
+  const double temperature = 2.0, pressure = 3.0;
+  const double density = pressure/(8.31446261815324*temperature);
+  int result = 0;
+  for (size_t step = 0; step < 100 && !result; ++step) {
+    result = chem_rosenbrock3_solve_with_workspace(
+        &mechanism,&workspace,state,temperature,pressure,density,photo_rates,
+        30.0,&options,NULL);
+    if (!result) {
+      for (size_t i=0;i<9;++i)
+        if (!isfinite(state[i]) || state[i]<0.0) result=2;
+      const double oxygen = state[0]+state[1]+2.0*state[2]+3.0*state[3];
+      if (fabs(oxygen-oxygen_initial)>1.0e-8*oxygen_initial) result=3;
+      if (state[4]!=initial[4] || state[5]!=initial[5] ||
+          state[6]!=initial[6] || state[7]!=initial[7] ||
+          state[8]!=initial[8]) result=4;
+    }
+  }
+  chem_solver_workspace_destroy(&workspace);
+  if (result) return result;
+  if (!(state[2] < 0.5*initial[2] && state[0] > initial[0] &&
+        state[0] > 0.5*oxygen_initial)) return 5;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -1312,5 +1374,6 @@ int main(void) {
   if (check_random_process_sets() != 0) return 56;
   if (check_process_set_forcing_and_jacobian() != 0) return 57;
   if (check_terminator_cases() != 0) return 58;
+  if (check_chapman_integration() != 0) return 59;
   return 0;
 }
