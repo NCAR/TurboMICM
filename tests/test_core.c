@@ -1938,9 +1938,37 @@ static int check_vector_sparse_layout(size_t width, int compressed_by_column) {
       chem_csr_value_view_copy_to_vector(&view,copied,blocks)) return 6;
   for (size_t block = 0; block < blocks; ++block)
     if (copied[block] != diagonal_before[block] + 1.0) return 7;
+  chem_csr_value_view copy_target;
+  if (chem_csr_matrix_get_value_view(&matrix,0,1,&copy_target) ||
+      chem_csr_value_view_copy_from_vector(&copy_target,copied,blocks))
+    return 13;
+  for (size_t block = 0; block < blocks; ++block) {
+    double value = 0.0;
+    if (chem_csr_matrix_get(&matrix,block,0,1,&value) ||
+        value != diagonal_before[block] + 1.0) return 14;
+  }
+  chem_csr_value_view callback_destination;
+  chem_csr_const_value_view callback_source;
+  if (chem_csr_matrix_get_value_view(&matrix,2,3,&callback_destination) ||
+      chem_csr_matrix_get_const_value_view(&matrix,0,1,&callback_source) ||
+      chem_csr_matrix_apply_blocks(&callback_destination,&callback_source,1,
+                                   csr_scale_source,(void *)&(const double){2.0}))
+    return 11;
+  for (size_t block = 0; block < blocks; ++block) {
+    double result = 0.0;
+    if (chem_csr_matrix_get(&matrix,block,2,3,&result) ||
+        result != 2.0*(double)(block*10+2)) return 12;
+  }
   if (chem_csr_matrix_fill(&matrix,2.0)) return 8;
   for (size_t i = 0; i < storage_size; ++i)
     if (values[i] != 2.0) return 9;
+  FILE *stream = tmpfile();
+  if (!stream || chem_csr_matrix_write(stream,&matrix,0) ||
+      chem_csr_matrix_write(stream,&matrix,1) || ftell(stream) <= 0) {
+    if (stream) fclose(stream);
+    return 15;
+  }
+  fclose(stream);
   return 0;
 }
 

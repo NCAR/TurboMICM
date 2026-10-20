@@ -370,6 +370,31 @@ implemented = {
     "rate_constants_no_user_defined_example_by_hand",
     "rate_constants_user_defined_example_by_hand",
 }
+_vector_sparse_case_names = (
+    "Print", "PrintNonZero", "ArrayFunction", "MultiMatrixArrayFunction",
+    "MultipleTemporaries", "BlockViewReuse", "FunctionReusability",
+    "TwoSparseMatricesDifferentStructure", "SparseAndDenseMatrixFunction",
+    "SparseAndVectorMatrixFunction", "MismatchedBlockDimensions",
+    "MismatchedElementDimensions", "ConstSparseMatrixFunction",
+    "EmptySparseMatrixFunction", "MultipleSparseMatricesDifferentBlocksFromCreation",
+    "SparseMatrixVectorDifferentBlocksFromCreation", "MismatchedBlocksAtInvocation",
+    "MultipleSparseMatricesMismatchedBlocksAtInvocation",
+    "VectorInSparseMatrixFunction", "VectorTooSmall", "VectorTooLarge",
+    "EmptyVectorNonEmptySparseMatrix", "NonEmptyVectorEmptySparseMatrix",
+    "EmptyVectorEmptySparseMatrix", "MultipleVectorsDifferentSizes",
+    "MultipleVectorsSameSize", "MultipleSparseMatricesOneVector",
+    "MultipleSparseMatricesDifferentBlocksVector", "VectorSizeMatchesOneSparseMatrixOnly",
+    "ConstVectorSparse", "MutableVectorSparse", "FunctionWithConstSignatureSparse",
+    "FunctionReusabilityWithVectorsSparse", "FunctionInvocationWithWrongSizedVectorSparse",
+    "MixedVectorBlockViewBlockVariable", "GetBlockViewByVectorIndex", "TestFill", "TestCopy",
+)
+for _category, _case_class in (
+    ("sparse_matrix_vector_compressed_row_ordering", "SparseVectorCompressedRowMatrix"),
+    ("sparse_matrix_vector_compressed_column_ordering", "SparseVectorCompressedColumnMatrix"),
+):
+    implemented.update(f"{_category}:{_case_class}.{_name}"
+                       for _name in _vector_sparse_case_names)
+    implemented.add(f"{_category}:SparseMatrixBuilder.BadConfiguration")
 not_applicable = {
     "state:State.CopyConstructor":
         "C state views are non-owning, so they have no deep-copy constructor",
