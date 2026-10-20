@@ -38,6 +38,15 @@ implemented = {
     "user_defined_rate_constant:UserDefinedRateConstant.CustomScalingFactor",
     "process:Process.BuildsChemicalReaction",
     "process:Process.ChemicalReactionCopyAssignmentSucceeds",
+    "reaction_rate_store:ReactionRateConstantStore.OffsetsAreContiguousCumulativeSizes",
+    "reaction_rate_store:ReactionRateConstantStore.ArrheniusParametersPreserved",
+    "reaction_rate_store:ReactionRateConstantStore.BranchedDerivedFieldsComputed",
+    "reaction_rate_store:ReactionRateConstantStore.UserDefinedCustomParamIndex",
+    "reaction_rate_store:ReactionRateConstantStore.SurfaceDataFieldsAndCustomParamIndex",
+    "reaction_rate_store:ReactionRateConstantStore.SurfaceCustomParamIndexAfterUserDefined",
+    "reaction_rate_store:ReactionRateConstantStore.TotalRateConstantsMatchesProcessCount",
+    "reaction_rate_store:ReactionRateConstantStore.SurfaceMissingDiffusionCoefficientThrows",
+    "reaction_rate_store:ReactionRateConstantStore.SurfaceMissingMolecularWeightThrows",
 }
 
 failed = False

@@ -46,6 +46,7 @@ bin/test_core: tests/test_core.c src/mechanism.c src/solver.c include/chemistry.
 
 test-cpu: cpu bin/test_core
 	@bin/test_core
+	$(PYTHON) tests/test_codegen.py
 	$(PYTHON) tools/test_cases.py
 
 env:
