@@ -3295,6 +3295,71 @@ static int check_stiff_photolysis_chain(int backward_euler) {
   return status;
 }
 
+static int check_analytical_robertson(chem_rosenbrock_parameter_set scheme) {
+  const chem_species species[] = {{.name="A"},{.name="B"},{.name="C"}};
+  const chem_term a[] = {{.species=0,.coefficient=1}};
+  const chem_term b[] = {{.species=1,.coefficient=1}};
+  const chem_term bb[] = {{.species=1,.coefficient=2}};
+  const chem_term bc[] = {{.species=1,.coefficient=1},
+                          {.species=2,.coefficient=1}};
+  const chem_term bc_product[] = {{.species=1,.coefficient=1},
+                                  {.species=2,.coefficient=1}};
+  const chem_term ac[] = {{.species=0,.coefficient=1},
+                          {.species=2,.coefficient=1}};
+  const chem_reaction reactions[] = {
+      {.kind=CHEM_USER_DEFINED,.reactants=a,.reactant_count=1,
+       .products=b,.product_count=1,.p={[0]=1,[7]=0}},
+      {.kind=CHEM_USER_DEFINED,.reactants=bb,.reactant_count=1,
+       .products=bc_product,.product_count=2,.p={[0]=1,[7]=1}},
+      {.kind=CHEM_USER_DEFINED,.reactants=bc,.reactant_count=2,
+       .products=ac,.product_count=2,.p={[0]=1,[7]=2}}};
+  const char *labels[]={"r1","r2","r3"};
+  const chem_mechanism mechanism={.species=species,.species_count=3,
+      .reactions=reactions,.reaction_count=3,.custom_labels=labels,
+      .custom_parameter_count=3};
+  const double rates[]={0.04,3e7,1e4};
+  const double reference[13][3]={
+      {1,0,0},
+      {0.9664597373330035,0.00003074626578578675,0.03350951640121071},
+      {0.8413699238414729,0.00001623390937990473,0.1586138422491472},
+      {0.6172348823960878,0.000006153591274639123,0.3827589640126376},
+      {0.3368745306607069,0.000002013702318261393,0.6631234556369748},
+      {0.1073004285378040,0.0000004800166972571660,0.8926990914454987},
+      {0.01786592114209946,0.00000007274751468436319,0.9821340061103859},
+      {0.002031483924973415,0.000000008142277783356159,0.9979685079327488},
+      {0.0002076093439016395,0.0000000008306077485067610,0.9997923898254906},
+      {0.00002082417512179466,0.00000000008329841429908955,0.9999791757415798},
+      {0.000002083229471647004,0.000000000008332935037760723,0.9999979167621954},
+      {0.0000002083328471883087,0.0000000000008333315602809495,0.9999997916663195},
+      {0.00000002083340149701284,0.0000000000000833336077033474,0.9999999791665152}};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  chem_solver_options options=chem_solver_default_options();
+  options.relative_tolerance=1e-10;
+  options.absolute_tolerance=1e-12;
+  options.max_steps=1000000;
+  const chem_rosenbrock_parameters parameters=
+      chem_rosenbrock_builtin_parameters(scheme);
+  double state[]={1,0,0};
+  int status=0;
+  double target=1.0, current=0.0;
+  for (size_t point=1;point<13 && !status;++point) {
+    status=chem_rosenbrock_solve_with_parameters(&mechanism,&workspace,state,
+        272.5,101253.3,1e6,rates,target-current,&parameters,&options,NULL);
+    if (status) break;
+    for (size_t i=0;i<3;++i) {
+      const double error=fabs(state[i]-reference[point][i]);
+      const double relative=reference[point][i]>0.0
+          ? error/reference[point][i] : error;
+      if (error>=3e-4 && relative>=1e-6) status=2;
+    }
+    current=target;
+    target*=10.0;
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
 int main(void) {
   if (check_rosenbrock_species_tolerances()) return 52;
   { const int status=check_rejected_step_determinism();
@@ -3303,6 +3368,14 @@ int main(void) {
     if (status) return 60+status; }
   { const int status=check_stiff_photolysis_chain(1);
     if (status) return 70+status; }
+  const chem_rosenbrock_parameter_set robertson_schemes[]={
+      CHEM_ROSENBROCK_TWO_STAGE,CHEM_ROSENBROCK_THREE_STAGE,
+      CHEM_ROSENBROCK_FOUR_STAGE,CHEM_ROSENBROCK_FOUR_STAGE_DAE,
+      CHEM_ROSENBROCK_SIX_STAGE_DAE};
+  for (size_t i=0;i<sizeof(robertson_schemes)/sizeof(robertson_schemes[0]);++i) {
+    const int status=check_analytical_robertson(robertson_schemes[i]);
+    if (status) return 80+(int)i*10+status;
+  }
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
   const double b = chem_arrhenius(3.0e-11, 0.0, -200.0, 300.0, 0.0, t, 0.0);
