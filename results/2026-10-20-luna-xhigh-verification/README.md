@@ -43,9 +43,15 @@ build,tests,ts1,audit`.
   either compiler.
 - **Same work, same clock:** `src/ts1_bench.c` runs one untimed warm-up
   interval, then times the STEPS intervals with C11's `timespec_get`
-  (`src/ts1_bench.c:250-254`, `355-369`); input, setup, and output are outside
+  (`src/ts1_bench.c:250-254`, `355-369`); file input and output are outside
   the timer. One `omp parallel for schedule(static)` over cell groups runs each
-  group through all the timed intervals (`src/ts1_bench.c:357`). There is one
+  group through all the timed intervals in one library call
+  (`src/ts1_bench.c:357-365`), and that call, inside the timer, first builds
+  the group's sparse ordering and fill, allocates its work arrays, copies the
+  group into its species-major layout, and evaluates the rate constants, and
+  at the end copies the group back (`src/chem.c:1080-1113`, `1249-1251`). MICM's
+  driver does that kind of setup before its timer. It happens once per group
+  per timed run, not per step; its cost was not measured. There is one
   group per thread (`src/ts1_bench.c:328`), as in MICM's default driver and
   luna-max, and it does MICM's default solver work: 9,000 internal steps at 10
   threads and 900 on one, with the same function calls, Jacobian updates,
