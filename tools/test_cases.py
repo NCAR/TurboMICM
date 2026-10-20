@@ -409,6 +409,17 @@ implemented.update(f"vector_matrix:VectorMatrix.{_name}" for _name in (
     "FunctionWithConstSignature", "IntegerVector", "ReduceSum", "ReduceLOr",
     "ReduceLAnd", "ReduceStrict", "VectorCapture",
 ))
+implemented.update(f"grouped_views:GroupedView.{_name}" for _name in (
+    "MatrixColumnViewRoundTrip", "VectorMatrixColumnViewContiguousBlock",
+    "PlainMatrixGroupedRoundTrip", "SparseStandardBlockViewRoundTrip",
+    "SparseVectorBlockViewContiguousBlock", "MixedSparseAndDenseGroupedL1",
+    "MixedSparseAndDenseGroupedL2", "MixedSparseAndDenseGroupedL4",
+    "MixedSparseAndDenseGroupedL8", "SparseVectorRowColOverloadStillFunctional",
+    "ConstGroupViewProducesGroupedViews", "FillAndCopySparseStandardCSR",
+    "FillAndCopySparseStandardCSC", "FillAndCopySparseVectorCSR_L4",
+    "FillAndCopySparseVectorCSC_L4", "FillAndCopySparseVectorCSR_L8",
+    "FillCopyCrossGroupViewSources",
+))
 not_applicable = {
     "state:State.CopyConstructor":
         "C state views are non-owning, so they have no deep-copy constructor",
@@ -440,6 +451,8 @@ not_applicable = {
         "C uses runtime scalar views and has no compile-time ordering mismatch",
     "sparse_matrix_vector_compressed_column_ordering:SparseVectorCompressedColumnMatrix.IncompatibleSparseOrdering":
         "C uses runtime scalar views and has no compile-time ordering mismatch",
+    "grouped_views:GroupedView.CategoryTagsAreDistinct":
+        "C has no distinct compile-time view category tags",
 }
 
 failed = False

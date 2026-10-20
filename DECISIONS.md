@@ -94,6 +94,8 @@
 - Mark six sparse vector `Incompatible*Ordering` cases N/A. They test that C++
   template overloads reject combinations at compile time; the C API uses scalar
   runtime views and can combine differing layouts through explicit accessors.
+- Mark `GroupedView.CategoryTagsAreDistinct` N/A because C has no compile-time
+  view category tags; mutability and layout are represented by separate structs.
 
 - Implement matrix logical OR/AND reductions with caller-supplied predicates and
   a strict reduction that visits each logical entry once. Strided views expose

@@ -2045,6 +2045,37 @@ static int check_vector_sparse_layout(size_t width, int compressed_by_column) {
     if (chem_csr_matrix_get(&matrix,block,2,3,&result) ||
         result != 15.0*(double)(block+1)) return 12;
   }
+  const size_t other_width = width == 4 ? 2 : 4;
+  const size_t other_groups = (blocks + other_width - 1)/other_width;
+  double other_values[64] = {0};
+  chem_csr_matrix other_matrix;
+  if (chem_csr_matrix_init_vector(&other_matrix,4,blocks,nonzeros,
+          compressed_by_column ? columns : rows,
+          compressed_by_column ? column_rows : row_columns,other_values,
+          other_width,compressed_by_column)) return 18;
+  for (size_t block = 0; block < blocks; ++block)
+    if (chem_csr_matrix_set(&other_matrix,block,0,1,(double)(block+1)))
+      return 19;
+  chem_csr_value_view cross_destination;
+  chem_csr_const_value_view cross_source;
+  double dense_group_values[10];
+  for (size_t block = 0; block < blocks; ++block)
+    dense_group_values[block] = 100.0 + (double)block;
+  chem_csr_const_value_view dense_group_source = {
+      dense_group_values,blocks,1,1};
+  if (other_groups*other_width*nonzeros > sizeof(other_values)/sizeof(double) ||
+      chem_csr_matrix_get_value_view(&matrix,1,1,&cross_destination) ||
+      chem_csr_matrix_get_const_value_view(&other_matrix,0,1,&cross_source))
+    return 20;
+  const chem_csr_const_value_view cross_sources[] = {
+      cross_source,dense_group_source};
+  if (chem_csr_matrix_apply_blocks(&cross_destination,cross_sources,2,
+                                   csr_sum_sources,NULL)) return 22;
+  for (size_t block = 0; block < blocks; ++block) {
+    double result = 0.0;
+    if (chem_csr_matrix_get(&matrix,block,1,1,&result) ||
+        result != 101.0 + 2.0*(double)block) return 21;
+  }
   if (chem_csr_matrix_fill(&matrix,2.0)) return 8;
   for (size_t i = 0; i < storage_size; ++i)
     if (values[i] != 2.0) return 9;
