@@ -54,7 +54,9 @@
   that uses damped Newton projection and restores the input state on failure;
   the constrained Rosenbrock entry point then consumes the same descriptors
   with caller-supplied per-cell equilibrium parameters. The constrained path
-  uses a dense factorization while the unconstrained path keeps sparse LU.
+  uses dense LU, while the unconstrained path keeps sparse LU. The two public
+  dense factorization routines retain MICM's no-pivot Mozart and Doolittle
+  update orders and return either packed LU or separate L and U matrices.
 - Tiny negative accepted concentrations are set to zero at interval boundaries
   only when their magnitude is within the configured absolute tolerance. This
   addresses roundoff undershoots that otherwise propagate through fast

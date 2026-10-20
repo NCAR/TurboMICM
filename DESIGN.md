@@ -51,6 +51,9 @@ error norm uses algebraic step changes. The caller supplies per-cell state
 parameters such as temperature-adjusted equilibrium constants. The DAE path
 uses dense cell matrices with the selected Mozart or Doolittle factorization;
 the unconstrained mechanism path retains its sparse symbolic factorization.
+The public dense LU routines in `chem.h` expose the same no-pivot algorithms in
+packed in-place form or as separate unit-diagonal `L` and upper-triangular `U`
+matrices, with a reusable forward/back substitution function.
 
 `chem_state` is an owning C state container for clients that want state
 management as well as the lower-level solver arrays. Initialization copies

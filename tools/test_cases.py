@@ -45,8 +45,8 @@ def failure_reason(case_id: str) -> str:
         return "generic matrix and view utility case is not implemented"
     if suite in {"state", "phase", "species", "system", "process", "process_set", "solver_builder"}:
         return "builder or state API case is not implemented"
-    if suite.startswith("lu_decomposition") or suite in {"linear_solver", "linear_solver_in_place"}:
-        return "standalone linear algebra case is not implemented"
+    if suite.startswith("lu_decomposition"):
+        return "dense LU case is not implemented"
     if suite in {"analytical_rosenbrock_integration", "analytical_backward_euler", "backward_euler"}:
         return "this integration case is not implemented"
     return "case is not implemented in the C test suite"
@@ -59,6 +59,7 @@ def main() -> int:
         PROJECT / "bin/test_jacobian_verification", PROJECT / "bin/test_solver_configuration",
         PROJECT / "bin/test_integration_equivalents", PROJECT / "bin/test_state", PROJECT / "bin/test_chapman",
         PROJECT / "bin/test_objects", PROJECT / "bin/test_processes", PROJECT / "bin/test_constraints",
+        PROJECT / "bin/test_lu",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -164,6 +165,10 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_constraints"), test])
             status, reason = ("PASS", "C constraint construction, evaluation, initialization, and integration match the reference behavior") if ok else (
                 "FAIL", "C constraint validation, projection, residual, row mapping, Jacobian, or integration differs from the reference")
+        elif suite.startswith("lu_decomposition_") or suite in {"linear_solver", "linear_solver_in_place"}:
+            ok = run([str(PROJECT / "bin/test_lu"), test])
+            status, reason = ("PASS", "C LU factorization and solve preserve the reference matrix equations") if ok else (
+                "FAIL", "C LU factors, triangular structure, solve, or matrix reconstruction differ from the reference")
         elif suite == "chapman_ode_solver" and test.split(".", 1)[-1] in {
             "DefaultConstructor", "ReactionNames", "PhotolysisNames", "SpeciesNames",
             "simple_force", "smaller_force", "Solve", "solve_10_times_larger",

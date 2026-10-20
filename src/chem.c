@@ -961,58 +961,6 @@ static void chem_solve(const chem_symbolic *symbolic, size_t cell_count, const d
   }
 }
 
-static int chem_dense_factor_mozart(double *matrix, size_t n) {
-  for (size_t k = 0; k < n; ++k) {
-    const double pivot = matrix[k * n + k];
-    if (pivot == 0.0 || !isfinite(pivot)) return -1;
-    for (size_t row = k + 1u; row < n; ++row) {
-      matrix[row * n + k] /= pivot;
-      for (size_t column = k + 1u; column < n; ++column)
-        matrix[row * n + column] -= matrix[row * n + k] * matrix[k * n + column];
-    }
-  }
-  return 0;
-}
-
-static int chem_dense_factor_doolittle(double *matrix, size_t n) {
-  for (size_t row = 0; row < n; ++row) {
-    for (size_t column = row; column < n; ++column) {
-      double value = matrix[row * n + column];
-      for (size_t inner = 0; inner < row; ++inner)
-        value -= matrix[row * n + inner] * matrix[inner * n + column];
-      matrix[row * n + column] = value;
-    }
-    const double pivot = matrix[row * n + row];
-    if (pivot == 0.0 || !isfinite(pivot)) return -1;
-    for (size_t lower_row = row + 1u; lower_row < n; ++lower_row) {
-      double value = matrix[lower_row * n + row];
-      for (size_t inner = 0; inner < row; ++inner)
-        value -= matrix[lower_row * n + inner] * matrix[inner * n + row];
-      matrix[lower_row * n + row] = value / pivot;
-    }
-  }
-  return 0;
-}
-
-static int chem_dense_factor(double *matrix, size_t n, chem_lu_method method) {
-  return method == CHEM_LU_DOOLITTLE
-      ? chem_dense_factor_doolittle(matrix, n)
-      : chem_dense_factor_mozart(matrix, n);
-}
-
-static int chem_dense_solve(const double *matrix, size_t n, double *rhs) {
-  for (size_t row = 0; row < n; ++row)
-    for (size_t column = 0; column < row; ++column)
-      rhs[row] -= matrix[row * n + column] * rhs[column];
-  for (size_t row = n; row-- > 0u;) {
-    for (size_t column = row + 1u; column < n; ++column)
-      rhs[row] -= matrix[row * n + column] * rhs[column];
-    rhs[row] /= matrix[row * n + row];
-    if (!isfinite(rhs[row])) return -1;
-  }
-  return 0;
-}
-
 static double chem_dae_normalized_error(
     const chem_mechanism *mechanism,
     size_t cell_count,
@@ -1428,7 +1376,7 @@ int chem_integrate_group_with_constraints(
             matrix[cell * dense_width + species * n + species] += alpha;
 
       for (size_t cell = 0; cell < cells; ++cell) {
-        if (chem_dense_factor(
+        if (chem_lu_factor_dense_in_place(
                 matrix + cell * dense_width, n, solver_parameters->lu_method) != 0) {
           failed = 1;
           goto cleanup;
@@ -1466,7 +1414,7 @@ int chem_integrate_group_with_constraints(
           }
         }
         for (size_t cell = 0; cell < cells; ++cell)
-          if (chem_dense_solve(matrix + cell * dense_width, n, k[stage] + cell * n) != 0) {
+          if (chem_lu_solve_dense_in_place(matrix + cell * dense_width, n, k[stage] + cell * n) != 0) {
             failed = 1;
             goto cleanup;
           }

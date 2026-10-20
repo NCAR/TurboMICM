@@ -31,6 +31,21 @@ typedef enum {
   CHEM_LU_DOOLITTLE = 1
 } chem_lu_method;
 
+/* Row-major dense LU routines. The in-place form stores the lower multipliers
+   below the diagonal and U on and above it; the separate form leaves matrix
+   unchanged and writes unit-diagonal L and upper-triangular U. These methods do
+   not pivot, require disjoint matrix/output arrays, and return -1 for invalid
+   input or a zero/non-finite pivot. The separate form returns -2 on allocation
+   failure. */
+int chem_lu_factor_dense_in_place(double *combined_lu, size_t order, chem_lu_method method);
+int chem_lu_factor_dense(
+    const double *matrix,
+    size_t order,
+    double *lower,
+    double *upper,
+    chem_lu_method method);
+int chem_lu_solve_dense_in_place(const double *combined_lu, size_t order, double *right_hand_side);
+
 typedef struct {
   const char *name;
   double molecular_weight;
