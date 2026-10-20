@@ -1,4 +1,4 @@
-name: luna-high
+name: chemistry-cpu
 channels:
   - conda-forge
 dependencies:

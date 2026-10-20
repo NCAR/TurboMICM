@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""Read CAMP-style JSON or YAML mechanism configurations into one document."""
+import argparse
+import json
+from pathlib import Path
+
+
+def load(path):
+    text = path.read_text()
+    if path.suffix.lower() == ".json":
+        return json.loads(text)
+    try:
+        import yaml
+    except ImportError as exc:
+        raise SystemExit("YAML input requires PyYAML; run `make env` and use .conda/bin/python") from exc
+    return yaml.safe_load(text)
+
+
+def read_config(path):
+    path = Path(path).resolve()
+    root = load(path)
+    if not isinstance(root, dict) or not isinstance(root.get("camp-files"), list):
+        raise ValueError(f"{path}: expected a camp-files list")
+    documents = [load(path.parent / name) for name in root["camp-files"]]
+    entries = [entry for doc in documents for entry in doc.get("camp-data", [])]
+    species = []
+    reactions = []
+    for entry in entries:
+        if entry.get("type") == "CHEM_SPEC":
+            species.append({
+                "name": entry["name"],
+                "molecular_weight": entry.get("molecular weight [kg mol-1]", 0.0),
+                "diffusion": entry.get("diffusion coefficient [m2 s-1]", 0.0),
+                "third_body": bool(entry.get("third body", False)),
+            })
+        elif entry.get("type") == "MECHANISM":
+            reactions.extend(entry.get("reactions", []))
+    if not species:
+        raise ValueError(f"{path}: no CHEM_SPEC records")
+    index = {s["name"]: i for i, s in enumerate(species)}
+    if len(index) != len(species):
+        raise ValueError(f"{path}: duplicate species names")
+    normalized = []
+    for reaction in reactions:
+        rtype = reaction.get("type", "").upper()
+        reactants = reaction.get("reactants", {})
+        products = reaction.get("products", {})
+        if rtype == "SURFACE":
+            reactants = {reaction["gas-phase reactant"]: {}}
+            products = reaction.get("gas-phase products", {})
+        if rtype in ("EMISSION", "FIRST_ORDER_LOSS"):
+            name = reaction["species"]
+            reactants, products = ({name: {}} if rtype == "FIRST_ORDER_LOSS" else {}), ({name: {}} if rtype == "EMISSION" else {})
+        for terms in (reactants, products):
+            for name in terms:
+                if name not in index:
+                    raise ValueError(f"{path}: reaction uses unknown species {name!r}")
+        normalized.append({
+            "type": rtype,
+            "reactants": [{"name": n, "index": index[n], "coefficient": float(v.get("qty", 1))}
+                          for n, v in reactants.items()],
+            "products": [{"name": n, "index": index[n], "coefficient": float(v.get("yield", 1))}
+                         for n, v in products.items()],
+            "parameters": {k: v for k, v in reaction.items()
+                           if k not in {"type", "reactants", "products", "alkoxy products", "nitrate products",
+                                        "gas-phase reactant", "gas-phase products", "species"}},
+        })
+    return {"format": "c-mechanism-1", "name": path.parent.name,
+            "species": species, "reactions": normalized}
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("configuration", type=Path)
+    ap.add_argument("output", type=Path)
+    args = ap.parse_args()
+    args.output.write_text(json.dumps(read_config(args.configuration), indent=2) + "\n")
+
+
+if __name__ == "__main__":
+    main()

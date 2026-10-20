@@ -27,7 +27,7 @@ all: cpu
 cpu: bin/ts1_bench_cpu
 bench: bin/ts1_bench_cpu
 
-bin/ts1_bench_cpu: src/main.c src/mechanism.c include/luna.h
+bin/ts1_bench_cpu: src/main.c src/mechanism.c include/chemistry.h
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) $(OMPFLAGS) src/main.c src/mechanism.c -o $@ $(LDFLAGS) $(OMPLIBS)
 

@@ -96,7 +96,7 @@ def main():
     ap.add_argument("output", type=Path)
     args = ap.parse_args()
     source = args.source.read_text()
-    data = {"format": "luna-mechanism-1", "name": "TS1", "species": parse_species(source),
+    data = {"format": "c-mechanism-1", "name": "TS1", "species": parse_species(source),
             "reactions": parse_reactions(source)}
     args.output.write_text(json.dumps(data, indent=2) + "\n")
 
