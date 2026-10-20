@@ -169,6 +169,10 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_lu"), test])
             status, reason = ("PASS", "C LU factorization and solve preserve the reference matrix equations") if ok else (
                 "FAIL", "C LU factors, triangular structure, solve, or matrix reconstruction differ from the reference")
+        elif suite in {"regression_test_rosenbrock_p_force", "regression_test_rosenbrock_dforce_dy"}:
+            ok = run([str(PROJECT / "bin/test_chapman"), test])
+            status, reason = ("PASS", "C Chapman rates, multi-cell forcing, and Jacobian match the regression equations") if ok else (
+                "FAIL", "C Chapman rate, forcing, or Jacobian regression differs from the reference")
         elif suite == "chapman_ode_solver" and test.split(".", 1)[-1] in {
             "DefaultConstructor", "ReactionNames", "PhotolysisNames", "SpeciesNames",
             "simple_force", "smaller_force", "Solve", "solve_10_times_larger",

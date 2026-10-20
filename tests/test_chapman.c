@@ -1,4 +1,5 @@
 #include "chem.h"
+#include "jacobian_verification.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -25,9 +26,9 @@ static const chem_term products[] = {
   { 8u, 1.0 }, { 0u, 1.0 },
 };
 static const chem_reaction reactions[] = {
-  { 0u, 2u, 0u, 2u, { .kind = CHEM_RATE_ARRHENIUS, .label = "N2_O1D_1", .p = { [0] = 2.15e-11, [2] = -110.0, [3] = 300.0 } } },
-  { 2u, 2u, 2u, 2u, { .kind = CHEM_RATE_ARRHENIUS, .label = "O1D_O2_1", .p = { [0] = 3.3e-11, [2] = -55.0, [3] = 300.0 } } },
-  { 4u, 2u, 4u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .label = "O_O3_1", .p = { [0] = 8.0e-12, [2] = 2060.0, [3] = 300.0 } } },
+  { 0u, 2u, 0u, 2u, { .kind = CHEM_RATE_ARRHENIUS, .label = "N2_O1D_1", .p = { [0] = 2.15e-11, [2] = 110.0, [3] = 300.0 } } },
+  { 2u, 2u, 2u, 2u, { .kind = CHEM_RATE_ARRHENIUS, .label = "O1D_O2_1", .p = { [0] = 3.3e-11, [2] = 55.0, [3] = 300.0 } } },
+  { 4u, 2u, 4u, 1u, { .kind = CHEM_RATE_ARRHENIUS, .label = "O_O3_1", .p = { [0] = 8.0e-12, [2] = -2060.0, [3] = 300.0 } } },
   { 6u, 3u, 10u, 2u, { .kind = CHEM_RATE_ARRHENIUS, .label = "M_O_O2_1", .p = { [0] = 6.0e-34, [1] = 2.4, [3] = 300.0 } } },
   { 9u, 1u, 5u, 1u, { .kind = CHEM_RATE_USER, .label = "O2_1", .p = { [1] = 1.0 }, .custom_parameter = 0u } },
   { 10u, 1u, 6u, 2u, { .kind = CHEM_RATE_USER, .label = "O3_1", .p = { [1] = 1.0 }, .custom_parameter = 1u } },
@@ -81,6 +82,102 @@ static int species_names(void) {
   if (chapman.species_count != sizeof(expected) / sizeof(expected[0])) return 1;
   for (size_t i = 0; i < chapman.species_count; ++i)
     if (strcmp(chapman.species[i].name, expected[i]) != 0) return 1;
+  return 0;
+}
+
+static int regression_rate_constants(void) {
+  const double temperatures[] = { 284.19, 215.02, 299.31 };
+  const double pressures[] = { 101245.0, 100789.2, 101398.0 };
+  const double photo_rates[3][3] = {
+    { 1.0e-4, 1.0e-5, 1.0e-6 }, { 3.2e-4, 7.3e-5, 3.2e-6 }, { 5.2e-4, 8.2e-5, 4.6e-6 },
+  };
+  for (size_t cell = 0; cell < 3u; ++cell) {
+    double parameters[] = { photo_rates[cell][0], photo_rates[cell][1], photo_rates[cell][2] };
+    double actual[7];
+    const double temperature = temperatures[cell];
+    const double expected[] = {
+      2.15e-11 * exp(110.0 / temperature),
+      3.3e-11 * exp(55.0 / temperature),
+      8.0e-12 * exp(-2060.0 / temperature),
+      6.0e-34 * pow(temperature / 300.0, 2.4),
+      photo_rates[cell][0], photo_rates[cell][1], photo_rates[cell][2],
+    };
+    for (size_t reaction = 0; reaction < 7u; ++reaction) {
+      if (chem_evaluate_rate(&chapman, reaction, parameters, temperature, pressures[cell], &actual[reaction]) != 0 ||
+          fabs(actual[reaction] - expected[reaction]) > 1e-12 * fmax(fabs(expected[reaction]), 1e-30)) {
+        fprintf(stderr, "Chapman rate cell %zu reaction %zu: %.17g expected %.17g\n",
+            cell, reaction, actual[reaction], expected[reaction]);
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+
+static void reference_chapman_forcing(const double *state, const double *rates, double *forcing) {
+  memset(forcing, 0, 9u * sizeof(*forcing));
+  const double n2_o1d = rates[0] * state[4] * state[5];
+  const double o1d_o2 = rates[1] * state[5] * state[7];
+  const double o_o3 = rates[2] * state[6] * state[8];
+  const double m_o_o2 = rates[3] * state[0] * state[6] * state[7];
+  forcing[5] = rates[5] * state[8] - n2_o1d - o1d_o2;
+  forcing[6] = 2.0 * rates[4] * state[7] + rates[6] * state[8] + n2_o1d + o1d_o2 - o_o3 - m_o_o2;
+  forcing[7] = -rates[4] * state[7] + rates[5] * state[8] + rates[6] * state[8] + 2.0 * o_o3 - m_o_o2;
+  forcing[8] = -rates[5] * state[8] - rates[6] * state[8] - o_o3 + m_o_o2;
+}
+
+static int regression_forcing(void) {
+  double state[27], rates[21], actual[27], expected[27];
+  for (size_t cell = 0; cell < 3u; ++cell) {
+    for (size_t species = 0; species < 9u; ++species)
+      state[cell * 9u + species] = 0.2 + 0.17 * (double)species + 0.03 * (double)cell;
+    for (size_t reaction = 0; reaction < 7u; ++reaction)
+      rates[cell * 7u + reaction] = 1e-3 * (double)(reaction + 1u) * (double)(cell + 1u);
+    reference_chapman_forcing(state + cell * 9u, rates + cell * 7u, expected + cell * 9u);
+  }
+  if (chem_evaluate_forcing(&chapman, 3u, state, rates, actual) != 0) return 1;
+  for (size_t i = 0; i < 27u; ++i)
+    if (fabs(actual[i] - expected[i]) > 1e-12 * (1.0 + fabs(expected[i]))) {
+      fprintf(stderr, "Chapman forcing item %zu: %.17g expected %.17g\n", i, actual[i], expected[i]);
+      return 1;
+    }
+  return 0;
+}
+
+typedef struct { const double *rates; } chapman_fd_context;
+
+static int chapman_forcing_callback(
+    size_t block, const double *state, size_t species_count, double *forcing, void *opaque) {
+  const chapman_fd_context *context = (const chapman_fd_context *)opaque;
+  if (species_count != 9u) return -1;
+  return chem_evaluate_forcing(&chapman, 1u, state, context->rates + block * 7u, forcing);
+}
+
+static int regression_jacobian(void) {
+  double state[27], rates[21], negative_jacobian[243], finite_difference[243];
+  unsigned char pattern[81];
+  memset(negative_jacobian, 0, sizeof(negative_jacobian));
+  memset(pattern, 1, sizeof(pattern));
+  for (size_t cell = 0; cell < 3u; ++cell) {
+    for (size_t species = 0; species < 9u; ++species)
+      state[cell * 9u + species] = 0.3 + 0.13 * (double)species + 0.05 * (double)cell;
+    for (size_t reaction = 0; reaction < 7u; ++reaction)
+      rates[cell * 7u + reaction] = 0.02 * (double)(reaction + 1u) * (double)(cell + 1u);
+  }
+  if (chem_accumulate_negative_jacobian(&chapman, 3u, state, rates, NULL, negative_jacobian) != 0) return 1;
+  const chapman_fd_context context = { rates };
+  if (chem_finite_difference_jacobian(
+          chapman_forcing_callback, (void *)&context, state, 3u, 9u, 1e-6, finite_difference) != 0) return 1;
+  chem_jacobian_comparison comparison;
+  if (chem_compare_jacobian_to_finite_difference(
+          pattern, negative_jacobian, finite_difference, 3u, 9u, 2e-7, 2e-8, &comparison) != 0 ||
+      !comparison.passed) {
+    fprintf(stderr, "Chapman Jacobian comparison failed at block %zu row %zu column %zu: %.17g vs %.17g (abs %.3g rel %.3g)\n",
+        comparison.worst_block, comparison.worst_row, comparison.worst_column,
+        comparison.worst_analytical, comparison.worst_finite_difference,
+        comparison.max_absolute_error, comparison.max_relative_error);
+    return 1;
+  }
   return 0;
 }
 
@@ -170,6 +267,9 @@ int main(int argc, char **argv) {
   static const test_case tests[] = {
     { "DefaultConstructor", default_constructor }, { "ReactionNames", reaction_names },
     { "PhotolysisNames", photolysis_names }, { "SpeciesNames", species_names },
+    { "RateConstants", regression_rate_constants }, { "VectorRateConstants", regression_rate_constants },
+    { "Forcing", regression_forcing }, { "VectorForcing", regression_forcing },
+    { "Jacobian", regression_jacobian }, { "VectorJacobian", regression_jacobian },
     { "simple_force", simple_force }, { "smaller_force", smaller_force },
     { "Solve", solve_one }, { "solve_10_times_larger", solve_large },
     { "solve_10_times_smaller", solve_small }, { "solve_with_random_number_densities", solve_random },
