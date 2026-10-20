@@ -455,6 +455,10 @@ implemented.update({
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.smaller_force",
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.dforce_dy_times_vector",
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.factored_alpha_minus_jac",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.Solve",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.solve_10_times_larger",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.solve_with_random_number_densities",
+    "chapman_ode_solver:RegressionChapmanODESolver.solve_10_times_smaller",
     "regression_test_rosenbrock_dforce_dy:RegressionRosenbrock.Jacobian",
     "regression_test_rosenbrock_dforce_dy:RegressionRosenbrock.VectorJacobian",
     "analytical_rosenbrock_integration:AnalyticalExamples.E5",
@@ -602,7 +606,12 @@ for raw in case_file.read_text().splitlines():
         elif case_id.startswith("chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral."):
             reason = ("C Rosenbrock alpha-minus-Jacobian transforms checked"
                       if case_id.endswith("factored_alpha_minus_jac") else
+                      "C generic Chapman integration matches the reference trajectory across concentration scales"
+                      if case_id.endswith(("Solve", "solve_10_times_larger",
+                                           "solve_with_random_number_densities")) else
                       "C generic Chapman names, default stages, forcing, and directional Jacobian checked")
+        elif case_id == "chapman_ode_solver:RegressionChapmanODESolver.solve_10_times_smaller":
+            reason = "C generic Chapman integration matches the reference trajectory across concentration scales"
         elif case_id.startswith("regression_test_rosenbrock_dforce_dy:"):
             reason = "C generic Chapman negative Jacobian matches a directional finite difference"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):

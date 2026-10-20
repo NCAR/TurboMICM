@@ -926,6 +926,42 @@ static int check_chapman_integration(void) {
   if (chem_solver_workspace_init(&workspace, &mechanism)) return 1;
   chem_solver_options options = chem_solver_default_options();
   options.max_steps = 100000;
+  const double chapman_initial[]={0,0,8.84,0,1,0.392,32.9,0,0.0169};
+  const double chapman_expected[]={0.00176789,1.8039e-41,8.83912,
+      4.5031e-36,1,0.392,32.9,0,0.0169};
+  const double chapman_scales[]={1.0,0.1,10.0};
+  const double chapman_photos[]={1e-4,1e-5,1e-6};
+  for (size_t sample=0;sample<3;++sample) {
+    double one_step[9];
+    for (size_t i=0;i<9;++i)
+      one_step[i]=chapman_initial[i]*chapman_scales[sample];
+    const int one_step_status=chem_rosenbrock3_solve_with_workspace(
+        &mechanism,&workspace,one_step,273.15,100000.0,2.7e19,
+        chapman_photos,1.0,&options,NULL);
+    if (one_step_status) {
+      chem_solver_workspace_destroy(&workspace);
+      return 21;
+    }
+    for (size_t i=0;i<9;++i)
+      if (fabs(one_step[i]-chapman_expected[i]*chapman_scales[sample])>1e-4) {
+        chem_solver_workspace_destroy(&workspace);
+        return 22;
+      }
+  }
+  double random_densities[9];
+  for (size_t i=0;i<9;++i)
+    random_densities[i]=((double)((i*37+11)%101)+0.5)/101.0;
+  if (chem_rosenbrock3_solve_with_workspace(&mechanism,&workspace,
+          random_densities,273.15,100000.0,2.7e19,chapman_photos,1.0,
+          &options,NULL)) {
+    chem_solver_workspace_destroy(&workspace);
+    return 23;
+  }
+  for (size_t i=0;i<9;++i)
+    if (!isfinite(random_densities[i]) || random_densities[i]<0.0) {
+      chem_solver_workspace_destroy(&workspace);
+      return 24;
+    }
   const double temperature = 2.0, pressure = 3.0;
   const double density = pressure/(8.31446261815324*temperature);
   int result = 0;
