@@ -2201,7 +2201,9 @@ static int check_equilibrium_dae_case(int mode) {
             1,residual)) status=2;
     if (!status)
       for (size_t j=0;j<constraint_count;++j)
-        if (fabs(residual[constraints[j].algebraic_species])>1e-6) status=3;
+        if (fabs(residual[constraints[j].algebraic_species])>1e-6) {
+          status=3;
+        }
   }
   chem_solver_workspace_destroy(&workspace);
   if (!status && mode!=3 && fabs(state[0]+state[1]-1.0)>0.01 && mode!=1)
