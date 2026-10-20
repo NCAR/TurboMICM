@@ -454,6 +454,9 @@ implemented.update({
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.simple_force",
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.smaller_force",
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.dforce_dy_times_vector",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.factored_alpha_minus_jac",
+    "regression_test_rosenbrock_dforce_dy:RegressionRosenbrock.Jacobian",
+    "regression_test_rosenbrock_dforce_dy:RegressionRosenbrock.VectorJacobian",
     "analytical_rosenbrock_integration:AnalyticalExamples.E5",
     "analytical_backward_euler:AnalyticalExamples.Oregonator",
     "analytical_rosenbrock_integration:AnalyticalExamples.Oregonator",
@@ -597,7 +600,11 @@ for raw in case_file.read_text().splitlines():
         elif case_id.startswith("regression_test_rosenbrock_p_force:"):
             reason = "generic C Chapman mechanism rates and forcing match independent formulas"
         elif case_id.startswith("chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral."):
-            reason = "C generic Chapman names, default stages, forcing, and directional Jacobian checked"
+            reason = ("C Rosenbrock alpha-minus-Jacobian transforms checked"
+                      if case_id.endswith("factored_alpha_minus_jac") else
+                      "C generic Chapman names, default stages, forcing, and directional Jacobian checked")
+        elif case_id.startswith("regression_test_rosenbrock_dforce_dy:"):
+            reason = "C generic Chapman negative Jacobian matches a directional finite difference"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):
             reason = ("C per-species tolerance properties feed solver error control"
                       if case_id.endswith("CanSetTolerances") else
