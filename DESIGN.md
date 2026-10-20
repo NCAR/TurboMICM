@@ -27,6 +27,8 @@ strides. It provides checked element access, fill, conversion to and from a
 row-major vector, shape-checked AXPY, and min/max/sum reductions. It supports
 strided storage without imposing an allocator or matrix ownership policy.
 Element traversal accepts a C callback and caller context.
+Row callbacks can read two source matrices with different column counts and
+write into a destination matrix, while validating that all row counts agree.
 `chem_const_matrix_view` provides checked read-only access and row conversion
 when the caller holds const storage.
 `chem_vector_matrix_view` packs logical rows into fixed-width lanes, with the

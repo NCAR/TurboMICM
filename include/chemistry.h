@@ -192,6 +192,11 @@ typedef struct {
 
 typedef void (*chem_matrix_element_function)(size_t row, size_t column,
                                               double *value, void *context);
+typedef void (*chem_matrix_row_function)(
+    size_t row, double *destination, size_t destination_columns,
+    size_t destination_stride, const double *first, size_t first_columns,
+    size_t first_stride, const double *second, size_t second_columns,
+    size_t second_stride, void *context);
 
 int chem_matrix_view_init(chem_matrix_view *view, double *data,
                           size_t rows, size_t columns,
@@ -283,6 +288,11 @@ int chem_matrix_view_fill(chem_matrix_view *view, double value);
 int chem_matrix_view_for_each(chem_matrix_view *view,
                               chem_matrix_element_function function,
                               void *context);
+int chem_matrix_view_for_each_row(chem_matrix_view *destination,
+                                  const chem_matrix_view *first,
+                                  const chem_matrix_view *second,
+                                  chem_matrix_row_function function,
+                                  void *context);
 int chem_matrix_view_copy_to_vector(const chem_matrix_view *view,
                                     double *vector, size_t vector_size);
 int chem_matrix_view_copy_from_vector(chem_matrix_view *view,

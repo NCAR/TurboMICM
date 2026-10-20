@@ -69,7 +69,8 @@ Grouped vector-matrix views expose MICM-style lane packing for batched rows,
 with vector conversion, AXPY, fill, reductions, and element callbacks.
 Matrix views support checked element access, row-major vector conversion,
 row and column vector copies, element traversal, fill, AXPY, and min/max/sum
-reductions.
+reductions. Row callbacks can combine matrices with different column counts and
+report row-shape errors at invocation.
 The constraint helpers
 build algebraic masks and Jacobian patterns and add residual and negative-Jacobian
 terms to caller-provided arrays. Masked forcing and Jacobian helpers accumulate

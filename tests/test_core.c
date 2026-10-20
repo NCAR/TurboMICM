@@ -1374,6 +1374,15 @@ static void matrix_add_captured_vector(size_t row, size_t column, double *value,
   if (column < vector->count) *value += vector->values[column];
 }
 
+static void matrix_combine_rows(size_t row, double *destination,
+    size_t destination_columns, size_t destination_stride, const double *first,
+    size_t first_columns, size_t first_stride, const double *second,
+    size_t second_columns, size_t second_stride, void *context) {
+  (void)row; (void)first_stride; (void)context;
+  if (destination_columns > 1 && first_columns > 0 && second_columns > 2)
+    destination[destination_stride] = first[0] + second[2*second_stride];
+}
+
 static int check_matrix_view_api(void) {
   double storage[] = {1.0, 99.0, 2.0, 99.0, 3.0, 99.0,
                       4.0, 99.0, 5.0, 99.0, 6.0, 99.0};
@@ -1628,6 +1637,18 @@ static int check_matrix_view_api(void) {
   if (chem_vector_matrix_view_copy_to_vector(&operations,flat_copy,5) == 0 ||
       chem_vector_matrix_view_axpy(&operations,&vectorized_loop,1.0) == 0)
     return 49;
+  double left_data[] = {0,10,1,11,2,12};
+  double right_data[] = {0,20,0,2,22,4,4,24,8};
+  chem_matrix_view left, right;
+  if (chem_matrix_view_init(&left,left_data,3,2,2,1) ||
+      chem_matrix_view_init(&right,right_data,3,3,3,1) ||
+      chem_matrix_view_for_each_row(&left,&left,&right,matrix_combine_rows,NULL) ||
+      left_data[1] != 0.0 || left_data[3] != 5.0 || left_data[5] != 10.0)
+    return 57;
+  chem_matrix_view short_matrix;
+  if (chem_matrix_view_init(&short_matrix,left_data,2,3,3,1) ||
+      chem_matrix_view_for_each_row(&left,&left,&short_matrix,
+                                    matrix_combine_rows,NULL) == 0) return 58;
   return 0;
 }
 
