@@ -39,6 +39,8 @@ and lane widths.
 `chem_phase` and `chem_system` are non-owning compositions of caller-owned
 species records. Phase state sizes omit density-parameterized species, and
 phase/system name helpers emit qualified or plain names into caller buffers.
+Typed species properties are also caller-owned; getters return distinct status
+codes for missing names and mismatched types.
 
 `chem_constraint_set` describes caller-owned linear conservation or
 equilibrium constraints using species indexes. Its utilities validate records,

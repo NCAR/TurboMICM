@@ -1386,6 +1386,47 @@ static int check_phase_system_metadata(void) {
   return 0;
 }
 
+static int check_species_properties(void) {
+  const chem_property properties[] = {
+      {.name="name [units]",.kind=CHEM_PROPERTY_DOUBLE,
+       .value.real_value=1.0},
+      {.name="name2 [units2]",.kind=CHEM_PROPERTY_DOUBLE,
+       .value.real_value=2.0},
+      {.name="label",.kind=CHEM_PROPERTY_STRING,
+       .value.string_value="bar"},
+      {.name="count",.kind=CHEM_PROPERTY_INTEGER,
+       .value.integer_value=42},
+      {.name="enabled",.kind=CHEM_PROPERTY_BOOLEAN,
+       .value.boolean_value=1}};
+  const chem_species species = {.name="thing",.properties=properties,
+      .property_count=5,.temperature_parameterization_factor=100.0};
+  if (strcmp(species.name,"thing") || !chem_species_is_parameterized(&species) ||
+      chem_species_parameterize_conditions(&species,12.5,0.0) != 1250.0)
+    return 1;
+  double real_value = 0.0;
+  int integer_value = 0, boolean_value = 0;
+  const char *string_value = NULL;
+  if (chem_species_get_double_property(&species,"name [units]",&real_value) ||
+      real_value != 1.0 ||
+      chem_species_get_double_property(&species,"name2 [units2]",&real_value) ||
+      real_value != 2.0 ||
+      chem_species_get_string_property(&species,"label",&string_value) ||
+      strcmp(string_value,"bar") ||
+      chem_species_get_integer_property(&species,"count",&integer_value) ||
+      integer_value != 42 ||
+      chem_species_get_boolean_property(&species,"enabled",&boolean_value) ||
+      boolean_value != 1) return 2;
+  if (chem_species_get_double_property(&species,"missing",&real_value) !=
+          CHEM_PROPERTY_STATUS_NOT_FOUND ||
+      chem_species_get_integer_property(&species,"name [units]",&integer_value) !=
+          CHEM_PROPERTY_STATUS_TYPE_MISMATCH) return 3;
+  chem_species third_body = {.name="M"};
+  if (chem_species_set_third_body(&third_body) ||
+      !chem_species_is_parameterized(&third_body) ||
+      chem_species_parameterize(&third_body,42.4) != 42.4) return 4;
+  return 0;
+}
+
 static void matrix_add_index(size_t row, size_t column, double *value,
                              void *context) {
   const double scale = *(const double *)context;
@@ -2292,6 +2333,7 @@ int main(void) {
   if (check_constrained_solver() != 0) return 65;
   if (check_process_algebraic_mask() != 0) return 66;
   if (check_phase_system_metadata() != 0) return 67;
+  if (check_species_properties() != 0) return 68;
   if (check_matrix_view_api() != 0) return 64;
   return 0;
 }

@@ -4,7 +4,7 @@
 #include <string.h>
 
 static int chem_density_parameterized(const chem_species *species) {
-  return chem_species_is_parameterized(species);
+  return species != NULL && (species->third_body || species->density_parameterized);
 }
 
 static double chem_density_factor(const chem_species *species) {
@@ -12,7 +12,8 @@ static double chem_density_factor(const chem_species *species) {
 }
 
 int chem_species_is_parameterized(const chem_species *species) {
-  return species != NULL && (species->third_body || species->density_parameterized);
+  return species != NULL && (species->third_body || species->density_parameterized ||
+      species->temperature_parameterization_factor != 0.0);
 }
 
 double chem_species_parameterize(const chem_species *species,
@@ -21,6 +22,61 @@ double chem_species_parameterize(const chem_species *species,
     return 0.0;
   return air_density * chem_density_factor(species);
 }
+
+double chem_species_parameterize_conditions(const chem_species *species,
+                                           double temperature,
+                                           double air_density) {
+  if (species == NULL || !isfinite(temperature) || !isfinite(air_density) ||
+      temperature < 0.0 || air_density < 0.0) return 0.0;
+  return species->temperature_parameterization_factor*temperature +
+      ((species->third_body || species->density_parameterized)
+          ? chem_species_parameterize(species,air_density) : 0.0);
+}
+
+int chem_species_set_third_body(chem_species *species) {
+  if (species == NULL || species->name == NULL) return 1;
+  species->third_body = 1;
+  return 0;
+}
+
+static chem_property_status find_species_property(const chem_species *species,
+                                                  const char *name,
+                                                  const chem_property **property) {
+  if (species == NULL || name == NULL || property == NULL ||
+      (species->property_count && species->properties == NULL))
+    return CHEM_PROPERTY_STATUS_INVALID;
+  for (size_t i = 0; i < species->property_count; ++i) {
+    const chem_property *candidate = &species->properties[i];
+    if (candidate->name && strcmp(candidate->name,name) == 0) {
+      *property = candidate;
+      return CHEM_PROPERTY_STATUS_OK;
+    }
+  }
+  return CHEM_PROPERTY_STATUS_NOT_FOUND;
+}
+
+#define DEFINE_PROPERTY_GETTER(function_name, ctype, expected_kind, member) \
+chem_property_status function_name(const chem_species *species, const char *name, \
+                                   ctype *value) { \
+  if (value == NULL) return CHEM_PROPERTY_STATUS_INVALID; \
+  const chem_property *property = NULL; \
+  const chem_property_status status = find_species_property(species,name,&property); \
+  if (status != CHEM_PROPERTY_STATUS_OK) return status; \
+  if (property->kind != expected_kind) return CHEM_PROPERTY_STATUS_TYPE_MISMATCH; \
+  *value = property->value.member; \
+  return CHEM_PROPERTY_STATUS_OK; \
+}
+
+DEFINE_PROPERTY_GETTER(chem_species_get_double_property,double,
+                       CHEM_PROPERTY_DOUBLE,real_value)
+DEFINE_PROPERTY_GETTER(chem_species_get_integer_property,int,
+                       CHEM_PROPERTY_INTEGER,integer_value)
+DEFINE_PROPERTY_GETTER(chem_species_get_boolean_property,int,
+                       CHEM_PROPERTY_BOOLEAN,boolean_value)
+DEFINE_PROPERTY_GETTER(chem_species_get_string_property,const char *,
+                       CHEM_PROPERTY_STRING,string_value)
+
+#undef DEFINE_PROPERTY_GETTER
 
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density) {

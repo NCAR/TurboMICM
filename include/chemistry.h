@@ -51,6 +51,26 @@ typedef struct {
   chem_rate_function rate_function;
 } chem_reaction;
 
+typedef enum {
+  CHEM_PROPERTY_DOUBLE,
+  CHEM_PROPERTY_INTEGER,
+  CHEM_PROPERTY_BOOLEAN,
+  CHEM_PROPERTY_STRING
+} chem_property_kind;
+
+typedef union {
+  double real_value;
+  int integer_value;
+  int boolean_value;
+  const char *string_value;
+} chem_property_value;
+
+typedef struct {
+  const char *name;
+  chem_property_kind kind;
+  chem_property_value value;
+} chem_property;
+
 typedef struct {
   const char *name;
   int third_body;
@@ -59,7 +79,17 @@ typedef struct {
   double initial_concentration;
   int density_parameterized;
   double density_factor;
+  const chem_property *properties;
+  size_t property_count;
+  double temperature_parameterization_factor;
 } chem_species;
+
+typedef enum {
+  CHEM_PROPERTY_STATUS_OK,
+  CHEM_PROPERTY_STATUS_NOT_FOUND,
+  CHEM_PROPERTY_STATUS_TYPE_MISMATCH,
+  CHEM_PROPERTY_STATUS_INVALID
+} chem_property_status;
 
 typedef struct {
   const chem_species *species;
@@ -80,6 +110,18 @@ typedef struct {
 int chem_species_is_parameterized(const chem_species *species);
 double chem_species_parameterize(const chem_species *species,
                                  double air_density);
+double chem_species_parameterize_conditions(const chem_species *species,
+                                           double temperature,
+                                           double air_density);
+int chem_species_set_third_body(chem_species *species);
+chem_property_status chem_species_get_double_property(
+    const chem_species *species, const char *name, double *value);
+chem_property_status chem_species_get_integer_property(
+    const chem_species *species, const char *name, int *value);
+chem_property_status chem_species_get_boolean_property(
+    const chem_species *species, const char *name, int *value);
+chem_property_status chem_species_get_string_property(
+    const chem_species *species, const char *name, const char **value);
 int chem_phase_species_init(chem_phase_species *phase_species,
                             const chem_species *species,
                             int has_diffusion_coefficient,

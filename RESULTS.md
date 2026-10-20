@@ -72,12 +72,15 @@
   matrix copying and multi-matrix row callbacks across lane widths.
 - Phase and system metadata checks cover optional diffusion coefficients,
   parameterized-species state-size filtering, and phase-qualified or plain names.
+- Species property tests cover temperature/density parameterization and typed
+  double, integer, boolean, and string values, including missing-name and
+  type-mismatch status codes.
 - JSON and YAML tutorial mechanisms normalize to 7 species; the input reactions
   expand to 10 and 7 generated reactions, respectively (JSON and YAML).
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Two hundred thirty cases pass, nine are marked N/A, and 441 cases
+  statuses. Two hundred thirty-three cases pass, nine are marked N/A, and 438 cases
   still report incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -97,5 +100,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 all 2,110,000 values; the largest relative difference was `5.34e-14` for
 BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
 MICM at this scale. The 100-cell and first-cell runs above also pass for both
-compilers. Overall, 441 of the 680 inventory cases remain incomplete; nine
+compilers. Overall, 438 of the 680 inventory cases remain incomplete; nine
 C++-only cases are marked N/A.

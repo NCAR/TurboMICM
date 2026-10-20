@@ -53,6 +53,10 @@
   than an owning template type. Keep allocation with the caller and validate
   dimensions and strides at the API boundary.
 
+- Store optional species properties in caller-owned tagged records. Typed C
+  getters report missing properties separately from type mismatches, avoiding
+  unchecked casts from the C++ property API.
+
 - Give the independent C library an initial version of `0.1.0+0` and expose the
   string and numeric components through `chem_version*` functions.
 

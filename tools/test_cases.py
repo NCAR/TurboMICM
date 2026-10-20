@@ -56,6 +56,9 @@ implemented = {
     "phase:Phase.UniqueNamesWithParameterizedSpecies",
     "system:System.ConstructorWithAllParameters",
     "system:System.ConstructorWithParameterizedSpecies",
+    "species:Species.StringConstructor",
+    "species:Species.StringAndVectorConstructor",
+    "species:Species.GetProperty",
     "constraint_set:ConstraintSet.Construction",
     "constraint_set:ConstraintSet.ReplaceStateRowsMapsToAlgebraicSpecies",
     "constraint_set:ConstraintSet.NonZeroJacobianElements",
@@ -285,6 +288,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C masked reaction forcing and Jacobian updates preserve algebraic rows"
         elif case_id.startswith(("phase_species:", "phase:", "system:")):
             reason = "C phase and system views preserve species metadata and qualified names"
+        elif case_id.startswith("species:"):
+            reason = "C species records support parameterization and typed caller-owned properties"
         elif case_id.startswith("matrix:"):
             reason = "C strided matrix view, conversion, arithmetic, and reductions checked"
         elif case_id.startswith("vector_matrix:"):
