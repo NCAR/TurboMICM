@@ -447,6 +447,8 @@ for _category, _case_class in (
     implemented.update(f"{_category}:{_case_class}.{_name}"
                        for _name in _linear_case_names)
 implemented.update({
+    "analytical_backward_euler:AnalyticalExamples.Oregonator",
+    "analytical_rosenbrock_integration:AnalyticalExamples.Oregonator",
     "analytical_backward_euler:AnalyticalExamples.HIRES",
     "analytical_rosenbrock_integration:AnalyticalExamples.HIRES",
     "analytical_rosenbrock_integration:AnalyticalExamples.Robertson",
@@ -572,6 +574,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C Rosenbrock parameter sets match the published Robertson trajectory"
         elif case_id.endswith("AnalyticalExamples.HIRES"):
             reason = "C solvers match the published two-output HIRES trajectory"
+        elif case_id.endswith("AnalyticalExamples.Oregonator"):
+            reason = "C solvers match the 12-point Oregonator limit-cycle reference"
         elif case_id.endswith("AnalyticalExamples.SurfaceRxn"):
             reason = "C surface rate, decay, and product yields match the analytical solution"
         elif case_id.endswith(("AnalyticalExamples.Tunneling", "AnalyticalExamples.Arrhenius",

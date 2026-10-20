@@ -3448,6 +3448,96 @@ static int check_analytical_hires(int backward_euler) {
   return status;
 }
 
+static int check_analytical_oregonator(int backward_euler) {
+  const chem_species species[]={{.name="X"},{.name="Y"},{.name="Z"},
+                                {.name="P"},{.name="Q"}};
+  const chem_term x[]={{.species=0,.coefficient=1}};
+  const chem_term y[]={{.species=1,.coefficient=1}};
+  const chem_term z[]={{.species=2,.coefficient=1}};
+  const chem_term xx[]={{.species=0,.coefficient=2}};
+  const chem_term xy[]={{.species=0,.coefficient=1},{.species=1,.coefficient=1}};
+  const chem_term x_product[]={{.species=0,.coefficient=1}};
+  const chem_term p_product[]={{.species=3,.coefficient=1}};
+  const chem_term xz_product[]={{.species=2,.coefficient=1},
+                                {.species=0,.coefficient=2}};
+  const chem_term q_product[]={{.species=4,.coefficient=1}};
+  const chem_term y_product[]={{.species=1,.coefficient=1}};
+  const chem_reaction reactions[]={
+      {.kind=CHEM_USER_DEFINED,.reactants=y,.reactant_count=1,
+       .products=x_product,.product_count=1,.p={[0]=1,[7]=0}},
+      {.kind=CHEM_USER_DEFINED,.reactants=xy,.reactant_count=2,
+       .products=p_product,.product_count=1,.p={[0]=1,[7]=1}},
+      {.kind=CHEM_USER_DEFINED,.reactants=x,.reactant_count=1,
+       .products=xz_product,.product_count=2,.p={[0]=1,[7]=2}},
+      {.kind=CHEM_USER_DEFINED,.reactants=xx,.reactant_count=1,
+       .products=q_product,.product_count=1,.p={[0]=1,[7]=3}},
+      {.kind=CHEM_USER_DEFINED,.reactants=z,.reactant_count=1,
+       .products=y_product,.product_count=1,.p={[0]=1,[7]=4}}};
+  const char *labels[]={"r1","r2","r3","r4","r5"};
+  const chem_mechanism mechanism={.species=species,.species_count=5,
+      .reactions=reactions,.reaction_count=5,.custom_labels=labels,
+      .custom_parameter_count=5};
+  const double s=77.27,q=8.375e-6,w=0.161,k2=1.6e9,k5=1.0;
+  const double k1=k5/(s*w), k3=s*k5/w, k4=s*s*q*k2/2.0;
+  const double alpha=k5/(s*w*k2), eta=s*k5/(w*k2);
+  const double rho=k5*k5/(w*w*k2), tau=w/k5;
+  const double rates[]={k1,k2,k3,k4,k5};
+  const double references[13][3]={
+      {1,2,3},
+      {1.000661467180497,1512.778937348249,10358.54312767229},
+      {1.000874625199626,1144.336972384497,83.72149966624639},
+      {1.001890368438751,529.9926232295553,1.662279579042420},
+      {1.004118022612645,243.8326079910346,1.008822224048647},
+      {1.008995416634061,112.1664388662539,1.007783229065319},
+      {1.019763472537298,51.59761322947535,1.016985778956376},
+      {1.043985088527474,23.73442027531524,1.037691843544522},
+      {1.100849071667922,10.91533805469022,1.085831969810860},
+      {1.249102130020572,5.013945178605446,1.208326626237875},
+      {1.779724751937019,2.281852385542403,1.613754023671725},
+      {1.000889326903503,1125.438585746596,16410.49483777168},
+      {1.000814870318523,1228.178521549889,132.0554942846513}};
+  const double absolute_tolerances[]={alpha*1e-11,eta*1e-11,
+                                      rho*1e-11,eta,eta};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  double state[]={alpha,2.0*eta,3.0*rho,0,0};
+  chem_solver_options ros_options=chem_solver_default_options();
+  ros_options.relative_tolerance=1e-9;
+  ros_options.absolute_tolerance=1e-3;
+  ros_options.absolute_tolerances=absolute_tolerances;
+  ros_options.absolute_tolerance_count=5;
+  ros_options.max_steps=100000;
+  const chem_rosenbrock_parameters ros_parameters=
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
+  chem_backward_euler_options be_options=chem_backward_euler_default_options();
+  be_options.relative_tolerance=1e-9;
+  be_options.absolute_tolerance=1e-3;
+  be_options.absolute_tolerances=absolute_tolerances;
+  be_options.absolute_tolerance_count=5;
+  const double interval=30.0*tau;
+  const size_t substeps=backward_euler?18000:1;
+  const double dt=interval/(double)substeps;
+  int status=0;
+  for (size_t point=1;point<=12 && !status;++point) {
+    for (size_t substep=0;substep<substeps && !status;++substep)
+      status=backward_euler
+          ? chem_backward_euler_solve_with_workspace(&mechanism,&workspace,state,
+              298.15,101325.0,40.0,rates,dt,&be_options,NULL)
+          : chem_rosenbrock_solve_with_parameters(&mechanism,&workspace,state,
+              298.15,101325.0,40.0,rates,interval,&ros_parameters,
+              &ros_options,NULL);
+    if (status) break;
+    const double expected[]={alpha*references[point][0],
+                             eta*references[point][1],
+                             rho*references[point][2]};
+    const double tolerance=backward_euler?5e-3:1e-6;
+    for (size_t i=0;i<3;++i)
+      if (fabs(state[i]-expected[i])>tolerance*fabs(expected[i])) status=2;
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
 int main(void) {
   if (check_rosenbrock_species_tolerances()) return 52;
   { const int status=check_rejected_step_determinism();
@@ -3466,6 +3556,8 @@ int main(void) {
   }
   if (check_analytical_hires(0)) return 90;
   if (check_analytical_hires(1)) return 91;
+  if (check_analytical_oregonator(0)) return 92;
+  if (check_analytical_oregonator(1)) return 93;
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
   const double b = chem_arrhenius(3.0e-11, 0.0, -200.0, 300.0, 0.0, t, 0.0);
