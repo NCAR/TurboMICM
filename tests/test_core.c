@@ -1575,6 +1575,23 @@ static int check_matrix_view_api(void) {
                                        (void *)&scale) ||
       chem_vector_matrix_view_get(&operations,1,2,&value) || value != 38.0)
     return 48;
+  const double captured_vector_values[] = {1.0,2.0,3.0};
+  const matrix_vector_context captured_vector = {captured_vector_values,3};
+  if (chem_vector_matrix_view_for_each(&operations,matrix_add_captured_vector,
+                                       (void *)&captured_vector) ||
+      chem_vector_matrix_view_get(&operations,1,2,&value) || value != 41.0 ||
+      chem_vector_matrix_view_max(&operations,&value) || value != 41.0) return 50;
+  if (chem_vector_matrix_view_for_each(&vectorized_loop,matrix_add_index,
+                                       (void *)&scale) ||
+      chem_vector_matrix_view_get(&vectorized_loop,2,3,&value) || value != 226.0)
+    return 51;
+  double reused_group_data[12] = {0};
+  chem_vector_matrix_view reused_group;
+  if (chem_vector_matrix_view_init(&reused_group,reused_group_data,5,2,2) ||
+      chem_vector_matrix_view_for_each(&reused_group,matrix_add_index,
+                                       (void *)&scale) ||
+      chem_vector_matrix_view_get(&reused_group,4,1,&value) || value != 41.0)
+    return 52;
   if (chem_vector_matrix_view_copy_to_vector(&operations,flat_copy,5) == 0 ||
       chem_vector_matrix_view_axpy(&operations,&vectorized_loop,1.0) == 0)
     return 49;
