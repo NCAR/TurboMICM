@@ -472,6 +472,16 @@ implemented.update({
     "analytical_rosenbrock_integration:AnalyticalExamples.Troe",
     "analytical_backward_euler:AnalyticalExamples.Photolysis",
     "analytical_rosenbrock_integration:AnalyticalExamples.Photolysis",
+    "analytical_backward_euler:AnalyticalExamples.Tunneling",
+    "analytical_rosenbrock_integration:AnalyticalExamples.Tunneling",
+    "analytical_backward_euler:AnalyticalExamples.Arrhenius",
+    "analytical_rosenbrock_integration:AnalyticalExamples.Arrhenius",
+    "analytical_backward_euler:AnalyticalExamples.Branched",
+    "analytical_rosenbrock_integration:AnalyticalExamples.Branched",
+    "analytical_backward_euler:AnalyticalExamples.TernaryChemicalActivation",
+    "analytical_rosenbrock_integration:AnalyticalExamples.TernaryChemicalActivation",
+    "analytical_backward_euler:AnalyticalExamples.SurfaceRxn",
+    "analytical_rosenbrock_integration:AnalyticalExamples.SurfaceRxn",
 })
 not_applicable = {
     "state:State.CopyConstructor":
@@ -537,6 +547,12 @@ for raw in case_file.read_text().splitlines():
             reason = "C Rosenbrock integrates the Troe chain against its closed form"
         elif case_id.endswith("AnalyticalExamples.Photolysis"):
             reason = "C user-defined rates drive backward Euler and Rosenbrock closed-form checks"
+        elif case_id.endswith("AnalyticalExamples.SurfaceRxn"):
+            reason = "C surface rate, decay, and product yields match the analytical solution"
+        elif case_id.endswith(("AnalyticalExamples.Tunneling", "AnalyticalExamples.Arrhenius",
+                               "AnalyticalExamples.Branched",
+                               "AnalyticalExamples.TernaryChemicalActivation")):
+            reason = "C rate mechanism drives both solvers against the two-step closed form"
         elif case_id.startswith("solver_builder:"):
             reason = "C workspace initialization and strict species-use validation checked"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):

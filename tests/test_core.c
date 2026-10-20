@@ -1276,6 +1276,72 @@ static int check_analytical_user_rate_chain(void) {
   return 0;
 }
 
+static int check_analytical_mechanism_chain(const chem_mechanism *mechanism,
+                                           double backward_tolerance,
+                                           double rosenbrock_tolerance) {
+  const double temperatures[] = {272.5,254.7,312.6};
+  const double pressures[] = {101253.3,100672.5,101319.8};
+  const double gas_constant = 8.31446261815324;
+  double be_states[] = {1,0,0, 2.0/3.0,0,0, 1.0/3.0,0,0};
+  double ros_states[9];
+  memcpy(ros_states,be_states,sizeof(be_states));
+  chem_solver_workspace be_workspace = {0}, ros_workspace = {0};
+  if (chem_solver_workspace_init(&be_workspace,mechanism) ||
+      chem_solver_workspace_init(&ros_workspace,mechanism)) {
+    chem_solver_workspace_destroy(&be_workspace);
+    chem_solver_workspace_destroy(&ros_workspace);
+    return 1;
+  }
+  double rates[3][2];
+  for (size_t cell = 0; cell < 3; ++cell) {
+    const double density = pressures[cell]/(gas_constant*temperatures[cell]);
+    if (chem_rate_constants(mechanism,temperatures[cell],pressures[cell],
+                            density,NULL,rates[cell])) {
+      chem_solver_workspace_destroy(&be_workspace);
+      chem_solver_workspace_destroy(&ros_workspace);
+      return 2;
+    }
+  }
+  const chem_backward_euler_options be_options =
+      chem_backward_euler_default_options();
+  const chem_solver_options ros_options = chem_solver_default_options();
+  for (size_t step = 1; step < 1000; ++step)
+    for (size_t cell = 0; cell < 3; ++cell) {
+      const double density = pressures[cell]/(gas_constant*temperatures[cell]);
+      chem_solver_stats stats;
+      const int be_status = chem_backward_euler_solve_with_workspace(
+          mechanism,&be_workspace,be_states+3*cell,temperatures[cell],
+          pressures[cell],density,NULL,1.0,&be_options,&stats);
+      const int ros_status = chem_rosenbrock3_solve_with_workspace(
+          mechanism,&ros_workspace,ros_states+3*cell,temperatures[cell],
+          pressures[cell],density,NULL,1.0,&ros_options,NULL);
+      const double initial_a = 1.0-(double)cell/3.0;
+      const double exp1 = exp(-rates[cell][0]*(double)step);
+      const double exp2 = exp(-rates[cell][1]*(double)step);
+      const double expected[] = {
+          initial_a*exp1,
+          initial_a*rates[cell][0]/(rates[cell][1]-rates[cell][0])*
+              (exp1-exp2),
+          initial_a*(1.0+(rates[cell][0]*exp2-rates[cell][1]*exp1)/
+              (rates[cell][1]-rates[cell][0]))};
+      if (be_status || ros_status || stats.accepted == 0) {
+        chem_solver_workspace_destroy(&be_workspace);
+        chem_solver_workspace_destroy(&ros_workspace);
+        return 3;
+      }
+      for (size_t i = 0; i < 3; ++i)
+        if (fabs(be_states[3*cell+i]-expected[i]) > backward_tolerance ||
+            fabs(ros_states[3*cell+i]-expected[i]) > rosenbrock_tolerance) {
+          chem_solver_workspace_destroy(&be_workspace);
+          chem_solver_workspace_destroy(&ros_workspace);
+          return 4;
+        }
+    }
+  chem_solver_workspace_destroy(&be_workspace);
+  chem_solver_workspace_destroy(&ros_workspace);
+  return 0;
+}
+
 static int check_backward_euler(void) {
   const double absolute_tolerances[] = {1e-6,1e-6,1e-6};
   double residual_data[12] = {0}, state_data[12] = {0};
@@ -1437,6 +1503,114 @@ static int check_backward_euler(void) {
   chem_solver_workspace_destroy(&workspace);
   chem_solver_workspace_destroy(&rosenbrock_workspace);
   if (check_analytical_user_rate_chain()) return 18;
+  const chem_species chain_species[] = {{.name="A"},{.name="B"},{.name="C"}};
+  const chem_term chain_a[] = {{.species=0,.coefficient=1.0}};
+  const chem_term chain_b[] = {{.species=1,.coefficient=1.0}};
+  const chem_term chain_product_b[] = {{.species=1,.coefficient=1.0}};
+  const chem_term chain_product_c[] = {{.species=2,.coefficient=1.0}};
+  chem_reaction chain_reactions[] = {
+      {.kind=CHEM_TUNNELING,.reactants=chain_a,.reactant_count=1,
+       .products=chain_product_b,.product_count=1,.p={4e-3,0,0}},
+      {.kind=CHEM_TUNNELING,.reactants=chain_b,.reactant_count=1,
+       .products=chain_product_c,.product_count=1,.p={1.2e-4,167,1e8}}};
+  chem_mechanism chain_mechanism = {.species=chain_species,.species_count=3,
+      .reactions=chain_reactions,.reaction_count=2};
+  if (check_analytical_mechanism_chain(&chain_mechanism,1e-3,1e-8)) return 19;
+  chain_reactions[0] = (chem_reaction){.kind=CHEM_ARRHENIUS,
+      .reactants=chain_a,.reactant_count=1,.products=chain_product_b,
+      .product_count=1,.p={4e-3,0,50,300,0}};
+  chain_reactions[1] = (chem_reaction){.kind=CHEM_ARRHENIUS,
+      .reactants=chain_b,.reactant_count=1,.products=chain_product_c,
+      .product_count=1,.p={1.2e-4,7,75,50,0.5}};
+  if (check_analytical_mechanism_chain(&chain_mechanism,1e-3,1e-9)) return 20;
+  const double branch_reference_a =
+      2e-22*6.02214076e23*1e-6*exp(2.0)*2.45e19;
+  const double branch_reference_b = 0.43*pow(293.0/298.0,-8.0);
+  const double branch_reference_ratio = branch_reference_a/branch_reference_b;
+  const double branch_reference_av = branch_reference_a/(1.0+branch_reference_ratio)*
+      pow(0.41,1.0/(1.0+pow(log10(branch_reference_ratio),2.0)));
+  const double branch_z = branch_reference_av*(1.0-1e-3)/1e-3;
+  chain_reactions[0] = (chem_reaction){.kind=CHEM_BRANCHED_ALKOXY,
+      .reactants=chain_a,.reactant_count=1,.products=chain_product_b,
+      .product_count=1,.p={1e-4,204.3,1e-3,2.0,branch_z}};
+  chain_reactions[1] = (chem_reaction){.kind=CHEM_BRANCHED_NITRATE,
+      .reactants=chain_b,.reactant_count=1,.products=chain_product_c,
+      .product_count=1,.p={1e-4,204.3,1e-3,2.0,branch_z}};
+  if (check_analytical_mechanism_chain(&chain_mechanism,1e-5,1e-13)) return 21;
+  chain_reactions[0] = (chem_reaction){.kind=CHEM_TERNARY_ACTIVATION,
+      .reactants=chain_a,.reactant_count=1,.products=chain_product_b,
+      .product_count=1,.p={4e-5,0,0,1,0,0,0.6,1}};
+  chain_reactions[1] = (chem_reaction){.kind=CHEM_TERNARY_ACTIVATION,
+      .reactants=chain_b,.reactant_count=1,.products=chain_product_c,
+      .product_count=1,.p={1.2e-3,1.6,3,136,5,24,0.9,0.8}};
+  if (check_analytical_mechanism_chain(&chain_mechanism,1e-5,1e-8)) return 22;
+  const chem_species surface_species[] = {
+      {.name="foo",.molecular_weight=0.04607,.diffusion=0.95e-5},
+      {.name="bar"},{.name="baz"}};
+  const chem_term surface_reactants[] = {{.species=0,.coefficient=1.0}};
+  const chem_term surface_products[] = {{.species=1,.coefficient=1.0},
+                                        {.species=2,.coefficient=0.4}};
+  const chem_reaction surface_reaction = {.kind=CHEM_SURFACE,
+      .reactants=surface_reactants,.reactant_count=1,
+      .products=surface_products,.product_count=2,.surface_species=0,
+      .p={0.02,0,0,0,0,0,0,0}};
+  const char *surface_labels[] = {"radius","number"};
+  const chem_mechanism surface_mechanism = {.species=surface_species,
+      .species_count=3,.reactions=&surface_reaction,.reaction_count=1,
+      .custom_labels=surface_labels,.custom_parameter_count=2};
+  const double temperature=272.5, pressure=101253.3;
+  const double radius=1e-6/2.0*exp(5.0*log(0.1)*log(0.1)/2.0);
+  const double number_concentration=6.0/(3.14159265358979323846*pow(1e-6,3.0)*
+      exp(9.0/2.0*log(0.1)*log(0.1)))*(2e-3/1000.0+3e-3/1000.0);
+  const double surface_parameters[] = {radius,number_concentration};
+  const double mean_speed=sqrt(8.0*gas_constant/(3.14159265358979323846*0.04607)*
+                               temperature);
+  const double surface_k=4.0*number_concentration*3.14159265358979323846*
+      radius*radius/(radius/0.95e-5+4.0/(mean_speed*0.02));
+  double surface_rate;
+  if (chem_rate_constants(&surface_mechanism,temperature,pressure,
+        pressure/(gas_constant*temperature),surface_parameters,&surface_rate) ||
+      fabs(surface_rate-surface_k)>1e-12*fabs(surface_k)) return 23;
+  chem_solver_workspace surface_be_workspace={0},surface_ros_workspace={0};
+  if (chem_solver_workspace_init(&surface_be_workspace,&surface_mechanism) ||
+      chem_solver_workspace_init(&surface_ros_workspace,&surface_mechanism)) {
+    chem_solver_workspace_destroy(&surface_be_workspace);
+    chem_solver_workspace_destroy(&surface_ros_workspace);
+    return 24;
+  }
+  double surface_be_state[]={1.0,0.0,0.0};
+  double surface_ros_state[]={1.0,0.0,0.0};
+  const double surface_dt=0.1/surface_k;
+  const chem_backward_euler_options surface_be_options=
+      chem_backward_euler_default_options();
+  const chem_solver_options surface_ros_options=chem_solver_default_options();
+  for (size_t step=1;step<=10;++step) {
+    chem_solver_stats surface_stats;
+    const int be_status=chem_backward_euler_solve_with_workspace(
+        &surface_mechanism,&surface_be_workspace,surface_be_state,temperature,
+        pressure,pressure/(gas_constant*temperature),surface_parameters,
+        surface_dt,&surface_be_options,&surface_stats);
+    const int ros_status=chem_rosenbrock3_solve_with_workspace(
+        &surface_mechanism,&surface_ros_workspace,surface_ros_state,temperature,
+        pressure,pressure/(gas_constant*temperature),surface_parameters,
+        surface_dt,&surface_ros_options,NULL);
+    const double expected_foo=exp(-surface_k*surface_dt*(double)step);
+    const double expected_bar=1.0-expected_foo;
+    const double expected_baz=0.4*(1.0-expected_foo);
+    if (be_status || ros_status || !surface_stats.accepted ||
+        fabs(surface_be_state[0]-expected_foo)>0.05 ||
+        fabs(surface_be_state[1]-expected_bar)>0.05 ||
+        fabs(surface_be_state[2]-expected_baz)>0.05 ||
+        fabs(surface_ros_state[0]-expected_foo)>1e-5 ||
+        fabs(surface_ros_state[1]-expected_bar)>1e-5 ||
+        fabs(surface_ros_state[2]-expected_baz)>1e-5) {
+      chem_solver_workspace_destroy(&surface_be_workspace);
+      chem_solver_workspace_destroy(&surface_ros_workspace);
+      return 25;
+    }
+  }
+  chem_solver_workspace_destroy(&surface_be_workspace);
+  chem_solver_workspace_destroy(&surface_ros_workspace);
   return 0;
 }
 
