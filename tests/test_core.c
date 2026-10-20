@@ -859,6 +859,18 @@ static int check_lambda_callback_override(void) {
   return status == 0 && state[0] < 1.0 && state[1] > 0.0 ? 0 : 3;
 }
 
+static int check_phase_species_metadata(void) {
+  chem_species without_diffusion = {.name="CO2"};
+  if (strcmp(without_diffusion.name,"CO2") != 0 ||
+      without_diffusion.diffusion != 0.0) return 1;
+  chem_species with_diffusion = {.name="CO2",.diffusion=1.23e-5};
+  if (strcmp(with_diffusion.name,"CO2") != 0 ||
+      !near(with_diffusion.diffusion,1.23e-5)) return 2;
+  without_diffusion.diffusion = 2.5e-6;
+  if (!near(without_diffusion.diffusion,2.5e-6)) return 3;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -1444,5 +1456,6 @@ int main(void) {
   if (check_chapman_integration() != 0) return 59;
   if (check_integrated_reaction_rates() != 0) return 60;
   if (check_lambda_callback_override() != 0) return 61;
+  if (check_phase_species_metadata() != 0) return 62;
   return 0;
 }
