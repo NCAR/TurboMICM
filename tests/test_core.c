@@ -1954,6 +1954,21 @@ static int check_csr_matrix_api(void) {
           csr_sum_sources,NULL) ||
       a_values[1] != 10.0 || a_values[3] != 16.0 || a_values[5] != 22.0)
     return 17;
+  chem_csr_value_view block_destination;
+  chem_csr_const_value_view block_source;
+  double block_copy[3];
+  if (chem_csr_matrix_get_value_view(&matrix_a,1,2,&block_destination) ||
+      chem_csr_matrix_get_const_value_view(&matrix_a,0,1,&block_source) ||
+      chem_csr_value_view_copy(&block_destination,&block_source) ||
+      a_values[1] != 10.0 || a_values[3] != 11.0 || a_values[5] != 12.0 ||
+      chem_csr_value_view_copy_to_vector(&block_source,block_copy,3) ||
+      block_copy[0] != 10.0 || block_copy[1] != 11.0 || block_copy[2] != 12.0 ||
+      chem_csr_value_view_fill(&block_destination,3.2) ||
+      a_values[1] != 3.2 || a_values[3] != 3.2 || a_values[5] != 3.2 ||
+      chem_csr_value_view_copy_from_vector(&block_destination,block_copy,3) ||
+      a_values[1] != 10.0 || a_values[3] != 11.0 || a_values[5] != 12.0 ||
+      chem_csr_value_view_copy_from_vector(&block_destination,block_copy,2) == 0)
+    return 18;
   return 0;
 }
 

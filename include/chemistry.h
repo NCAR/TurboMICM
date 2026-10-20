@@ -459,6 +459,15 @@ int chem_csr_matrix_apply_blocks(chem_csr_value_view *destination,
                                  size_t source_count,
                                  chem_csr_block_function function,
                                  void *context);
+int chem_csr_value_view_fill(chem_csr_value_view *view, double value);
+int chem_csr_value_view_copy(chem_csr_value_view *destination,
+                             const chem_csr_const_value_view *source);
+int chem_csr_value_view_copy_to_vector(
+    const chem_csr_const_value_view *view, double *vector,
+    size_t vector_size);
+int chem_csr_value_view_copy_from_vector(chem_csr_value_view *view,
+                                         const double *vector,
+                                         size_t vector_size);
 
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density);

@@ -172,6 +172,8 @@ implemented = {
     "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.MultiBlockMatrix",
     "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.ArrayFunction",
     "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.MultiMatrixArrayFunction",
+    "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.TestFill",
+    "sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix.TestCopy",
     "matrix:Matrix.IterateOverMatrix",
     "matrix:Matrix.FunctionReusability",
     "matrix:Matrix.MultiMatrixDifferentRowsFromCreation",

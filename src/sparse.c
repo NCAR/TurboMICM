@@ -107,6 +107,43 @@ int chem_csr_matrix_apply_blocks(chem_csr_value_view *destination,
   return 0;
 }
 
+int chem_csr_value_view_fill(chem_csr_value_view *view, double value) {
+  if (!view || (view->count && !view->data)) return 1;
+  for (size_t block = 0; block < view->count; ++block)
+    view->data[block*view->stride] = value;
+  return 0;
+}
+
+int chem_csr_value_view_copy(chem_csr_value_view *destination,
+                             const chem_csr_const_value_view *source) {
+  if (!destination || !source || destination->count != source->count ||
+      (destination->count && (!destination->data || !source->data))) return 1;
+  for (size_t block = 0; block < destination->count; ++block)
+    destination->data[block*destination->stride] =
+        source->data[block*source->stride];
+  return 0;
+}
+
+int chem_csr_value_view_copy_to_vector(
+    const chem_csr_const_value_view *view, double *vector,
+    size_t vector_size) {
+  if (!view || vector_size != view->count ||
+      (vector_size && (!vector || !view->data))) return 1;
+  for (size_t block = 0; block < view->count; ++block)
+    vector[block] = view->data[block*view->stride];
+  return 0;
+}
+
+int chem_csr_value_view_copy_from_vector(chem_csr_value_view *view,
+                                         const double *vector,
+                                         size_t vector_size) {
+  if (!view || vector_size != view->count ||
+      (vector_size && (!vector || !view->data))) return 1;
+  for (size_t block = 0; block < view->count; ++block)
+    view->data[block*view->stride] = vector[block];
+  return 0;
+}
+
 int chem_csr_matrix_get(const chem_csr_matrix *matrix, size_t block,
                         size_t row, size_t column, double *value) {
   size_t index = 0;
