@@ -37,3 +37,6 @@
 - Mark the five `ViewCategorySFINAE` cases N/A because they inspect C++
   template substitution and type categories, which have no C equivalent. Mark
   the CUDA matrix case N/A because CUDA is outside the CPU-only port scope.
+
+- Give the independent C library an initial version of `0.1.0+0` and expose the
+  string and numeric components through `chem_version*` functions.

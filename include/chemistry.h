@@ -3,6 +3,11 @@
 
 #include <stddef.h>
 
+#define CHEM_VERSION_MAJOR 0
+#define CHEM_VERSION_MINOR 1
+#define CHEM_VERSION_PATCH 0
+#define CHEM_VERSION_TWEAK 0
+
 typedef enum {
   CHEM_ARRHENIUS,
   CHEM_PHOTOLYSIS,
@@ -22,6 +27,12 @@ typedef enum {
 typedef double (*chem_rate_function)(double temperature, double pressure,
                                      double air_density,
                                      const double *rate_parameters);
+
+const char *chem_version(void);
+int chem_version_major(void);
+int chem_version_minor(void);
+int chem_version_patch(void);
+int chem_version_tweak(void);
 
 typedef struct {
   size_t species;

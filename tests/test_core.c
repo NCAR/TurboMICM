@@ -243,6 +243,12 @@ static int check_jacobian_verification(void) {
   return 0;
 }
 
+static int check_version_api(void) {
+  return strcmp(chem_version(), "0.1.0+0") == 0 &&
+         chem_version_major() == 0 && chem_version_minor() == 1 &&
+         chem_version_patch() == 0 && chem_version_tweak() == 0 ? 0 : 1;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -817,5 +823,6 @@ int main(void) {
   if (check_rate_constants_no_user_tutorial() != 0) return 48;
   if (check_lambda_rate_constant_position() != 0) return 49;
   if (check_jacobian_verification() != 0) return 50;
+  if (check_version_api() != 0) return 51;
   return 0;
 }
