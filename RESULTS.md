@@ -16,15 +16,20 @@
 ## TS1 final-state comparison
 
 The seed-1 first cell, 100 steps at `DT = 30 s`, passed the supplied MICM
-comparison utility with both compilers:
+comparison utility with both compilers. A broader run over all 100 supplied
+cells also passed:
 
 | Compiler | C elapsed time | MICM elapsed time | Solver steps | Largest relative difference |
 | --- | ---: | ---: | ---: | ---: |
-| Clang | 247.144 ms | 10.383 ms | 900 | `2.24e-15` |
-| GCC 15 | 347.589 ms | 10.636 ms | 900 | `2.42e-15` |
+| Clang | 235.379 ms | 10.430 ms | 900 | `2.24e-15` |
+| GCC 15 | 322.778 ms | 11.009 ms | 900 | `2.42e-15` |
 
-These timings are a one-cell correctness check, not the requested 10,000-cell
-performance run. The current C implementation is substantially slower than the
-reference because it uses per-cell integration and repeats dense workspace
-allocation and sparse-pattern factor work for each solver call. The 10,000-cell,
-100-step benchmark and all 680 case ports remain incomplete.
+For 100 seed-1 cells, 100 steps, and four threads, Clang completed in
+6,113.087 ms; the comparison run took 338.929 ms. All 21,100 state values
+passed, with a largest relative difference of `9.7e-13`.
+
+These timings are not the requested 10,000-cell performance run. The current C
+implementation is substantially slower than the reference because it uses
+per-cell integration and scalar sparse-matrix work. Workspaces and symbolic
+fill are reused between calls. The 10,000-cell, 100-step benchmark and all 680
+case ports remain incomplete.

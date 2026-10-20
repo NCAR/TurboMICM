@@ -190,6 +190,12 @@ static double now_seconds(void) {
   return (double)ts.tv_sec + (double)ts.tv_nsec * 1.0e-9;
 }
 
+static void destroy_workspaces(chem_solver_workspace *workspaces, size_t count) {
+  if (!workspaces) return;
+  for (size_t i = 0; i < count; ++i) chem_solver_workspace_destroy(&workspaces[i]);
+  free(workspaces);
+}
+
 int main(int argc, char **argv) {
   size_t threads = 1;
 #ifdef _OPENMP
@@ -273,38 +279,71 @@ int main(int argc, char **argv) {
   free_table(&input);
   if (threads > cells) threads = cells;
   chem_solver_options options = chem_solver_default_options();
-  #pragma omp parallel for schedule(static) num_threads(threads)
-  for (size_t c = 0; c < cells; ++c) {
-    if (status[c]) continue;
-    const double density = pressure[c] /
-                           (8.31446261815324 * temperature[c]);
-    chem_solver_stats warmup_stats;
-    status[c] = chem_rosenbrock3_solve(m, states+c*n, temperature[c], density,
-                                       rates+c*nr, dt, &options, &warmup_stats);
+  chem_solver_workspace *workspaces = calloc(threads, sizeof(*workspaces));
+  if (!workspaces) {
+    fprintf(stderr, "allocation failed for solver workspaces\n");
+    free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+    return 1;
+  }
+  for (size_t i = 0; i < threads; ++i) {
+    if (chem_solver_workspace_init(&workspaces[i], m)) {
+      fprintf(stderr, "allocation failed for solver workspace %zu\n", i);
+      destroy_workspaces(workspaces, threads);
+      free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+      return 1;
+    }
+  }
+  #pragma omp parallel num_threads(threads)
+  {
+#ifdef _OPENMP
+    const size_t worker = (size_t)omp_get_thread_num();
+#else
+    const size_t worker = 0;
+#endif
+    #pragma omp for schedule(static)
+    for (size_t c = 0; c < cells; ++c) {
+      if (status[c]) continue;
+      const double density = pressure[c] /
+                             (8.31446261815324 * temperature[c]);
+      chem_solver_stats warmup_stats;
+      status[c] = chem_rosenbrock3_solve_with_workspace(
+          m, &workspaces[worker], states+c*n, temperature[c], density,
+          rates+c*nr, dt, &options, &warmup_stats);
+    }
   }
   for (size_t c = 0; c < cells; ++c) {
     if (status[c]) {
       fprintf(stderr, "cell %zu failed warm-up solve with status %d\n", c, status[c]);
+      destroy_workspaces(workspaces, threads);
       free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
       return 1;
     }
   }
   const double start = now_seconds();
-  #pragma omp parallel for schedule(static) num_threads(threads)
-  for (size_t c = 0; c < cells; ++c) {
-    const double density = pressure[c] /
-                           (8.31446261815324 * temperature[c]);
-    for (size_t step = 0; step < steps && status[c] == 0; ++step) {
-      chem_solver_stats one = {0};
-      status[c] = chem_rosenbrock3_solve(m, states+c*n, temperature[c], density,
-                                         rates+c*nr, dt, &options, &one);
-      stats[c].internal_steps += one.internal_steps;
-      stats[c].accepted += one.accepted;
-      stats[c].rejected += one.rejected;
-      stats[c].function_calls += one.function_calls;
-      stats[c].jacobian_updates += one.jacobian_updates;
-      stats[c].decompositions += one.decompositions;
-      stats[c].solves += one.solves;
+  #pragma omp parallel num_threads(threads)
+  {
+#ifdef _OPENMP
+    const size_t worker = (size_t)omp_get_thread_num();
+#else
+    const size_t worker = 0;
+#endif
+    #pragma omp for schedule(static)
+    for (size_t c = 0; c < cells; ++c) {
+      const double density = pressure[c] /
+                             (8.31446261815324 * temperature[c]);
+      for (size_t step = 0; step < steps && status[c] == 0; ++step) {
+        chem_solver_stats one = {0};
+        status[c] = chem_rosenbrock3_solve_with_workspace(
+            m, &workspaces[worker], states+c*n, temperature[c], density,
+            rates+c*nr, dt, &options, &one);
+        stats[c].internal_steps += one.internal_steps;
+        stats[c].accepted += one.accepted;
+        stats[c].rejected += one.rejected;
+        stats[c].function_calls += one.function_calls;
+        stats[c].jacobian_updates += one.jacobian_updates;
+        stats[c].decompositions += one.decompositions;
+        stats[c].solves += one.solves;
+      }
     }
   }
   const double elapsed_ms = (now_seconds() - start)*1000.0;
@@ -312,6 +351,7 @@ int main(int argc, char **argv) {
   for (size_t c = 0; c < cells; ++c) {
     if (status[c]) {
       fprintf(stderr, "cell %zu failed integration with status %d\n", c, status[c]);
+      destroy_workspaces(workspaces, threads);
       free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
       return 1;
     }
@@ -326,6 +366,7 @@ int main(int argc, char **argv) {
   FILE *output = fopen("ts1_final.csv", "w");
   if (!output) {
     fprintf(stderr, "cannot write ts1_final.csv: %s\n", strerror(errno));
+    destroy_workspaces(workspaces, threads);
     free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
     return 1;
   }
@@ -345,5 +386,6 @@ int main(int argc, char **argv) {
          total.function_calls, total.jacobian_updates, total.decompositions,
          total.solves);
   free(states); free(rates); free(temperature); free(pressure); free(stats); free(status);
+  destroy_workspaces(workspaces, threads);
   return 0;
 }

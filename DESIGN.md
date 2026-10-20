@@ -23,12 +23,14 @@ Its defaults are relative tolerance `1e-6`, absolute tolerance `1e-3`, initial
 step `1e-6 * DT`, minimum step `1e-15 * DT`, maximum step `DT`, and a 1000-step
 limit. The inert third-body species is excluded from the error norm.
 
-`src/main.c` loads CSV values by species or parameter label, initializes any
-omitted values from the generated defaults, runs the untimed warm-up and timed
+The public `chem_solver_workspace` owns reusable matrix, stage, and symbolic
+fill buffers for one mechanism. Initialize one workspace per concurrent solver,
+reuse it for subsequent solves, and destroy it when the solver is no longer
+needed. `src/main.c` loads CSV values by species or parameter label, initializes
+omitted values from generated defaults, runs the untimed warm-up and timed
 steps, and writes `ts1_final.csv`. `--threads N` assigns independent cells to
-OpenMP workers. Each cell currently has its own adaptive integration and its
-own transient solver allocations; group-level workspaces and vectorized
-multi-cell linear algebra remain future performance work.
+OpenMP workers. Cells still use independent adaptive integration; grouped
+multi-cell linear algebra remains future performance work.
 
 ## Extension points
 

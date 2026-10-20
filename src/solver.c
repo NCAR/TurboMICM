@@ -7,6 +7,70 @@
 enum { SOLVER_OK = 0, SOLVER_BAD_ARGUMENT = 1, SOLVER_SINGULAR = 2,
        SOLVER_STEP_FAILURE = 3, SOLVER_NONFINITE = 4 };
 
+typedef struct {
+  const chem_mechanism *mechanism;
+  size_t n;
+  double *jac, *a, *forcing, *stage, *ynew, *yerror, *stage_y, *reused_forcing;
+  unsigned char *pattern;
+  size_t *row_counts, *col_counts, *row_cols, *col_rows;
+} solver_workspace_data;
+
+static int make_pattern(const chem_mechanism *m, unsigned char *pattern,
+                        size_t n, size_t *row_counts, size_t *col_counts,
+                        size_t *row_cols, size_t *col_rows);
+
+static void free_workspace_data(solver_workspace_data *w) {
+  if (!w) return;
+  free(w->jac); free(w->a); free(w->forcing); free(w->stage); free(w->ynew);
+  free(w->yerror); free(w->stage_y); free(w->reused_forcing); free(w->pattern);
+  free(w->row_counts); free(w->col_counts); free(w->row_cols); free(w->col_rows);
+  free(w);
+}
+
+int chem_solver_workspace_init(chem_solver_workspace *workspace,
+                               const chem_mechanism *mechanism) {
+  if (!workspace || !mechanism || !mechanism->species || !mechanism->species_count)
+    return SOLVER_BAD_ARGUMENT;
+  workspace->implementation = NULL;
+  const size_t n = mechanism->species_count;
+  if (n > (size_t)-1 / n || n*n > (size_t)-1 / sizeof(size_t))
+    return SOLVER_BAD_ARGUMENT;
+  const size_t nn = n*n;
+  solver_workspace_data *w = calloc(1, sizeof(*w));
+  if (!w) return SOLVER_BAD_ARGUMENT;
+  w->mechanism = mechanism;
+  w->n = n;
+  w->jac = calloc(nn, sizeof(double));
+  w->a = calloc(nn, sizeof(double));
+  w->forcing = calloc(n, sizeof(double));
+  w->stage = calloc(3*n, sizeof(double));
+  w->ynew = calloc(n, sizeof(double));
+  w->yerror = calloc(n, sizeof(double));
+  w->stage_y = calloc(n, sizeof(double));
+  w->reused_forcing = calloc(n, sizeof(double));
+  w->pattern = calloc(nn, sizeof(unsigned char));
+  w->row_counts = calloc(n, sizeof(size_t));
+  w->col_counts = calloc(n, sizeof(size_t));
+  w->row_cols = calloc(nn, sizeof(size_t));
+  w->col_rows = calloc(nn, sizeof(size_t));
+  if (!w->jac || !w->a || !w->forcing || !w->stage || !w->ynew || !w->yerror ||
+      !w->stage_y || !w->reused_forcing || !w->pattern || !w->row_counts ||
+      !w->col_counts || !w->row_cols || !w->col_rows) {
+    free_workspace_data(w);
+    return SOLVER_BAD_ARGUMENT;
+  }
+  make_pattern(mechanism, w->pattern, n, w->row_counts, w->col_counts,
+               w->row_cols, w->col_rows);
+  workspace->implementation = w;
+  return SOLVER_OK;
+}
+
+void chem_solver_workspace_destroy(chem_solver_workspace *workspace) {
+  if (!workspace) return;
+  free_workspace_data((solver_workspace_data *)workspace->implementation);
+  workspace->implementation = NULL;
+}
+
 chem_solver_options chem_solver_default_options(void) {
   chem_solver_options result = {1.0e-6, 1.0e-3, 1000};
   return result;
@@ -61,13 +125,14 @@ static int factor(double *a, size_t n, const size_t *row_counts,
       size_t i = col_rows[k*n + q];
       if (i > k) a[i*n + k] *= inverse;
     }
-    for (size_t q = 0; q < row_counts[k]; ++q) {
-      size_t j = row_cols[k*n + q];
-      if (j <= k) continue;
-      const double aik = a[k*n + j];
-      for (size_t p = 0; p < col_counts[k]; ++p) {
-        size_t i = col_rows[k*n + p];
-        if (i > k) a[i*n + j] -= a[i*n + k] * aik;
+    for (size_t p = 0; p < col_counts[k]; ++p) {
+      const size_t i = col_rows[k*n + p];
+      if (i <= k) continue;
+      const double aik = a[i*n + k];
+      #pragma omp simd
+      for (size_t q = 0; q < row_counts[k]; ++q) {
+        const size_t j = row_cols[k*n + q];
+        if (j > k) a[i*n + j] -= aik * a[k*n + j];
       }
     }
   }
@@ -90,14 +155,17 @@ static void solve_factored(const double *a, size_t n, const size_t *row_counts,
   }
 }
 
-int chem_rosenbrock3_solve(const chem_mechanism *m, double *y,
-                           double temperature, double air_density,
-                           const double *rate_parameters, double duration,
-                           const chem_solver_options *requested,
-                           chem_solver_stats *statistics) {
+int chem_rosenbrock3_solve_with_workspace(
+    const chem_mechanism *m, chem_solver_workspace *workspace, double *y,
+    double temperature, double air_density, const double *rate_parameters,
+    double duration, const chem_solver_options *requested,
+    chem_solver_stats *statistics) {
   if (!m || !y || !isfinite(duration) || duration <= 0.0 ||
       !isfinite(temperature) || temperature <= 0.0 ||
       !isfinite(air_density) || air_density < 0.0 || m->species_count == 0)
+    return SOLVER_BAD_ARGUMENT;
+  solver_workspace_data *w = workspace ? workspace->implementation : NULL;
+  if (!w || w->mechanism != m || w->n != m->species_count)
     return SOLVER_BAD_ARGUMENT;
   const size_t n = m->species_count;
   const chem_solver_options defaults = chem_solver_default_options();
@@ -106,30 +174,12 @@ int chem_rosenbrock3_solve(const chem_mechanism *m, double *y,
       o->max_steps == 0) return SOLVER_BAD_ARGUMENT;
   chem_solver_stats local_stats = {0};
   if (statistics) *statistics = local_stats;
-  if (n > (size_t)-1 / n || n*n > (size_t)-1 / sizeof(double)) return SOLVER_BAD_ARGUMENT;
   const size_t nn = n*n;
-  double *jac = calloc(nn, sizeof(*jac));
-  double *a = calloc(nn, sizeof(*a));
-  unsigned char *pattern_tmp = calloc(nn, sizeof(*pattern_tmp));
-  size_t *row_counts = calloc(n, sizeof(*row_counts));
-  size_t *col_counts = calloc(n, sizeof(*col_counts));
-  size_t *row_cols = calloc(nn, sizeof(*row_cols));
-  size_t *col_rows = calloc(nn, sizeof(*col_rows));
-  double *forcing = calloc(n, sizeof(*forcing));
-  double *stage = calloc(3*n, sizeof(*stage));
-  double *ynew = calloc(n, sizeof(*ynew));
-  double *yerror = calloc(n, sizeof(*yerror));
-  double *stage_y = calloc(n, sizeof(*stage_y));
-  double *reused_forcing = calloc(n, sizeof(*reused_forcing));
-  if (!jac || !a || !pattern_tmp || !row_counts || !col_counts || !row_cols ||
-      !col_rows || !forcing || !stage || !ynew || !yerror || !stage_y ||
-      !reused_forcing) {
-    free(jac); free(a); free(pattern_tmp); free(row_counts); free(col_counts);
-    free(row_cols); free(col_rows); free(forcing); free(stage); free(ynew);
-    free(yerror); free(stage_y); free(reused_forcing);
-    return SOLVER_BAD_ARGUMENT;
-  }
-  make_pattern(m, pattern_tmp, n, row_counts, col_counts, row_cols, col_rows);
+  double *jac = w->jac, *a = w->a, *forcing = w->forcing;
+  double *stage = w->stage, *ynew = w->ynew, *yerror = w->yerror;
+  double *stage_y = w->stage_y, *reused_forcing = w->reused_forcing;
+  size_t *row_counts = w->row_counts, *col_counts = w->col_counts;
+  size_t *row_cols = w->row_cols, *col_rows = w->col_rows;
 
   const double eps = 2.2204460492503131e-16;
   const double hmin = 1.0e-15 * duration;
@@ -234,8 +284,20 @@ int chem_rosenbrock3_solve(const chem_mechanism *m, double *y,
     if (status) break;
   }
   if (statistics) *statistics = local_stats;
-  free(jac); free(a); free(pattern_tmp); free(row_counts); free(col_counts);
-  free(row_cols); free(col_rows); free(forcing); free(stage); free(ynew);
-  free(yerror); free(stage_y); free(reused_forcing);
+  return status;
+}
+
+int chem_rosenbrock3_solve(const chem_mechanism *m, double *y,
+                           double temperature, double air_density,
+                           const double *rate_parameters, double duration,
+                           const chem_solver_options *requested,
+                           chem_solver_stats *statistics) {
+  chem_solver_workspace workspace = {0};
+  int status = chem_solver_workspace_init(&workspace, m);
+  if (status) return status;
+  status = chem_rosenbrock3_solve_with_workspace(
+      m, &workspace, y, temperature, air_density, rate_parameters, duration,
+      requested, statistics);
+  chem_solver_workspace_destroy(&workspace);
   return status;
 }
