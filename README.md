@@ -50,6 +50,11 @@ and user-defined rates, and the Robertson mechanism.
 initial-state values into `mechanisms/ts1.json`. The generated C model is built
 as part of `make cpu`.
 
+The C API also supports linear, mass-action equilibrium, and callback-defined
+DAE constraints. A callback constraint names its algebraic species and every
+species its residual depends on, and supplies both a residual function and a
+full Jacobian row.
+
 ## Test
 
 ```sh

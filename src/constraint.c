@@ -66,6 +66,30 @@ int chem_constraint_equilibrium_init(
   return 0;
 }
 
+int chem_constraint_callback_init(
+    chem_constraint *constraint, const char *name, size_t algebraic_species,
+    const size_t *dependencies, size_t dependency_count,
+    chem_constraint_residual_callback residual_callback,
+    chem_constraint_jacobian_callback jacobian_callback, void *context)
+{
+  size_t i, j;
+  if (!constraint || !name || !dependencies || !dependency_count ||
+      !residual_callback || !jacobian_callback)
+    return -1;
+  for (i = 0; i < dependency_count; ++i)
+    for (j = 0; j < i; ++j)
+      if (dependencies[i] == dependencies[j])
+        return -1;
+  *constraint = (chem_constraint){
+    .name=name, .kind=CHEM_CONSTRAINT_CALLBACK,
+    .algebraic_species=algebraic_species,
+    .dependencies=dependencies, .dependency_count=dependency_count,
+    .residual_callback=residual_callback,
+    .jacobian_callback=jacobian_callback, .callback_context=context
+  };
+  return 0;
+}
+
 static int validate_constraint(const chem_constraint *constraint,
                                size_t species_count)
 {
@@ -87,6 +111,20 @@ static int validate_constraint(const chem_constraint *constraint,
                        species_count, 1) &&
            valid_terms(constraint->products, constraint->product_count,
                        species_count, 1);
+  if (constraint->kind == CHEM_CONSTRAINT_CALLBACK) {
+    size_t i, j;
+    if (!constraint->dependencies || !constraint->dependency_count ||
+        !constraint->residual_callback || !constraint->jacobian_callback)
+      return 0;
+    for (i = 0; i < constraint->dependency_count; ++i) {
+      if (constraint->dependencies[i] >= species_count)
+        return 0;
+      for (j = 0; j < i; ++j)
+        if (constraint->dependencies[i] == constraint->dependencies[j])
+          return 0;
+    }
+    return 1;
+  }
   return 0;
 }
 
@@ -153,6 +191,15 @@ int chem_constraint_set_nonzero_jacobian_elements(
     const size_t term_count = constraint->kind == CHEM_CONSTRAINT_LINEAR
                                   ? constraint->term_count
                                   : constraint->reactant_count;
+    if (constraint->kind == CHEM_CONSTRAINT_CALLBACK) {
+      for (j = 0; j < constraint->dependency_count; ++j)
+        if (add_jacobian_element(elements, capacity, &count, row,
+                                 constraint->dependencies[j]) != 0)
+          return -1;
+      if (add_jacobian_element(elements, capacity, &count, row, row) != 0)
+        return -1;
+      continue;
+    }
     for (j = 0; j < term_count; ++j)
       if (add_jacobian_element(elements, capacity, &count, row,
                                terms[j].species_index) != 0)
@@ -227,7 +274,7 @@ int chem_constraint_residual(const chem_constraint *constraint,
       value += constraint->terms[i].coefficient *
                concentrations[constraint->terms[i].species_index];
     *residual = value;
-  } else {
+  } else if (constraint->kind == CHEM_CONSTRAINT_EQUILIBRIUM) {
     const double k = effective_equilibrium_constant(constraint,
                                                     equilibrium_constant,
                                                     temperature);
@@ -239,6 +286,10 @@ int chem_constraint_residual(const chem_constraint *constraint,
                 mass_action_product(constraint->products,
                                     constraint->product_count,
                                     concentrations);
+  } else if (constraint->residual_callback(
+                 concentrations, species_count, equilibrium_constant,
+                 temperature, residual, constraint->callback_context) != 0) {
+    return -1;
   }
   return isfinite(*residual) ? 0 : -1;
 }
@@ -258,7 +309,7 @@ int chem_constraint_jacobian(const chem_constraint *constraint,
     for (i = 0; i < constraint->term_count; ++i)
       gradient[constraint->terms[i].species_index] +=
           constraint->terms[i].coefficient;
-  } else {
+  } else if (constraint->kind == CHEM_CONSTRAINT_EQUILIBRIUM) {
     const double k = effective_equilibrium_constant(constraint,
                                                     equilibrium_constant,
                                                     temperature);
@@ -272,6 +323,10 @@ int chem_constraint_jacobian(const chem_constraint *constraint,
           mass_action_derivative(constraint->products,
                                 constraint->product_count,
                                 concentrations, species);
+  } else if (constraint->jacobian_callback(
+                 concentrations, species_count, equilibrium_constant,
+                 temperature, gradient, constraint->callback_context) != 0) {
+    return -1;
   }
   for (species = 0; species < species_count; ++species)
     if (!isfinite(gradient[species]))

@@ -46,6 +46,15 @@ adds symbolic fill for no-pivot Gaussian elimination. A diagonal Markowitz
 ordering is selected automatically when C tables are generated. At run time,
 the solver assembles the sparse negative Jacobian, factors
 `alpha * I - J` in place, and reuses the factorization for all three stages.
+After each top-level solve, negative ODE concentrations are set to zero;
+algebraic variables remain under their constraint equations.
+
+The constraint API supports linear balances, temperature-dependent mass-action
+equilibria, and caller-defined residuals. Callback constraints list their
+algebraic variable and all dependent species, then provide residual and dense
+Jacobian-row callbacks. The solver combines the constraint Jacobian with the
+reaction Jacobian, initializes algebraic values with a damped Newton projection,
+and excludes algebraic variables from the Rosenbrock error norm.
 
 Cells are split into contiguous groups. By default, the group count equals the
 OpenMP maximum thread count. `--threads N` controls that count, while

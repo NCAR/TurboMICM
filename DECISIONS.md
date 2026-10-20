@@ -34,6 +34,12 @@
   as a run-time parameter for experiments.
 - **Numerical defaults:** use the MICM three-stage Rosenbrock coefficients,
   controller bounds, `rtol=1e-6`, `atol=1e-3`, and relative internal-step
-  defaults. The TS1 reference comparison verifies the combined behavior.
+  defaults. Clamp negative ODE concentrations to zero after each top-level
+  solve to match MICM; leave algebraic concentrations to their constraints. The
+  TS1 reference comparison verifies the combined behavior.
+- **External constraints:** provide linear, mass-action equilibrium, and
+  callback-defined constraint types. Callback definitions include explicit
+  species dependencies so their Jacobian structure can be reported without
+  finite-difference probing.
 - **Python environment:** create a prefix environment at `.conda` and keep the
   conda package cache in `.conda-pkgs`; both paths are excluded from Git.

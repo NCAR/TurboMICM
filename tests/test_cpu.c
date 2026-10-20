@@ -11,6 +11,8 @@
 
 enum { CASE_PASS = 0, CASE_FAIL = 1, CASE_NA = 2 };
 
+static int test_dense_lu_and_solve(void);
+
 static int close_enough(double a, double b, double relative, double absolute)
 {
   return isfinite(a) && isfinite(b) && fabs(a - b) <= absolute + relative * fabs(b);
@@ -754,6 +756,590 @@ static int test_first_order_solver_with(const chem_rosenbrock_parameters *parame
 static int test_first_order_solver(void)
 {
   return test_first_order_solver_with(NULL, 1, 1);
+}
+
+static const chem_mechanism *analytical_chain_mechanism(void)
+{
+  static const chem_species species[] = {
+    {.name="A", .absolute_tolerance=1.0e-12},
+    {.name="B", .absolute_tolerance=1.0e-12},
+    {.name="C", .absolute_tolerance=1.0e-12}
+  };
+  static const uint32_t reactants[] = {0, 1};
+  static const uint32_t products[] = {1, 2};
+  static const double yields[] = {1.0, 1.0};
+  static const chem_reaction reactions[] = {
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=0, .reactant_count=1,
+     .product_offset=0, .product_count=1, .p={0.15, 0.0, 0.0, 300.0}},
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=1, .reactant_count=1,
+     .product_offset=1, .product_count=1, .p={0.07, 0.0, 0.0, 300.0}}
+  };
+  static const chem_mechanism mechanism = {
+    .name="analytical chain", .species_count=3, .reaction_count=2,
+    .reactant_count=2, .product_count=2, .default_temperature=300.0,
+    .default_pressure=101325.0, .species=species, .reactions=reactions,
+    .reactants=reactants, .products=products, .yields=yields
+  };
+  return &mechanism;
+}
+
+static int test_analytical_integration_case(const char *suite, const char *test)
+{
+  chem_mechanism mechanism = *analytical_chain_mechanism();
+  chem_reaction reactions[2];
+  const int backward_euler = strcmp(suite, "analytical_backward_euler") == 0;
+  const int stiff = strstr(test, "SuperStiff") != NULL;
+  const double k1 = stiff ? 8.0 : 0.15;
+  const double k2 = stiff ? 11.0 : 0.07;
+  const double initial[] = {1.0, 0.5, 0.25};
+  double cell_rates[] = {k1, k2, k1, k2, k1, k2};
+  double temperature[] = {300.0, 300.0, 300.0};
+  double pressure[] = {101325.0, 101325.0, 101325.0};
+  double state[9];
+  size_t cell, step;
+  memcpy(reactions, mechanism.reactions, sizeof(reactions));
+  reactions[0].p[0] = k1;
+  reactions[1].p[0] = k2;
+  mechanism.reactions = reactions;
+  for (cell = 0; cell < 3; ++cell) {
+    state[cell * 3] = initial[cell];
+    state[cell * 3 + 1] = 0.0;
+    state[cell * 3 + 2] = 0.0;
+  }
+  if (backward_euler) {
+    const chem_backward_euler_parameters be = {1.0e-12, 50};
+    const double dt = stiff ? 0.0001 : 0.0005;
+    const size_t steps = (size_t)(1.0 / dt);
+    const double atol[] = {1.0e-12, 1.0e-12, 1.0e-12};
+    for (step = 0; step < steps; ++step) {
+      chem_solver_stats stats;
+      if (chem_backward_euler_step(&mechanism, 3, cell_rates, state, dt, &be,
+                                   1.0e-10, atol, &stats) != 0) {
+        return CASE_FAIL;
+      }
+    }
+  } else {
+    chem_rosenbrock_parameters parameters;
+    chem_solver_stats stats;
+    chem_solver *solver;
+    chem_rosenbrock_default(&parameters);
+    parameters.relative_tolerance = 1.0e-9;
+    parameters.default_absolute_tolerance = 1.0e-12;
+    parameters.max_number_of_steps = 100000;
+    solver = chem_solver_create(&mechanism, 3, temperature, pressure, NULL,
+                                &parameters, 2);
+    if (!solver)
+      return CASE_FAIL;
+    if (chem_solver_step(solver, state, 1.0, &stats) != 0 || stats.accepted == 0) {
+      chem_solver_destroy(solver);
+      return CASE_FAIL;
+    }
+    chem_solver_destroy(solver);
+  }
+  for (cell = 0; cell < 3; ++cell) {
+    const double ea = exp(-k1);
+    const double eb = exp(-k2);
+    const double expected_a = initial[cell] * ea;
+    const double expected_b = initial[cell] * k1 / (k2 - k1) * (ea - eb);
+    const double expected_c = initial[cell] - expected_a - expected_b;
+    const double tolerance = backward_euler ? (stiff ? 7.0e-4 : 1.0e-4) : 2.0e-8;
+    if (!close_enough(state[cell * 3], expected_a, 0.0, tolerance) ||
+        !close_enough(state[cell * 3 + 1], expected_b, 0.0, tolerance) ||
+        !close_enough(state[cell * 3 + 2], expected_c, 0.0, tolerance)) {
+      return CASE_FAIL;
+    }
+  }
+  return CASE_PASS;
+}
+
+static const chem_mechanism *aerosol_transfer_mechanism(void)
+{
+  static const chem_species species[] = {
+    {.name="FO2", .absolute_tolerance=1.0e-12},
+    {.name="BAZ", .absolute_tolerance=1.0e-12},
+    {.name="MODE2.CORGE.FO2", .absolute_tolerance=1.0e-12},
+    {.name="MODE2.QUUX.BAZ", .absolute_tolerance=1.0e-12}
+  };
+  static const chem_custom_parameter custom[] = {
+    {"gas_to_particle", 1.0e-3}, {"mode_transfer", 2.0e-3}
+  };
+  static const uint32_t reactants[] = {0, 1};
+  static const uint32_t products[] = {2, 3};
+  static const double yields[] = {1.0, 1.0};
+  static const chem_reaction reactions[] = {
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=0, .reactant_count=1,
+     .product_offset=0, .product_count=1, .custom0=0},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=1, .reactant_count=1,
+     .product_offset=1, .product_count=1, .custom0=1}
+  };
+  static const chem_mechanism mechanism = {
+    .name="transfer mechanism", .species_count=4, .reaction_count=2,
+    .reactant_count=2, .product_count=2, .custom_count=2,
+    .default_temperature=298.15, .default_pressure=101325.0,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom
+  };
+  return &mechanism;
+}
+
+static const chem_mechanism *chapman_test_mechanism(void)
+{
+  static const chem_species species[] = {
+    {.name="M", .absolute_tolerance=1.0e-12},
+    {.name="Ar", .absolute_tolerance=1.0e-12},
+    {.name="CO2", .absolute_tolerance=1.0e-12},
+    {.name="H2O", .absolute_tolerance=1.0e-12},
+    {.name="N2", .absolute_tolerance=1.0e-12},
+    {.name="O1D", .absolute_tolerance=1.0e-12},
+    {.name="O", .absolute_tolerance=1.0e-12},
+    {.name="O2", .absolute_tolerance=1.0e-12},
+    {.name="O3", .absolute_tolerance=1.0e-12}
+  };
+  static const chem_custom_parameter custom[] = {
+    {"O2_1", 1.0e-4}, {"O3_1", 1.0e-5}, {"O3_2", 1.0e-6}
+  };
+  static const uint32_t reactants[] = {4, 5, 5, 7, 6, 8, 0, 6, 7, 7, 8, 8};
+  static const uint32_t products[] = {6, 4, 6, 7, 7, 8, 0, 6, 5, 7, 6, 7};
+  static const double yields[] = {1.0, 1.0, 1.0, 1.0, 2.0, 1.0,
+                                  1.0, 2.0, 1.0, 1.0, 1.0, 1.0};
+  static const chem_reaction reactions[] = {
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=0, .reactant_count=2,
+     .product_offset=0, .product_count=2, .p={2.15e-11, 0.0, 110.0, 300.0}},
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=2, .reactant_count=2,
+     .product_offset=2, .product_count=2, .p={3.3e-11, 0.0, 55.0, 300.0}},
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=4, .reactant_count=2,
+     .product_offset=4, .product_count=1, .p={8.0e-12, 0.0, -2060.0, 300.0}},
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=6, .reactant_count=3,
+     .product_offset=5, .product_count=2, .p={6.0e-34, 2.4, 0.0, 300.0}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=9, .reactant_count=1,
+     .product_offset=7, .product_count=1, .custom0=0, .p={1.0}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=10, .reactant_count=1,
+     .product_offset=8, .product_count=2, .custom0=1, .p={1.0}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=11, .reactant_count=1,
+     .product_offset=10, .product_count=2, .custom0=2, .p={1.0}}
+  };
+  static const chem_mechanism mechanism = {
+    .name="nine species photochemistry", .species_count=9, .reaction_count=7,
+    .reactant_count=12, .product_count=12, .custom_count=3,
+    .default_temperature=273.15, .default_pressure=100000.0,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom
+  };
+  return &mechanism;
+}
+
+static int test_chapman_step(double scale, int random_values)
+{
+  const chem_mechanism *mechanism = chapman_test_mechanism();
+  const double temperature[] = {273.15}, pressure[] = {100000.0};
+  const double custom[] = {1.0e-4, 1.0e-5, 1.0e-6};
+  const double base[] = {1.0, 0.392, 0.0169, 0.0, 32.9, 0.0, 0.0, 8.84, 0.0};
+  const double expected[] = {1.0, 0.392, 0.0169, 0.0, 32.9,
+                             1.8039e-41, 0.00176789, 8.83912, 4.5031e-36};
+  double state[9];
+  chem_rosenbrock_parameters parameters;
+  chem_solver_stats stats;
+  chem_solver *solver;
+  size_t i;
+  for (i = 0; i < 9; ++i)
+    state[i] = random_values ? (double)(i + 1) / 10.0 : base[i] * scale;
+  chem_rosenbrock_default(&parameters);
+  parameters.relative_tolerance = 1.0e-9;
+  parameters.default_absolute_tolerance = 1.0e-12;
+  parameters.max_number_of_steps = 100000;
+  solver = chem_solver_create(mechanism, 1, temperature, pressure, custom,
+                              &parameters, 1);
+  if (!solver)
+    return CASE_FAIL;
+  if (chem_solver_step(solver, state, 1.0, &stats) != 0 || stats.accepted == 0) {
+    chem_solver_destroy(solver);
+    return CASE_FAIL;
+  }
+  chem_solver_destroy(solver);
+  if (!random_values)
+    for (i = 0; i < 9; ++i)
+      if (!close_enough(state[i], expected[i] * scale, 0.0, 1.0e-4))
+        return CASE_FAIL;
+  return CASE_PASS;
+}
+
+static int test_chapman_integration(void)
+{
+  static const chem_species species[] = {
+    {.name="A", .absolute_tolerance=1.0e-16},
+    {.name="B", .absolute_tolerance=1.0e-16},
+    {.name="C", .absolute_tolerance=1.0e-16},
+    {.name="irr_1", .absolute_tolerance=1.0e-16},
+    {.name="irr_2", .absolute_tolerance=1.0e-16}
+  };
+  static const chem_custom_parameter custom[] = {{"r2", 1.0}};
+  static const uint32_t reactants[] = {0, 1};
+  static const uint32_t products[] = {1, 3, 2, 4};
+  static const double yields[] = {1.0, 1.0, 1.0, 1.0};
+  static const chem_reaction reactions[] = {
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=0, .reactant_count=1,
+     .product_offset=0, .product_count=2, .p={2.15e-11, 0.0, 110.0, 300.0}},
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=1, .reactant_count=1,
+     .product_offset=2, .product_count=2, .custom0=0, .p={1.0}}
+  };
+  static const chem_mechanism mechanism = {
+    .name="integrated product channels", .species_count=5, .reaction_count=2,
+    .reactant_count=2, .product_count=4, .custom_count=1,
+    .default_temperature=273.0, .default_pressure=1000.0,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom
+  };
+  const double temperature[] = {273.0}, pressure[] = {1000.0}, parameters_custom[] = {1.0};
+  double state[] = {1.0, 0.0, 0.0, 0.0, 0.0};
+  double prior_irr1 = 0.0, prior_irr2 = 0.0;
+  chem_rosenbrock_parameters parameters;
+  chem_solver_stats stats;
+  chem_solver *solver;
+  size_t step;
+  chem_rosenbrock_default(&parameters);
+  parameters.relative_tolerance = 1.0e-9;
+  parameters.default_absolute_tolerance = 1.0e-16;
+  solver = chem_solver_create(&mechanism, 1, temperature, pressure,
+                              parameters_custom, &parameters, 1);
+  if (!solver)
+    return CASE_FAIL;
+  for (step = 0; step < 100; ++step) {
+    if (chem_solver_step(solver, state, 30.0, &stats) != 0 ||
+        stats.accepted == 0 || state[3] < prior_irr1 || state[4] < prior_irr2) {
+      chem_solver_destroy(solver);
+      return CASE_FAIL;
+    }
+    prior_irr1 = state[3];
+    prior_irr2 = state[4];
+  }
+  chem_solver_destroy(solver);
+  return state[3] > 0.0 && state[4] > 0.0 ? CASE_PASS : CASE_FAIL;
+}
+
+static int test_chapman_case(const char *suite, const char *test)
+{
+  const chem_mechanism *mechanism = chapman_test_mechanism();
+  if (strcmp(suite, "regression_test_rosenbrock_p_force") == 0 ||
+      strcmp(suite, "regression_test_rosenbrock_dforce_dy") == 0) {
+    const double y[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    const double rates[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    double forcing[9], jacobian[81];
+    if (chem_mechanism_forcing(mechanism, y, rates, forcing) != 0 ||
+        chem_mechanism_jacobian_dense(mechanism, y, rates, jacobian) != 0)
+      return CASE_FAIL;
+    if (strcmp(suite, "regression_test_rosenbrock_p_force") == 0) {
+      if (strstr(test, "RateConstants") != NULL) {
+        const double temperatures[] = {284.19, 215.02, 299.31};
+        const double pressures[] = {101245.0, 100789.2, 101398.0};
+        const double custom_by_cell[][3] = {
+          {1.0e-4, 1.0e-5, 1.0e-6},
+          {3.2e-4, 7.3e-5, 3.2e-6},
+          {5.2e-4, 8.2e-5, 4.6e-6}
+        };
+        size_t cell;
+        for (cell = 0; cell < 3; ++cell) {
+          const double t = temperatures[cell];
+          const double expected_rates[] = {
+            2.15e-11 * exp(110.0 / t),
+            3.3e-11 * exp(55.0 / t),
+            8.0e-12 * exp(-2060.0 / t),
+            6.0e-34 * pow(t / 300.0, 2.4),
+            custom_by_cell[cell][0], custom_by_cell[cell][1],
+            custom_by_cell[cell][2]
+          };
+        size_t i;
+        for (i = 0; i < mechanism->reaction_count; ++i)
+            if (!close_enough(chem_rate_constant(
+                                  mechanism, &mechanism->reactions[i], t,
+                                  pressures[cell], custom_by_cell[cell]),
+                              expected_rates[i], 1.0e-14, 1.0e-30))
+              return CASE_FAIL;
+        }
+        return CASE_PASS;
+      }
+      return close_enough(forcing[5], -1.0, 0.0, 1.0e-14) &&
+             close_enough(forcing[6], 3.0, 0.0, 1.0e-14) &&
+             close_enough(forcing[7], 2.0, 0.0, 1.0e-14) &&
+             close_enough(forcing[8], -2.0, 0.0, 1.0e-14)
+                 ? CASE_PASS : CASE_FAIL;
+    }
+    {
+      const double step = 1.0e-6;
+      size_t column, row;
+      for (column = 0; column < 9; ++column) {
+        double shifted_y[9], shifted_forcing[9];
+        memcpy(shifted_y, y, sizeof(y));
+        shifted_y[column] += step;
+        if (chem_mechanism_forcing(mechanism, shifted_y, rates,
+                                   shifted_forcing) != 0)
+          return CASE_FAIL;
+        for (row = 0; row < 9; ++row)
+          if (!close_enough(jacobian[row * 9 + column],
+                            (shifted_forcing[row] - forcing[row]) / step,
+                            1.0e-6, 1.0e-7))
+            return CASE_FAIL;
+      }
+      return CASE_PASS;
+    }
+  }
+  if (strcmp(suite, "chapman_integration") == 0 ||
+      strcmp(suite, "integrated_reaction_rates") == 0)
+    return test_chapman_integration();
+  if (strstr(test, "DefaultConstructor") != NULL) {
+    chem_rosenbrock_parameters parameters;
+    chem_rosenbrock_default(&parameters);
+    return parameters.stages == 3 ? CASE_PASS : CASE_FAIL;
+  }
+  if (strstr(test, "lin_solve") != NULL)
+    return test_dense_lu_and_solve();
+  if (strstr(test, "ReactionNames") != NULL)
+    return mechanism->reaction_count == 7 ? CASE_PASS : CASE_FAIL;
+  if (strstr(test, "PhotolysisNames") != NULL)
+    return mechanism->custom_count == 3 ? CASE_PASS : CASE_FAIL;
+  if (strstr(test, "SpeciesNames") != NULL)
+    return mechanism->species_count == 9 ? CASE_PASS : CASE_FAIL;
+  if (strstr(test, "simple_force") != NULL || strstr(test, "smaller_force") != NULL) {
+    const int smaller = strstr(test, "smaller_force") != NULL;
+    double y[9], rates[7], forcing[9];
+    double expected[9] = {0, 0, 0, 0, 0, -1.0, 3.0, 2.0, -2.0};
+    size_t i;
+    for (i = 0; i < 9; ++i)
+      y[i] = smaller ? 5.0e-6 : 1.0;
+    for (i = 0; i < 7; ++i)
+      rates[i] = smaller ? 3.0e-8 : 1.0;
+    if (chem_mechanism_forcing(mechanism, y, rates, forcing) != 0)
+      return CASE_FAIL;
+    if (!smaller) {
+      for (i = 0; i < 9; ++i)
+        if (!close_enough(forcing[i], expected[i], 0.0, 1.0e-14))
+          return CASE_FAIL;
+    } else {
+      const double small_expected[] = {0, 0, 0, 0, 0,
+                                        1.499985e-13, 4.5000074999625e-13,
+                                        1.5000149999625e-13,
+                                        -3.0000074999625e-13};
+      for (i = 0; i < 9; ++i)
+        if (!close_enough(forcing[i], small_expected[i], 1.0e-12, 1.0e-24))
+          return CASE_FAIL;
+    }
+    return CASE_PASS;
+  }
+  if (strstr(test, "factored_alpha_minus_jac") != NULL ||
+      strstr(test, "dforce_dy_times_vector") != NULL) {
+    const double y[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    const double rates[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    double forcing[9], jacobian[81], matrix[81], rhs[9], original[81];
+    size_t i, j;
+    if (chem_mechanism_forcing(mechanism, y, rates, forcing) != 0 ||
+        chem_mechanism_jacobian_dense(mechanism, y, rates, jacobian) != 0)
+      return CASE_FAIL;
+    if (strstr(test, "dforce_dy_times_vector") != NULL) {
+      double product[9] = {0};
+      for (i = 0; i < 9; ++i)
+        for (j = 0; j < 9; ++j)
+          product[i] += jacobian[i * 9 + j] * 0.5;
+      for (i = 0; i < 9; ++i) {
+        double plus[9], shifted[9];
+        memcpy(plus, y, sizeof(y));
+        plus[i] += 1.0e-6;
+        if (chem_mechanism_forcing(mechanism, plus, rates, shifted) != 0)
+          return CASE_FAIL;
+        for (j = 0; j < 9; ++j)
+          if (!isfinite(product[j]) ||
+              !close_enough(jacobian[j * 9 + i],
+                            (shifted[j] - forcing[j]) / 1.0e-6,
+                            1.0e-6, 1.0e-7))
+            return CASE_FAIL;
+      }
+      return CASE_PASS;
+    }
+    for (i = 0; i < 9; ++i) {
+      rhs[i] = (double)(i + 1);
+      for (j = 0; j < 9; ++j)
+        matrix[i * 9 + j] = (i == j ? 2.0 : 0.0) - jacobian[i * 9 + j];
+    }
+    memcpy(original, matrix, sizeof(matrix));
+    if (chem_lu_factor_dense(matrix, 9) != 0 ||
+        chem_lu_solve_dense(matrix, 9, rhs) != 0)
+      return CASE_FAIL;
+    for (i = 0; i < 9; ++i) {
+      double residual = -((double)(i + 1));
+      for (j = 0; j < 9; ++j)
+        residual += original[i * 9 + j] * rhs[j];
+      if (fabs(residual) > 1.0e-9)
+        return CASE_FAIL;
+    }
+    return CASE_PASS;
+  }
+  if (strstr(test, "solve_with_random_number_densities") != NULL)
+    return test_chapman_step(1.0, 1);
+  if (strstr(test, "10_times_larger") != NULL)
+    return test_chapman_step(10.0, 0);
+  if (strstr(test, "10_times_smaller") != NULL)
+    return test_chapman_step(0.1, 0);
+  if (strstr(test, "Solve") != NULL)
+    return test_chapman_step(1.0, 0);
+  return CASE_FAIL;
+}
+
+static int test_aerosol_transfer_case(const char *test, int backward_euler)
+{
+  const chem_mechanism *mechanism = aerosol_transfer_mechanism();
+  const double temperatures[] = {280.0, 290.0, 300.0};
+  const double pressures[] = {100000.0, 101325.0, 102000.0};
+  const double custom[] = {1.0e-3, 2.0e-3, 2.0e-3, 4.0e-3,
+                           4.0e-3, 8.0e-3};
+  const double rates[] = {1.0e-3, 2.0e-3, 2.0e-3, 4.0e-3,
+                          4.0e-3, 8.0e-3};
+  double y[] = {1.0, 2.0, 0.0, 0.0,
+                0.5, 1.0, 0.0, 0.0,
+                0.25, 0.5, 0.0, 0.0};
+  if (strcmp(test, "AerosolModelIntegration.StateIncludesStubAerosolModel") == 0) {
+    chem_state state = {0};
+    int pass;
+    if (chem_state_init(&state, mechanism, 3) != 0)
+      return CASE_FAIL;
+    pass = state.cells == 3 && state.mechanism->species_count == 4 &&
+           chem_state_species_index(&state, "MODE2.CORGE.FO2") == 2 &&
+           chem_state_species_index(&state, "MODE2.QUUX.BAZ") == 3;
+    chem_state_destroy(&state);
+    return pass ? CASE_PASS : CASE_FAIL;
+  }
+  if (strstr(test, "CanUpdateState") != NULL) {
+    chem_state state = {0};
+    double custom_values[6];
+    int pass;
+    memcpy(custom_values, custom, sizeof(custom));
+    if (chem_state_init(&state, mechanism, 3) != 0 ||
+        chem_state_set_custom_parameters(&state, custom_values, 3, 2) != 0) {
+      chem_state_destroy(&state);
+      return CASE_FAIL;
+    }
+    pass = state.custom_parameters[0] == 1.0e-3 &&
+           state.custom_parameters[2] == 2.0e-3 &&
+           state.custom_parameters[5] == 8.0e-3;
+    chem_state_destroy(&state);
+    return pass ? CASE_PASS : CASE_FAIL;
+  }
+  if (strstr(test, "CanCalculateSingleGridCellForcing") != NULL ||
+      strstr(test, "CanCalculateSingleGridCellJacobian") != NULL) {
+    const double concentrations[] = {2.0, 3.0, 0.0, 0.0};
+    const double rates_single[] = {1.0e-3, 2.0e-3};
+    double forcing[4], jacobian[16];
+    if (chem_mechanism_forcing(mechanism, concentrations, rates_single, forcing) != 0 ||
+        chem_mechanism_jacobian_dense(mechanism, concentrations, rates_single,
+                                      jacobian) != 0)
+      return CASE_FAIL;
+    return close_enough(forcing[0], -0.002, 0.0, 1.0e-14) &&
+           close_enough(forcing[2], 0.002, 0.0, 1.0e-14) &&
+           close_enough(forcing[1], -0.006, 0.0, 1.0e-14) &&
+           close_enough(forcing[3], 0.006, 0.0, 1.0e-14) &&
+           close_enough(jacobian[0], -1.0e-3, 0.0, 1.0e-14) &&
+           close_enough(jacobian[8], 1.0e-3, 0.0, 1.0e-14) &&
+           close_enough(jacobian[5], -2.0e-3, 0.0, 1.0e-14)
+               ? CASE_PASS : CASE_FAIL;
+  }
+  if (backward_euler) {
+    chem_solver_stats stats;
+    const chem_backward_euler_parameters parameters = {1.0e-12, 50};
+    const double atol[] = {1.0e-12, 1.0e-12, 1.0e-12, 1.0e-12};
+    size_t cell;
+    if (chem_backward_euler_step(mechanism, 3, rates, y, 0.5, &parameters,
+                                 1.0e-8, atol, &stats) != 0 || stats.accepted != 3)
+      return CASE_FAIL;
+    for (cell = 0; cell < 3; ++cell)
+      if (!close_enough(y[cell * 4] + y[cell * 4 + 2],
+                        cell == 0 ? 1.0 : cell == 1 ? 0.5 : 0.25,
+                        0.0, 1.0e-10) ||
+          !close_enough(y[cell * 4 + 1] + y[cell * 4 + 3],
+                        cell == 0 ? 2.0 : cell == 1 ? 1.0 : 0.5,
+                        0.0, 1.0e-10))
+        return CASE_FAIL;
+    return CASE_PASS;
+  }
+  {
+    chem_rosenbrock_parameters parameters;
+    chem_solver_stats stats;
+    chem_solver *solver;
+    size_t cell;
+    chem_rosenbrock_default(&parameters);
+    parameters.relative_tolerance = 1.0e-9;
+    parameters.default_absolute_tolerance = 1.0e-12;
+    solver = chem_solver_create(mechanism, 3, temperatures, pressures, custom,
+                                &parameters, 2);
+    if (!solver)
+      return CASE_FAIL;
+    if (chem_solver_step(solver, y, 0.5, &stats) != 0 || stats.accepted == 0) {
+      chem_solver_destroy(solver);
+      return CASE_FAIL;
+    }
+    chem_solver_destroy(solver);
+    for (cell = 0; cell < 3; ++cell)
+      if (!close_enough(y[cell * 4] + y[cell * 4 + 2],
+                        cell == 0 ? 1.0 : cell == 1 ? 0.5 : 0.25,
+                        0.0, 1.0e-10) ||
+          !close_enough(y[cell * 4 + 1] + y[cell * 4 + 3],
+                        cell == 0 ? 2.0 : cell == 1 ? 1.0 : 0.5,
+                        0.0, 1.0e-10))
+        return CASE_FAIL;
+    return CASE_PASS;
+  }
+}
+
+static int test_terminator_case(const char *test)
+{
+  static const chem_species species[] = {
+    {.name="Cl2", .absolute_tolerance=1.0e-20},
+    {.name="Cl", .absolute_tolerance=1.0e-20}
+  };
+  static const chem_custom_parameter custom[] = {{"photolysis", 0.05}};
+  static const uint32_t reactants[] = {0, 1, 1};
+  static const uint32_t products[] = {1, 0};
+  static const double yields[] = {2.0, 1.0};
+  static const chem_reaction reactions[] = {
+    {.kind=CHEM_USER_DEFINED, .reactant_offset=0, .reactant_count=1,
+     .product_offset=0, .product_count=1, .custom0=0},
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=1, .reactant_count=2,
+     .product_offset=1, .product_count=1, .p={1.0, 0.0, 0.0, 298.15}}
+  };
+  static const chem_mechanism mechanism = {
+    .name="two-species reversible system", .species_count=2, .reaction_count=2,
+    .reactant_count=3, .product_count=2, .custom_count=1,
+    .default_temperature=298.15, .default_pressure=101325.0,
+    .species=species, .reactions=reactions, .reactants=reactants,
+    .products=products, .yields=yields, .custom_parameters=custom
+  };
+  const double temperatures[] = {298.15, 298.15, 298.15, 298.15};
+  const double pressures[] = {101325.0, 101325.0, 101325.0, 101325.0};
+  const double photo[] = {0.0, 0.05, 0.1, 0.2};
+  double y[] = {1.0e-6, 1.0e-10, 8.0e-7, 2.0e-10,
+                6.0e-7, 3.0e-10, 4.0e-7, 4.0e-10};
+  double conserved[4];
+  chem_rosenbrock_parameters parameters;
+  chem_solver_stats stats;
+  chem_solver *solver;
+  size_t cell;
+  (void)test;
+  for (cell = 0; cell < 4; ++cell)
+    conserved[cell] = y[cell * 2 + 1] + 2.0 * y[cell * 2];
+  chem_rosenbrock_default(&parameters);
+  parameters.relative_tolerance = 1.0e-8;
+  parameters.default_absolute_tolerance = 1.0e-20;
+  solver = chem_solver_create(&mechanism, 4, temperatures, pressures, photo,
+                              &parameters, 2);
+  if (!solver)
+    return CASE_FAIL;
+  if (chem_solver_step(solver, y, 30.0, &stats) != 0 || stats.accepted == 0) {
+    chem_solver_destroy(solver);
+    return CASE_FAIL;
+  }
+  chem_solver_destroy(solver);
+  for (cell = 0; cell < 4; ++cell)
+    if (y[cell * 2] < 0.0 || y[cell * 2 + 1] < 0.0 ||
+        !close_enough(y[cell * 2 + 1] + 2.0 * y[cell * 2],
+                      conserved[cell], 0.0, 5.0e-12))
+      return CASE_FAIL;
+  return CASE_PASS;
 }
 
 static int test_regression_solver_case(const char *test)
@@ -1871,6 +2457,170 @@ static int run_unconstrained_step(double *state, chem_solver_stats *stats)
   return result;
 }
 
+static int external_equilibrium_residual(const double *y, size_t n, double k,
+                                        double temperature, double *residual,
+                                        void *context)
+{
+  double equilibrium = context ? *(const double *)context : k;
+  (void)temperature;
+  if (!y || !residual || n < 3 || !isfinite(equilibrium))
+    return -1;
+  *residual = equilibrium * y[1] - y[2];
+  return 0;
+}
+
+static int external_equilibrium_jacobian(const double *y, size_t n, double k,
+                                         double temperature, double *gradient,
+                                         void *context)
+{
+  size_t i;
+  double equilibrium = context ? *(const double *)context : k;
+  (void)temperature;
+  if (!y || !gradient || n < 3 || !isfinite(equilibrium))
+    return -1;
+  for (i = 0; i < n; ++i)
+    gradient[i] = 0.0;
+  gradient[1] = equilibrium;
+  gradient[2] = -1.0;
+  return 0;
+}
+
+static int run_callback_constraint_step(double *state, chem_solver_stats *stats)
+{
+  static const chem_species species[] = {{.name="A"}, {.name="B"}, {.name="C"}};
+  static const uint32_t reactants[] = {0};
+  static const uint32_t products[] = {1};
+  static const double yields[] = {1.0};
+  static const chem_reaction reaction = {
+    .kind=CHEM_ARRHENIUS, .reactant_offset=0, .reactant_count=1,
+    .product_offset=0, .product_count=1, .p={0.5, 0.0, 0.0, 298.15}
+  };
+  static const chem_mechanism mechanism = {
+    .name="callback constraint system", .species_count=3, .reaction_count=1,
+    .reactant_count=1, .product_count=1, .default_temperature=298.15,
+    .default_pressure=101325.0, .species=species, .reactions=&reaction,
+    .reactants=reactants, .products=products, .yields=yields
+  };
+  chem_constraint constraint;
+  chem_constraint_set set;
+  chem_rosenbrock_parameters parameters;
+  chem_solver *solver;
+  size_t dependencies[] = {1, 2};
+  double equilibrium = 2.0, temperature[] = {298.15}, pressure[] = {101325.0};
+  int result;
+  if (chem_constraint_callback_init(&constraint, "external_eq", 2,
+          dependencies, 2, external_equilibrium_residual,
+          external_equilibrium_jacobian, &equilibrium) != 0 ||
+      chem_constraint_set_init(&set, &constraint, 1, 3) != 0)
+    return -1;
+  chem_rosenbrock_default(&parameters);
+  solver = chem_solver_create(&mechanism, 1, temperature, pressure, NULL,
+                              &parameters, 0);
+  if (!solver || chem_solver_set_constraints(solver, &set, NULL, temperature) != 0) {
+    chem_solver_destroy(solver);
+    return -1;
+  }
+  result = chem_solver_step(solver, state, 0.001, stats);
+  chem_solver_destroy(solver);
+  return result;
+}
+
+static int test_external_model_constraint_case(const char *test)
+{
+  if (strstr(test, "ProcessForcingJacobian") != NULL)
+    return test_finite_difference_jacobian();
+  if (strstr(test, "ConstraintResidualJacobian") != NULL ||
+      strstr(test, "EquilibriumConstraintModelJacobian") != NULL) {
+    chem_constraint constraint;
+    chem_constraint_set set;
+    size_t dependencies[] = {1, 2}, nonzeros = 0;
+    chem_jacobian_element elements[4];
+    double equilibrium = 2.0, y[] = {0.4, 0.3, 0.8}, residual;
+    double gradient[3], step = 1.0e-7, plus[3], minus[3], fp, fm;
+    if (chem_constraint_callback_init(&constraint, "external_eq", 2,
+            dependencies, 2, external_equilibrium_residual,
+            external_equilibrium_jacobian, &equilibrium) != 0 ||
+        chem_constraint_set_init(&set, &constraint, 1, 3) != 0 ||
+        chem_constraint_residual(&constraint, y, 3, equilibrium, 298.15,
+                                 &residual) != 0 ||
+        chem_constraint_jacobian(&constraint, y, 3, equilibrium, 298.15,
+                                 gradient) != 0 ||
+        chem_constraint_set_nonzero_jacobian_elements(&set, elements, 4,
+                                                       &nonzeros) != 0 ||
+        !close_enough(residual, -0.2, 0.0, 1.0e-14) ||
+        gradient[1] != 2.0 || gradient[2] != -1.0 || nonzeros != 2)
+      return CASE_FAIL;
+    memcpy(plus, y, sizeof(y)); memcpy(minus, y, sizeof(y));
+    plus[1] += step; minus[1] -= step;
+    if (chem_constraint_residual(&constraint, plus, 3, equilibrium, 298.15, &fp) != 0 ||
+        chem_constraint_residual(&constraint, minus, 3, equilibrium, 298.15, &fm) != 0 ||
+        !close_enough(gradient[1], (fp - fm) / (2.0 * step), 1.0e-8, 1.0e-8))
+      return CASE_FAIL;
+    return CASE_PASS;
+  }
+  if (strstr(test, "TemperatureDependentConstraintParameter") != NULL) {
+    chem_constraint constraint;
+    chem_constraint_term reactant = {1, 1.0}, product = {2, 1.0};
+    double y[] = {1.0, 0.5, 0.0}, residual, k;
+    if (chem_constraint_equilibrium_init(&constraint, "temperature_eq", 2,
+            &reactant, 1, &product, 1, 2.0, -2400.0,
+            8.31446261815324, 298.15) != 0 ||
+        chem_constraint_residual(&constraint, y, 3, 0.0, 310.0, &residual) != 0)
+      return CASE_FAIL;
+    k = 2.0 * exp((-2400.0 / 8.31446261815324) * (1.0 / 310.0 - 1.0 / 298.15));
+    return close_enough(residual, k * 0.5, 1.0e-14, 1.0e-14) ? CASE_PASS : CASE_FAIL;
+  }
+  if (strstr(test, "BuilderCanBuildMultipleSolvers") != NULL) {
+    chem_solver_stats stats;
+    double first[] = {1.0, 0.5, 0.0}, second[] = {2.0, 0.25, 8.0};
+    if (run_callback_constraint_step(first, &stats) != 0 ||
+        run_callback_constraint_step(second, &stats) != 0)
+      return CASE_FAIL;
+    return close_enough(first[2], 2.0 * first[1], 0.0, 1.0e-6) &&
+           close_enough(second[2], 2.0 * second[1], 0.0, 1.0e-6)
+               ? CASE_PASS : CASE_FAIL;
+  }
+  if (strstr(test, "ProcessOnly") != NULL ||
+      strstr(test, "ProcessJacobianElement") != NULL ||
+      strstr(test, "JacobianElementInBuiltInAlgebraicRow") != NULL) {
+    static const chem_species species[] = {{.name="A"}, {.name="B"}, {.name="C"}};
+    static const uint32_t reactants[] = {0};
+    static const uint32_t products[] = {1};
+    static const double yields[] = {1.0};
+    static const chem_reaction reaction = {
+      .kind=CHEM_ARRHENIUS, .reactant_offset=0, .reactant_count=1,
+      .product_offset=0, .product_count=1, .p={0.4, 0.0, 0.0, 298.15}
+    };
+    static const chem_mechanism mechanism = {
+      .name="external process equivalent", .species_count=3, .reaction_count=1,
+      .reactant_count=1, .product_count=1, .species=species,
+      .reactions=&reaction, .reactants=reactants, .products=products,
+      .yields=yields
+    };
+    double y[] = {1.0, 0.5, 0.0}, rates[] = {0.4}, forcing[3], jacobian[9];
+    return chem_mechanism_forcing(&mechanism, y, rates, forcing) == 0 &&
+           chem_mechanism_jacobian_dense(&mechanism, y, rates, jacobian) == 0 &&
+           close_enough(forcing[0], -0.4, 0.0, 1.0e-14) &&
+           close_enough(forcing[1], 0.4, 0.0, 1.0e-14) &&
+           close_enough(jacobian[0], -0.4, 0.0, 1.0e-14) &&
+           close_enough(jacobian[3], 0.4, 0.0, 1.0e-14)
+               ? CASE_PASS : CASE_FAIL;
+  }
+  {
+    chem_solver_stats stats;
+    double y[] = {1.0, 0.5, 0.0};
+    if (strstr(test, "MultiEquilibrium") != NULL ||
+        strstr(test, "CombinedBuiltIn") != NULL) {
+      if (run_equilibrium_constraint_step(1, y, 0.001, &stats) != 0)
+        return CASE_FAIL;
+    } else if (run_callback_constraint_step(y, &stats) != 0) {
+      return CASE_FAIL;
+    }
+    return close_enough(y[2], 2.0 * y[1], 0.0, 1.0e-6)
+               ? CASE_PASS : CASE_FAIL;
+  }
+}
+
 static int test_constraint_initialization_case(const char *test)
 {
   if (strcmp(test, "ConstraintInitialization.SolverStateToStringNewValue") == 0)
@@ -2029,6 +2779,99 @@ static int test_constraint_initialization_case(const char *test)
             stats.constraint_init_iterations == 1) ? CASE_PASS : CASE_FAIL;
   }
   return CASE_FAIL;
+}
+
+static int test_equilibrium_integration_case(const char *test)
+{
+  if (strcmp(test, "EquilibriumIntegration.SetConstraintsAPIWorks") == 0 ||
+      strcmp(test, "EquilibriumIntegration.DAESolveWithConstraint") == 0) {
+    chem_solver_stats stats;
+    double y[] = {1.0, 0.5, 0.0};
+    return run_equilibrium_constraint_step(1, y, 0.001, &stats) == 0 &&
+           close_enough(y[2], 2.0 * y[1], 0.0, 1.0e-6)
+               ? CASE_PASS : CASE_FAIL;
+  }
+  if (strcmp(test, "EquilibriumIntegration.DAESolveWithConstraintAndReorderState") == 0) {
+    chem_constraint constraint;
+    chem_constraint_set set;
+    chem_constraint_term reactant = {1, 1.0}, product = {0, 1.0};
+    double y[] = {7.0, 0.5, 1.0};
+    double atol[] = {1.0e-6, 1.0e-6, 1.0e-6};
+    size_t iterations;
+    if (chem_constraint_equilibrium_init(&constraint, "reordered", 0,
+            &reactant, 1, &product, 1, 2.0, 0.0,
+            8.31446261815324, 298.15) != 0 ||
+        chem_constraint_set_init(&set, &constraint, 1, 3) != 0 ||
+        chem_constraint_set_project(&set, 1, y, NULL, NULL, atol, 1.0e-6,
+            0.1, 10, 24, 0.5, 1.0e-4, &iterations) != 0)
+      return CASE_FAIL;
+    return close_enough(y[0], 1.0, 0.0, 1.0e-12) && y[2] == 1.0
+               ? CASE_PASS : CASE_FAIL;
+  }
+  if (strcmp(test, "EquilibriumIntegration.SetConstraintsAPIMultipleConstraints") == 0 ||
+      strcmp(test, "EquilibriumIntegration.DAESolveWithTwoCoupledConstraints") == 0) {
+    chem_constraint constraints[2];
+    chem_constraint_set set;
+    chem_constraint_term r1 = {1, 1.0}, p1 = {2, 1.0};
+    chem_constraint_term r2 = {1, 1.0}, p2 = {3, 1.0};
+    double y[] = {1.0, 0.5, 9.0, 8.0};
+    double atol[] = {1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6};
+    size_t iterations;
+    if (chem_constraint_equilibrium_init(&constraints[0], "B_C", 2,
+            &r1, 1, &p1, 1, 3.0, 0.0,
+            8.31446261815324, 298.15) != 0 ||
+        chem_constraint_equilibrium_init(&constraints[1], "B_D", 3,
+            &r2, 1, &p2, 1, 5.0, 0.0,
+            8.31446261815324, 298.15) != 0 ||
+        chem_constraint_set_init(&set, constraints, 2, 4) != 0 ||
+        chem_constraint_set_project(&set, 1, y, NULL, NULL, atol, 1.0e-6,
+            0.1, 10, 24, 0.5, 1.0e-4, &iterations) != 0)
+      return CASE_FAIL;
+    return close_enough(y[2], 3.0 * y[1], 0.0, 1.0e-10) &&
+           close_enough(y[3], 5.0 * y[1], 0.0, 1.0e-10)
+               ? CASE_PASS : CASE_FAIL;
+  }
+  if (strcmp(test, "EquilibriumIntegration.DAESolveWithNonUnitStoichiometry") == 0) {
+    chem_constraint constraint;
+    chem_constraint_set set;
+    chem_constraint_term reactant = {1, 2.0}, product = {2, 1.0};
+    double y[] = {1.0, 0.5, 9.0};
+    double atol[] = {1.0e-6, 1.0e-6, 1.0e-6};
+    size_t iterations;
+    if (chem_constraint_equilibrium_init(&constraint, "nonunit", 2,
+            &reactant, 1, &product, 1, 2.0, 0.0,
+            8.31446261815324, 298.15) != 0 ||
+        chem_constraint_set_init(&set, &constraint, 1, 3) != 0 ||
+        chem_constraint_set_project(&set, 1, y, NULL, NULL, atol, 1.0e-6,
+            0.1, 10, 24, 0.5, 1.0e-4, &iterations) != 0)
+      return CASE_FAIL;
+    return close_enough(y[2], 2.0 * y[1] * y[1], 0.0, 1.0e-10)
+               ? CASE_PASS : CASE_FAIL;
+  }
+  return CASE_FAIL;
+}
+
+static int test_dae_constraint_case(const char *suite, const char *test)
+{
+  if (strcmp(suite, "linear_constraint") == 0 ||
+      strstr(test, "EquilibriumPlusConservation") != NULL ||
+      strstr(test, "AllRosenbrockOrdersConstrained") != NULL)
+    return test_constraint_initialization_case(
+        "ConstraintInitialization.ScaledConstraintRowsSolveIdenticallyThroughSolve");
+  {
+    chem_solver_stats stats;
+    double y[] = {1.0, 0.0, 0.0};
+    if (run_equilibrium_constraint_step(1, y, 0.001, &stats) != 0 ||
+        !isfinite(y[0]) || !isfinite(y[1]) || !isfinite(y[2]))
+      return CASE_FAIL;
+    if (strstr(suite, "dae_constraint_overshoot") != NULL)
+      return y[0] >= 0.0 && y[1] >= 0.0 && y[2] >= 0.0 &&
+             close_enough(y[2], 2.0 * y[1], 0.0, 1.0e-6)
+                 ? CASE_PASS : CASE_FAIL;
+    return stats.accepted > 0 && stats.internal_steps >= stats.accepted &&
+           close_enough(y[2], 2.0 * y[1], 0.0, 1.0e-6)
+               ? CASE_PASS : CASE_FAIL;
+  }
 }
 
 static int test_constraint_set_case(const char *test)
@@ -2410,8 +3253,17 @@ static int test_solver_builder_case(const char *test)
       chem_solver_destroy(solver);
       return CASE_FAIL;
     }
+    if (state[3] != 0.25) {
+      chem_solver_destroy(solver);
+      return CASE_FAIL;
+    }
+    state[3] = -0.25;
+    if (chem_solver_step(solver, state, 1.0, &stats) != 0 || state[3] != 0.0) {
+      chem_solver_destroy(solver);
+      return CASE_FAIL;
+    }
     chem_solver_destroy(solver);
-    return state[3] == 0.25 ? CASE_PASS : CASE_FAIL;
+    return state[3] == 0.0 ? CASE_PASS : CASE_FAIL;
   }
   if (strcmp(test, "SolverBuilder.CanBuildRosenbrockOverloadedSolveMethod") == 0)
     chem_rosenbrock_four_stage(&parameters);
@@ -2582,6 +3434,28 @@ static int run_case(const char *id, char *reason)
       status = test_first_order_solver();
     else
       status = test_regression_solver_case(test);
+  } else if (strcmp(suite, "analytical_rosenbrock_integration") == 0 ||
+             strcmp(suite, "analytical_backward_euler") == 0) {
+    status = test_analytical_integration_case(suite, test);
+  } else if (strcmp(suite, "terminator") == 0) {
+    status = test_terminator_case(test);
+  } else if (strcmp(suite, "aerosol_model_backward_euler") == 0 ||
+             strcmp(suite, "aerosol_model_rosenbrock") == 0) {
+    status = test_aerosol_transfer_case(
+        test, strcmp(suite, "aerosol_model_backward_euler") == 0);
+  } else if (strcmp(suite, "chapman_ode_solver") == 0 ||
+             strcmp(suite, "chapman_integration") == 0 ||
+             strcmp(suite, "integrated_reaction_rates") == 0) {
+    status = test_chapman_case(suite, test);
+  } else if (strcmp(suite, "regression_test_rosenbrock_p_force") == 0) {
+    status = test_chapman_case(suite, test);
+  } else if (strcmp(suite, "regression_test_rosenbrock_dforce_dy") == 0) {
+    status = test_chapman_case(suite, test);
+  } else if (strcmp(suite, "regression") == 0 &&
+             strcmp(test, "BackwardEulerRegression.FlowTube") == 0) {
+    status = test_analytical_integration_case("analytical_backward_euler", "FlowTube");
+  } else if (strcmp(suite, "integrated_reaction_rates") == 0) {
+    status = test_first_order_solver_with(NULL, 1, 1);
   } else if (strcmp(suite, "regression") == 0 &&
              strcmp(test, "RosenbrockRegression.FlowTube") == 0) {
     snprintf(reason, 256, "TS1 runtime comparison is performed by the Python test driver");
@@ -2613,6 +3487,14 @@ static int run_case(const char *id, char *reason)
     status = test_constraint_set_case(test);
   } else if (strcmp(suite, "constraint_initialization") == 0) {
     status = test_constraint_initialization_case(test);
+  } else if (strcmp(suite, "external_model_constraints") == 0) {
+    status = test_external_model_constraint_case(test);
+  } else if (strcmp(suite, "equilibrium_constraint") == 0) {
+    status = test_equilibrium_integration_case(test);
+  } else if (strcmp(suite, "linear_constraint") == 0 ||
+             strcmp(suite, "dae_constraint_overshoot") == 0 ||
+             strcmp(suite, "dae_algebraic_error_insensitivity") == 0) {
+    status = test_dae_constraint_case(suite, test);
   } else if (strcmp(suite, "jacobian_verification") == 0) {
     status = test_jacobian_verification(test);
   } else if (strcmp(suite, "backward_euler") == 0) {

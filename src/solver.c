@@ -1005,6 +1005,21 @@ int chem_solver_step(chem_solver *s, double *concentrations, double dt,
     stats->decompositions += group_stats[group].decompositions;
     stats->solves += group_stats[group].solves;
   }
+  /* MICM clamps ODE state variables after each top-level solve. Keep
+     algebraic variables untouched, as their values are set by constraints. */
+  {
+    size_t cell, species;
+    for (cell = 0; cell < s->cells; ++cell) {
+      for (species = 0; species < s->n; ++species) {
+        double *value;
+        if (s->pattern.mass_diagonal[species] == 0.0)
+          continue;
+        value = &concentrations[cell * s->n + species];
+        if (!(*value > 0.0))
+          *value = 0.0;
+      }
+    }
+  }
   free(group_stats);
   free(group_status);
   return 0;

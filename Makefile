@@ -30,7 +30,7 @@ BIN := bin
 LIB := lib
 TS1_JSON := mechanisms/ts1.json
 TS1_MODEL := $(BUILD)/ts1_model.c
-TS1_OBJECTS := $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/solver.o $(BUILD)/ts1_model.o $(BUILD)/benchmark.o
+TS1_OBJECTS := $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/constraint.o $(BUILD)/solver.o $(BUILD)/ts1_model.o $(BUILD)/benchmark.o
 
 .PHONY: all cpu bench test-cpu env clean micm-ref mechanism
 all: cpu bench
@@ -110,7 +110,7 @@ $(BIN)/test_cpu: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/state.o $(BUILD)
 $(BUILD)/test_programs.o: tests/test_programs.c include/kinetics.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
-$(BIN)/test_programs: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/solver.o $(BUILD)/test_programs.o | $(BIN)
+$(BIN)/test_programs: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/constraint.o $(BUILD)/solver.o $(BUILD)/test_programs.o | $(BIN)
 	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
 
 $(BUILD)/example_no_user.o: tests/test_example_runtime.c include/kinetics.h | $(BUILD)
@@ -119,10 +119,10 @@ $(BUILD)/example_no_user.o: tests/test_example_runtime.c include/kinetics.h | $(
 $(BUILD)/example_user.o: tests/test_example_runtime.c include/kinetics.h | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -DEXAMPLE_USER_CONFIG=1 -c $< -o $@
 
-$(BIN)/test_example_no_user: $(BUILD)/kinetics.o $(BUILD)/solver.o $(BUILD)/tutorial_no_user_model.o $(BUILD)/example_no_user.o | $(BIN)
+$(BIN)/test_example_no_user: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/constraint.o $(BUILD)/solver.o $(BUILD)/tutorial_no_user_model.o $(BUILD)/example_no_user.o | $(BIN)
 	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
 
-$(BIN)/test_example_user: $(BUILD)/kinetics.o $(BUILD)/solver.o $(BUILD)/tutorial_user_model.o $(BUILD)/example_user.o | $(BIN)
+$(BIN)/test_example_user: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/constraint.o $(BUILD)/solver.o $(BUILD)/tutorial_user_model.o $(BUILD)/example_user.o | $(BIN)
 	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
 
 $(BUILD)/test_cpu.o: tests/test_cpu.c include/kinetics.h include/matrix.h include/system.h include/constraint.h include/version.h | $(BUILD)

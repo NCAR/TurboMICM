@@ -5,8 +5,18 @@
 
 typedef enum {
   CHEM_CONSTRAINT_LINEAR = 0,
-  CHEM_CONSTRAINT_EQUILIBRIUM = 1
+  CHEM_CONSTRAINT_EQUILIBRIUM = 1,
+  CHEM_CONSTRAINT_CALLBACK = 2
 } chem_constraint_kind;
+
+typedef int (*chem_constraint_residual_callback)(
+    const double *concentrations, size_t species_count,
+    double equilibrium_constant, double temperature,
+    double *residual, void *context);
+typedef int (*chem_constraint_jacobian_callback)(
+    const double *concentrations, size_t species_count,
+    double equilibrium_constant, double temperature,
+    double *gradient, void *context);
 
 typedef struct {
   size_t species_index;
@@ -28,6 +38,11 @@ typedef struct {
   double enthalpy_change;
   double gas_constant;
   double reference_temperature;
+  const size_t *dependencies;
+  size_t dependency_count;
+  chem_constraint_residual_callback residual_callback;
+  chem_constraint_jacobian_callback jacobian_callback;
+  void *callback_context;
 } chem_constraint;
 
 typedef struct {
@@ -51,6 +66,11 @@ int chem_constraint_equilibrium_init(
     const chem_constraint_term *products, size_t product_count,
     double equilibrium_constant_reference, double enthalpy_change,
     double gas_constant, double reference_temperature);
+int chem_constraint_callback_init(
+    chem_constraint *constraint, const char *name, size_t algebraic_species,
+    const size_t *dependencies, size_t dependency_count,
+    chem_constraint_residual_callback residual_callback,
+    chem_constraint_jacobian_callback jacobian_callback, void *context);
 int chem_constraint_set_init(chem_constraint_set *set,
                              const chem_constraint *constraints,
                              size_t constraint_count, size_t species_count);
