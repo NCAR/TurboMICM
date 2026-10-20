@@ -1425,21 +1425,38 @@ static int check_matrix_view_api(void) {
       chem_matrix_view_set(&small,2,4,102.3) ||
       small_data[0] != 41.2 || small_data[8] != 64.7 || small_data[14] != 102.3)
     return 19;
+  chem_const_matrix_view const_small;
+  if (chem_const_matrix_view_init(&const_small,small_data,3,5,5,1) ||
+      chem_const_matrix_view_get(&const_small,1,3,&value) || value != 64.7 ||
+      chem_const_matrix_view_get(&const_small,2,4,&value) || value != 102.3)
+    return 20;
   double initialized_data[6] = {0};
   chem_matrix_view initialized;
   if (chem_matrix_view_init(&initialized,initialized_data,2,3,3,1) ||
       chem_matrix_view_fill(&initialized,12.4) ||
       initialized_data[0] != 12.4 || initialized_data[3] != 12.4 ||
-      initialized_data[5] != 12.4) return 20;
+      initialized_data[5] != 12.4) return 21;
+  chem_const_matrix_view const_initialized;
+  if (chem_const_matrix_view_init(&const_initialized,initialized_data,2,3,3,1) ||
+      chem_const_matrix_view_get(&const_initialized,1,2,&value) || value != 12.4)
+    return 22;
   double loop_data[12] = {0};
   chem_matrix_view loop;
-  if (chem_matrix_view_init(&loop,loop_data,3,4,4,1)) return 21;
+  if (chem_matrix_view_init(&loop,loop_data,3,4,4,1)) return 23;
   for (size_t i = 0; i < 3; ++i)
     for (size_t j = 0; j < 4; ++j)
-      if (chem_matrix_view_set(&loop,i,j,(double)(i*100+j))) return 22;
+      if (chem_matrix_view_set(&loop,i,j,(double)(i*100+j))) return 24;
   if (chem_matrix_view_get(&loop,0,0,&value) || value != 0.0 ||
       chem_matrix_view_get(&loop,1,2,&value) || value != 102.0 ||
-      chem_matrix_view_get(&loop,2,3,&value) || value != 203.0) return 23;
+      chem_matrix_view_get(&loop,2,3,&value) || value != 203.0) return 25;
+  chem_const_matrix_view const_loop;
+  if (chem_const_matrix_view_init(&const_loop,loop_data,3,4,4,1) ||
+      chem_const_matrix_view_get(&const_loop,1,2,&value) || value != 102.0 ||
+      chem_const_matrix_view_get(&const_loop,2,3,&value) || value != 203.0)
+    return 26;
+  double const_row[4];
+  if (chem_const_matrix_view_copy_row_to_vector(&const_loop,1,const_row,4) ||
+      const_row[0] != 100.0 || const_row[3] != 103.0) return 27;
   return 0;
 }
 

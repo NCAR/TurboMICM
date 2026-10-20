@@ -182,12 +182,29 @@ typedef struct {
   size_t column_stride;
 } chem_matrix_view;
 
+typedef struct {
+  const double *data;
+  size_t rows;
+  size_t columns;
+  size_t row_stride;
+  size_t column_stride;
+} chem_const_matrix_view;
+
 typedef void (*chem_matrix_element_function)(size_t row, size_t column,
                                               double *value, void *context);
 
 int chem_matrix_view_init(chem_matrix_view *view, double *data,
                           size_t rows, size_t columns,
                           size_t row_stride, size_t column_stride);
+int chem_const_matrix_view_init(chem_const_matrix_view *view,
+                                const double *data, size_t rows,
+                                size_t columns, size_t row_stride,
+                                size_t column_stride);
+int chem_const_matrix_view_get(const chem_const_matrix_view *view,
+                               size_t row, size_t column, double *value);
+int chem_const_matrix_view_copy_row_to_vector(
+    const chem_const_matrix_view *view, size_t row, double *vector,
+    size_t vector_size);
 int chem_matrix_view_get(const chem_matrix_view *view, size_t row,
                          size_t column, double *value);
 int chem_matrix_view_set(chem_matrix_view *view, size_t row,
