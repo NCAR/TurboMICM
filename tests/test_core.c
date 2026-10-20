@@ -2327,6 +2327,41 @@ static int check_all_constrained_overshoot_orders(void) {
   return 0;
 }
 
+static int check_equilibrium_conservation_overshoot(void) {
+  const chem_species species[]={{.name="A_gas"},{.name="A_aq"},{.name="P"}};
+  const chem_term reactant[]={{1,1.0}}, product[]={{2,1.0}};
+  const chem_reaction reaction={.kind=CHEM_ARRHENIUS,.reactants=reactant,
+      .reactant_count=1,.products=product,.product_count=1,.p={1.0e3,0,0,298,0}};
+  const chem_mechanism mechanism={.species=species,.species_count=3,
+      .reactions=&reaction,.reaction_count=1};
+  const chem_constraint_term eq_r[]={{0,1.0}}, eq_p[]={{1,1.0}};
+  const chem_constraint_term mass[]={{0,1.0},{1,1.0},{2,1.0}};
+  const chem_constraint constraints[]={
+    {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,.name="gas_aq_eq",
+      .algebraic_species=1,.reactants=eq_r,.reactant_count=1,
+      .products=eq_p,.product_count=1,.equilibrium_constant_ref=10.0,
+      .reference_temperature=298.0},
+    {.kind=CHEM_CONSTRAINT_LINEAR,.name="mass_conservation",
+      .algebraic_species=0,.terms=mass,.term_count=3,.constant=1.0e-6}};
+  const chem_constraint_set set={.constraints=constraints,
+      .constraint_count=2,.species_count=3};
+  const chem_rosenbrock_parameters parameters=
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
+  const double atol[]={1.0e-8,1.0e-8,1.0e-12};
+  const chem_solver_options options={.relative_tolerance=1.0e-6,
+      .absolute_tolerance=1.0e-12,.absolute_tolerances=atol,
+      .absolute_tolerance_count=3,.max_steps=10000};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  double y[]={1.0e-6/11.0,10.0e-6/11.0,0.0};
+  int status=chem_rosenbrock_solve_constrained_with_parameters(&mechanism,
+      &workspace,y,298.0,101325.0,40.0,NULL,30.0,&parameters,&set,&options,NULL);
+  if (!status && (fabs(y[0]+y[1]+y[2]-1.0e-6)>1.0e-12 ||
+      y[0]<-1.0e-18 || y[1]<-1.0e-18 || fabs(y[2]-1.0e-6)>1.0e-8)) status=2;
+  chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
 static int check_process_algebraic_mask(void) {
   const chem_species species[] = {
       {.name="A"},{.name="B"},{.name="C"},{.name="D"}};
@@ -4770,6 +4805,7 @@ int main(void) {
     if (check_equilibrium_dae_case(mode)!=0) return 120+mode;
   if (check_robertson_terminator_dae()!=0) return 130;
   if (check_all_constrained_overshoot_orders()!=0) return 131;
+  if (check_equilibrium_conservation_overshoot()!=0) return 132;
   if (check_process_algebraic_mask() != 0) return 66;
   if (check_phase_system_metadata() != 0) return 67;
   if (check_species_properties() != 0) return 68;

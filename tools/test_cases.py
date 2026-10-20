@@ -519,6 +519,7 @@ implemented.update({
     "analytical_rosenbrock_integration:AnalyticalExamples.SurfaceRxn",
     "dae_constraint_overshoot:DAEConstraintOvershoot.AlgebraicVariableStaysNonNegative",
     "dae_constraint_overshoot:DAEConstraintOvershoot.AllRosenbrockOrdersConstrained",
+    "dae_constraint_overshoot:DAEConstraintOvershoot.EquilibriumPlusConservation",
 })
 
 _aerosol_state_cases = (
