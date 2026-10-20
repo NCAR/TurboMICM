@@ -55,6 +55,10 @@
   Lane-packed dense views carry their group width at runtime; tests compare
   widths 1, 2, 4, and 8 against identical logical row-major values.
 
+- Represent sparse matrices as non-owning block CSR views. A block shares one
+  sorted, duplicate-free row/column pattern; values are contiguous block-major
+  slices, and operations return status codes for missing structural entries.
+
 - Store optional species properties in caller-owned tagged records. Typed C
   getters report missing properties separately from type mismatches, avoiding
   unchecked casts from the C++ property API.

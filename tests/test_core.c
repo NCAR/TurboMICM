@@ -1808,6 +1808,48 @@ static int check_matrix_view_api(void) {
   return 0;
 }
 
+static int check_csr_matrix_api(void) {
+  const size_t empty_offsets[] = {0,0,0,0};
+  chem_csr_matrix empty;
+  if (chem_csr_matrix_init(&empty,3,1,0,empty_offsets,NULL,NULL) ||
+      chem_csr_matrix_fill(&empty,2.0) ||
+      chem_csr_matrix_is_structural_zero(&empty,2,1,(int[1]){0})) return 1;
+  int is_zero = 0;
+  if (chem_csr_matrix_is_structural_zero(&empty,2,1,&is_zero) || !is_zero ||
+      chem_csr_matrix_vector_index(&empty,0,0,0,(size_t[1]){0}) == 0)
+    return 2;
+  const size_t offsets[] = {0,1,2,4,5};
+  const size_t columns[] = {1,1,1,3,2};
+  double values[5*53];
+  for (size_t i = 0; i < 5*53; ++i) values[i] = 24.0;
+  chem_csr_matrix matrix;
+  if (chem_csr_matrix_init(&matrix,4,53,5,offsets,columns,values)) return 3;
+  size_t index = 0;
+  if (chem_csr_matrix_vector_index(&matrix,0,3,2,&index) || index != 4 ||
+      chem_csr_matrix_vector_index(&matrix,0,2,3,&index) || index != 3 ||
+      chem_csr_matrix_vector_index(&matrix,2,2,1,&index) || index != 12 ||
+      chem_csr_matrix_vector_index(&matrix,0,2,2,&index) == 0) return 4;
+  if (chem_csr_matrix_is_structural_zero(&matrix,0,1,&is_zero) || is_zero ||
+      chem_csr_matrix_is_structural_zero(&matrix,2,2,&is_zero) || !is_zero ||
+      chem_csr_matrix_set(&matrix,0,2,1,45.0) || values[2] != 45.0)
+    return 5;
+  double value = 0.0;
+  if (chem_csr_matrix_get(&matrix,0,2,1,&value) || value != 45.0 ||
+      chem_csr_matrix_get(&matrix,0,2,2,&value) == 0) return 6;
+  if (chem_csr_matrix_set(&matrix,0,1,1,1.0) ||
+      chem_csr_matrix_set(&matrix,1,1,1,3.0) ||
+      chem_csr_matrix_set(&matrix,2,1,1,5.0) ||
+      chem_csr_matrix_add_to_diagonal(&matrix,7.0) ||
+      values[1] != 8.0 || values[5+1] != 10.0 || values[2*5+1] != 12.0 ||
+      values[0] != 24.0) return 7;
+  if (chem_csr_matrix_fill(&matrix,2.0)) return 8;
+  for (size_t i = 0; i < 5*53; ++i) if (values[i] != 2.0) return 9;
+  const size_t invalid_offsets[] = {0,2,1,1,1};
+  if (chem_csr_matrix_init(&matrix,4,1,1,invalid_offsets,columns,values) == 0)
+    return 10;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -2400,5 +2442,6 @@ int main(void) {
   if (check_phase_system_metadata() != 0) return 67;
   if (check_species_properties() != 0) return 68;
   if (check_matrix_view_api() != 0) return 64;
+  if (check_csr_matrix_api() != 0) return 69;
   return 0;
 }

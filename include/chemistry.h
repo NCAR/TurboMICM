@@ -406,6 +406,32 @@ int chem_matrix_view_reduce_strict(const chem_const_matrix_view *view,
                                    double initial,
                                    double *value);
 
+/* Non-owning block CSR matrix; values are block-major over the shared pattern. */
+typedef struct {
+  size_t dimension;
+  size_t block_count;
+  size_t nonzero_count;
+  const size_t *row_offsets;
+  const size_t *column_indices;
+  double *values;
+} chem_csr_matrix;
+
+int chem_csr_matrix_init(chem_csr_matrix *matrix, size_t dimension,
+                         size_t block_count, size_t nonzero_count,
+                         const size_t *row_offsets,
+                         const size_t *column_indices, double *values);
+int chem_csr_matrix_get(const chem_csr_matrix *matrix, size_t block,
+                        size_t row, size_t column, double *value);
+int chem_csr_matrix_set(chem_csr_matrix *matrix, size_t block, size_t row,
+                        size_t column, double value);
+int chem_csr_matrix_vector_index(const chem_csr_matrix *matrix, size_t block,
+                                 size_t row, size_t column, size_t *index);
+int chem_csr_matrix_is_structural_zero(const chem_csr_matrix *matrix,
+                                       size_t row, size_t column,
+                                       int *is_zero);
+int chem_csr_matrix_fill(chem_csr_matrix *matrix, double value);
+int chem_csr_matrix_add_to_diagonal(chem_csr_matrix *matrix, double value);
+
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density);
 double chem_reaction_rate(const chem_reaction *reaction, double temperature,
