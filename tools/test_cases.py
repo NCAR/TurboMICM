@@ -448,6 +448,7 @@ for _category, _case_class in (
                        for _name in _linear_case_names)
 implemented.update({
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.DefaultConstructor",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.lin_solve",
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.ReactionNames",
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.PhotolysisNames",
     "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.SpeciesNames",
@@ -606,6 +607,8 @@ for raw in case_file.read_text().splitlines():
         elif case_id.startswith("chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral."):
             reason = ("C Rosenbrock alpha-minus-Jacobian transforms checked"
                       if case_id.endswith("factored_alpha_minus_jac") else
+                      "C dense LU solve matches the Chapman packed sparse system"
+                      if case_id.endswith("lin_solve") else
                       "C generic Chapman integration matches the reference trajectory across concentration scales"
                       if case_id.endswith(("Solve", "solve_10_times_larger",
                                            "solve_with_random_number_densities")) else

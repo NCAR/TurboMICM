@@ -80,7 +80,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Five hundred ninety-three cases pass, eighteen are marked N/A, and 69 cases
+  statuses. Five hundred ninety-four cases pass, eighteen are marked N/A, and 68 cases
   still report incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison

@@ -3164,6 +3164,33 @@ static int check_linear_solve_case(size_t n, size_t blocks, int diagonal) {
   return 0;
 }
 
+static int check_chapman_sparse_solve(void) {
+  double lower[9*9] = {0}, upper[9*9] = {0}, matrix[9*9] = {0};
+  const double expected[] = {0.5,0.5,0.5,0.5,0.5,-0.5,-1.0,0.5,0.0};
+  double rhs[9];
+  for (size_t i = 0; i < 9; ++i) {
+    lower[i*9+i] = 1.0;
+    upper[i*9+i] = 1.0;
+  }
+  const size_t lower_positions[][2] = {
+      {6,0}, {7,0}, {8,0}, {5,4}, {6,4}, {6,5}, {7,6}, {8,6}, {8,7}};
+  const size_t upper_positions[][2] = {
+      {5,7}, {5,8}, {6,7}, {6,8}, {7,8}};
+  for (size_t i = 0; i < 9; ++i)
+    lower[lower_positions[i][0]*9+lower_positions[i][1]] = 1.0;
+  for (size_t i = 0; i < 5; ++i)
+    upper[upper_positions[i][0]*9+upper_positions[i][1]] = 1.0;
+  for (size_t row = 0; row < 9; ++row)
+    for (size_t column = 0; column < 9; ++column)
+      for (size_t k = 0; k < 9; ++k)
+        matrix[row*9+column] += lower[row*9+k]*upper[k*9+column];
+  for (size_t i = 0; i < 9; ++i) rhs[i] = 0.5;
+  if (chem_linear_solve_in_place(9,matrix,rhs)) return 1;
+  for (size_t i = 0; i < 9; ++i)
+    if (fabs(rhs[i]-expected[i]) > 1e-14) return 2;
+  return 0;
+}
+
 static int check_linear_solvers(void) {
   const double dense[] = {2,-1,-2,-4,6,3,-4,-2,8};
   const double rhs[] = {23,42,9};
@@ -3176,7 +3203,7 @@ static int check_linear_solvers(void) {
   }
   if (check_linear_solve_case(10,1,0) ||
       check_linear_solve_case(10,5,0) ||
-      check_linear_solve_case(5,5,1)) return 3;
+      check_linear_solve_case(5,5,1) || check_chapman_sparse_solve()) return 3;
   double singular[] = {1,2,2,4}, singular_rhs[] = {3,6};
   if (chem_linear_solve(2,singular,singular_rhs,solution) == 0 ||
       chem_linear_solve_in_place(2,singular,singular_rhs) == 0 ||
