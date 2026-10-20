@@ -249,6 +249,56 @@ static int check_version_api(void) {
          chem_version_patch() == 0 && chem_version_tweak() == 0 ? 0 : 1;
 }
 
+static int check_one_solver_many_thread_states(void) {
+  const chem_species species[] = {{.name = "A"}, {.name = "B"}, {.name = "C"}};
+  const chem_term a[] = {{.species = 0, .coefficient = 1.0}};
+  const chem_term b[] = {{.species = 1, .coefficient = 1.0}};
+  const chem_term bb[] = {{.species = 1, .coefficient = 2.0}};
+  const chem_term bc[] = {{.species = 1, .coefficient = 1.0},
+                          {.species = 2, .coefficient = 1.0}};
+  const chem_term product_b[] = {{.species = 1, .coefficient = 1.0}};
+  const chem_term product_bc[] = {{.species = 1, .coefficient = 1.0},
+                                  {.species = 2, .coefficient = 1.0}};
+  const chem_term product_c[] = {{.species = 2, .coefficient = 1.0}};
+  const chem_term product_ac[] = {{.species = 0, .coefficient = 1.0},
+                                  {.species = 2, .coefficient = 1.0}};
+  const chem_reaction reactions[] = {
+      {.kind = CHEM_USER_DEFINED, .reactants = a, .reactant_count = 1,
+       .products = product_b, .product_count = 1, .p = {1,0,0,0,0,0,0,0}},
+      {.kind = CHEM_USER_DEFINED, .reactants = bb, .reactant_count = 1,
+       .products = product_bc, .product_count = 2, .p = {1,0,0,0,0,0,0,1}},
+      {.kind = CHEM_USER_DEFINED, .reactants = bc, .reactant_count = 2,
+       .products = product_ac, .product_count = 2, .p = {1,0,0,0,0,0,0,2}}};
+  (void)b;
+  (void)product_c;
+  const chem_mechanism mechanism = {
+      .species = species, .species_count = 3,
+      .reactions = reactions, .reaction_count = 3};
+  double states[8][3] = {{0}};
+  int statuses[8] = {0};
+  const double rates[] = {0.04, 3.0e7, 1.0e4};
+  #pragma omp parallel num_threads(8)
+  {
+    const int thread = omp_get_thread_num();
+    states[thread][0] = 1.0;
+    chem_solver_workspace workspace = {0};
+    statuses[thread] = chem_solver_workspace_init(&workspace, &mechanism);
+    if (!statuses[thread]) {
+      for (size_t step = 0; step < 10 && !statuses[thread]; ++step)
+        statuses[thread] = chem_rosenbrock3_solve_with_workspace(
+            &mechanism, &workspace, states[thread], 272.5, 101253.3, 1.0e6,
+            rates, 200.0, NULL, NULL);
+    }
+    chem_solver_workspace_destroy(&workspace);
+  }
+  for (size_t thread = 0; thread < 8; ++thread) {
+    if (statuses[thread]) return 1;
+    for (size_t species_index = 0; species_index < 3; ++species_index)
+      if (states[thread][species_index] != states[0][species_index]) return 2;
+  }
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -824,5 +874,6 @@ int main(void) {
   if (check_lambda_rate_constant_position() != 0) return 49;
   if (check_jacobian_verification() != 0) return 50;
   if (check_version_api() != 0) return 51;
+  if (check_one_solver_many_thread_states() != 0) return 52;
   return 0;
 }

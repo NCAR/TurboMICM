@@ -54,6 +54,7 @@ implemented = {
     "version:Version.VersionMinor",
     "version:Version.VersionPatch",
     "version:Version.VersionTweak",
+    "openmp:OpenMP.OneSolverManyStates",
     "jacobian_verification:JacobianVerification.FiniteDifferenceMatchesAnalytical",
     "jacobian_verification:JacobianVerification.MultiBlockFiniteDifference",
     "jacobian_verification:JacobianVerification.ComparePassesForCorrectJacobian",
@@ -104,6 +105,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C finite-difference Jacobian checks"
         elif case_id.startswith("version:"):
             reason = "C version API checked"
+        elif case_id == "openmp:OpenMP.OneSolverManyStates":
+            reason = "independent C workspaces give identical thread states"
         print(f"{case_id} PASS {reason}")
     elif case_id in not_applicable:
         print(f"{case_id} N/A {not_applicable[case_id]}")
