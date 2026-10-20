@@ -447,6 +447,13 @@ for _category, _case_class in (
     implemented.update(f"{_category}:{_case_class}.{_name}"
                        for _name in _linear_case_names)
 implemented.update({
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.DefaultConstructor",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.ReactionNames",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.PhotolysisNames",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.SpeciesNames",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.simple_force",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.smaller_force",
+    "chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.dforce_dy_times_vector",
     "analytical_rosenbrock_integration:AnalyticalExamples.E5",
     "analytical_backward_euler:AnalyticalExamples.Oregonator",
     "analytical_rosenbrock_integration:AnalyticalExamples.Oregonator",
@@ -589,6 +596,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C workspace builds, solve entry points, and species-use validation checked"
         elif case_id.startswith("regression_test_rosenbrock_p_force:"):
             reason = "generic C Chapman mechanism rates and forcing match independent formulas"
+        elif case_id.startswith("chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral."):
+            reason = "C generic Chapman names, default stages, forcing, and directional Jacobian checked"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):
             reason = ("C per-species tolerance properties feed solver error control"
                       if case_id.endswith("CanSetTolerances") else

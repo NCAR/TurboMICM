@@ -803,7 +803,66 @@ static int check_chapman_integration(void) {
       {.kind=CHEM_USER_DEFINED,.label="jO3b",.reactants=o3,.reactant_count=1,.products=o_o2_product,.product_count=2,.p={1,0,0,0,0,0,0,2}}};
   const chem_mechanism mechanism = {
       .species=species,.species_count=9,.reactions=reactions,.reaction_count=7,
+      .custom_labels=(const char *const[]){"jO2","jO3a","jO3b"},
       .custom_parameter_count=3};
+  const char *expected_species_names[]={"O","O1D","O2","O3","M",
+                                       "Ar","N2","H2O","CO2"};
+  const chem_rosenbrock_parameters default_parameters=
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
+  if (default_parameters.stages!=3 || mechanism.species_count!=9 ||
+      mechanism.reaction_count!=7 || mechanism.custom_parameter_count!=3)
+    return 12;
+  for (size_t i=0;i<mechanism.species_count;++i)
+    if (strcmp(species[i].name,expected_species_names[i])!=0) return 13;
+  double unit_state[9],unit_rates[7],unit_forcing[9];
+  for (size_t i=0;i<9;++i) unit_state[i]=1.0;
+  for (size_t i=0;i<7;++i) unit_rates[i]=1.0;
+  if (chem_forcing_with_constants(&mechanism,unit_state,unit_rates,0.0,
+                                  unit_forcing)) return 14;
+  const double expected_unit_forcing[]={3,-1,2,-2,0,0,0,0,0};
+  for (size_t i=0;i<9;++i)
+    if (unit_forcing[i]!=expected_unit_forcing[i]) return 15;
+  double small_state[9],small_rates[7],small_forcing[9];
+  for (size_t i=0;i<9;++i) small_state[i]=5e-6;
+  for (size_t i=0;i<7;++i) small_rates[i]=3e-8;
+  if (chem_forcing_with_constants(&mechanism,small_state,small_rates,6e-14,
+                                  small_forcing)) return 16;
+  const double small_o1d=small_rates[5]*small_state[3]-small_rates[0]*
+      small_state[6]*small_state[1]-small_rates[1]*small_state[1]*small_state[2];
+  const double small_o=2*small_rates[4]*small_state[2]+small_rates[6]*small_state[3]+
+      small_rates[0]*small_state[6]*small_state[1]+small_rates[1]*small_state[1]*
+      small_state[2]-small_rates[2]*small_state[0]*small_state[3]-
+      small_rates[3]*small_state[4]*small_state[0]*small_state[2];
+  const double small_o2=-small_rates[4]*small_state[2]+small_rates[5]*small_state[3]+
+      small_rates[6]*small_state[3]+2*small_rates[2]*small_state[0]*small_state[3]-
+      small_rates[3]*small_state[4]*small_state[0]*small_state[2];
+  const double small_o3=-small_rates[5]*small_state[3]-small_rates[6]*small_state[3]-
+      small_rates[2]*small_state[0]*small_state[3]+small_rates[3]*small_state[4]*
+      small_state[0]*small_state[2];
+  const double expected_small_forcing[]={small_o,small_o1d,small_o2,small_o3,0,0,0,0,0};
+  for (size_t i=0;i<9;++i)
+    if (fabs(small_forcing[i]-expected_small_forcing[i])>
+        1e-12*fmax(1e-30,fabs(expected_small_forcing[i]))) return 17;
+  double negative_jacobian[81];
+  if (chem_negative_jacobian_with_constants(&mechanism,small_state,small_rates,
+                                             negative_jacobian)) return 18;
+  const double direction[]={0.3,-0.2,0.4,-0.1,0.5,-0.6,0.7,0.8,-0.9};
+  double plus[9],minus[9],fplus[9],fminus[9];
+  for (size_t i=0;i<9;++i) {
+    plus[i]=small_state[i]+1e-10*direction[i];
+    minus[i]=small_state[i]-1e-10*direction[i];
+  }
+  if (chem_forcing_with_constants(&mechanism,plus,small_rates,6e-14,fplus) ||
+      chem_forcing_with_constants(&mechanism,minus,small_rates,6e-14,fminus))
+    return 19;
+  for (size_t row=0;row<9;++row) {
+    double product=0;
+    for (size_t col=0;col<9;++col)
+      product-=negative_jacobian[row*9+col]*direction[col];
+    const double finite_difference=(fplus[row]-fminus[row])/(2e-10);
+    if (fabs(product-finite_difference)>1e-10*fmax(1e-20,fabs(finite_difference)))
+      return 20;
+  }
   const double cell_temperatures[] = {284.19,215.02,299.31};
   const double cell_pressures[] = {101245.0,100789.2,101398.0};
   const double cell_photolysis[3][3] = {
@@ -4223,7 +4282,8 @@ int main(void) {
   const int backward_euler_status = check_backward_euler();
   if (backward_euler_status != 0) return 70 + backward_euler_status;
   if (check_terminator_cases() != 0) return 58;
-  if (check_chapman_integration() != 0) return 59;
+  { const int status=check_chapman_integration();
+    if (status) return 59+status; }
   if (check_integrated_reaction_rates() != 0) return 60;
   if (check_lambda_callback_override() != 0) return 61;
   if (check_phase_species_metadata() != 0) return 62;
