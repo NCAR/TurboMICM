@@ -1,0 +1,490 @@
+2026-10-19 23:06:06
+23:06  up  4:27, 3 users, load averages: 1.73 1.54 1.58
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:07:06
+23:07  up  4:28, 3 users, load averages: 7.82 3.27 2.22
+  716  11.5 04:27:12 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:08:06
+23:08  up  4:29, 3 users, load averages: 6.75 3.79 2.48
+40784 994.4    00:07 ~/NSF-NCAR/tier1-work/verify/sol-max/clang/sol-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:09:07
+23:09  up  4:30, 3 users, load averages: 7.58 4.54 2.84
+40801 924.3    00:02 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:10:07
+23:10  up  4:31, 3 users, load averages: 6.57 5.07 3.17
+  472  20.9 04:30:16 /usr/libexec/airportd
+  728   5.7 04:30:13 /System/Library/CoreServices/WiFiAgent.app/Contents/MacOS/WiFiAgent
+40813 100.0    00:23 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+40817  27.3    00:00 /usr/libexec/biomesyncd
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:11:07
+23:11  up  4:32, 3 users, load averages: 3.39 4.43 3.06
+40813  99.1    01:23 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:12:07
+23:12  up  4:33, 3 users, load averages: 2.77 4.12 3.04
+40813  99.0    02:23 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:13:07
+23:13  up  4:34, 3 users, load averages: 1.79 3.58 2.91
+40849 100.0    00:50 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:14:07
+23:14  up  4:35, 3 users, load averages: 1.42 3.15 2.79
+40849  99.3    01:50 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:15:07
+23:15  up  4:36, 3 users, load averages: 1.35 2.81 2.69
+  472  13.6 04:35:16 /usr/libexec/airportd
+40875  99.0    00:24 ~/NSF-NCAR/tier1-work/timing/bin/micm-vector8-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:16:07
+23:16  up  4:37, 3 users, load averages: 1.26 2.54 2.60
+40888 100.0    00:24 ~/NSF-NCAR/tier1-work/verify/sol-high/clang/sol-high/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:17:07
+23:17  up  4:38, 3 users, load averages: 1.24 2.29 2.50
+40901  99.3    00:29 ~/NSF-NCAR/tier1-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:18:07
+23:18  up  4:39, 3 users, load averages: 1.30 2.13 2.42
+40915  99.0    00:36 ~/NSF-NCAR/tier1-work/verify/sol-max/clang/sol-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:19:07
+23:19  up  4:40, 3 users, load averages: 1.27 1.96 2.34
+40927  99.7    00:50 ~/NSF-NCAR/tier1-work/verify/astra-high/clang/astra-high/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:20:07
+23:20  up  4:41, 3 users, load averages: 1.42 1.90 2.29
+41007 100.0    00:04 ~/NSF-NCAR/tier1-work/verify/astra-max/clang/astra-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:21:07
+23:21  up  4:42, 3 users, load averages: 1.15 1.73 2.20
+41021 100.0    00:10 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:22:07
+23:22  up  4:43, 3 users, load averages: 1.30 1.67 2.14
+41021  99.1    01:10 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:23:07
+23:23  up  4:44, 3 users, load averages: 1.31 1.61 2.08
+41021 100.0    02:10 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:24:07
+23:24  up  4:45, 3 users, load averages: 1.32 1.54 2.02
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:25:07
+23:25  up  4:46, 3 users, load averages: 4.56 2.42 2.31
+41069 937.4    00:07 ~/NSF-NCAR/tier1-work/verify/sol-max/clang/sol-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:26:07
+23:26  up  4:47, 3 users, load averages: 11.96 5.07 3.32
+41088 966.8    00:03 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:27:08
+23:27  up  4:48, 3 users, load averages: 16.93 7.47 4.32
+41099 992.3    00:24 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:28:08
+23:28  up  4:49, 3 users, load averages: 10.61 7.62 4.60
+41113 100.0    00:17 ~/NSF-NCAR/tier1-work/timing/bin/micm-vector8-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:29:08
+23:29  up  4:50, 3 users, load averages: 4.69 6.46 4.37
+41128  99.1    00:17 ~/NSF-NCAR/tier1-work/verify/sol-high/clang/sol-high/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:30:08
+23:30  up  4:51, 3 users, load averages: 2.66 5.55 4.17
+41141 100.0    00:22 ~/NSF-NCAR/tier1-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:31:08
+23:31  up  4:52, 3 users, load averages: 1.67 4.74 3.96
+  716  44.9 04:51:14 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41157 100.0    00:29 ~/NSF-NCAR/tier1-work/verify/sol-max/clang/sol-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:32:08
+23:32  up  4:53, 3 users, load averages: 1.38 4.10 3.77
+41172  99.7    00:43 ~/NSF-NCAR/tier1-work/verify/astra-high/clang/astra-high/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:33:08
+23:33  up  4:54, 3 users, load averages: 1.41 3.60 3.60
+  716  11.3 04:53:14 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:34:08
+23:34  up  4:55, 3 users, load averages: 1.51 3.20 3.45
+  624   6.9 04:54:15 /System/Library/PrivateFrameworks/CloudKitDaemon.framework/Support/cloudd
+  753  14.4 04:54:13 /usr/libexec/networkserviceproxy
+41216  99.0    00:04 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:35:08
+23:35  up  4:56, 3 users, load averages: 1.22 2.81 3.29
+41216 100.0    01:04 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:36:08
+23:36  up  4:57, 3 users, load averages: 1.15 2.50 3.14
+41216 100.0    02:04 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:37:08
+23:37  up  4:58, 3 users, load averages: 1.53 2.37 3.05
+41216  99.7    03:04 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:38:08
+23:38  up  4:59, 3 users, load averages: 1.32 2.16 2.92
+41256  99.1    00:51 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:39:08
+23:39  up 5 hrs, 3 users, load averages: 1.35 2.01 2.81
+41256 100.0    01:51 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:40:08
+23:40  up  5:01, 3 users, load averages: 1.17 1.84 2.69
+41284 100.0    00:18 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:41:08
+23:41  up  5:02, 3 users, load averages: 1.14 1.71 2.58
+41284 100.0    01:18 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:42:08
+23:42  up  5:03, 3 users, load averages: 1.19 1.61 2.48
+41310  51.7    00:00 ~/miniforge3/bin/python3
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:43:08
+23:43  up  5:04, 3 users, load averages: 3.92 2.24 2.65
+41329 994.0    00:05 ~/NSF-NCAR/tier1-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:44:08
+23:44  up  5:05, 3 users, load averages: 7.36 3.47 3.08
+41344  90.7    00:00 ~/miniforge3/bin/python3
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:45:08
+23:45  up  5:06, 3 users, load averages: 9.33 4.72 3.57
+41356 997.8    00:19 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:46:09
+23:46  up  5:07, 3 users, load averages: 6.55 4.83 3.69
+41373 100.0    00:13 ~/NSF-NCAR/tier1-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:47:09
+23:47  up  5:08, 3 users, load averages: 3.28 4.21 3.54
+41387  99.0    00:20 ~/NSF-NCAR/tier1-work/verify/sol-max/clang/sol-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:48:09
+23:48  up  5:09, 3 users, load averages: 3.72 4.25 3.60
+41400  99.1    00:34 ~/NSF-NCAR/tier1-work/verify/astra-high/clang/astra-high/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:49:09
+23:49  up  5:10, 3 users, load averages: 3.07 3.95 3.53
+  716 124.1 05:09:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41421 100.0    00:36 ~/NSF-NCAR/tier1-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:50:09
+23:50  up  5:11, 3 users, load averages: 2.40 3.59 3.42
+  716 115.0 05:10:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41459  98.9    00:01 ~/miniforge3/bin/python3
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:51:09
+23:51  up  5:12, 3 users, load averages: 2.19 3.30 3.32
+  716 117.4 05:11:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41469 100.0    00:55 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:52:09
+23:52  up  5:13, 3 users, load averages: 2.39 3.18 3.28
+  472   7.2 05:12:18 /usr/libexec/airportd
+  716 108.8 05:12:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41469 100.0    01:55 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+41516  10.0    00:08 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:53:09
+23:53  up  5:14, 3 users, load averages: 2.97 3.22 3.28
+  716 122.5 05:13:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41469 100.0    02:55 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:54:09
+23:54  up  5:15, 3 users, load averages: 2.59 3.05 3.22
+  716 115.8 05:14:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41540 100.0    00:42 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:55:09
+23:55  up  5:16, 3 users, load averages: 2.78 3.01 3.19
+  716  18.6 05:15:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41540 100.0    01:42 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:56:09
+23:56  up  5:17, 3 users, load averages: 2.28 2.83 3.10
+  716  83.4 05:16:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41578  27.1    00:57 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+41584  99.7    00:08 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:57:09
+23:57  up  5:18, 3 users, load averages: 2.45 2.77 3.06
+41584  99.1    01:08 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+41602  98.1    00:21 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:58:09
+23:58  up  5:19, 3 users, load averages: 2.90 2.85 3.07
+  716  75.7 05:18:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41584 100.0    02:08 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+41621  20.2    00:00 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-19 23:59:09
+23:59  up  5:20, 3 users, load averages: 2.98 2.86 3.06
+  716 120.8 05:19:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41633  99.1    00:43 ~/NSF-NCAR/tier1-work/timing/bin/micm-vector8-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:00:09
+ 0:00  up  5:21, 3 users, load averages: 2.93 2.87 3.05
+  716 118.2 05:20:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41653  99.5    00:43 ~/NSF-NCAR/tier1-work/verify/sol-high/clang/sol-high/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:01:09
+ 0:01  up  5:22, 3 users, load averages: 4.75 3.42 3.24
+  716 120.1 05:21:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:02:09
+ 0:02  up  5:23, 3 users, load averages: 8.64 4.78 3.76
+41750 980.3    00:19 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:03:09
+ 0:03  up  5:24, 3 users, load averages: 9.75 5.83 4.22
+  716  83.0 05:23:15 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41774  81.5    00:11 ~/NSF-NCAR/tier1-work/timing/bin/micm-vector8-in-place-mozart
+41788   7.9    00:00 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:04:10
+ 0:04  up  5:25, 3 users, load averages: 8.43 6.25 4.49
+41823 100.0    00:23 /System/Library/Frameworks/CoreGraphics.framework/Versions/A/XPCServices/CGPDFService.xpc/Contents/MacOS/CGPDFService
+41829  99.3    00:05 ~/NSF-NCAR/tier1-work/verify/astra-high/clang/astra-high/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:05:10
+ 0:05  up  5:26, 3 users, load averages: 4.71 5.56 4.34
+  716 116.9 05:25:16 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41863 100.0    00:07 ~/NSF-NCAR/tier1-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:06:10
+ 0:06  up  5:27, 3 users, load averages: 2.97 4.91 4.18
+  716 118.8 05:26:16 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41882 100.0    00:20 ~/NSF-NCAR/tier1-work/verify/astra-max/clang/astra-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:07:10
+ 0:07  up  5:28, 3 users, load averages: 2.88 4.53 4.09
+  472   7.8 05:27:19 /usr/libexec/airportd
+  716 122.4 05:27:16 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41896 100.0    00:26 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:08:10
+ 0:08  up  5:29, 3 users, load averages: 2.93 4.21 3.99
+  716  47.0 05:28:16 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+41896 100.0    01:26 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:09:10
+ 0:09  up  5:30, 3 users, load averages: 2.05 3.74 3.83
+  492   8.1 05:29:19 /usr/libexec/syspolicyd
+41896 100.0    02:26 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:10:10
+ 0:10  up  5:31, 3 users, load averages: 2.16 3.42 3.70
+  492  14.8 05:30:19 /usr/libexec/syspolicyd
+41944  99.1    00:14 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:11:10
+ 0:11  up  5:32, 3 users, load averages: 1.71 3.06 3.55
+  492  12.5 05:31:19 /usr/libexec/syspolicyd
+41944  99.7    01:14 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:12:10
+ 0:12  up  5:33, 3 users, load averages: 1.60 2.78 3.40
+  472   7.7 05:32:19 /usr/libexec/airportd
+  492   9.0 05:32:19 /usr/libexec/syspolicyd
+41944 100.0    02:14 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:13:10
+ 0:13  up  5:34, 3 users, load averages: 1.37 2.50 3.25
+41980  99.1    00:40 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:14:10
+ 0:14  up  5:35, 3 users, load averages: 1.85 2.38 3.16
+41980 100.0    01:40 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:15:10
+ 0:15  up  5:36, 3 users, load averages: 1.48 2.19 3.03
+42008  99.3    00:14 ~/NSF-NCAR/tier1-work/timing/bin/micm-vector8-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:16:10
+ 0:16  up  5:37, 3 users, load averages: 1.23 2.00 2.90
+42023  99.1    00:14 ~/NSF-NCAR/tier1-work/verify/sol-high/clang/sol-high/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:17:10
+ 0:17  up  5:38, 3 users, load averages: 1.42 1.92 2.81
+  472   6.3 05:37:19 /usr/libexec/airportd
+42037 100.0    00:19 ~/NSF-NCAR/tier1-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:18:10
+ 0:18  up  5:39, 3 users, load averages: 1.25 1.78 2.69
+42049 100.0    00:26 ~/NSF-NCAR/tier1-work/verify/sol-max/clang/sol-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:19:10
+ 0:19  up  5:40, 3 users, load averages: 8.47 3.66 3.33
+42066 950.6    00:23 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:20:10
+ 0:20  up  5:41, 3 users, load averages: 12.82 5.83 4.16
+42141 996.7    00:09 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:21:10
+ 0:21  up  5:42, 3 users, load averages: 10.17 6.38 4.48
+42160 991.5    00:04 ~/NSF-NCAR/tier1-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:22:11
+ 0:22  up  5:43, 3 users, load averages: 7.88 6.39 4.61
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:23:11
+ 0:23  up  5:44, 3 users, load averages: 3.72 5.45 4.38
+42193 100.0    00:05 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:24:11
+ 0:24  up  5:45, 3 users, load averages: 2.25 4.71 4.17
+42193  99.1    01:05 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:25:11
+ 0:25  up  5:46, 3 users, load averages: 1.78 4.11 3.98
+42193  99.0    02:05 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:26:11
+ 0:26  up  5:47, 3 users, load averages: 1.39 3.57 3.79
+42193 100.0    03:05 ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:27:11
+ 0:27  up  5:48, 3 users, load averages: 1.14 3.10 3.59
+42233  99.1    00:52 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:28:11
+ 0:28  up  5:49, 3 users, load averages: 1.13 2.75 3.43
+42233 100.0    01:52 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:29:11
+ 0:29  up  5:50, 3 users, load averages: 1.35 2.54 3.31
+42259  99.1    00:19 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:30:11
+ 0:30  up  5:51, 3 users, load averages: 1.18 2.27 3.15
+42259  99.3    01:19 ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:31:11
+ 0:31  up  5:52, 3 users, load averages: 1.11 2.05 3.01
+  716  48.0 05:51:17 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:32:11
+ 0:32  up  5:53, 3 users, load averages: 1.24 1.91 2.89
+  581   9.0 05:52:19 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  716  85.3 05:52:17 /System/Library/PrivateFrameworks/MediaAnalysis.framework/Versions/A/mediaanalysisd
+  736  17.7 05:52:17 /System/Library/PrivateFrameworks/PhotoLibraryServices.framework/Versions/A/Support/photolibraryd
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:33:11
+ 0:33  up  5:54, 3 users, load averages: 1.20 1.78 2.77
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:34:11
+ 0:34  up  5:55, 3 users, load averages: 1.33 1.70 2.67
+42336  99.3    00:07 ~/NSF-NCAR/tier1-work/verify/sol-max/clang/sol-max/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:35:11
+ 0:35  up  5:56, 3 users, load averages: 1.48 1.66 2.59
+42349  96.3    00:21 ~/NSF-NCAR/tier1-work/verify/astra-high/clang/astra-high/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+
+2026-10-20 00:36:11
+ 0:36  up  5:57, 3 users, load averages: 1.29 1.57 2.49
+42363  99.0    00:23 ~/NSF-NCAR/tier1-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_bench_cpu
+ -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+

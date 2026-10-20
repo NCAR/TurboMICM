@@ -285,12 +285,16 @@ Tier-2-Results.
   contestant) is done and collected as `tier3/fable/max`, verified in
   `results/2026-10-19-tier3-fable-max-verification/` and timed beside the
   contest's winners in `results/2026-10-19-tier3-fable-vs-contest/`.
-- Verification worktrees of `runs/*` are built in a session scratchpad. If it is
-  gone, `git worktree prune` and rebuild per "Verify an entry".
+- Verification worktrees of `runs/*`, MICM's timed programs, and the seed-2026
+  gate files are in `~/NSF-NCAR/tier1-work` (outside the run root), with its
+  scripts: `prepare.sh` rebuilds them, `time-when-idle.sh LABEL RUN ...` waits
+  for an idle machine (no Codex record written for 10 minutes, CPU below one
+  core, AC) and then runs `run-timing.sh`, and `progress.py` summarizes a live
+  run. If it is gone, `git worktree prune` and rebuild per "Verify an entry".
 - Time each new entry with all the others in one session (`admin/time_entries.py`,
   5 rounds at 10 and 1 threads), alongside `micm-standard-in-place-mozart`, its
   `-g32` variant, and `micm-vector8-in-place-mozart-g32`, as in
-  `results/2026-10-16-astra-max-verification`.
+  `results/2026-10-19-luna-max-verification`.
   - `admin/leaderboard.py` regenerates the wiki's Leaderboard: at 10 threads from
     every session's `timings.csv` except the Sol verification's, whose MICM names
     it does not parse; at 1 thread from the sessions that ran it.
@@ -299,11 +303,12 @@ Tier-2-Results.
     with `ln -sn`: a racing `ln -s` writes a link inside the run root.
 - Luna: run all three fresh, one after another, at max, xhigh, then high (the
   SSE's order, 2026-10-19), each verified and timed with all entries before the
-  next starts. luna-max launched 2026-10-19 19:14 (`admin/runs.md`). The first
-  luna-high attempt was stopped at 08:11 on 2026-10-16, after 1 h 23 min, far
-  from done (615 failing cases at its 07:51 checkpoint); it is kept, outside the
-  run root, at `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/`
-  was recreated.
+  next starts. luna-max is done: finished 21:05, verified, and timed overnight
+  (`results/2026-10-19-luna-max-verification`), correct but 0.90 times MICM's
+  default. luna-xhigh is next. The first luna-high attempt was stopped at 08:11
+  on 2026-10-16, after 1 h 23 min, far from done (615 failing cases at its 07:51
+  checkpoint); it is kept, outside the run root, at
+  `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/` was recreated.
   For each run: `admin/launch_codex_run.sh <run> gpt-6-luna <effort>`, then arm
   `admin/run_state.py` (a monitor does not outlive its Claude Code session).
 - Next: an analysis pass on every entry. The wiki's Tier-1-Implementations page

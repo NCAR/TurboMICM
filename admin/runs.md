@@ -108,7 +108,7 @@ Transcripts
 | astra-xhigh | gpt-6-astra | xhigh | Codex CLI 0.163.0, interactive | 2026-10-15 21:17-23:35 | `fbd365c`, 23:35 (11 commits) | finished |
 | astra-max | gpt-6-astra | max | Codex CLI 0.163.0, interactive | 2026-10-16 01:04-02:46 | `0dc7f67`, 02:46 (7 commits) | finished |
 | luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-16 06:47-08:11 | `217bf6e`, 08:10 (23 commits) | stopped; to rerun |
-| luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14-21:05 | `da2d722`, 21:05 (5 commits) | finished; verifying |
+| luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14-21:05 | `da2d722`, 21:05 (5 commits) | finished |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -292,6 +292,21 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Transcript archived as `transcripts/luna-max.jsonl.gz`. The credential scan's
   only matches (28, of the `sk-` pattern) were inside encrypted reasoning and
   encrypted compaction history.
+- Verified, 21:22, with `admin/verify_tier3.py --stages build,tests,ts1,audit`
+  (`results/2026-10-19-luna-max-verification`): 671 PASS, 0 FAIL, 9 N/A with
+  each compiler, every id once; the TS1 gate passes (2.78e-13 with clang, 2.2e-13
+  with gcc-15); the audit finds nothing outside the rules. The library builds
+  without warnings with clang and with three `-Wint-in-bool-context` warnings
+  with gcc-15. The benchmark keeps MICM's default grouping, one group per thread,
+  and does MICM's default solver work.
+- Timed with all entries, 23:06 to 00:36, once the machine had been idle for 10
+  minutes (`~/NSF-NCAR/tier1-work/time-when-idle.sh`; the wait, from 21:25, ran
+  past the SSE's separate Codex session, which last wrote at 21:34, and an hour of
+  Spotlight indexing that ended at 22:57). All 100 runs passed the gate. luna-max:
+  30,914 ms at 10 threads and 183,244 ms on one, 0.90 and 0.79 times MICM's
+  default (27,876 and 144,522 ms); the other six keep their order, their medians
+  within 1.3 % of the 2026-10-16 session. Wiki updated: Tier 1 Results,
+  Leaderboard, Home, Overview, Tier 3 Results, Tier 1 Implementations.
 
 # Tier 3
 

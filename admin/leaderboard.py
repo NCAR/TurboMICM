@@ -34,7 +34,7 @@ DEFAULT = "micm-standard-in-place-mozart"
 MODEL_NAMES = {"sol": "GPT-6.1-Sol", "astra": "GPT-6-Astra", "luna": "GPT-6-Luna"}
 EFFORT_NAMES = {"high": "High", "xhigh": "Extra High", "max": "Max"}
 # Each entry's own cell grouping, from its DESIGN.md and benchmark source.
-ENTRY_GROUPING = {"sol-high": "32 cells", "sol-xhigh": "32 cells", "sol-max": "32 cells", "astra-high": "32 cells", "astra-xhigh": "32 cells", "astra-max": "32 cells"}
+ENTRY_GROUPING = {"sol-high": "32 cells", "sol-xhigh": "32 cells", "sol-max": "32 cells", "astra-high": "32 cells", "astra-xhigh": "32 cells", "astra-max": "32 cells", "luna-max": "one per thread"}
 PATTERN = re.compile(r"micm-(standard|vector\d+)-(in-place|separate)-(mozart|doolittle)(-g32)?$")
 
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

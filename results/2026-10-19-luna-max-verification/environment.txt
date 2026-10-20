@@ -1,0 +1,19 @@
+date: 2026-10-19T23:06:06
+host: Gemini.local
+platform: macOS-27.0.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,2 | Apple M5 | 4 | 6
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=22872163)	80%; AC attached; not charging present: true
+uptime: 23:06  up  4:27, 3 users, load averages: 1.73 1.54 1.58
+input: ~/NSF-NCAR/tier1-work/verify/tier1-gate/cells_2026.csv
+reference: ~/NSF-NCAR/tier1-work/verify/tier1-gate/micm_final_2026.csv
+cells, steps, dt: 10000, 100, 30; threads: 10,1; rounds: 5
+program micm-standard-in-place-mozart: ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart
+program micm-standard-in-place-mozart-g32: ~/NSF-NCAR/tier1-work/timing/bin/micm-standard-in-place-mozart --group-size 32
+program micm-vector8-in-place-mozart-g32: ~/NSF-NCAR/tier1-work/timing/bin/micm-vector8-in-place-mozart --group-size 32
+program sol-high: ~/NSF-NCAR/tier1-work/verify/sol-high/clang/sol-high/bin/ts1_bench_cpu
+program sol-xhigh: ~/NSF-NCAR/tier1-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_cpu
+program sol-max: ~/NSF-NCAR/tier1-work/verify/sol-max/clang/sol-max/bin/ts1_bench_cpu
+program astra-high: ~/NSF-NCAR/tier1-work/verify/astra-high/clang/astra-high/bin/ts1_bench_cpu
+program astra-xhigh: ~/NSF-NCAR/tier1-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_bench_cpu
+program astra-max: ~/NSF-NCAR/tier1-work/verify/astra-max/clang/astra-max/bin/ts1_bench_cpu
+program luna-max: ~/NSF-NCAR/tier1-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
