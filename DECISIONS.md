@@ -36,9 +36,9 @@
 
 - Mark the five `ViewCategorySFINAE` cases N/A because they inspect C++
   template substitution and type categories, which have no C equivalent. The
-  CPU `ProcessSetAlgebraicVariables.CudaMatrix` case remains incomplete: the C
-  library has constraint residual and Jacobian utilities, but has not integrated
-  algebraic row replacement into its solver.
+  CPU `ProcessSetAlgebraicVariables.CudaMatrix` case is ported through masked C
+  forcing and Jacobian accumulation. Constraint residual primitives and
+  algebraic projection are also available through the C API.
 
 - Represent linear and equilibrium constraints as caller-owned C records with
   species indexes and stoichiometric terms. Keep residual, algebraic-mask,

@@ -54,6 +54,8 @@
   incomplete. A grouped constrained call projects all
   cells and aggregates statistics while using an independent scalar controller
   per cell.
+- Masked reaction forcing and negative-Jacobian accumulation preserve selected
+  algebraic rows while updating differential rows across multiple cells.
 - The dense matrix view test covers strided indexing, conversion to and from a
   flat vector, AXPY, fill, min/max/sum reductions, and invalid dimensions. AXPY
   rejects row and column shape mismatches. Callback traversal works for both
@@ -63,7 +65,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. One hundred sixty-six cases pass, nine are marked N/A, and 505 cases
+  statuses. One hundred sixty-seven cases pass, nine are marked N/A, and 504 cases
   still report incomplete ports, so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -83,5 +85,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 all 2,110,000 values; the largest relative difference was `5.34e-14` for
 BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
 MICM at this scale. The 100-cell and first-cell runs above also pass for both
-compilers. Overall, 505 of the 680 inventory cases remain incomplete; nine
+compilers. Overall, 504 of the 680 inventory cases remain incomplete; nine
 C++-only cases are marked N/A.

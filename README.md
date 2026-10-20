@@ -67,7 +67,9 @@ equilibrium constraint evaluation helpers, version API, and solver interface.
 Matrix views support checked element access, row-major vector conversion,
 element traversal, fill, AXPY, and min/max/sum reductions. The constraint helpers
 build algebraic masks and Jacobian patterns and add residual and negative-Jacobian
-terms to caller-provided arrays. The optional constrained Rosenbrock entry point
+terms to caller-provided arrays. Masked forcing and Jacobian helpers accumulate
+reaction contributions while leaving algebraic rows unchanged. The optional
+constrained Rosenbrock entry point
 projects algebraic variables with Newton iterations before integration and after
 each accepted step, and reports the initial projection iteration count in
 `chem_solver_stats.constraint_init_iterations`. The mechanism evaluator covers

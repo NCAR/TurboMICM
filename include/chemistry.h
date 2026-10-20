@@ -164,6 +164,14 @@ int chem_constraint_set_add_negative_jacobian(
     const chem_constraint_set *set, const double *states,
     const double *temperatures, size_t cell_count,
     double *negative_jacobians);
+int chem_forcing_add_with_algebraic_mask(
+    const chem_mechanism *mechanism, const double *concentration,
+    const double *rate_constants, double air_density,
+    const unsigned char *algebraic_mask, double *forcing);
+int chem_negative_jacobian_add_with_algebraic_mask(
+    const chem_mechanism *mechanism, const double *concentration,
+    const double *rate_constants, const unsigned char *algebraic_mask,
+    double *negative_jacobian);
 
 /* A non-owning rectangular view over row-major or strided matrix storage. */
 typedef struct {

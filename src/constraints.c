@@ -1,6 +1,7 @@
 #include "chemistry.h"
 
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 static int valid_terms(const chem_constraint_term *terms, size_t count,
@@ -164,4 +165,43 @@ int chem_constraint_set_add_negative_jacobian(
     }
   }
   return 0;
+}
+
+int chem_forcing_add_with_algebraic_mask(
+    const chem_mechanism *mechanism, const double *concentration,
+    const double *rate_constants, double air_density,
+    const unsigned char *algebraic_mask, double *forcing) {
+  if (!mechanism || !algebraic_mask || !forcing || !mechanism->species_count)
+    return 1;
+  double *addition = calloc(mechanism->species_count, sizeof(*addition));
+  if (!addition) return 1;
+  const int status = chem_forcing_with_constants(mechanism, concentration,
+                                                  rate_constants, air_density,
+                                                  addition);
+  if (!status)
+    for (size_t i = 0; i < mechanism->species_count; ++i)
+      if (!algebraic_mask[i]) forcing[i] += addition[i];
+  free(addition);
+  return status;
+}
+
+int chem_negative_jacobian_add_with_algebraic_mask(
+    const chem_mechanism *mechanism, const double *concentration,
+    const double *rate_constants, const unsigned char *algebraic_mask,
+    double *negative_jacobian) {
+  if (!mechanism || !algebraic_mask || !negative_jacobian ||
+      !mechanism->species_count ||
+      mechanism->species_count > (size_t)-1/mechanism->species_count) return 1;
+  const size_t n = mechanism->species_count;
+  double *addition = calloc(n*n, sizeof(*addition));
+  if (!addition) return 1;
+  const int status = chem_negative_jacobian_with_constants(
+      mechanism, concentration, rate_constants, addition);
+  if (!status)
+    for (size_t row = 0; row < n; ++row)
+      if (!algebraic_mask[row])
+        for (size_t column = 0; column < n; ++column)
+          negative_jacobian[row*n+column] += addition[row*n+column];
+  free(addition);
+  return status;
 }

@@ -47,6 +47,7 @@ implemented = {
     "chapman_integration:ChapmanIntegration.CanBuildChapmanSystem",
     "integrated_reaction_rates:ChapmanIntegration.CanBuildChapmanSystem",
     "solver_lambda_rate_constant:Solver.GetLambdaRateConstantByNameCanOverrideLambda",
+    "process_set:ProcessSetAlgebraicVariables.CudaMatrix",
     "constraint_set:ConstraintSet.Construction",
     "constraint_set:ConstraintSet.ReplaceStateRowsMapsToAlgebraicSpecies",
     "constraint_set:ConstraintSet.NonZeroJacobianElements",
@@ -214,6 +215,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C linear/equilibrium constraint residual and Jacobian behavior checked"
         elif case_id.startswith("constraint_initialization:"):
             reason = "C constrained solve projects consistent and inconsistent algebraic initial conditions"
+        elif case_id == "process_set:ProcessSetAlgebraicVariables.CudaMatrix":
+            reason = "C masked reaction forcing and Jacobian updates preserve algebraic rows"
         elif case_id.startswith("matrix:"):
             reason = "C strided matrix view, conversion, arithmetic, and reductions checked"
         elif case_id.startswith("version:"):

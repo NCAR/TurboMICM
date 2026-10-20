@@ -1318,6 +1318,44 @@ static int check_constrained_solver(void) {
   return 0;
 }
 
+static int check_process_algebraic_mask(void) {
+  const chem_species species[] = {
+      {.name="A"},{.name="B"},{.name="C"},{.name="D"}};
+  const chem_term reactants[] = {{.species=0,.coefficient=1.0},
+                                  {.species=1,.coefficient=1.0}};
+  const chem_term products[] = {{.species=2,.coefficient=1.0},
+                                 {.species=3,.coefficient=1.0}};
+  const chem_reaction reaction = {.kind=CHEM_ARRHENIUS,.reactants=reactants,
+      .reactant_count=2,.products=products,.product_count=2};
+  const chem_mechanism mechanism = {.species=species,.species_count=4,
+      .reactions=&reaction,.reaction_count=1};
+  const unsigned char mask[] = {0,1,0,1};
+  const double rates[] = {10.0};
+  const double states[][4] = {{1.0,2.0,3.0,4.0},{5.0,6.0,7.0,8.0}};
+  const double expected[][4] = {{980.0,1000.0,1020.0,1000.0},
+                                 {700.0,1000.0,1300.0,1000.0}};
+  for (size_t cell = 0; cell < 2; ++cell) {
+    double forcing[] = {1000.0,1000.0,1000.0,1000.0};
+    if (chem_forcing_add_with_algebraic_mask(&mechanism,states[cell],rates,
+          40.0,mask,forcing)) return 1;
+    for (size_t row = 0; row < 4; ++row)
+      if (fabs(forcing[row]-expected[cell][row])>1.0e-12) return 2;
+    double jacobian[] = {500,500,500,500,500,500,500,500,
+                         500,500,500,500,500,500,500,500};
+    double unmasked[16] = {0};
+    if (chem_negative_jacobian_with_constants(&mechanism,states[cell],rates,
+          unmasked) || chem_negative_jacobian_add_with_algebraic_mask(
+          &mechanism,states[cell],rates,mask,jacobian)) return 3;
+    for (size_t row = 0; row < 4; ++row)
+      for (size_t column = 0; column < 4; ++column) {
+        const double expected_value = mask[row]
+            ? 500.0 : 500.0 + unmasked[row*4+column];
+        if (jacobian[row*4+column] != expected_value) return 4;
+      }
+  }
+  return 0;
+}
+
 static void matrix_add_index(size_t row, size_t column, double *value,
                              void *context) {
   const double scale = *(const double *)context;
@@ -1957,6 +1995,7 @@ int main(void) {
   if (check_phase_species_metadata() != 0) return 62;
   if (check_constraint_api() != 0) return 63;
   if (check_constrained_solver() != 0) return 65;
+  if (check_process_algebraic_mask() != 0) return 66;
   if (check_matrix_view_api() != 0) return 64;
   return 0;
 }
