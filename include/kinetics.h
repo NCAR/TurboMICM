@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "constraint.h"
 
 typedef enum {
   CHEM_ARRHENIUS = 0,
@@ -127,7 +128,17 @@ typedef struct {
   uint64_t jacobian_updates;
   uint64_t decompositions;
   uint64_t solves;
+  uint64_t constraint_init_iterations;
 } chem_solver_stats;
+
+typedef enum {
+  CHEM_SOLVER_CONVERGED = 0,
+  CHEM_SOLVER_RUNNING,
+  CHEM_SOLVER_FAILED,
+  CHEM_SOLVER_CONSTRAINT_INITIALIZATION_FAILED
+} chem_solver_state;
+
+const char *chem_solver_state_string(chem_solver_state state);
 
 typedef struct {
   double small;
@@ -155,6 +166,7 @@ typedef struct chem_sparse_pattern {
   uint32_t *rows;
   size_t *diagonal;
   size_t *position;
+  double *mass_diagonal;
 } chem_sparse_pattern;
 
 typedef double (*chem_step_controller)(double error, double order,
@@ -187,6 +199,11 @@ typedef struct {
   double h_start_fraction;
   double round_off;
   size_t max_number_of_steps;
+  size_t constraint_init_max_iterations;
+  double constraint_init_tolerance;
+  size_t constraint_init_max_backtracks;
+  double constraint_init_backtrack_factor;
+  double constraint_init_sufficient_decrease;
   chem_step_controller controller;
   chem_lu_factor_callback factor;
   chem_lu_solve_callback solve;
@@ -213,6 +230,11 @@ void chem_solver_destroy(chem_solver *solver);
 /* Integrate one chemistry interval over the persistent cell-major state. */
 int chem_solver_step(chem_solver *solver, double *concentrations,
                      double time_step, chem_solver_stats *stats);
+int chem_solver_set_constraints(chem_solver *solver,
+                                const chem_constraint_set *constraints,
+                                const double *equilibrium_constants,
+                                const double *constraint_temperatures);
+/* Constraint constants use cell-major [cell][constraint] order; temperatures are per cell. */
 double chem_solver_absolute_tolerance(const chem_solver *solver, size_t species);
 double chem_solver_relative_tolerance(const chem_solver *solver);
 double chem_normalized_error(const double *old_values,

@@ -78,5 +78,12 @@ int chem_constraint_set_subtract_jacobian(
     const chem_constraint_set *set, size_t cell_count,
     const double *concentrations, const double *equilibrium_constants,
     const double *temperatures, double *dense_jacobians);
+int chem_constraint_set_project(
+    const chem_constraint_set *set, size_t cell_count, double *concentrations,
+    const double *equilibrium_constants, const double *temperatures,
+    const double *absolute_tolerances, double relative_tolerance,
+    double correction_tolerance, size_t maximum_iterations,
+    size_t maximum_backtracks, double backtrack_factor,
+    double sufficient_decrease, size_t *iterations);
 
 #endif

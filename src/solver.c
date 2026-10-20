@@ -13,6 +13,8 @@
 
 enum { K_WORK_BASE, YNEW_WORK = 6, ERROR_WORK, TEMP_WORK, WORK_COUNT };
 
+#define CHEM_DEFAULT_REFERENCE_TEMPERATURE 298.15
+
 struct chem_solver {
   const chem_mechanism *mechanism;
   size_t cells;
@@ -23,12 +25,27 @@ struct chem_solver {
   size_t group_size;
   int thread_count;
   chem_rosenbrock_parameters parameters;
+  const chem_constraint_set *constraints;
+  const double *equilibrium_constants;
+  const double *constraint_temperatures;
   chem_sparse_pattern pattern;
   double *rates;       /* cell-major, reaction */
   double *work;        /* work-vector-major, cell-major, species */
   double *factor_work; /* one sparse LU workspace per solver group */
   int allocation_error;
 };
+
+const char *chem_solver_state_string(chem_solver_state state)
+{
+  switch (state) {
+  case CHEM_SOLVER_CONVERGED: return "Converged";
+  case CHEM_SOLVER_RUNNING: return "Running";
+  case CHEM_SOLVER_FAILED: return "Failed";
+  case CHEM_SOLVER_CONSTRAINT_INITIALIZATION_FAILED:
+    return "Constraint Initialization Failed";
+  }
+  return "Unknown";
+}
 
 double chem_normalized_error(const double *old_values,
                              const double *new_values,
@@ -117,8 +134,9 @@ int chem_make_pattern(const chem_mechanism *m, chem_sparse_pattern *p)
   p->rows = (uint32_t *)malloc(nnz * sizeof(*p->rows));
   p->diagonal = (size_t *)malloc(n * sizeof(*p->diagonal));
   p->position = (size_t *)malloc(n * n * sizeof(*p->position));
+  p->mass_diagonal = (double *)malloc(n * sizeof(*p->mass_diagonal));
   if (!p->row_offsets || !p->column_offsets || !p->columns || !p->rows ||
-      !p->diagonal || !p->position) {
+      !p->diagonal || !p->position || !p->mass_diagonal) {
     free(matrix);
     chem_free_pattern(p);
     return -1;
@@ -126,6 +144,7 @@ int chem_make_pattern(const chem_mechanism *m, chem_sparse_pattern *p)
   for (i = 0; i < n * n; ++i)
     p->position[i] = SIZE_MAX;
   for (i = 0; i < n; ++i) {
+    p->mass_diagonal[i] = 1.0;
     p->row_offsets[i] = p->row_offsets[i + 1] = 0;
     p->column_offsets[i] = p->column_offsets[i + 1] = 0;
   }
@@ -180,12 +199,57 @@ void chem_free_pattern(chem_sparse_pattern *p)
   free(p->rows);
   free(p->diagonal);
   free(p->position);
+  free(p->mass_diagonal);
   memset(p, 0, sizeof(*p));
 }
 
-static void evaluate_rhs(const chem_mechanism *m, const chem_sparse_pattern *pattern,
-                         const double *y, const double *rates, double *forcing,
-                         double *negative_jacobian)
+static int chem_make_dense_pattern(size_t n, chem_sparse_pattern *pattern)
+{
+  size_t row, column, nnz;
+  if (!n || n > UINT32_MAX || n > SIZE_MAX / n)
+    return -1;
+  nnz = n * n;
+  if (nnz > SIZE_MAX / sizeof(uint32_t) ||
+      n == SIZE_MAX || n + 1 > SIZE_MAX / sizeof(size_t))
+    return -1;
+  *pattern = (chem_sparse_pattern){0};
+  pattern->n = n;
+  pattern->nnz = nnz;
+  pattern->row_offsets = (size_t *)malloc((n + 1) * sizeof(size_t));
+  pattern->column_offsets = (size_t *)malloc((n + 1) * sizeof(size_t));
+  pattern->columns = (uint32_t *)malloc(nnz * sizeof(uint32_t));
+  pattern->rows = (uint32_t *)malloc(nnz * sizeof(uint32_t));
+  pattern->diagonal = (size_t *)malloc(n * sizeof(size_t));
+  pattern->position = (size_t *)malloc(nnz * sizeof(size_t));
+  pattern->mass_diagonal = (double *)malloc(n * sizeof(*pattern->mass_diagonal));
+  if (!pattern->row_offsets || !pattern->column_offsets || !pattern->columns ||
+      !pattern->rows || !pattern->diagonal || !pattern->position ||
+      !pattern->mass_diagonal) {
+    chem_free_pattern(pattern);
+    return -1;
+  }
+  for (row = 0; row < n; ++row) {
+    pattern->mass_diagonal[row] = 1.0;
+    pattern->row_offsets[row] = row * n;
+    pattern->column_offsets[row] = row * n;
+    pattern->diagonal[row] = row * n + row;
+    for (column = 0; column < n; ++column) {
+      pattern->columns[row * n + column] = (uint32_t)column;
+      pattern->rows[column * n + row] = (uint32_t)row;
+      pattern->position[row * n + column] = row * n + column;
+    }
+  }
+  pattern->row_offsets[n] = nnz;
+  pattern->column_offsets[n] = nnz;
+  return 0;
+}
+
+static int evaluate_rhs(const chem_mechanism *m, const chem_sparse_pattern *pattern,
+                        const double *y, const double *rates, double *forcing,
+                        double *negative_jacobian,
+                        const chem_constraint_set *constraints,
+                        const double *equilibrium_constants,
+                        double temperature, size_t cell)
 {
   size_t i;
   memset(forcing, 0, m->species_count * sizeof(*forcing));
@@ -221,6 +285,42 @@ static void evaluate_rhs(const chem_mechanism *m, const chem_sparse_pattern *pat
       }
     }
   }
+  if (constraints) {
+    double *gradient = NULL;
+    size_t constraint_index, variable;
+    if (negative_jacobian) {
+      gradient = (double *)malloc(m->species_count * sizeof(*gradient));
+      if (!gradient)
+        return -1;
+    }
+    for (constraint_index = 0; constraint_index < constraints->constraint_count;
+         ++constraint_index) {
+      const chem_constraint *constraint = &constraints->constraints[constraint_index];
+      const size_t row = constraint->algebraic_species;
+      const double k = equilibrium_constants
+                           ? equilibrium_constants[cell * constraints->constraint_count + constraint_index]
+                           : 0.0;
+      double residual;
+      if (chem_constraint_residual(constraint, y, m->species_count, k,
+                                   temperature, &residual) != 0) {
+        free(gradient);
+        return -1;
+      }
+      forcing[row] = residual;
+      if (negative_jacobian) {
+        if (chem_constraint_jacobian(constraint, y, m->species_count, k,
+                                     temperature, gradient) != 0) {
+          free(gradient);
+          return -1;
+        }
+        for (variable = 0; variable < m->species_count; ++variable)
+          negative_jacobian[pattern->position[row * m->species_count + variable]] =
+              -gradient[variable];
+      }
+    }
+    free(gradient);
+  }
+  return 0;
 }
 
 static int factor(const chem_sparse_pattern *p, double alpha,
@@ -229,7 +329,7 @@ static int factor(const chem_sparse_pattern *p, double alpha,
   size_t i, k;
   memcpy(lu, negative_jacobian, p->nnz * sizeof(*lu));
   for (i = 0; i < p->n; ++i)
-    lu[p->diagonal[i]] += alpha;
+    lu[p->diagonal[i]] += alpha * p->mass_diagonal[i];
   for (k = 0; k < p->n; ++k) {
     const double pivot = lu[p->diagonal[k]];
     if (pivot == 0.0 || !isfinite(pivot))
@@ -336,6 +436,11 @@ void chem_rosenbrock_default(chem_rosenbrock_parameters *p)
   p->h_start_fraction = 1.0e-6;
   p->round_off = DBL_EPSILON;
   p->max_number_of_steps = 1000;
+  p->constraint_init_max_iterations = 10;
+  p->constraint_init_tolerance = 0.1;
+  p->constraint_init_max_backtracks = 24;
+  p->constraint_init_backtrack_factor = 0.5;
+  p->constraint_init_sufficient_decrease = 1.0e-4;
   p->controller = default_step_factor;
   p->factor = default_factor_callback;
   p->solve = default_solve_callback;
@@ -581,7 +686,17 @@ static int solve_group(chem_solver *s, size_t thread,
         double *err = error_all + offset;
         double *temporary = temp_all + offset;
         const double *rates = s->rates + cell * s->nr;
-        evaluate_rhs(m, &s->pattern, y + offset, rates, k_all[0] + offset, negative_jacobian);
+        const size_t n_constraints = s->constraints
+                                         ? s->constraints->constraint_count : 0;
+        const double *equilibrium_constants = s->equilibrium_constants
+            ? s->equilibrium_constants + cell * n_constraints : NULL;
+        const double temperature = s->constraint_temperatures
+            ? s->constraint_temperatures[cell] : CHEM_DEFAULT_REFERENCE_TEMPERATURE;
+        if (evaluate_rhs(m, &s->pattern, y + offset, rates,
+                         k_all[0] + offset, negative_jacobian,
+                         s->constraints, equilibrium_constants, temperature,
+                         cell) != 0)
+          return -1;
         if (p->stages > 1 && !p->new_function_evaluation[1])
           memcpy(k_all[1] + offset, k_all[0] + offset, n * sizeof(double));
         if (factor_callback(&s->pattern, alpha, negative_jacobian, lu,
@@ -601,15 +716,20 @@ static int solve_group(chem_solver *s, size_t thread,
                 for (v = 0; v < n; ++v)
                   temporary[v] += a * k_all[j][offset + v];
             }
-            evaluate_rhs(m, &s->pattern, temporary, rates, k, NULL);
+            if (evaluate_rhs(m, &s->pattern, temporary, rates, k, NULL,
+                             s->constraints, equilibrium_constants, temperature,
+                             cell) != 0)
+              return -1;
             if (stage + 1 < p->stages && !p->new_function_evaluation[stage + 1])
               memcpy(k_all[stage + 1] + offset, k, n * sizeof(double));
           }
           for (j = 0; j < stage; ++j) {
             const double coefficient = p->c[combination + j] / h;
-            if (coefficient != 0.0)
+            if (coefficient != 0.0) {
               for (v = 0; v < n; ++v)
-                k[v] += coefficient * k_all[j][offset + v];
+                if (!s->constraints || s->pattern.mass_diagonal[v] != 0.0)
+                  k[v] += coefficient * k_all[j][offset + v];
+            }
           }
           solve_callback(&s->pattern, lu, k, p->callback_context);
         }
@@ -620,6 +740,8 @@ static int solve_group(chem_solver *s, size_t thread,
             y1 += p->m[stage] * k_all[stage][offset + v];
             error += p->e[stage] * k_all[stage][offset + v];
           }
+          if (s->constraints && s->pattern.mass_diagonal[v] == 0.0)
+            error = y1 - y[offset + v];
           err[v] = error;
           ynew[v] = y1;
         }
@@ -740,6 +862,63 @@ void chem_solver_destroy(chem_solver *s)
   free(s);
 }
 
+int chem_solver_set_constraints(chem_solver *s,
+                                const chem_constraint_set *constraints,
+                                const double *equilibrium_constants,
+                                const double *constraint_temperatures)
+{
+  chem_sparse_pattern dense = {0};
+  chem_constraint_set validated;
+  double *factor_work = NULL;
+  size_t constraint_index, prior;
+  if (!s)
+    return -1;
+  if (constraints &&
+      (constraints->species_count != s->n ||
+       chem_constraint_set_init(&validated, constraints->constraints,
+                                constraints->constraint_count,
+                                constraints->species_count) != 0))
+    return -1;
+  if (constraints && constraints->constraint_count) {
+    size_t work_values;
+    if (chem_make_dense_pattern(s->n, &dense) != 0)
+      return -1;
+    for (constraint_index = 0; constraint_index < constraints->constraint_count;
+         ++constraint_index) {
+      const size_t algebraic = constraints->constraints[constraint_index].algebraic_species;
+      for (prior = 0; prior < constraint_index; ++prior)
+        if (constraints->constraints[prior].algebraic_species == algebraic) {
+          chem_free_pattern(&dense);
+          return -1;
+        }
+      dense.mass_diagonal[algebraic] = 0.0;
+    }
+    if (dense.nnz > SIZE_MAX / (2 * sizeof(*factor_work))) {
+      chem_free_pattern(&dense);
+      return -1;
+    }
+    work_values = 2 * dense.nnz;
+    if (work_values > SIZE_MAX / sizeof(*factor_work) ||
+        (size_t)s->thread_count > SIZE_MAX / (work_values * sizeof(*factor_work))) {
+      chem_free_pattern(&dense);
+      return -1;
+    }
+    factor_work = (double *)malloc((size_t)s->thread_count * work_values * sizeof(*factor_work));
+    if (!factor_work) {
+      chem_free_pattern(&dense);
+      return -1;
+    }
+    chem_free_pattern(&s->pattern);
+    s->pattern = dense;
+    free(s->factor_work);
+    s->factor_work = factor_work;
+  }
+  s->constraints = constraints;
+  s->equilibrium_constants = equilibrium_constants;
+  s->constraint_temperatures = constraint_temperatures;
+  return 0;
+}
+
 double chem_solver_absolute_tolerance(const chem_solver *s, size_t species)
 {
   double tolerance;
@@ -763,6 +942,30 @@ int chem_solver_step(chem_solver *s, double *concentrations, double dt,
   if (!s || !concentrations || !stats || dt <= 0.0)
     return -1;
   memset(stats, 0, sizeof(*stats));
+  if (s->constraints && s->constraints->constraint_count) {
+    size_t projection_iterations = 0;
+    double *absolute_tolerances = (double *)malloc(s->n * sizeof(*absolute_tolerances));
+    size_t species;
+    int projection_status;
+    if (!absolute_tolerances)
+      return -1;
+    for (species = 0; species < s->n; ++species)
+      absolute_tolerances[species] = chem_solver_absolute_tolerance(s, species);
+    projection_status = chem_constraint_set_project(
+        s->constraints, s->cells, concentrations, s->equilibrium_constants,
+        s->constraint_temperatures, absolute_tolerances,
+        s->parameters.relative_tolerance,
+        s->parameters.constraint_init_tolerance,
+        s->parameters.constraint_init_max_iterations,
+        s->parameters.constraint_init_max_backtracks,
+        s->parameters.constraint_init_backtrack_factor,
+        s->parameters.constraint_init_sufficient_decrease,
+        &projection_iterations);
+    free(absolute_tolerances);
+    stats->constraint_init_iterations = projection_iterations;
+    if (projection_status != 0)
+      return (int)CHEM_SOLVER_CONSTRAINT_INITIALIZATION_FAILED;
+  }
   group_stats = (chem_solver_stats *)calloc(s->groups, sizeof(*group_stats));
   group_status = (int *)calloc(s->groups, sizeof(*group_status));
   if (!group_stats || !group_status) {

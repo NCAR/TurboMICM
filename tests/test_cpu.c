@@ -1782,6 +1782,255 @@ static int test_equilibrium_constraint_case(const char *test)
   return CASE_PASS;
 }
 
+static int run_equilibrium_constraint_step(size_t cells, double *state,
+                                           double time_step,
+                                           chem_solver_stats *stats)
+{
+  static const chem_species species[] = {
+    {.name="A"}, {.name="B"}, {.name="C"}
+  };
+  static const uint32_t reactants[] = {0};
+  static const uint32_t products[] = {1};
+  static const double yields[] = {1.0};
+  static const chem_reaction reactions[] = {
+    {.kind=CHEM_ARRHENIUS, .reactant_offset=0, .reactant_count=1,
+     .product_offset=0, .product_count=1, .p={0.5, 0.0, 0.0, 298.15}}
+  };
+  static const chem_mechanism mechanism = {
+    .name="simple constrained system", .species_count=3, .reaction_count=1,
+    .reactant_count=1, .product_count=1, .default_temperature=298.15,
+    .default_pressure=101325.0, .species=species, .reactions=reactions,
+    .reactants=reactants, .products=products, .yields=yields
+  };
+  chem_constraint constraint;
+  chem_constraint_term reactant = {1, 1.0}, product = {2, 1.0};
+  chem_constraint_set set;
+  chem_rosenbrock_parameters parameters;
+  chem_solver *solver;
+  double *temperature, *pressure;
+  size_t cell;
+  int result;
+  temperature = (double *)malloc(cells * sizeof(*temperature));
+  pressure = (double *)malloc(cells * sizeof(*pressure));
+  if (cells && (!temperature || !pressure)) {
+    free(temperature); free(pressure);
+    return -1;
+  }
+  for (cell = 0; cell < cells; ++cell) {
+    temperature[cell] = 298.15;
+    pressure[cell] = 101325.0;
+  }
+  if (chem_constraint_equilibrium_init(&constraint, "B_C_eq", 2,
+          &reactant, 1, &product, 1, 2.0, 0.0,
+          8.31446261815324, 298.15) != 0 ||
+      chem_constraint_set_init(&set, &constraint, 1, 3) != 0) {
+    free(temperature); free(pressure);
+    return -1;
+  }
+  chem_rosenbrock_default(&parameters);
+  solver = chem_solver_create(&mechanism, cells, temperature, pressure,
+                              NULL, &parameters, 0);
+  if (!solver || chem_solver_set_constraints(solver, &set, NULL, temperature) != 0) {
+    chem_solver_destroy(solver);
+    free(temperature); free(pressure);
+    return -1;
+  }
+  result = chem_solver_step(solver, state, time_step, stats);
+  chem_solver_destroy(solver);
+  free(temperature); free(pressure);
+  return result;
+}
+
+static int run_unconstrained_step(double *state, chem_solver_stats *stats)
+{
+  static const chem_species species[] = {{.name="A"}, {.name="B"}};
+  static const uint32_t reactants[] = {0};
+  static const uint32_t products[] = {1};
+  static const double yields[] = {1.0};
+  static const chem_reaction reaction = {
+    .kind=CHEM_ARRHENIUS, .reactant_offset=0, .reactant_count=1,
+    .product_offset=0, .product_count=1, .p={0.5, 0.0, 0.0, 298.15}
+  };
+  static const chem_mechanism mechanism = {
+    .name="plain ODE", .species_count=2, .reaction_count=1,
+    .reactant_count=1, .product_count=1, .default_temperature=298.15,
+    .default_pressure=101325.0, .species=species, .reactions=&reaction,
+    .reactants=reactants, .products=products, .yields=yields
+  };
+  chem_rosenbrock_parameters parameters;
+  chem_solver *solver;
+  double temperature[] = {298.15}, pressure[] = {101325.0};
+  int result;
+  chem_rosenbrock_default(&parameters);
+  solver = chem_solver_create(&mechanism, 1, temperature, pressure, NULL,
+                              &parameters, 0);
+  if (!solver)
+    return -1;
+  result = chem_solver_step(solver, state, 0.001, stats);
+  chem_solver_destroy(solver);
+  return result;
+}
+
+static int test_constraint_initialization_case(const char *test)
+{
+  if (strcmp(test, "ConstraintInitialization.SolverStateToStringNewValue") == 0)
+    return strcmp(chem_solver_state_string(CHEM_SOLVER_CONSTRAINT_INITIALIZATION_FAILED),
+                  "Constraint Initialization Failed") == 0 ? CASE_PASS : CASE_FAIL;
+  if (strcmp(test, "ConstraintInitialization.PureODESystemUnaffected") == 0) {
+    chem_solver_stats stats;
+    double state[] = {1.0, 0.0};
+    if (run_unconstrained_step(state, &stats) != 0)
+      return CASE_FAIL;
+    return stats.constraint_init_iterations == 0 && isfinite(state[0]) &&
+           isfinite(state[1]) ? CASE_PASS : CASE_FAIL;
+  }
+  if (strcmp(test, "ConstraintInitialization.WeightedCorrectionIsInvariantToConstraintRowScaling") == 0 ||
+      strcmp(test, "ConstraintInitialization.WeightedCorrectionUsesStateTolerances") == 0) {
+    const double scales[] = {1.0e-12, 1.0, 1.0e12};
+    double reference = 0.0;
+    size_t si, iterations;
+    for (si = 0; si < (strcmp(test, "ConstraintInitialization.WeightedCorrectionUsesStateTolerances") == 0 ? 1u : 3u); ++si) {
+      const double row_scale = strcmp(test, "ConstraintInitialization.WeightedCorrectionUsesStateTolerances") == 0
+                                   ? 1.0 : scales[si];
+      chem_constraint constraint;
+      chem_constraint_set set;
+      chem_constraint_term terms[] = {{0, row_scale}, {1, -row_scale}};
+      double state[] = {1.0, 4.0};
+      double atol[] = {1.0e-12, 1.0e-12};
+      double rtol = 1.0e-8;
+      double tolerance = 0.1;
+      if (strcmp(test, "ConstraintInitialization.WeightedCorrectionUsesStateTolerances") == 0) {
+        const double deviation = 5.0e-8;
+        state[1] = 1.0 + deviation;
+        atol[1] = 1.0e-8;
+        rtol = 1.0e-6;
+      }
+      if (chem_constraint_linear_init(&constraint, "scaled", 1, terms, 2, 0.0) != 0 ||
+          chem_constraint_set_init(&set, &constraint, 1, 2) != 0 ||
+          chem_constraint_set_project(&set, 1, state, NULL, NULL, atol, rtol,
+              tolerance, 10, 24, 0.5, 1.0e-4, &iterations) != 0)
+        return CASE_FAIL;
+      if (strcmp(test, "ConstraintInitialization.WeightedCorrectionUsesStateTolerances") == 0)
+        return state[1] == 1.0 + 5.0e-8 && iterations == 1 ? CASE_PASS : CASE_FAIL;
+      if (si == 0)
+        reference = state[1];
+      if (!close_enough(state[1], reference, 0.0, 1.0e-12) ||
+          !close_enough(state[1], 1.0, 0.0, 1.0e-12))
+        return CASE_FAIL;
+    }
+    return CASE_PASS;
+  }
+  if (strcmp(test, "ConstraintInitialization.FailedInitializationRestoresCallerState") == 0 ||
+      strcmp(test, "ConstraintInitialization.SuccessfulInitializationKeepsTheCorrection") == 0) {
+    chem_constraint constraint;
+    chem_constraint_set set;
+    chem_constraint_term reactant = {0, 1.0}, product = {1, 2.0};
+    double state[] = {0.5, 100.0};
+    double atol[] = {1.0e-3, 1.0e-3};
+    size_t iterations;
+    const int fail_case = strcmp(test, "ConstraintInitialization.FailedInitializationRestoresCallerState") == 0;
+    if (!fail_case)
+      state[1] = 1.0e-6;
+    if (chem_constraint_equilibrium_init(&constraint, "squared", 1,
+            &reactant, 1, &product, 1, 2.0, 0.0,
+            8.31446261815324, 298.15) != 0 ||
+        chem_constraint_set_init(&set, &constraint, 1, 2) != 0)
+      return CASE_FAIL;
+    if (chem_constraint_set_project(&set, 1, state, NULL, NULL, atol,
+            1.0e-6, 0.1, fail_case ? 1u : 10u, 24, 0.5, 1.0e-4,
+            &iterations) == 0)
+      return fail_case ? CASE_FAIL : (close_enough(state[1], 1.0, 0.0, 1.0e-3)
+                                         ? CASE_PASS : CASE_FAIL);
+    return fail_case && state[0] == 0.5 && state[1] == 100.0
+               ? CASE_PASS : CASE_FAIL;
+  }
+  if (strcmp(test, "ConstraintInitialization.ScaledConstraintRowsSolveIdenticallyThroughSolve") == 0) {
+    const double scales[] = {1.0, 1.0e-12, 1.0e12};
+    double result[3];
+    size_t si;
+    static const chem_species species[] = {{.name="A"}, {.name="B"}, {.name="C"}};
+    static const uint32_t reactants[] = {0};
+    static const uint32_t products[] = {1};
+    static const double yields[] = {1.0};
+    static const chem_reaction reaction = {
+      .kind=CHEM_ARRHENIUS, .reactant_offset=0, .reactant_count=1,
+      .product_offset=0, .product_count=1, .p={0.5, 0.0, 0.0, 298.15}
+    };
+    static const chem_mechanism mechanism = {
+      .name="scaled constraint test", .species_count=3, .reaction_count=1,
+      .reactant_count=1, .product_count=1, .default_temperature=298.15,
+      .default_pressure=101325.0, .species=species, .reactions=&reaction,
+      .reactants=reactants, .products=products, .yields=yields
+    };
+    for (si = 0; si < 3; ++si) {
+      chem_constraint constraint;
+      chem_constraint_set set;
+      chem_constraint_term terms[] = {{0, scales[si]}, {1, scales[si]}, {2, scales[si]}};
+      chem_rosenbrock_parameters parameters;
+      chem_solver_stats stats;
+      double y[] = {0.7, 0.15, 5.0};
+      double temperature[] = {298.15}, pressure[] = {101325.0};
+      chem_solver *solver;
+      if (chem_constraint_linear_init(&constraint, "mass", 2, terms, 3,
+                                      scales[si] * 1.3) != 0 ||
+          chem_constraint_set_init(&set, &constraint, 1, 3) != 0)
+        return CASE_FAIL;
+      chem_rosenbrock_four_stage_dae(&parameters);
+      solver = chem_solver_create(&mechanism, 1, temperature, pressure,
+                                  NULL, &parameters, 0);
+      if (!solver || chem_solver_set_constraints(solver, &set, NULL, temperature) != 0 ||
+          chem_solver_step(solver, y, 0.001, &stats) != 0) {
+        chem_solver_destroy(solver);
+        return CASE_FAIL;
+      }
+      chem_solver_destroy(solver);
+      result[si] = y[2];
+      if (!close_enough(y[2], 0.45, 1.0e-5, 0.0))
+        return CASE_FAIL;
+    }
+    return close_enough(result[1], result[0], 1.0e-5, 0.0) &&
+           close_enough(result[2], result[0], 1.0e-5, 0.0) ? CASE_PASS : CASE_FAIL;
+  }
+  if (strcmp(test, "ConstraintInitialization.MultiCellSystems") == 0) {
+    chem_solver_stats stats;
+    double state[] = {1.0, 0.5, 1.0, 2.0, 0.3, 5.0, 0.5, 0.1, 100.0};
+    size_t cell;
+    if (run_equilibrium_constraint_step(3, state, 0.001, &stats) != 0)
+      return CASE_FAIL;
+    for (cell = 0; cell < 3; ++cell)
+      if (!close_enough(state[cell * 3 + 2], 2.0 * state[cell * 3 + 1], 0.0, 1.0e-5))
+        return CASE_FAIL;
+    return CASE_PASS;
+  }
+  if (strcmp(test, "ConstraintInitialization.SubsequentSolveCallsReinitialize") == 0) {
+    chem_solver_stats stats;
+    double state[] = {1.0, 0.5, 1.0};
+    if (run_equilibrium_constraint_step(1, state, 0.001, &stats) != 0)
+      return CASE_FAIL;
+    state[2] = 999.0;
+    if (run_equilibrium_constraint_step(1, state, 0.001, &stats) != 0)
+      return CASE_FAIL;
+    return close_enough(state[2], 2.0 * state[1], 0.0, 1.0e-6)
+               ? CASE_PASS : CASE_FAIL;
+  }
+  if (strcmp(test, "ConstraintInitialization.ConsistentICsUnchanged") == 0 ||
+      strcmp(test, "ConstraintInitialization.MildlyInconsistentICsCorrected") == 0 ||
+      strcmp(test, "ConstraintInitialization.SeverelyInconsistentICsConverge") == 0) {
+    chem_solver_stats stats;
+    double state[] = {1.0, 0.5, 1.0};
+    if (strcmp(test, "ConstraintInitialization.MildlyInconsistentICsCorrected") == 0)
+      state[2] = 5.0;
+    else if (strcmp(test, "ConstraintInitialization.SeverelyInconsistentICsConverge") == 0)
+      state[2] = 1000.0;
+    if (run_equilibrium_constraint_step(1, state, 0.001, &stats) != 0)
+      return CASE_FAIL;
+    return close_enough(state[2], 2.0 * state[1], 0.0, 1.0e-6) &&
+           (strcmp(test, "ConstraintInitialization.ConsistentICsUnchanged") != 0 ||
+            stats.constraint_init_iterations == 1) ? CASE_PASS : CASE_FAIL;
+  }
+  return CASE_FAIL;
+}
+
 static int test_constraint_set_case(const char *test)
 {
   chem_constraint constraints[2];
@@ -2362,6 +2611,8 @@ static int run_case(const char *id, char *reason)
     status = test_equilibrium_constraint_case(test);
   } else if (strcmp(suite, "constraint_set") == 0) {
     status = test_constraint_set_case(test);
+  } else if (strcmp(suite, "constraint_initialization") == 0) {
+    status = test_constraint_initialization_case(test);
   } else if (strcmp(suite, "jacobian_verification") == 0) {
     status = test_jacobian_verification(test);
   } else if (strcmp(suite, "backward_euler") == 0) {
