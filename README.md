@@ -33,7 +33,9 @@ system definitions for code-built mechanisms, and an owning `chem_state`
 container with deep copy, move, named concentration access, and custom
 rate-parameter setters. It also provides dense Mozart and Doolittle LU
 factorization and solve routines, plus coordinate sparse LU and matrix-vector
-operations for caller-supplied patterns. The forcing API supports accumulation and algebraic-row
+operations for caller-supplied patterns. [chem_views.h](include/chem_views.h)
+provides checked non-owning strided group views with fill, copy, and unary or
+binary transforms. The forcing API supports accumulation and algebraic-row
 masking and can build a dense negative Jacobian. C object initialization uses
 zero-initialized structs; functions return status codes, and name lists and
 states have explicit destroy functions. [chem_constraints.h](include/chem_constraints.h)

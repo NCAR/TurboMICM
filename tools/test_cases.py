@@ -41,7 +41,7 @@ def failure_reason(case_id: str) -> str:
         return "constraint solver case is not implemented"
     if "aerosol_model" in suite or "external_model" in suite:
         return "external and aerosol model APIs are not implemented"
-    if suite in {"matrix", "vector_matrix"} or suite.startswith("sparse_matrix") or suite in {"grouped_views", "view_category_sfinae"}:
+    if suite in {"matrix", "vector_matrix"} or suite.startswith("sparse_matrix") or suite == "view_category_sfinae":
         return "generic matrix and view utility case is not implemented"
     if suite in {"state", "phase", "species", "system", "process", "process_set", "solver_builder"}:
         return "builder or state API case is not implemented"
@@ -59,7 +59,7 @@ def main() -> int:
         PROJECT / "bin/test_jacobian_verification", PROJECT / "bin/test_solver_configuration",
         PROJECT / "bin/test_integration_equivalents", PROJECT / "bin/test_state", PROJECT / "bin/test_chapman",
         PROJECT / "bin/test_objects", PROJECT / "bin/test_processes", PROJECT / "bin/test_constraints",
-        PROJECT / "bin/test_lu",
+        PROJECT / "bin/test_lu", PROJECT / "bin/test_grouped_views",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -81,6 +81,19 @@ def main() -> int:
     jacobian_results = {
         name: run([str(PROJECT / "bin/test_jacobian_verification"), name])
         for name in jacobian_case_names
+    }
+    grouped_view_case_names = {
+        "MatrixColumnViewRoundTrip", "VectorMatrixColumnViewContiguousBlock", "DenseGroupedMatchesRawL1",
+        "DenseGroupedMatchesRawL2", "DenseGroupedMatchesRawL4", "DenseGroupedMatchesRawL8",
+        "PlainMatrixGroupedRoundTrip", "SparseStandardBlockViewRoundTrip", "SparseVectorBlockViewContiguousBlock",
+        "MixedSparseAndDenseGroupedL1", "MixedSparseAndDenseGroupedL2", "MixedSparseAndDenseGroupedL4",
+        "MixedSparseAndDenseGroupedL8", "SparseVectorRowColOverloadStillFunctional",
+        "ConstGroupViewProducesGroupedViews", "FillAndCopySparseStandardCSR", "FillAndCopySparseStandardCSC",
+        "FillAndCopySparseVectorCSR_L4", "FillAndCopySparseVectorCSC_L4", "FillAndCopySparseVectorCSR_L8",
+        "FillCopyCrossGroupViewSources",
+    }
+    grouped_view_results = {
+        name: run([str(PROJECT / "bin/test_grouped_views"), name]) for name in grouped_view_case_names
     }
     integration_results = {
         name: run([str(PROJECT / "bin/test_integration_equivalents"), name])
@@ -182,6 +195,12 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_chapman"), test])
             status, reason = ("PASS", "generic C mechanism and solver match Chapman reference values") if ok else (
                 "FAIL", "generic C Chapman forcing or integration differs from the reference behavior")
+        elif suite == "grouped_views" and test.split(".", 1)[-1] == "CategoryTagsAreDistinct":
+            status, reason = "N/A", "C uses explicit pointer-and-stride views instead of compile-time C++ view categories"
+        elif suite == "grouped_views" and test.split(".", 1)[-1] in grouped_view_results:
+            ok = grouped_view_results[test.split(".", 1)[-1]]
+            status, reason = ("PASS", "C strided group views match the grouped access, transform, fill, and copy results") if ok else (
+                "FAIL", "C grouped pointer, stride, transform, fill, or copy result differs from the reference")
         elif suite in integration_results:
             ok = integration_results[suite]
             status, reason = ("PASS", "C integration preserves the reference analytic or chemical invariant") if ok else (

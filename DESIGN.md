@@ -59,6 +59,13 @@ uses no pivoting, and stores reciprocal diagonal pivots for direct back solve.
 The sparse matrix-vector helper and LU routines also cover the packed Chapman
 reference operations without adding a mechanism-specific implementation.
 
+`chem_views.h` provides borrowed mutable and const strided group views for
+contiguous blocks or matrix columns. Initialization checks the requested span
+against its backing array. Group fill, copy, unary transforms, and binary
+transforms work for both dense and sparse block layouts; transforms stage
+results before writing so overlapping views are safe. A stride of zero models
+a scalar broadcast.
+
 `chem_state` is an owning C state container for clients that want state
 management as well as the lower-level solver arrays. Initialization copies
 species and custom-parameter names and allocates cell-major concentrations,
