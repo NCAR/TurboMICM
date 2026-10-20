@@ -41,7 +41,7 @@ def failure_reason(case_id: str) -> str:
         return "constraint solver case is not implemented"
     if "aerosol_model" in suite or "external_model" in suite:
         return "external and aerosol model APIs are not implemented"
-    if suite in {"matrix", "vector_matrix"} or suite.startswith("sparse_matrix") or suite == "view_category_sfinae":
+    if suite in {"matrix", "vector_matrix"} or suite == "view_category_sfinae":
         return "generic matrix and view utility case is not implemented"
     if suite in {"state", "phase", "species", "system", "process", "process_set", "solver_builder"}:
         return "builder or state API case is not implemented"
@@ -60,6 +60,7 @@ def main() -> int:
         PROJECT / "bin/test_integration_equivalents", PROJECT / "bin/test_state", PROJECT / "bin/test_chapman",
         PROJECT / "bin/test_objects", PROJECT / "bin/test_processes", PROJECT / "bin/test_constraints",
         PROJECT / "bin/test_lu", PROJECT / "bin/test_grouped_views", PROJECT / "bin/test_matrix",
+        PROJECT / "bin/test_sparse_matrix",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -205,6 +206,10 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_matrix"), suite, test])
             status, reason = ("PASS", "C owning matrices preserve layout, view, elementwise, validation, and reduction behavior") if ok else (
                 "FAIL", "C matrix layout, view, operation, validation, or reduction differs from the reference")
+        elif suite.startswith("sparse_matrix"):
+            ok = run([str(PROJECT / "bin/test_sparse_matrix"), suite, test])
+            status, reason = ("PASS", "C sparse matrix ordering, block storage, views, operations, and validation match the reference") if ok else (
+                "FAIL", "C sparse pattern, block storage, view operation, or validation differs from the reference")
         elif suite in integration_results:
             ok = integration_results[suite]
             status, reason = ("PASS", "C integration preserves the reference analytic or chemical invariant") if ok else (

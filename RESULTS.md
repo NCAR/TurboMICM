@@ -8,17 +8,17 @@ lines. Results for the current source are:
 
 | Compiler | PASS | FAIL | N/A | TS1 serial / parallel |
 | --- | ---: | ---: | ---: | --- |
-| Apple clang 21, macOS arm64 | 383 | 286 | 11 | PASS / PASS |
-| GCC 15.2, macOS arm64 | 383 | 286 | 11 | PASS / PASS |
+| Apple clang 21, macOS arm64 | 573 | 96 | 11 | PASS / PASS |
+| GCC 15.2, macOS arm64 | 573 | 96 | 11 | PASS / PASS |
 
-The 383 passing case lines cover implemented rate-constant formulas, rate
+The 573 passing case lines cover implemented rate-constant formulas, rate
 parameter descriptor references, the two configuration-versus-hand-built
 examples, the README chemistry example, multiple grid cells, the OpenMP tutorial,
 the vectorized storage example, the solve_results and solver_configuration
 tutorials, all 22 state cases, the Chapman descriptor and forcing checks plus
 four generic solver integrations, six Chapman rate/forcing/Jacobian regression
 cases, three packed Chapman sparse linear-algebra checks, 117 dense and
-vector-matrix operations, 21 grouped dense and sparse view operations, the analytic terminator checks, Chapman
+vector-matrix operations, 190 standard and vector-ordered sparse matrix cases, 21 grouped dense and sparse view operations, the analytic terminator checks, Chapman
 oxygen conservation, integrated intermediate monotonicity, condition-dependent
 callback rates and override, seven Jacobian verification cases, C array
 iteration, 14 owning species/phase/system cases, nine reaction/process-set
@@ -35,9 +35,9 @@ table was corrected against the
 copied MICM tutorial executable: both DA methods print `0.703` at 1400 s. The 11 N/A
 cases cover a rate-store callback entry, four compile-time view-category traits,
 the grouped-view compile-time category check, and release metadata with no
-meaningful equivalent in the current C API. The 286 remaining FAIL cases cover
-unimplemented MICM builders, generic sparse matrix utilities, constraint/DAE
-and alternate integration paths, and external/aerosol model APIs. The per-case
+meaningful equivalent in the current C API. The 96 remaining FAIL cases cover
+the solver builder, external and aerosol model APIs, analytical and alternate
+integration paths, and solve regression cases. The per-case
 reasons are printed by the runner.
 These results do not satisfy the prompt's all-cases correctness gate.
 
@@ -62,7 +62,7 @@ maximum relative error `9.7e-13`.
 ## Build verification
 
 Clean `make test-cpu` builds completed with Apple clang 21 and GCC 15.2. Both
-compiler runs reported 383 PASS, 286 FAIL, and 11 N/A, and passed the serial and
+compiler runs reported 573 PASS, 96 FAIL, and 11 N/A, and passed the serial and
 four-thread TS1 checks. The target exits nonzero while failed cases remain. The
 benchmark and library contain no Python linkage. The gate remains incomplete
 because many MICM cases have not been ported.

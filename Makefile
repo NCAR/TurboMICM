@@ -7,9 +7,9 @@ ROOT := $(abspath ..)
 BUILD := build
 BIN := bin
 GEN := $(BUILD)/generated
-LIBSRC := src/chem.c src/state.c src/objects.c src/constraints.c src/linalg.c src/views.c src/matrix.c
+LIBSRC := src/chem.c src/state.c src/objects.c src/constraints.c src/linalg.c src/views.c src/matrix.c src/sparse_matrix.c
 LIBOBJ := $(patsubst src/%.c,$(BUILD)/%.o,$(LIBSRC))
-LIBHDR := include/chem.h include/chem_constraints.h include/chem_views.h include/chem_matrix.h include/jacobian_verification.h
+LIBHDR := include/chem.h include/chem_constraints.h include/chem_views.h include/chem_matrix.h include/chem_sparse_matrix.h include/jacobian_verification.h
 CONFIG := config/ts1.json
 GENSRC := $(GEN)/ts1.c
 NO_USER_CONFIG := config/rate_constants_no_user_defined/config.yaml
@@ -187,7 +187,14 @@ $(BUILD)/test_matrix.o: tests/test_matrix.c $(LIBHDR)
 $(BIN)/test_matrix: $(BUILD)/test_matrix.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_objects $(BIN)/test_processes $(BIN)/test_constraints $(BIN)/test_lu $(BIN)/test_chapman $(BIN)/test_grouped_views $(BIN)/test_matrix
+$(BUILD)/test_sparse_matrix.o: tests/test_sparse_matrix.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_sparse_matrix: $(BUILD)/test_sparse_matrix.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_objects $(BIN)/test_processes $(BIN)/test_constraints $(BIN)/test_lu $(BIN)/test_chapman $(BIN)/test_grouped_views $(BIN)/test_matrix $(BIN)/test_sparse_matrix
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu
