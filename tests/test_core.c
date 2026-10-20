@@ -636,6 +636,100 @@ static int check_process_set_forcing_and_jacobian(void) {
   return 0;
 }
 
+static double terminator_photolysis(size_t cell, size_t cells, double lon) {
+  const double pi = 3.14159265358979323846;
+  const double lat = pi / 180.0 * ((double)cell * (90.0 / (double)cells));
+  const double lat_center = pi * 20.0 / 180.0;
+  const double lon_center = pi * 300.0 / 180.0;
+  return fmax(0.0, sin(lat) * sin(lat_center) +
+      cos(lat) * cos(lat_center) * cos(lon - lon_center));
+}
+
+static int check_terminator_solver(size_t cells, int grouped) {
+  const chem_species species[] = {{.name = "Cl2"}, {.name = "Cl"}};
+  const chem_term cl2[] = {{.species = 0, .coefficient = 1.0}};
+  const chem_term two_cl[] = {{.species = 1, .coefficient = 2.0}};
+  const chem_reaction reactions[] = {
+      {.kind = CHEM_USER_DEFINED, .label = "toy_k1",
+       .reactants = cl2, .reactant_count = 1,
+       .products = two_cl, .product_count = 1,
+       .p = {1.0, 0, 0, 0, 0, 0, 0, 0}},
+      {.kind = CHEM_ARRHENIUS, .reactants = (const chem_term[]){{1, 2.0}},
+       .reactant_count = 1, .products = cl2, .product_count = 1,
+       .p = {1.0, 0, 0, 300.0, 0}}};
+  const chem_mechanism mechanism = {
+      .species = species, .species_count = 2,
+      .reactions = reactions, .reaction_count = 2,
+      .custom_parameter_count = 1};
+  double states[4][2] = {{0}};
+  double rates[4] = {0};
+  double temperatures[4], pressures[4], densities[4];
+  double initial[4][2];
+  for (size_t cell = 0; cell < cells; ++cell) {
+    initial[cell][0] = 1.0e-6 * (1.0 + 0.1 * (double)cell);
+    initial[cell][1] = 1.0e-10 * (1.0 + 0.2 * (double)cell);
+    temperatures[cell] = 298.0;
+    pressures[cell] = 101300.0;
+    densities[cell] = 42.0;
+  }
+  chem_solver_workspace workspace = {0};
+  const int init_status = grouped
+      ? chem_solver_workspace_init_group(&workspace, &mechanism, cells)
+      : chem_solver_workspace_init(&workspace, &mechanism);
+  if (init_status) return 1;
+  chem_solver_options options = chem_solver_default_options();
+  options.relative_tolerance = 1.0e-8;
+  options.absolute_tolerance = 1.0e-20;
+  options.max_steps = 100000;
+  const size_t steps = (size_t)floor(2.0 * 3.14159265358979323846 / 0.3);
+  int result = 0;
+  for (size_t step = 0; step < steps && !result; ++step) {
+    const double lon = (double)step * 0.3;
+    for (size_t cell = 0; cell < cells; ++cell) {
+      states[cell][0] = initial[cell][0];
+      states[cell][1] = initial[cell][1];
+      rates[cell] = terminator_photolysis(cell, cells, lon);
+    }
+    if (grouped) {
+      result = chem_rosenbrock3_solve_group_with_workspace(
+          &mechanism, &workspace, &states[0][0], temperatures, pressures,
+          densities, rates, cells, 30.0, &options, NULL);
+    } else {
+      for (size_t cell = 0; cell < cells && !result; ++cell)
+        result = chem_rosenbrock3_solve_with_workspace(
+            &mechanism, &workspace, states[cell], temperatures[cell],
+            pressures[cell], densities[cell], &rates[cell], 30.0, &options,
+            NULL);
+    }
+    for (size_t cell = 0; cell < cells && !result; ++cell) {
+      const double k1 = rates[cell], k2 = 1.0, dt = 30.0;
+      const double r = k1 / (4.0 * k2);
+      const double cl_i = initial[cell][1], cl2_i = initial[cell][0];
+      const double cly = cl_i + 2.0 * cl2_i;
+      const double det = sqrt(r*r + 2.0*r*cly);
+      const double e = exp(-4.0*k2*det*dt);
+      const double l = det*k2*dt > 1.0e-16 ? (1.0-e)/det/dt : 4.0*k2;
+      const double cl_f = -l*(cl_i-det+r)*(cl_i+det+r) /
+                          (1.0+e+dt*l*(cl_i+r));
+      const double expected_cl = cl_i + dt*cl_f;
+      const double expected_cl2 = cl2_i - dt*cl_f/2.0;
+      if (fabs(states[cell][1] - expected_cl) >
+              fabs(expected_cl)*1.0e-6 + 1.0e-14 ||
+          fabs(states[cell][0] - expected_cl2) >
+              fabs(expected_cl2)*1.0e-6 + 1.0e-14) result = 2;
+    }
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return result;
+}
+
+static int check_terminator_cases(void) {
+  for (size_t cells = 1; cells <= 4; ++cells)
+    if (check_terminator_solver(cells, 0) ||
+        check_terminator_solver(cells, 1)) return 1;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -1217,5 +1311,6 @@ int main(void) {
   if (check_process_set_finite_difference_jacobian() != 0) return 55;
   if (check_random_process_sets() != 0) return 56;
   if (check_process_set_forcing_and_jacobian() != 0) return 57;
+  if (check_terminator_cases() != 0) return 58;
   return 0;
 }
