@@ -26,6 +26,9 @@
   mechanism builder.
 - Return a nonzero C status when surface-rate metadata lacks molecular weight
   or diffusion data, matching the construction-time error in MICM.
+- Represent parameterized gas species with an explicit flag and density factor.
+  Fold `(air_density * factor)^coefficient` into each reactant rate constant;
+  keep the species as an output row but exclude it as a kinetic dependency.
 - Use one contiguous cell group per requested worker in the TS1 benchmark. Cells
   in a group share the Rosenbrock step controller and normalized error norm, as
   in the reference benchmark; each cell still has its own rate constants,

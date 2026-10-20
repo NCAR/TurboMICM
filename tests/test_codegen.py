@@ -30,7 +30,7 @@ reactions = [
 data = {
     "species": [
         {"name": "A", "molecular_weight": 0.025, "diffusion": 230.0},
-        {"name": "B"},
+        {"name": "B", "density_parameterized": True, "density_factor": 2.0},
     ],
     "reactions": reactions,
     "defaults": {"rate_parameters": {
@@ -66,6 +66,9 @@ expected_order = [
 ]
 if [row[0] for row in parsed] != expected_order or len(parsed) != len(reactions):
     raise SystemExit("reaction ordering or total count differs from the rate type order")
+species_block = text.split("static const chem_species species[] = {\n", 1)[1].split("};", 1)[0]
+if not re.search(r'\{"B", 0, 0, 0, 0, 1, 2\},', species_block):
+    raise SystemExit("density parameter metadata was not preserved")
 by_kind = {kind: values for kind, _, values in parsed}
 if by_kind["CHEM_ARRHENIUS"][:5] != [1.25, 2.0, -4.0, 300.0, 1e-8]:
     raise SystemExit("Arrhenius parameters were not preserved")

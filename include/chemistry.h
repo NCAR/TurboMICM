@@ -46,6 +46,8 @@ typedef struct {
   double molecular_weight;
   double diffusion;
   double initial_concentration;
+  int density_parameterized;
+  double density_factor;
 } chem_species;
 
 typedef struct {

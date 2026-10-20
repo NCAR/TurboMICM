@@ -47,6 +47,7 @@ implemented = {
     "reaction_rate_store:ReactionRateConstantStore.TotalRateConstantsMatchesProcessCount",
     "reaction_rate_store:ReactionRateConstantStore.SurfaceMissingDiffusionCoefficientThrows",
     "reaction_rate_store:ReactionRateConstantStore.SurfaceMissingMolecularWeightThrows",
+    "reaction_rate_store:ReactionRateConstantStore.ParameterizedMultipliers",
 }
 
 failed = False

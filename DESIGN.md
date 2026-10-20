@@ -10,8 +10,10 @@ that normalized representation. Build-time generation keeps Python, YAML, and
 configuration libraries out of the executable.
 
 The C API separates mechanism data from runtime computation. Species and
-reaction tables carry metadata and index-based stoichiometry. Rate evaluation
-is selected through a rate-kind enum. `chem_forcing` and `chem_jacobian` apply
+reaction tables carry metadata and index-based stoichiometry. Third bodies and
+general density-parameterized species fold their density factors into rate
+constants while remaining distinct from kinetic state dependencies. Evaluation
+uses a rate-kind enum. `chem_forcing` and `chem_jacobian` apply
 mass action and the mechanism's generic reaction terms. The same routines feed
 the generic three-stage Rosenbrock integration path exercised by TS1.
 

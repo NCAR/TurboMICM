@@ -207,6 +207,37 @@ int main(void) {
       copied_reaction.p[0] != built_reaction.p[0] ||
       copied_reaction.reactants[1].species != built_reaction.reactants[1].species) return 31;
 
+  const chem_species parameterized_species[] = {
+      {.name = "a"},
+      {.name = "b", .density_parameterized = 1, .density_factor = 2.0}};
+  const chem_term react_a[] = {{.species = 0, .coefficient = 1.0}};
+  const chem_term react_b[] = {{.species = 1, .coefficient = 1.0}};
+  const chem_term product_a[] = {{.species = 0, .coefficient = 1.0}};
+  const chem_term product_b[] = {{.species = 1, .coefficient = 1.0}};
+  const chem_reaction parameterized_reactions[] = {
+      {.kind = CHEM_ARRHENIUS, .reactants = react_a, .reactant_count = 1,
+       .products = product_b, .product_count = 1,
+       .p = {1.0, 0.0, 0.0, 300.0, 0.0}},
+      {.kind = CHEM_ARRHENIUS, .reactants = react_b, .reactant_count = 1,
+       .products = product_a, .product_count = 1,
+       .p = {1.0, 0.0, 0.0, 300.0, 0.0}}};
+  const chem_mechanism parameterized_mechanism = {
+      .species = parameterized_species, .species_count = 2,
+      .reactions = parameterized_reactions, .reaction_count = 2};
+  double parameterized_rates[2], parameterized_forcing[2], parameterized_jacobian[4];
+  if (chem_rate_constants(&parameterized_mechanism, 300.0, 101325.0, 5.0,
+                          NULL, parameterized_rates) != 0 ||
+      parameterized_rates[0] != 1.0 || parameterized_rates[1] != 10.0) return 32;
+  const double parameterized_state[] = {1.0, 0.0};
+  if (chem_forcing_with_constants(&parameterized_mechanism, parameterized_state,
+                                  parameterized_rates, 5.0,
+                                  parameterized_forcing) != 0 ||
+      parameterized_forcing[0] != 9.0 || parameterized_forcing[1] != -9.0) return 33;
+  if (chem_negative_jacobian_with_constants(&parameterized_mechanism,
+          parameterized_state, parameterized_rates, parameterized_jacobian) != 0 ||
+      parameterized_jacobian[0] != 1.0 || parameterized_jacobian[2] != -1.0 ||
+      parameterized_jacobian[1] != 0.0 || parameterized_jacobian[3] != 0.0) return 34;
+
   const chem_reaction decay = {
       .kind = CHEM_ARRHENIUS,
       .reactants = reactants,

@@ -129,10 +129,12 @@ def main():
     out.append("")
     out.append("static const chem_species species[] = {")
     for sp in species:
-        out.append("  {%s, %d, %.17g, %.17g, %.17g}," % (
+        out.append("  {%s, %d, %.17g, %.17g, %.17g, %d, %.17g}," % (
             cstr(sp["name"]), int(bool(sp.get("third_body", False))),
             float(sp.get("molecular_weight", 0.0)), float(sp.get("diffusion", 0.0)),
-            float(defaults.get("species", {}).get(sp["name"], 0.0))))
+            float(defaults.get("species", {}).get(sp["name"], 0.0)),
+            int(bool(sp.get("density_parameterized", False))),
+            float(sp.get("density_factor", 1.0))))
     out.append("};")
     out.append("static const chem_reaction reactions[] = {")
     for i, rxn in enumerate(reactions):

@@ -125,7 +125,8 @@ static int make_pattern(const chem_mechanism *m, unsigned char *pattern,
     const chem_reaction *rx = &m->reactions[r];
     for (size_t i = 0; i < rx->reactant_count; ++i) {
       size_t col = rx->reactants[i].species;
-      if (col >= n || m->species[col].third_body) continue;
+      if (col >= n || m->species[col].third_body ||
+          m->species[col].density_parameterized) continue;
       for (size_t j = 0; j < rx->reactant_count; ++j) {
         size_t row = rx->reactants[j].species;
         if (row < n && !m->species[row].third_body) pattern[row*n + col] = 1;

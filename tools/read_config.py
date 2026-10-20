@@ -32,6 +32,8 @@ def read_config(path):
                 "molecular_weight": entry.get("molecular weight [kg mol-1]", 0.0),
                 "diffusion": entry.get("diffusion coefficient [m2 s-1]", 0.0),
                 "third_body": bool(entry.get("third body", False)),
+                "density_parameterized": bool(entry.get("density parameterized", False)),
+                "density_factor": float(entry.get("density factor", 1.0)),
             })
         elif entry.get("type") == "MECHANISM":
             reactions.extend(entry.get("reactions", []))

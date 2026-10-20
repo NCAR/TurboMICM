@@ -3,6 +3,14 @@
 #include <math.h>
 #include <string.h>
 
+static int chem_density_parameterized(const chem_species *species) {
+  return species->third_body || species->density_parameterized;
+}
+
+static double chem_density_factor(const chem_species *species) {
+  return species->third_body ? 1.0 : species->density_factor;
+}
+
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density) {
   const double pressure = air_density * 8.31446261815324 * temperature;
@@ -158,8 +166,10 @@ int chem_rate_constants(const chem_mechanism *mechanism, double temperature,
        ordinary reactant concentrations are multiplied into the rate. */
     for (size_t i = 0; i < reaction->reactant_count; ++i) {
       const chem_term *term = &reaction->reactants[i];
-      if (mechanism->species[term->species].third_body)
-        rate_constants[r] *= pow(air_density, term->coefficient);
+      if (chem_density_parameterized(&mechanism->species[term->species]))
+        rate_constants[r] *= pow(air_density *
+            chem_density_factor(&mechanism->species[term->species]),
+            term->coefficient);
     }
   }
   return 0;
@@ -186,9 +196,10 @@ static int chem_forcing_impl(const chem_mechanism *mechanism, const double *conc
     for (size_t i = 0; i < reaction->reactant_count; ++i) {
       const chem_term *term = &reaction->reactants[i];
       if (term->species >= mechanism->species_count) return 1;
-      if (mechanism->species[term->species].third_body && !constants)
-        rate *= pow(air_density, term->coefficient);
-      else if (!mechanism->species[term->species].third_body)
+      if (chem_density_parameterized(&mechanism->species[term->species]) && !constants)
+        rate *= pow(air_density * chem_density_factor(&mechanism->species[term->species]),
+                    term->coefficient);
+      else if (!chem_density_parameterized(&mechanism->species[term->species]))
         rate *= pow(concentration[term->species], term->coefficient);
     }
     for (size_t i = 0; i < reaction->reactant_count; ++i) {
@@ -242,15 +253,16 @@ static int chem_jacobian_impl(const chem_mechanism *mechanism, const double *con
     double rate = rate_constant;
     for (size_t i = 0; i < reaction->reactant_count; ++i) {
       const chem_term *term = &reaction->reactants[i];
-      if (mechanism->species[term->species].third_body && !constants)
-        rate *= pow(air_density, term->coefficient);
-      else if (!mechanism->species[term->species].third_body)
+      if (chem_density_parameterized(&mechanism->species[term->species]) && !constants)
+        rate *= pow(air_density * chem_density_factor(&mechanism->species[term->species]),
+                    term->coefficient);
+      else if (!chem_density_parameterized(&mechanism->species[term->species]))
         rate *= pow(concentration[term->species], term->coefficient);
     }
     for (size_t q = 0; q < reaction->reactant_count; ++q) {
       const chem_term *variable = &reaction->reactants[q];
       const size_t col = variable->species;
-      if (mechanism->species[col].third_body) continue;
+      if (chem_density_parameterized(&mechanism->species[col])) continue;
       double derivative;
       if (concentration[col] != 0.0) {
         derivative = rate * variable->coefficient / concentration[col];
@@ -259,9 +271,10 @@ static int chem_jacobian_impl(const chem_mechanism *mechanism, const double *con
         for (size_t i = 0; i < reaction->reactant_count; ++i) {
           if (i == q) continue;
           const chem_term *term = &reaction->reactants[i];
-          if (mechanism->species[term->species].third_body && !constants)
-            derivative *= pow(air_density, term->coefficient);
-          else if (!mechanism->species[term->species].third_body)
+          if (chem_density_parameterized(&mechanism->species[term->species]) && !constants)
+            derivative *= pow(air_density * chem_density_factor(&mechanism->species[term->species]),
+                              term->coefficient);
+          else if (!chem_density_parameterized(&mechanism->species[term->species]))
             derivative *= pow(concentration[term->species], term->coefficient);
         }
       } else {
@@ -309,13 +322,13 @@ int chem_negative_jacobian_with_constants(
   /* MICM accumulates Jacobian terms by independent variable, preserving
      reaction order within each column. Match that order for solver arithmetic. */
   for (size_t col = 0; col < n; ++col) {
-    if (mechanism->species[col].third_body) continue;
+    if (chem_density_parameterized(&mechanism->species[col])) continue;
     for (size_t r = 0; r < mechanism->reaction_count; ++r) {
       const chem_reaction *reaction = &mechanism->reactions[r];
       for (size_t q = 0; q < reaction->reactant_count; ++q) {
         const chem_term *independent = &reaction->reactants[q];
         if (independent->species != col ||
-            mechanism->species[col].third_body) continue;
+            chem_density_parameterized(&mechanism->species[col])) continue;
         double derivative = rate_constants[r];
         int skipped_independent = 0;
         for (size_t i = 0; i < reaction->reactant_count; ++i) {
@@ -324,7 +337,7 @@ int chem_negative_jacobian_with_constants(
             skipped_independent = 1;
             continue;
           }
-          if (!mechanism->species[term->species].third_body)
+          if (!chem_density_parameterized(&mechanism->species[term->species]))
             derivative *= pow(concentration[term->species], term->coefficient);
         }
         skipped_independent = 0;
