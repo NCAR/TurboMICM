@@ -137,6 +137,11 @@ static double chem_rate_value(
               (radius / species->diffusion_coefficient + 4.0 / (speed * rate->p[0]));
       break;
     }
+    case CHEM_RATE_CALLBACK:
+      value = rate->callback
+          ? rate->callback(temperature, pressure, air_density, rate->context)
+          : NAN;
+      break;
     default:
       return NAN;
   }
@@ -158,6 +163,8 @@ int chem_evaluate_rate(
   const chem_reaction *reaction = &mechanism->reactions[reaction_index];
   if (reaction->rate.kind == CHEM_RATE_USER &&
       (!parameters || reaction->rate.custom_parameter >= mechanism->parameter_count))
+    return -1;
+  if (reaction->rate.kind == CHEM_RATE_CALLBACK && !reaction->rate.callback)
     return -1;
   if (reaction->rate.kind == CHEM_RATE_SURFACE) {
     if (reaction->rate.surface_species >= mechanism->species_count || !parameters ||

@@ -123,7 +123,14 @@ $(BUILD)/test_solver_configuration.o: tests/test_solver_configuration.c $(LIBHDR
 $(BIN)/test_solver_configuration: $(BUILD)/test_solver_configuration.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration
+$(BUILD)/test_integration_equivalents.o: tests/test_integration_equivalents.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_integration_equivalents: $(BUILD)/test_integration_equivalents.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu

@@ -17,7 +17,8 @@ typedef enum {
   CHEM_RATE_TAYLOR,
   CHEM_RATE_REVERSIBLE,
   CHEM_RATE_USER,
-  CHEM_RATE_SURFACE
+  CHEM_RATE_SURFACE,
+  CHEM_RATE_CALLBACK
 } chem_rate_kind;
 
 enum { CHEM_RATE_PARAMETER_COUNT = 24, CHEM_SPECIES_THIRD_BODY = 1u };
@@ -42,6 +43,10 @@ typedef struct {
   double coefficient;
 } chem_term;
 
+/* Callback rates receive cell conditions and caller-owned context. The context
+   must outlive the mechanism and be thread-safe for parallel integrations. */
+typedef double (*chem_rate_callback)(double temperature, double pressure, double air_density, void *context);
+
 typedef struct {
   chem_rate_kind kind;
   const char *label;
@@ -52,6 +57,8 @@ typedef struct {
   unsigned surface_species;
   unsigned air_density_power;
   unsigned branch;
+  chem_rate_callback callback;
+  void *context;
 } chem_rate;
 
 typedef struct {

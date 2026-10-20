@@ -8,30 +8,32 @@ lines. Results for the current source are:
 
 | Compiler | PASS | FAIL | N/A | TS1 serial / parallel |
 | --- | ---: | ---: | ---: | --- |
-| Apple clang 21, macOS arm64 | 55 | 613 | 12 | PASS / PASS |
-| GCC 15.2, macOS arm64 | 55 | 613 | 12 | PASS / PASS |
+| Apple clang 21, macOS arm64 | 62 | 608 | 10 | PASS / PASS |
+| GCC 15.2, macOS arm64 | 62 | 608 | 10 | PASS / PASS |
 
-The 55 passing case lines cover implemented rate-constant formulas, rate
+The 62 passing case lines cover implemented rate-constant formulas, rate
 parameter descriptor references, the two configuration-versus-hand-built
 examples, the README chemistry example, multiple grid cells, the OpenMP tutorial,
-the vectorized storage example, the solve_results tutorial, seven Jacobian
-verification cases, and the OpenMP TS1 path. The 12 N/A cases cover C++ callable
-storage, template type traits, and release metadata with no meaningful
-equivalent in the current C API. The remaining 613 cases are explicitly
-reported as FAIL; they cover
+the vectorized storage example, the solve_results tutorial, the analytic
+terminator checks, Chapman oxygen conservation, integrated intermediate
+monotonicity, condition-dependent callback rates and override, seven Jacobian
+verification cases, C array iteration, and the OpenMP TS1 path. The 10 N/A
+cases cover a rate-store callback entry, four compile-time view-category
+traits, and release metadata with no meaningful equivalent in the current C
+API. The remaining 608 cases are explicitly reported as FAIL; they cover
 unimplemented MICM builder/state APIs, generic matrix and view utilities,
 standalone linear algebra cases, constraint/DAE and alternate integration
 paths, external/aerosol model APIs, and a small output mismatch in the four-
 and six-stage DA tutorial at 1400 s. The five parameter sets match MICM's step
-statistics; the two DA trajectories
-differ in one printed species value. The per-case reasons are printed by the
+statistics; the two DA trajectories differ in one printed species value. The
+per-case reasons are printed by the
 runner. These results do not satisfy the prompt's all-cases correctness gate.
 
 ## TS1 comparisons
 
 All results below use `-O3 -DNDEBUG`, double precision, and the same TS1 input
 and 10-thread setting on the provided Apple arm64 machine. For the 10,000-cell
-seed 2026 comparison, C used **21,388.226 ms** and MICM used **27,943.482 ms**
+seed 2026 comparison, C used **21,199.606 ms** and MICM used **28,453.001 ms**
 in one local run.
 Both reported 9,000 internal steps, with matching accepted/rejected counts,
 function calls, Jacobian updates, decompositions, and solves. All 2,110,000
@@ -48,7 +50,7 @@ maximum relative error `9.7e-13`.
 ## Build verification
 
 Clean `make test-cpu` builds completed with Apple clang 21 and GCC 15.2. Both
-compiler runs reported 55 PASS, 613 FAIL, and 12 N/A, and passed the serial and
+compiler runs reported 62 PASS, 608 FAIL, and 10 N/A, and passed the serial and
 four-thread TS1 checks. The target exits nonzero while failed cases remain. The
 solver_configuration tutorial's DA trajectories still differ from MICM in
 one printed species value at 1400 s, although its step statistics match. The

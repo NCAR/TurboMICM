@@ -21,6 +21,9 @@ the TS1 benchmark.
 The public `jacobian_verification.h` helpers use a C forcing callback to compute
 finite-difference Jacobians and compare them with a sparse pattern; they support
 central differences and forward differences at the nonnegative boundary.
+Code-built mechanisms may also use `CHEM_RATE_CALLBACK` with a caller-owned
+context pointer; function pointers are not representable in the YAML/JSON
+configuration format.
 
 ## Solver path
 

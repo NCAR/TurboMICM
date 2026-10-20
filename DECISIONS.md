@@ -6,6 +6,9 @@
 - YAML and JSON are normalized at build time. Generated C uses ordinary
   standard-C arrays, so the C library and benchmark do not parse configuration
   files and do not link Python.
+- C-built mechanisms can carry a rate callback and caller-owned context to
+  represent condition-dependent functions and mutable captures. Configuration
+  files cannot serialize function pointers or context objects.
 - TS1's supplied C++ builder is the translation source because the prompt names
   it as the source of truth. The checked-in translation script emits the
   configuration consumed by the public generator. TS1-specific generated data

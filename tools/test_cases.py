@@ -54,6 +54,7 @@ def main() -> int:
         PROJECT / "bin/test_rates", PROJECT / "bin/test_example_no_user",
         PROJECT / "bin/test_example_user", PROJECT / "bin/test_tutorial_programs",
         PROJECT / "bin/test_jacobian_verification", PROJECT / "bin/test_solver_configuration",
+        PROJECT / "bin/test_integration_equivalents",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -75,6 +76,13 @@ def main() -> int:
     jacobian_results = {
         name: run([str(PROJECT / "bin/test_jacobian_verification"), name])
         for name in jacobian_case_names
+    }
+    integration_results = {
+        name: run([str(PROJECT / "bin/test_integration_equivalents"), name])
+        for name in (
+            "terminator", "chapman_integration", "integrated_reaction_rates", "runtime_vector_use",
+            "lambda_rate_constant", "solver_lambda_rate_constant",
+        )
     }
     serial_ok = compare_ts1(1, PROJECT / "build/ts1_ours_1.csv")
     parallel_ok = compare_ts1(4, PROJECT / "build/ts1_ours_4.csv")
@@ -114,8 +122,10 @@ def main() -> int:
             status, reason = "N/A", "lambda callback entries are not part of the C named-rate descriptor"
         elif suite == "reaction_rate_store":
             status, reason = ("PASS", "C descriptor offsets and rate parameter references are consistent") if rate_ok else ("FAIL", "C descriptor consistency check failed")
-        elif suite == "lambda_rate_constant":
-            status, reason = "N/A", "capturing callable storage has no equivalent in the named-rate descriptor API"
+        elif suite in {"lambda_rate_constant", "solver_lambda_rate_constant"}:
+            ok = integration_results[suite]
+            status, reason = ("PASS", "C function-pointer rate matches the condition-dependent lambda") if ok else (
+                "FAIL", "C function-pointer rate evaluation or override failed")
         elif suite in example_programs:
             ok = example_programs[suite]
             status, reason = ("PASS", "generated configuration descriptor matches the hand-built rate structure") if ok else ("FAIL", "configuration descriptor check failed")
@@ -131,6 +141,10 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_solver_configuration")])
             status, reason = ("PASS", "five C Rosenbrock parameter sets match the MICM tutorial") if ok else (
                 "FAIL", "four- and six-stage DA output differs at 1400 s; step statistics match MICM")
+        elif suite in integration_results:
+            ok = integration_results[suite]
+            status, reason = ("PASS", "C integration preserves the reference analytic or chemical invariant") if ok else (
+                "FAIL", "C integration result or invariant differs from the reference")
         elif suite in tutorial_programs:
             ok = tutorial_programs[suite]
             status, reason = ("PASS", "C example matches the MICM reference result or storage behavior") if ok else ("FAIL", "C tutorial example differs from the MICM reference")
@@ -139,7 +153,12 @@ def main() -> int:
         elif suite == "version":
             status, reason = "N/A", "release metadata is not part of the numerical C library interface"
         elif suite == "view_category_sfinae":
-            status, reason = "N/A", "C has no template categories or SFINAE type traits"
+            if test.endswith("RuntimeVectorUse"):
+                ok = integration_results["runtime_vector_use"]
+                status, reason = ("PASS", "C array iteration produces the same vector sum") if ok else (
+                    "FAIL", "C array iteration produced an incorrect sum")
+            else:
+                status, reason = "N/A", "C has no template categories or SFINAE type traits"
         case_results.append((case_id, status, reason))
 
     for case_id, status, reason in case_results:
