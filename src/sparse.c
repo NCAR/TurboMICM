@@ -7,6 +7,8 @@ static int csr_valid(const chem_csr_matrix *matrix) {
       (matrix->nonzero_count && !matrix->column_indices) ||
       (matrix->block_count && matrix->nonzero_count && !matrix->values) ||
       matrix->dimension == (size_t)-1 ||
+      (matrix->compressed_by_column != 0 &&
+       matrix->compressed_by_column != 1) ||
       (matrix->block_count && matrix->nonzero_count >
           (size_t)-1 / matrix->block_count) ||
       matrix->row_offsets[0] != 0 ||
@@ -30,26 +32,34 @@ int chem_csr_matrix_init(chem_csr_matrix *matrix, size_t dimension,
                          const size_t *column_indices, double *values) {
   if (!matrix) return 1;
   chem_csr_matrix candidate = {dimension, block_count, nonzero_count,
-                               row_offsets, column_indices, values};
+                               row_offsets, column_indices, values, 0};
   if (!csr_valid(&candidate)) return 1;
   *matrix = candidate;
   return 0;
 }
 
+int chem_csr_matrix_init_csc(chem_csr_matrix *matrix, size_t dimension,
+                             size_t block_count, size_t nonzero_count,
+                             const size_t *column_offsets,
+                             const size_t *row_indices, double *values) {
+  if (!matrix) return 1;
+  chem_csr_matrix candidate = {dimension, block_count, nonzero_count,
+                               column_offsets, row_indices, values, 1};
+  if (!csr_valid(&candidate)) return 1;
+  *matrix = candidate;
+  return 0;
+}
+
+static int csr_entry(const chem_csr_matrix *matrix, size_t row, size_t column,
+                     size_t *entry);
+
 int chem_csr_matrix_vector_index(const chem_csr_matrix *matrix, size_t block,
                                  size_t row, size_t column, size_t *index) {
   if (!csr_valid(matrix) || !index || block >= matrix->block_count ||
       row >= matrix->dimension || column >= matrix->dimension) return 1;
-  size_t lower = matrix->row_offsets[row];
-  size_t upper = matrix->row_offsets[row + 1];
-  while (lower < upper) {
-    const size_t middle = lower + (upper - lower) / 2;
-    if (matrix->column_indices[middle] < column) lower = middle + 1;
-    else upper = middle;
-  }
-  if (lower >= matrix->row_offsets[row + 1] ||
-      matrix->column_indices[lower] != column) return 1;
-  *index = block * matrix->nonzero_count + lower;
+  size_t entry = 0;
+  if (csr_entry(matrix,row,column,&entry)) return 1;
+  *index = block * matrix->nonzero_count + entry;
   return 0;
 }
 
@@ -57,15 +67,17 @@ static int csr_entry(const chem_csr_matrix *matrix, size_t row, size_t column,
                      size_t *entry) {
   if (!csr_valid(matrix) || !entry || row >= matrix->dimension ||
       column >= matrix->dimension) return 1;
-  size_t lower = matrix->row_offsets[row];
-  size_t upper = matrix->row_offsets[row + 1];
+  const size_t compressed = matrix->compressed_by_column ? column : row;
+  const size_t searched = matrix->compressed_by_column ? row : column;
+  size_t lower = matrix->row_offsets[compressed];
+  size_t upper = matrix->row_offsets[compressed + 1];
   while (lower < upper) {
     const size_t middle = lower + (upper - lower) / 2;
-    if (matrix->column_indices[middle] < column) lower = middle + 1;
+    if (matrix->column_indices[middle] < searched) lower = middle + 1;
     else upper = middle;
   }
-  if (lower >= matrix->row_offsets[row + 1] ||
-      matrix->column_indices[lower] != column) return 1;
+  if (lower >= matrix->row_offsets[compressed + 1] ||
+      matrix->column_indices[lower] != searched) return 1;
   *entry = lower;
   return 0;
 }
@@ -166,15 +178,8 @@ int chem_csr_matrix_is_structural_zero(const chem_csr_matrix *matrix,
                                        int *is_zero) {
   if (!csr_valid(matrix) || !is_zero || row >= matrix->dimension ||
       column >= matrix->dimension) return 1;
-  size_t lower = matrix->row_offsets[row];
-  size_t upper = matrix->row_offsets[row + 1];
-  while (lower < upper) {
-    const size_t middle = lower + (upper - lower) / 2;
-    if (matrix->column_indices[middle] < column) lower = middle + 1;
-    else upper = middle;
-  }
-  *is_zero = lower >= matrix->row_offsets[row + 1] ||
-             matrix->column_indices[lower] != column;
+  size_t entry = 0;
+  *is_zero = csr_entry(matrix,row,column,&entry) != 0;
   return 0;
 }
 
@@ -188,17 +193,10 @@ int chem_csr_matrix_fill(chem_csr_matrix *matrix, double value) {
 int chem_csr_matrix_add_to_diagonal(chem_csr_matrix *matrix, double value) {
   if (!csr_valid(matrix) || !isfinite(value)) return 1;
   for (size_t row = 0; row < matrix->dimension; ++row) {
-    size_t lower = matrix->row_offsets[row];
-    size_t upper = matrix->row_offsets[row + 1];
-    while (lower < upper) {
-      const size_t middle = lower + (upper - lower) / 2;
-      if (matrix->column_indices[middle] < row) lower = middle + 1;
-      else upper = middle;
-    }
-    if (lower < matrix->row_offsets[row + 1] &&
-        matrix->column_indices[lower] == row)
+    size_t entry = 0;
+    if (!csr_entry(matrix,row,row,&entry))
       for (size_t block = 0; block < matrix->block_count; ++block)
-        matrix->values[block*matrix->nonzero_count + lower] += value;
+        matrix->values[block*matrix->nonzero_count + entry] += value;
   }
   return 0;
 }

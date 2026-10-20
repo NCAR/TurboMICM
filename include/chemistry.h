@@ -418,12 +418,17 @@ typedef struct {
   const size_t *row_offsets;
   const size_t *column_indices;
   double *values;
+  int compressed_by_column;
 } chem_csr_matrix;
 
 int chem_csr_matrix_init(chem_csr_matrix *matrix, size_t dimension,
                          size_t block_count, size_t nonzero_count,
                          const size_t *row_offsets,
                          const size_t *column_indices, double *values);
+int chem_csr_matrix_init_csc(chem_csr_matrix *matrix, size_t dimension,
+                             size_t block_count, size_t nonzero_count,
+                             const size_t *column_offsets,
+                             const size_t *row_indices, double *values);
 int chem_csr_matrix_get(const chem_csr_matrix *matrix, size_t block,
                         size_t row, size_t column, double *value);
 int chem_csr_matrix_set(chem_csr_matrix *matrix, size_t block, size_t row,

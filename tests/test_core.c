@@ -1991,6 +1991,20 @@ static int check_csr_matrix_api(void) {
       chem_csr_matrix_apply_blocks(&zero_destination,&zero_source,1,
                                    csr_count_blocks,&callback_count) ||
       callback_count != 0) return 19;
+  const size_t csc_offsets[] = {0,0,3,4,5};
+  const size_t csc_rows[] = {0,1,2,3,2};
+  double csc_values[10];
+  for (size_t i = 0; i < 10; ++i) csc_values[i] = 24.0;
+  chem_csr_matrix csc;
+  if (chem_csr_matrix_init_csc(&csc,4,2,5,csc_offsets,csc_rows,csc_values) ||
+      chem_csr_matrix_vector_index(&csc,0,3,2,&index) || index != 3 ||
+      chem_csr_matrix_vector_index(&csc,1,2,3,&index) || index != 9 ||
+      chem_csr_matrix_vector_index(&csc,0,2,2,&index) == 0 ||
+      chem_csr_matrix_set(&csc,1,2,3,31.0) || csc_values[9] != 31.0 ||
+      chem_csr_matrix_add_to_diagonal(&csc,1.0) ||
+      csc_values[1] != 25.0 || csc_values[6] != 25.0 ||
+      chem_csr_matrix_is_structural_zero(&csc,0,0,&is_zero) || !is_zero)
+    return 20;
   return 0;
 }
 
