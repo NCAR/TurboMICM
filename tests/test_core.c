@@ -1173,6 +1173,41 @@ static int check_constraint_api(void) {
   return 0;
 }
 
+static int check_matrix_view_api(void) {
+  double storage[] = {1.0, 99.0, 2.0, 99.0, 3.0, 99.0,
+                      4.0, 99.0, 5.0, 99.0, 6.0, 99.0};
+  chem_matrix_view view;
+  if (chem_matrix_view_init(&view, storage, 2, 3, 6, 2)) return 1;
+  double value = 0.0;
+  if (chem_matrix_view_get(&view, 1, 2, &value) || value != 6.0 ||
+      chem_matrix_view_set(&view, 0, 1, -2.0) || storage[2] != -2.0) return 2;
+  const double expected[] = {1.0, -2.0, 3.0, 4.0, 5.0, 6.0};
+  double flat[6];
+  if (chem_matrix_view_copy_to_vector(&view, flat, 6)) return 3;
+  for (size_t i = 0; i < 6; ++i) if (flat[i] != expected[i]) return 4;
+  const double replacement[] = {6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
+  if (chem_matrix_view_copy_from_vector(&view, replacement, 6) ||
+      chem_matrix_view_copy_from_vector(&view, replacement, 5) == 0) return 5;
+  double other_data[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  chem_matrix_view other;
+  if (chem_matrix_view_init(&other, other_data, 2, 3, 3, 1) ||
+      chem_matrix_view_axpy(&view, &other, 2.0) ||
+      chem_matrix_view_axpy(&view, &other, NAN) == 0) return 6;
+  if (chem_matrix_view_min(&view, &value) || value != 3.0) return 7;
+  if (chem_matrix_view_max(&view, &value) || value != 8.0) return 8;
+  if (chem_matrix_view_sum(&view, &value) || value != 33.0) return 9;
+  if (chem_matrix_view_fill(&view, 2.5)) return 10;
+  if (chem_matrix_view_sum(&view, &value) || value != 15.0) return 11;
+  if (chem_matrix_view_get(&view, 2, 0, &value) == 0 ||
+      chem_matrix_view_init(&view, storage, (size_t)-1, 2, (size_t)-1, 1) == 0)
+    return 12;
+  chem_matrix_view empty;
+  if (chem_matrix_view_init(&empty, NULL, 0, 0, 0, 0) ||
+      chem_matrix_view_fill(&empty, 0.0) ||
+      chem_matrix_view_sum(&empty, &value) == 0) return 13;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -1760,5 +1795,6 @@ int main(void) {
   if (check_lambda_callback_override() != 0) return 61;
   if (check_phase_species_metadata() != 0) return 62;
   if (check_constraint_api() != 0) return 63;
+  if (check_matrix_view_api() != 0) return 64;
   return 0;
 }

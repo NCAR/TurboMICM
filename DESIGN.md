@@ -22,6 +22,11 @@ all solver schemes and TS1. Rate constants are evaluated before integration
 and cached per workspace until temperature, pressure, density, or custom rates
 change.
 
+`chem_matrix_view` is a non-owning rectangular view with explicit row and column
+strides. It provides checked element access, fill, conversion to and from a
+row-major vector, shape-checked AXPY, and min/max/sum reductions. It supports
+strided storage without imposing an allocator or matrix ownership policy.
+
 `chem_constraint_set` describes caller-owned linear conservation or
 equilibrium constraints using species indexes. Its utilities validate records,
 mark algebraic rows, construct the constraint portion of the Jacobian pattern,

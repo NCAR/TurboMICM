@@ -89,6 +89,16 @@ implemented = {
     "equilibrium:EquilibriumConstraint.ComplexStoichiometryResidual",
     "equilibrium:EquilibriumConstraint.FiniteDifferenceJacobianSimple",
     "equilibrium:EquilibriumConstraint.FiniteDifferenceJacobianComplexStoichiometry",
+    "matrix:Matrix.Strides",
+    "matrix:Matrix.ConversionToVector",
+    "matrix:Matrix.ConversionFromVector",
+    "matrix:Matrix.Axpy",
+    "matrix:Matrix.SetScaler",
+    "matrix:Matrix.Max",
+    "matrix:Matrix.Min",
+    "matrix:Matrix.TestFill",
+    "matrix:Matrix.TestCopy",
+    "matrix:Matrix.ReduceSum",
     "phase:PhaseSpecies.ConstructsWithoutDiffusionCoefficient",
     "phase:PhaseSpecies.ConstructsWithDiffusionCoefficient",
     "phase:PhaseSpecies.SetDiffusionCoefficient",
@@ -186,6 +196,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C finite-difference Jacobian checks"
         elif case_id.startswith(("constraint_set:", "linear:", "equilibrium:")):
             reason = "C linear/equilibrium constraint residual and Jacobian behavior checked"
+        elif case_id.startswith("matrix:"):
+            reason = "C strided matrix view, conversion, arithmetic, and reductions checked"
         elif case_id.startswith("version:"):
             reason = "C version API checked"
         elif case_id in {"process_set:ProcessSet.Matrix", "process_set:ProcessSet.VectorMatrix"}:

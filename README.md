@@ -62,8 +62,10 @@ python3 ../reference/compare_final.py ts1_final.csv path/to/reference.csv
 ## C API
 
 `include/chemistry.h` defines the generic mechanism records, non-owning state view,
-rate evaluation, forcing and Jacobian routines, linear and equilibrium constraint
-evaluation helpers, version API, and solver interface. The constraint helpers
+strided matrix views, rate evaluation, forcing and Jacobian routines, linear and
+equilibrium constraint evaluation helpers, version API, and solver interface.
+Matrix views support checked element access, row-major vector conversion, fill,
+AXPY, and min/max/sum reductions. The constraint helpers
 build algebraic masks and Jacobian patterns and add residual and negative-Jacobian
 terms to caller-provided arrays. They are not yet wired into the Rosenbrock solve
 path. The implementation covers

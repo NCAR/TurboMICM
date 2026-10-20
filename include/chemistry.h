@@ -165,6 +165,34 @@ int chem_constraint_set_add_negative_jacobian(
     const double *temperatures, size_t cell_count,
     double *negative_jacobians);
 
+/* A non-owning rectangular view over row-major or strided matrix storage. */
+typedef struct {
+  double *data;
+  size_t rows;
+  size_t columns;
+  size_t row_stride;
+  size_t column_stride;
+} chem_matrix_view;
+
+int chem_matrix_view_init(chem_matrix_view *view, double *data,
+                          size_t rows, size_t columns,
+                          size_t row_stride, size_t column_stride);
+int chem_matrix_view_get(const chem_matrix_view *view, size_t row,
+                         size_t column, double *value);
+int chem_matrix_view_set(chem_matrix_view *view, size_t row,
+                         size_t column, double value);
+int chem_matrix_view_fill(chem_matrix_view *view, double value);
+int chem_matrix_view_copy_to_vector(const chem_matrix_view *view,
+                                    double *vector, size_t vector_size);
+int chem_matrix_view_copy_from_vector(chem_matrix_view *view,
+                                      const double *vector,
+                                      size_t vector_size);
+int chem_matrix_view_axpy(chem_matrix_view *destination,
+                          const chem_matrix_view *source, double alpha);
+int chem_matrix_view_min(const chem_matrix_view *view, double *value);
+int chem_matrix_view_max(const chem_matrix_view *view, double *value);
+int chem_matrix_view_sum(const chem_matrix_view *view, double *value);
+
 double chem_arrhenius(double a, double b, double c, double d, double e,
                       double temperature, double air_density);
 double chem_reaction_rate(const chem_reaction *reaction, double temperature,

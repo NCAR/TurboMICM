@@ -46,6 +46,10 @@
   integration so these primitives can be validated independently. Equilibrium
   constants use a van't Hoff correction from a reference temperature.
 
+- Represent basic dense matrix access with a non-owning strided C view rather
+  than an owning template type. Keep allocation with the caller and validate
+  dimensions and strides at the API boundary.
+
 - Give the independent C library an initial version of `0.1.0+0` and expose the
   string and numeric components through `chem_version*` functions.
 
