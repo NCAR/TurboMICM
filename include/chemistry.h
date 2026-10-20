@@ -272,6 +272,18 @@ typedef void (*chem_matrix_row_function)(
 typedef int (*chem_matrix_predicate)(double value, void *context);
 typedef double (*chem_matrix_combine)(double accumulator, double value,
                                       void *context);
+typedef int (*chem_matrix_row_operation)(double *row, size_t columns,
+                                         size_t column_stride, void *context);
+typedef struct {
+  size_t columns;
+  chem_matrix_row_operation operation;
+  void *context;
+} chem_matrix_row_plan;
+int chem_matrix_row_plan_init(chem_matrix_row_plan *plan, size_t columns,
+                              chem_matrix_row_operation operation,
+                              void *context);
+int chem_matrix_row_plan_apply(const chem_matrix_row_plan *plan,
+                               chem_matrix_view *view);
 
 int chem_matrix_view_init(chem_matrix_view *view, double *data,
                           size_t rows, size_t columns,
@@ -305,6 +317,8 @@ typedef struct {
   size_t columns;
   size_t group_width;
 } chem_const_vector_matrix_view;
+int chem_vector_matrix_row_plan_apply(const chem_matrix_row_plan *plan,
+                                      chem_vector_matrix_view *view);
 
 int chem_vector_matrix_view_storage_size(size_t rows, size_t columns,
                                          size_t group_width,

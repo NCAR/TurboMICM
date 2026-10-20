@@ -460,6 +460,8 @@ implemented.update({
     "rosenbrock:RosenbrockSolver.VectorNormalizedErrorWithConstraints",
     "rosenbrock:RosenbrockSolver.StandardAlphaMinusJacobian",
     "rosenbrock:RosenbrockSolver.VectorAlphaMinusJacobian",
+    "matrix:Matrix.WrongColumnCountAtInvocation",
+    "vector_matrix:VectorMatrix.WrongColumnCountAtInvocation",
 })
 not_applicable = {
     "state:State.CopyConstructor":

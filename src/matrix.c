@@ -809,3 +809,39 @@ int chem_matrix_view_min(const chem_matrix_view *view, double *value) {
 int chem_matrix_view_max(const chem_matrix_view *view, double *value) {
   return matrix_reduce(view, value, 2);
 }
+
+int chem_matrix_row_plan_init(chem_matrix_row_plan *plan, size_t columns,
+                              chem_matrix_row_operation operation,
+                              void *context) {
+  if (!plan || !columns || !operation) return 1;
+  *plan = (chem_matrix_row_plan){columns,operation,context};
+  return 0;
+}
+
+int chem_matrix_row_plan_apply(const chem_matrix_row_plan *plan,
+                               chem_matrix_view *view) {
+  if (!plan || !plan->operation || !plan->columns || !valid_view(view) ||
+      view->columns != plan->columns) return 1;
+  for (size_t row = 0; row < view->rows; ++row) {
+    const int status = plan->operation(view->data + row*view->row_stride,
+                                       view->columns,view->column_stride,
+                                       plan->context);
+    if (status) return status;
+  }
+  return 0;
+}
+
+int chem_vector_matrix_row_plan_apply(const chem_matrix_row_plan *plan,
+                                      chem_vector_matrix_view *view) {
+  if (!plan || !plan->operation || !plan->columns ||
+      !vector_matrix_view_valid(view) || view->columns != plan->columns)
+    return 1;
+  for (size_t row = 0; row < view->rows; ++row) {
+    double *row_data = view->data ? view->data + vector_matrix_offset(
+        row,0,view->columns,view->group_width) : NULL;
+    const int status = plan->operation(row_data,view->columns,
+                                       view->group_width,plan->context);
+    if (status) return status;
+  }
+  return 0;
+}

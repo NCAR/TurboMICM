@@ -1499,7 +1499,49 @@ static void matrix_combine_rows(size_t row, double *destination,
     destination[destination_stride] = first[0] + second[2*second_stride];
 }
 
+static int matrix_row_sum_three(double *row, size_t columns,
+                                size_t stride, void *context) {
+  if (!row || columns != 3 || !context) return 1;
+  const size_t output_column = *(const size_t *)context;
+  if (output_column >= columns) return 1;
+  row[output_column*stride] = row[0] + row[stride] + row[2*stride];
+  return 0;
+}
+
 static int check_matrix_view_api(void) {
+  {
+    const size_t output_column = 0;
+    chem_matrix_row_plan plan;
+    double dense3[] = {1,2,3, 4,5,6};
+    double tall_data[21], wrong4[28] = {0}, wrong2[14] = {0};
+    for (size_t i = 0; i < 21; ++i) tall_data[i] = (double)i+1;
+    chem_matrix_view dense_view, bad4, bad2, tall;
+    if (chem_matrix_row_plan_init(&plan,3,matrix_row_sum_three,
+                                  (void *)&output_column) ||
+        chem_matrix_view_init(&dense_view,dense3,2,3,3,1) ||
+        chem_matrix_view_init(&bad4,wrong4,2,4,4,1) ||
+        chem_matrix_view_init(&bad2,wrong2,2,2,2,1) ||
+        chem_matrix_view_init(&tall,tall_data,7,3,3,1) ||
+        chem_matrix_row_plan_apply(&plan,&bad4) == 0 ||
+        chem_matrix_row_plan_apply(&plan,&bad2) == 0 ||
+        chem_matrix_row_plan_apply(&plan,&dense_view) ||
+        chem_matrix_row_plan_apply(&plan,&tall) || dense3[0] != 6.0 ||
+        dense3[3] != 15.0 || tall_data[18] != 60.0) return 94;
+    for (size_t width = 1; width <= 4; ++width) {
+      double packed[28] = {0};
+      chem_vector_matrix_view packed_view;
+      if (chem_vector_matrix_view_init(&packed_view,packed,7,3,width))
+        return 95;
+      for (size_t row = 0; row < 7; ++row)
+        for (size_t column = 0; column < 3; ++column)
+          if (chem_vector_matrix_view_set(&packed_view,row,column,
+              (double)(row*3+column+1))) return 96;
+      if (chem_vector_matrix_row_plan_apply(&plan,&packed_view)) return 97;
+      double result = 0.0;
+      if (chem_vector_matrix_view_get(&packed_view,6,0,&result) || result != 60.0)
+        return 98;
+    }
+  }
   {
     const double old_values[] = {2.0, -1.0, 0.5, 4.0, 9.0, -2.0};
     const double new_values[] = {1.0, 3.0, 0.0, 2.0, 8.0, -4.0};
