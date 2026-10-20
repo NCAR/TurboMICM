@@ -8,7 +8,7 @@
   checks across Arrhenius, branched, lambda, reversible, surface, Taylor, Troe,
   ternary activation, tunneling, and user-defined rates; also forcing and small
   analytic integration checks, C reaction construction and value-copy checks,
-  and density-parameterized reaction multipliers.
+  density-parameterized reaction multipliers, and lambda rates at their reaction indexes.
 - `tests/test_codegen.py`: passed with both compilers through `make test-cpu`,
   checking rate-type ordering, parameter defaults and indexes, derived branched
   parameters, surface parameters, density multipliers, and reaction counts in
@@ -43,7 +43,7 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Fifty-one cases pass; 629 cases still report incomplete ports,
+  statuses. Fifty-two cases pass; 628 cases still report incomplete ports,
   so both targets exit nonzero.
 
 ## TS1 final-state comparison
@@ -64,5 +64,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 `5.33e-4` for HO2NO2 in cell 3974. A single-cell run of that input also fails,
 so the discrepancy is not caused by cell grouping. This result is a regression
 case for further solver arithmetic work. The implementation is about eleven
-times slower than the reference at this scale, and 629 of the 680 inventory cases
+times slower than the reference at this scale, and 628 of the 680 inventory cases
 remain unported.

@@ -144,6 +144,29 @@ static int check_rate_constants_no_user_tutorial(void) {
   return result;
 }
 
+static int check_lambda_rate_constant_position(void) {
+  const chem_term reactant[] = {{.species = 0, .coefficient = 1.0}};
+  const chem_term product[] = {{.species = 1, .coefficient = 1.0}};
+  const chem_reaction reactions[] = {
+      {.kind = CHEM_ARRHENIUS,
+       .reactants = reactant, .reactant_count = 1,
+       .products = product, .product_count = 1,
+       .p = {2.0, 0.0, 0.0, 300.0, 0.0}},
+      {.kind = CHEM_LAMBDA,
+       .reactants = reactant, .reactant_count = 1,
+       .products = product, .product_count = 1,
+       .rate_function = test_lambda}};
+  const chem_species species[] = {{.name = "a"}, {.name = "b"}};
+  const chem_mechanism mechanism = {
+      .species = species, .species_count = 2,
+      .reactions = reactions, .reaction_count = 2};
+  double constants[2] = {0.0, 0.0};
+  if (chem_rate_constants(&mechanism, 300.0, 101325.0, 1.0, NULL,
+                          constants) != 0)
+    return 1;
+  return near(constants[0], 2.0) && near(constants[1], 600.0) ? 0 : 1;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -716,5 +739,6 @@ int main(void) {
         scheme_total.rejected != scheme_counts[scheme][5]) return 47;
   }
   if (check_rate_constants_no_user_tutorial() != 0) return 48;
+  if (check_lambda_rate_constant_position() != 0) return 49;
   return 0;
 }
