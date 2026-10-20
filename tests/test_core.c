@@ -3538,6 +3538,80 @@ static int check_analytical_oregonator(int backward_euler) {
   return status;
 }
 
+static int check_analytical_e5(void) {
+  const chem_species species[]={{.name="A1"},{.name="A2"},{.name="A3"},
+      {.name="A4"},{.name="A5"},{.name="A6"}};
+  const chem_term a1[]={{.species=0,.coefficient=1}};
+  const chem_term a2a3[]={{.species=1,.coefficient=1},
+                           {.species=2,.coefficient=1}};
+  const chem_term a1a3[]={{.species=0,.coefficient=1},
+                           {.species=2,.coefficient=1}};
+  const chem_term a2a3_products[]={{.species=1,.coefficient=1},
+                                   {.species=2,.coefficient=1}};
+  const chem_term a5[]={{.species=4,.coefficient=1}};
+  const chem_term a4[]={{.species=3,.coefficient=1}};
+  const chem_term a3a6_products[]={{.species=2,.coefficient=1},
+                                   {.species=5,.coefficient=1}};
+  const chem_reaction reactions[]={
+      {.kind=CHEM_USER_DEFINED,.reactants=a1,.reactant_count=1,
+       .products=a2a3_products,.product_count=2,.p={[0]=1,[7]=0}},
+      {.kind=CHEM_USER_DEFINED,.reactants=a2a3,.reactant_count=2,
+       .products=a5,.product_count=1,.p={[0]=1,[7]=1}},
+      {.kind=CHEM_USER_DEFINED,.reactants=a1a3,.reactant_count=2,
+       .products=a4,.product_count=1,.p={[0]=1,[7]=2}},
+      {.kind=CHEM_USER_DEFINED,.reactants=a4,.reactant_count=1,
+       .products=a3a6_products,.product_count=2,.p={[0]=1,[7]=3}}};
+  const char *labels[]={"r1","r2","r3","r4"};
+  const chem_mechanism mechanism={.species=species,.species_count=6,
+      .reactions=reactions,.reaction_count=4,.custom_labels=labels,
+      .custom_parameter_count=4};
+  const double rates[]={7.89e-10,1.13e9,1.1e7,1.13e3};
+  const double reference[8][4]={
+      {1.76e-3,0,0,0},
+      {1.7599259497677897058e-3,1.3846281519376516449e-11,
+       7.6370038530073911180e-13,1.3082581134075777338e-11},
+      {1.6180769999072942552e-3,1.3822370304983735443e-10,
+       8.2515735006838336088e-12,1.2997212954915352082e-10},
+      {7.4813208224292220114e-6,2.3734781561205975019e-12,
+       2.2123586689581663654e-12,1.6111948716243113653e-13},
+      {4.7150333630401632232e-10,1.8188895860807021729e-14,
+       1.8188812376786725407e-14,8.3484020296321693074e-20},
+      {3.1317148329356996037e-14,1.4840957952870064294e-16,
+       1.4840957948345691466e-16,4.5243728279782625194e-26},
+      {3.8139035189787091771e-49,1.0192582567660293322e-20,
+       1.0192582567660293322e-20,3.7844935507486221171e-65},
+      {0,8.8612334976263783420e-23,8.8612334976263783421e-23,0}};
+  const double atols[]={1e-7,1e-17,1e-17,1e-17,1e-7,1e-7};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  double state[]={1.76e-3,0,0,0,0,0};
+  chem_solver_options options=chem_solver_default_options();
+  options.relative_tolerance=1e-13;
+  options.absolute_tolerances=atols;
+  options.absolute_tolerance_count=6;
+  options.max_steps=1000000;
+  const chem_rosenbrock_parameters parameters=
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
+  double target=10.0,current=0.0;
+  int status=0;
+  for (size_t point=1;point<8 && !status;++point) {
+    status=chem_rosenbrock_solve_with_parameters(&mechanism,&workspace,state,
+        298.15,101325.0,40.0,rates,target-current,&parameters,&options,NULL);
+    if (status) break;
+    for (size_t i=0;i<4;++i) {
+      const double error=fabs(state[i]-reference[point][i]);
+      const double abs_tol=i==0?1e-6:1e-13;
+      const double relative=reference[point][i]>0.0
+          ? error/reference[point][i] : error;
+      if (error>=abs_tol && relative>=1e-10) status=2;
+    }
+    current=target;
+    target*=100.0;
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
 int main(void) {
   if (check_rosenbrock_species_tolerances()) return 52;
   { const int status=check_rejected_step_determinism();
@@ -3558,6 +3632,7 @@ int main(void) {
   if (check_analytical_hires(1)) return 91;
   if (check_analytical_oregonator(0)) return 92;
   if (check_analytical_oregonator(1)) return 93;
+  if (check_analytical_e5()) return 94;
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
   const double b = chem_arrhenius(3.0e-11, 0.0, -200.0, 300.0, 0.0, t, 0.0);
