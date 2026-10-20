@@ -66,7 +66,8 @@ mutable and read-only strided matrix views, rate evaluation, forcing and Jacobia
 routines, linear and equilibrium constraint evaluation helpers, version API, and
 solver interface.
 Grouped vector-matrix views expose MICM-style lane packing for batched rows,
-with vector conversion, AXPY, fill, reductions, and element callbacks.
+with vector conversion, AXPY, fill, reductions, element callbacks, and
+multi-matrix row callbacks.
 Matrix views support checked element access, row-major vector conversion,
 row and column vector copies, element traversal, fill, AXPY, and min/max/sum
 reductions. Row callbacks can combine matrices with different column counts and

@@ -33,6 +33,8 @@ write into a destination matrix, while validating that all row counts agree.
 when the caller holds const storage.
 `chem_vector_matrix_view` packs logical rows into fixed-width lanes, with the
 same row and column strides as MICM's grouped vector matrices.
+Its row callback accepts multiple source matrices with distinct column counts
+and lane widths.
 
 `chem_constraint_set` describes caller-owned linear conservation or
 equilibrium constraints using species indexes. Its utilities validate records,

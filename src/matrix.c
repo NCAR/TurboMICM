@@ -326,6 +326,29 @@ int chem_vector_matrix_view_for_each(chem_vector_matrix_view *view,
   return 0;
 }
 
+int chem_vector_matrix_view_for_each_row(
+    chem_vector_matrix_view *destination,
+    const chem_vector_matrix_view *first,
+    const chem_vector_matrix_view *second,
+    chem_matrix_row_function function, void *context) {
+  if (!vector_matrix_view_valid(destination) ||
+      !vector_matrix_view_valid(first) || !vector_matrix_view_valid(second) ||
+      function == NULL || destination->rows != first->rows ||
+      destination->rows != second->rows) return 1;
+  for (size_t row = 0; row < destination->rows; ++row) {
+    double *dst_row = destination->data ? destination->data + vector_matrix_offset(
+        row,0,destination->columns,destination->group_width) : NULL;
+    const double *first_row = first->data ? first->data + vector_matrix_offset(
+        row,0,first->columns,first->group_width) : NULL;
+    const double *second_row = second->data ? second->data + vector_matrix_offset(
+        row,0,second->columns,second->group_width) : NULL;
+    function(row,dst_row,destination->columns,destination->group_width,
+        first_row,first->columns,first->group_width,
+        second_row,second->columns,second->group_width,context);
+  }
+  return 0;
+}
+
 static int vector_matrix_reduce(const chem_vector_matrix_view *view,
                                 double *value, int maximum) {
   if (!vector_matrix_view_valid(view) || value == NULL || view->rows == 0 ||
@@ -396,10 +419,12 @@ int chem_matrix_view_for_each_row(chem_matrix_view *destination,
       destination->rows != second->rows) return 1;
   for (size_t row = 0; row < destination->rows; ++row)
     function(row,
-        destination->data + row*destination->row_stride,
+        destination->data ? destination->data + row*destination->row_stride : NULL,
         destination->columns,destination->column_stride,
-        first->data + row*first->row_stride,first->columns,first->column_stride,
-        second->data + row*second->row_stride,second->columns,
+        first->data ? first->data + row*first->row_stride : NULL,
+        first->columns,first->column_stride,
+        second->data ? second->data + row*second->row_stride : NULL,
+        second->columns,
         second->column_stride,context);
   return 0;
 }

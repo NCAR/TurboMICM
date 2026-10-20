@@ -1649,6 +1649,26 @@ static int check_matrix_view_api(void) {
   if (chem_matrix_view_init(&short_matrix,left_data,2,3,3,1) ||
       chem_matrix_view_for_each_row(&left,&left,&short_matrix,
                                     matrix_combine_rows,NULL) == 0) return 58;
+  double vector_left_data[8] = {0}, vector_right_data[12] = {0};
+  chem_vector_matrix_view vector_left, vector_right;
+  if (chem_vector_matrix_view_init(&vector_left,vector_left_data,3,2,2) ||
+      chem_vector_matrix_view_init(&vector_right,vector_right_data,3,3,4))
+    return 59;
+  for (size_t row = 0; row < 3; ++row) {
+    if (chem_vector_matrix_view_set(&vector_left,row,0,(double)row) ||
+        chem_vector_matrix_view_set(&vector_right,row,2,(double)(row*4))) return 60;
+  }
+  if (chem_vector_matrix_view_for_each_row(&vector_left,&vector_left,
+        &vector_right,matrix_combine_rows,NULL) ||
+      chem_vector_matrix_view_get(&vector_left,0,1,&value) || value != 0.0 ||
+      chem_vector_matrix_view_get(&vector_left,1,1,&value) || value != 5.0 ||
+      chem_vector_matrix_view_get(&vector_left,2,1,&value) || value != 10.0)
+    return 61;
+  double vector_short_data[4] = {0};
+  chem_vector_matrix_view vector_short;
+  if (chem_vector_matrix_view_init(&vector_short,vector_short_data,2,3,2) ||
+      chem_vector_matrix_view_for_each_row(&vector_left,&vector_left,
+        &vector_short,matrix_combine_rows,NULL) == 0) return 62;
   return 0;
 }
 

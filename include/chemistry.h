@@ -276,6 +276,11 @@ int chem_vector_matrix_view_axpy(chem_vector_matrix_view *destination,
 int chem_vector_matrix_view_for_each(chem_vector_matrix_view *view,
                                     chem_matrix_element_function function,
                                     void *context);
+int chem_vector_matrix_view_for_each_row(
+    chem_vector_matrix_view *destination,
+    const chem_vector_matrix_view *first,
+    const chem_vector_matrix_view *second,
+    chem_matrix_row_function function, void *context);
 int chem_vector_matrix_view_min(const chem_vector_matrix_view *view,
                                 double *value);
 int chem_vector_matrix_view_max(const chem_vector_matrix_view *view,
