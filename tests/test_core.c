@@ -3360,6 +3360,94 @@ static int check_analytical_robertson(chem_rosenbrock_parameter_set scheme) {
   return status;
 }
 
+static int check_analytical_hires(int backward_euler) {
+  const chem_species species[]={{.name="Y0"},{.name="Y1"},{.name="Y2"},
+      {.name="Y3"},{.name="Y4"},{.name="Y5"},{.name="Y6"},{.name="Y7"}};
+  const chem_term y0[]={{.species=0,.coefficient=1}};
+  const chem_term y1[]={{.species=1,.coefficient=1}};
+  const chem_term y2[]={{.species=2,.coefficient=1}};
+  const chem_term y3[]={{.species=3,.coefficient=1}};
+  const chem_term y4[]={{.species=4,.coefficient=1}};
+  const chem_term y5[]={{.species=5,.coefficient=1}};
+  const chem_term y6[]={{.species=6,.coefficient=1}};
+  const chem_term y1_products[]={{.species=1,.coefficient=1}};
+  const chem_term y2_y5_products[]={{.species=2,.coefficient=0.43/1.12},
+                                      {.species=5,.coefficient=0.69/1.12}};
+  const chem_term y2_y3_products[]={{.species=0,.coefficient=8.32/10.03},
+                                      {.species=3,.coefficient=1.71/10.03}};
+  const chem_term y0_y3_products[]={{.species=0,.coefficient=0.43/8.75},
+                                      {.species=3,.coefficient=8.32/8.75}};
+  const chem_term y0_product[]={{.species=0,.coefficient=1}};
+  const chem_term y4_product[]={{.species=4,.coefficient=1}};
+  const chem_term y4_y5_products[]={{.species=4,.coefficient=0.43/1.81},
+                                      {.species=5,.coefficient=0.69/1.81},
+                                      {.species=7,.coefficient=1}};
+  const chem_term y5_y7[]={{.species=5,.coefficient=1},
+                            {.species=7,.coefficient=1}};
+  const chem_term y6_product[]={{.species=6,.coefficient=1}};
+  const chem_reaction reactions[]={
+      {.kind=CHEM_USER_DEFINED,.reactants=y0,.reactant_count=1,
+       .products=y1_products,.product_count=1,.p={[0]=1,[7]=0}},
+      {.kind=CHEM_USER_DEFINED,.reactants=y1,.reactant_count=1,
+       .products=y0_y3_products,.product_count=2,.p={[0]=1,[7]=1}},
+      {.kind=CHEM_USER_DEFINED,.reactants=y2,.reactant_count=1,
+       .products=y2_y3_products,.product_count=2,.p={[0]=1,[7]=2}},
+      {.kind=CHEM_USER_DEFINED,.products=y0_product,.product_count=1,
+       .p={[0]=1,[7]=3}},
+      {.kind=CHEM_USER_DEFINED,.reactants=y3,.reactant_count=1,
+       .products=y2_y5_products,.product_count=2,.p={[0]=1,[7]=4}},
+      {.kind=CHEM_USER_DEFINED,.reactants=y4,.reactant_count=1,
+       .products=(const chem_term[]){{.species=2,.coefficient=0.035/1.745},
+                                     {.species=5,.coefficient=1.71/1.745}},
+       .product_count=2,.p={[0]=1,[7]=5}},
+      {.kind=CHEM_USER_DEFINED,.reactants=y5,.reactant_count=1,
+       .products=y4_product,.product_count=1,.p={[0]=1,[7]=6}},
+      {.kind=CHEM_USER_DEFINED,.reactants=y6,.reactant_count=1,
+       .products=y4_y5_products,.product_count=3,.p={[0]=1,[7]=7}},
+      {.kind=CHEM_USER_DEFINED,.reactants=y5_y7,.reactant_count=2,
+       .products=y6_product,.product_count=1,.p={[0]=1,[7]=8}}};
+  const char *labels[]={"r1","r2","r3","r4","r5","r6","r7","r8","r9"};
+  const chem_mechanism mechanism={.species=species,.species_count=8,
+      .reactions=reactions,.reaction_count=9,.custom_labels=labels,
+      .custom_parameter_count=9};
+  const double rates[]={1.71,8.75,10.03,0.0007,1.12,1.745,0.43,1.81,280.0};
+  const double reference[2][8]={
+      {0.000737131257332567,0.000144248572631618,0.000058887297409676,
+       0.001175651343283149,0.002386356198831330,0.006238968252742796,
+       0.002849998395185769,0.002850001604814231},
+      {0.000670305503581864,0.000130996846986347,0.000046862231597733,
+       0.001044668020551705,0.000594883830951485,0.001399628833942774,
+       0.001014492757718480,0.004685507242281520}};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  double state[]={1,0,0,0,0,0,0,0.0057};
+  chem_solver_options ros_options=chem_solver_default_options();
+  ros_options.relative_tolerance=1e-6;
+  ros_options.absolute_tolerance=1e-8;
+  ros_options.max_steps=100000;
+  const chem_rosenbrock_parameters ros_parameters=
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
+  chem_backward_euler_options be_options=chem_backward_euler_default_options();
+  be_options.initial_step=321.8122;
+  int status=0;
+  for (size_t point=0;point<2 && !status;++point) {
+    const double duration=321.8122+100.0*(double)point;
+    status=backward_euler
+        ? chem_backward_euler_solve_with_workspace(&mechanism,&workspace,state,
+            298.15,101325.0,40.0,rates,duration,&be_options,NULL)
+        : chem_rosenbrock_solve_with_parameters(&mechanism,&workspace,state,
+            298.15,101325.0,40.0,rates,duration,
+            &ros_parameters,&ros_options,NULL);
+    if (status) break;
+    const double tolerance=backward_euler?0.1:1e-7;
+    for (size_t i=0;i<8;++i)
+      if (fabs(state[i]-reference[point][i])>tolerance) status=2;
+    if (point==0) be_options.initial_step=duration+100.0;
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return status;
+}
+
 int main(void) {
   if (check_rosenbrock_species_tolerances()) return 52;
   { const int status=check_rejected_step_determinism();
@@ -3376,6 +3464,8 @@ int main(void) {
     const int status=check_analytical_robertson(robertson_schemes[i]);
     if (status) return 80+(int)i*10+status;
   }
+  if (check_analytical_hires(0)) return 90;
+  if (check_analytical_hires(1)) return 91;
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
   const double b = chem_arrhenius(3.0e-11, 0.0, -200.0, 300.0, 0.0, t, 0.0);
