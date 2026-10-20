@@ -49,6 +49,13 @@ implemented = {
     "reaction_rate_store:ReactionRateConstantStore.SurfaceMissingMolecularWeightThrows",
     "reaction_rate_store:ReactionRateConstantStore.ParameterizedMultipliers",
     "reaction_rate_store:ReactionRateConstantStore.LambdaEntriesRcIndex",
+    "jacobian_verification:JacobianVerification.FiniteDifferenceMatchesAnalytical",
+    "jacobian_verification:JacobianVerification.MultiBlockFiniteDifference",
+    "jacobian_verification:JacobianVerification.ComparePassesForCorrectJacobian",
+    "jacobian_verification:JacobianVerification.CompareFailsForWrongJacobian",
+    "jacobian_verification:JacobianVerification.SparsityCompletenessPassesWhenComplete",
+    "jacobian_verification:JacobianVerification.SparsityCompletenessFailsWhenMissingEntry",
+    "jacobian_verification:JacobianVerification.NearZeroVariableHandled",
     "README_example",
     "solve_results",
     "multiple_grid_cells",
@@ -88,6 +95,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C tutorial output checked"
         else:
             reason = "C rate formula checked"
+        if case_id.startswith("jacobian_verification:"):
+            reason = "C finite-difference Jacobian checks"
         print(f"{case_id} PASS {reason}")
     elif case_id in not_applicable:
         print(f"{case_id} N/A {not_applicable[case_id]}")

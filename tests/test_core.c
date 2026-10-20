@@ -167,6 +167,82 @@ static int check_lambda_rate_constant_position(void) {
   return near(constants[0], 2.0) && near(constants[1], 600.0) ? 0 : 1;
 }
 
+static void simple_forcing(const double *x, size_t blocks, double *f) {
+  for (size_t b = 0; b < blocks; ++b) {
+    const double a = x[2*b], c = x[2*b + 1];
+    f[2*b] = a * c;
+    f[2*b + 1] = a * a - c;
+  }
+}
+
+static void finite_difference_jacobian(const double *x, size_t blocks,
+                                       double *jacobian) {
+  const double epsilon = 1e-8;
+  for (size_t col = 0; col < 2; ++col) {
+    double plus[6], minus[6], f_plus[6], f_minus[6], f_base[6];
+    memcpy(plus, x, blocks * 2 * sizeof(double));
+    memcpy(minus, x, blocks * 2 * sizeof(double));
+    for (size_t b = 0; b < blocks; ++b) {
+      const double value = x[2*b + col];
+      const double h = epsilon * fmax(1.0, fabs(value));
+      plus[2*b + col] = value + h;
+      minus[2*b + col] = value - h;
+    }
+    simple_forcing(plus, blocks, f_plus);
+    simple_forcing(minus, blocks, f_minus);
+    simple_forcing(x, blocks, f_base);
+    for (size_t b = 0; b < blocks; ++b) {
+      const double value = x[2*b + col];
+      const double h = epsilon * fmax(1.0, fabs(value));
+      for (size_t row = 0; row < 2; ++row) {
+        jacobian[4*b + 2*row + col] = value - h >= 0.0
+            ? (f_plus[2*b + row] - f_minus[2*b + row]) / (2.0*h)
+            : (f_plus[2*b + row] - f_base[2*b + row]) / h;
+      }
+    }
+  }
+}
+
+static int check_jacobian_verification(void) {
+  const double points[] = {3.0, 5.0, 0.5, 4.0, 10.0, 0.1};
+  const double expected[] = {5.0, 3.0, 6.0, -1.0,
+                             4.0, 0.5, 1.0, -1.0,
+                             0.1, 10.0, 20.0, -1.0};
+  double fd[12] = {0};
+  finite_difference_jacobian(points, 3, fd);
+  for (size_t i = 0; i < 12; ++i)
+    if (fabs(fd[i] - expected[i]) > 1e-5) return 1;
+
+  /* Compare MICM's negative-Jacobian convention with finite differences. */
+  const double negative_jacobian[] = {-5.0, -3.0, -6.0, 1.0};
+  for (size_t i = 0; i < 4; ++i)
+    if (fabs(-negative_jacobian[i] - fd[i]) > 1e-7 + 1e-7*fabs(fd[i])) return 2;
+  double wrong[4] = {-999.0, -3.0, -6.0, 1.0};
+  size_t worst = 0;
+  for (size_t i = 1; i < 4; ++i)
+    if (fabs(-wrong[i] - fd[i]) > fabs(-wrong[worst] - fd[worst])) worst = i;
+  if (fabs(-wrong[worst] - fd[worst]) <= 1e-7 + 1e-7*fabs(fd[worst]) ||
+      worst != 0) return 3;
+
+  /* A full sparsity pattern is complete; omitting (1,0) is detected. */
+  unsigned char full_pattern[] = {1, 1, 1, 1};
+  unsigned char incomplete_pattern[] = {1, 1, 0, 1};
+  for (size_t i = 0; i < 4; ++i)
+    if (!full_pattern[i] && fabs(fd[i]) > 1e-5) return 4;
+  size_t missing = 4;
+  for (size_t i = 0; i < 4; ++i)
+    if (!incomplete_pattern[i] && fabs(fd[i]) > 1e-5) missing = i;
+  if (missing != 2) return 5;
+
+  const double near_zero[] = {0.0, 1.0};
+  double zero_fd[4] = {0};
+  finite_difference_jacobian(near_zero, 1, zero_fd);
+  const double zero_expected[] = {1.0, 0.0, 0.0, -1.0};
+  for (size_t i = 0; i < 4; ++i)
+    if (fabs(zero_fd[i] - zero_expected[i]) > 1e-5) return 6;
+  return 0;
+}
+
 int main(void) {
   const double t = 301.24;
   const double a = chem_arrhenius(1.0, 0.0, 0.0, 300.0, 0.0, t, 0.0);
@@ -740,5 +816,6 @@ int main(void) {
   }
   if (check_rate_constants_no_user_tutorial() != 0) return 48;
   if (check_lambda_rate_constant_position() != 0) return 49;
+  if (check_jacobian_verification() != 0) return 50;
   return 0;
 }
