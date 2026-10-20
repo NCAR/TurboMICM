@@ -52,6 +52,8 @@
 - Represent basic dense matrix access with a non-owning strided C view rather
   than an owning template type. Keep allocation with the caller and validate
   dimensions and strides at the API boundary.
+  Lane-packed dense views carry their group width at runtime; tests compare
+  widths 1, 2, 4, and 8 against identical logical row-major values.
 
 - Store optional species properties in caller-owned tagged records. Typed C
   getters report missing properties separately from type mismatches, avoiding

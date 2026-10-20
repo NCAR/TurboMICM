@@ -1780,6 +1780,31 @@ static int check_matrix_view_api(void) {
       chem_matrix_view_reduce_strict(&const_loop_view,matrix_count,NULL,0.0,
                                      &value) || value != 12.0)
     return 63;
+  const size_t lane_widths[] = {1, 2, 4, 8};
+  for (size_t w = 0; w < sizeof(lane_widths)/sizeof(lane_widths[0]); ++w) {
+    const size_t width = lane_widths[w], logical_rows = 3*width, columns = 4;
+    double packed[96] = {0}, flat_packed[96] = {0};
+    size_t storage_size = 0;
+    chem_vector_matrix_view grouped;
+    if (chem_vector_matrix_view_storage_size(logical_rows,columns,width,
+                                               &storage_size) ||
+        storage_size != logical_rows*columns ||
+        chem_vector_matrix_view_init(&grouped,packed,logical_rows,columns,width))
+      return 64;
+    for (size_t row = 0; row < logical_rows; ++row)
+      for (size_t column = 0; column < columns; ++column)
+        if (chem_vector_matrix_view_set(&grouped,row,column,
+                                        (double)(row*10+column))) return 65;
+    if (chem_vector_matrix_view_copy_to_vector(&grouped,flat_packed,
+                                                storage_size)) return 66;
+    for (size_t row = 0; row < logical_rows; ++row)
+      for (size_t column = 0; column < columns; ++column) {
+        double got = -1.0;
+        if (chem_vector_matrix_view_get(&grouped,row,column,&got) ||
+            got != (double)(row*10+column) ||
+            flat_packed[row*columns+column] != got) return 67;
+      }
+  }
   return 0;
 }
 
