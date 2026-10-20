@@ -409,10 +409,50 @@ int main(void) {
         &solve_mechanism, &solve_workspace, solve_states, solve_temperatures,
         solve_pressures, solve_densities, solve_rates, 3, 200.0, NULL,
         &solve_stats);
-  chem_solver_workspace_destroy(&solve_workspace);
   if (solve_status != 0 || solve_stats.internal_steps != 18 ||
       solve_stats.accepted != 18 || solve_stats.rejected != 0 ||
       solve_stats.function_calls != 36 || solve_stats.jacobian_updates != 18 ||
       solve_stats.decompositions != 18 || solve_stats.solves != 54) return 40;
+
+  /* The multiple-grid-cells tutorial prints ten states for each cell. */
+  const double grid_expected[10][3][3] = {
+      {{5.35e-1, 4.48e-6, 4.65e-1},
+       {1.21, 6.00e-6, 7.89e-1}, {2.30e-1, 3.30e-6, 2.70e-1}},
+      {{4.50e-1, 3.23e-6, 5.50e-1},
+       {1.05, 4.42e-6, 9.45e-1}, {1.85e-1, 2.32e-6, 3.15e-1}},
+      {{4.00e-1, 2.63e-6, 6.00e-1},
+       {9.59e-1, 3.65e-6, 1.04}, {1.60e-1, 1.85e-6, 3.40e-1}},
+      {{3.64e-1, 2.27e-6, 6.36e-1},
+       {8.90e-1, 3.18e-6, 1.11}, {1.42e-1, 1.57e-6, 3.58e-1}},
+      {{3.37e-1, 2.01e-6, 6.63e-1},
+       {8.35e-1, 2.85e-6, 1.16}, {1.29e-1, 1.38e-6, 3.71e-1}},
+      {{3.15e-1, 1.82e-6, 6.85e-1},
+       {7.91e-1, 2.60e-6, 1.21}, {1.19e-1, 1.24e-6, 3.81e-1}},
+      {{2.96e-1, 1.67e-6, 7.04e-1},
+       {7.54e-1, 2.40e-6, 1.25}, {1.11e-1, 1.13e-6, 3.89e-1}},
+      {{2.81e-1, 1.55e-6, 7.19e-1},
+       {7.21e-1, 2.24e-6, 1.28}, {1.04e-1, 1.04e-6, 3.96e-1}},
+      {{2.67e-1, 1.45e-6, 7.33e-1},
+       {6.93e-1, 2.11e-6, 1.31}, {9.77e-2, 9.65e-7, 4.02e-1}},
+      {{2.55e-1, 1.37e-6, 7.45e-1},
+       {6.68e-1, 2.00e-6, 1.33}, {9.25e-2, 9.02e-7, 4.07e-1}}};
+  int grid_error = 0;
+  for (size_t step = 0; step < 10 && !grid_error; ++step) {
+    if (step != 0)
+      grid_error = chem_rosenbrock3_solve_group_with_workspace(
+          &solve_mechanism, &solve_workspace, solve_states, solve_temperatures,
+          solve_pressures, solve_densities, solve_rates, 3, 200.0, NULL, NULL);
+    for (size_t cell = 0; cell < 3 && !grid_error; ++cell) {
+      for (size_t variable = 0; variable < 3 && !grid_error; ++variable) {
+        const double expected = grid_expected[step][cell][variable];
+        const double print_tolerance =
+            0.5 * pow(10.0, floor(log10(expected)) - 2.0);
+        if (fabs(solve_states[cell*3 + variable] - expected) > print_tolerance)
+          grid_error = 1;
+      }
+    }
+  }
+  chem_solver_workspace_destroy(&solve_workspace);
+  if (grid_error) return 41;
   return 0;
 }
