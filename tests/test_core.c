@@ -484,5 +484,33 @@ int main(void) {
         return 43;
     }
   }
+
+  /* Port the vectorized-matrix tutorial's observable cell and sparse layouts.
+     Its Solve helper is never entered because its state starts converged. */
+  const double regular_layout[] = {
+      1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3};
+  const double vectorized_layout[] = {
+      1.1, 2.1, 3.1, 1.2, 2.2, 3.2, 1.3, 2.3, 3.3};
+  for (size_t cell = 0; cell < 3; ++cell)
+    for (size_t variable = 0; variable < 3; ++variable)
+      if (regular_layout[cell*3 + variable] !=
+          vectorized_layout[variable*3 + cell]) return 44;
+  const size_t sparse_rows[] = {0, 2, 2, 3};
+  const size_t sparse_columns[] = {1, 1, 3, 2};
+  int sparse_standard[12], sparse_vectorized[12];
+  for (size_t block = 0; block < 3; ++block)
+    for (size_t element = 0; element < 4; ++element) {
+      const int value = (int)(100*block + 10*sparse_rows[element] +
+                              sparse_columns[element]);
+      sparse_standard[block*4 + element] = value;
+      sparse_vectorized[element*3 + block] = value;
+    }
+  const int expected_standard[] = {
+      1, 21, 23, 32, 101, 121, 123, 132, 201, 221, 223, 232};
+  const int expected_vectorized[] = {
+      1, 101, 201, 21, 121, 221, 23, 123, 223, 32, 132, 232};
+  for (size_t i = 0; i < 12; ++i)
+    if (sparse_standard[i] != expected_standard[i] ||
+        sparse_vectorized[i] != expected_vectorized[i]) return 45;
   return 0;
 }

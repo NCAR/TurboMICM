@@ -52,6 +52,7 @@ implemented = {
     "solve_results",
     "multiple_grid_cells",
     "openmp_tutorial",
+    "vectorized_matrix_solver",
 }
 
 failed = False
@@ -62,7 +63,7 @@ for raw in case_file.read_text().splitlines():
     case_id, kind = line.split()
     if case_id in implemented:
         if case_id in {"README_example", "solve_results", "multiple_grid_cells",
-                       "openmp_tutorial"}:
+                       "openmp_tutorial", "vectorized_matrix_solver"}:
             reason = "C tutorial output checked"
         else:
             reason = "C rate formula checked"
