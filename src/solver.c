@@ -334,16 +334,17 @@ static int project_constraints(const chem_constraint_set *constraints,
                                         residual) ||
         chem_constraint_set_add_negative_jacobian(
             constraints, state, &temperature, 1, negative_jacobian)) break;
-    double maximum = 0.0, scale = 1.0;
+    double maximum_residual = 0.0, scale = 1.0;
     for (size_t i = 0; i < n; ++i) if (fabs(state[i]) > scale) scale = fabs(state[i]);
     for (size_t i = 0; i < count; ++i) {
       const size_t row = variables[i];
-      if (fabs(residual[row]) > maximum) maximum = fabs(residual[row]);
+      if (fabs(residual[row]) > maximum_residual)
+        maximum_residual = fabs(residual[row]);
       rhs[i] = -residual[row];
       for (size_t j = 0; j < count; ++j)
         matrix[i*count+j] = -negative_jacobian[row*n + variables[j]];
     }
-    if (maximum <= 1.0e-12*scale) {
+    if (maximum_residual == 0.0) {
       if (iterations) *iterations = iteration;
       result = 0;
       break;
@@ -371,6 +372,16 @@ static int project_constraints(const chem_constraint_set *constraints,
     for (size_t ii = count; ii-- > 0;) {
       for (size_t j = ii+1; j < count; ++j) rhs[ii] -= matrix[ii*count+j]*rhs[j];
       rhs[ii] /= matrix[ii*count+ii];
+    }
+    double maximum_update = 0.0;
+    for (size_t i = 0; i < count; ++i) {
+      if (!isfinite(rhs[i])) goto done;
+      if (fabs(rhs[i]) > maximum_update) maximum_update = fabs(rhs[i]);
+    }
+    if (maximum_update <= 1.0e-12*scale) {
+      if (iterations) *iterations = iteration;
+      result = 0;
+      break;
     }
     for (size_t i = 0; i < count; ++i) {
       state[variables[i]] += rhs[i];

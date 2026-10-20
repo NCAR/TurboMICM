@@ -1190,9 +1190,19 @@ static int check_constrained_solver(void) {
   const int status = chem_rosenbrock_solve_constrained_with_parameters(
       &mechanism,&workspace,state,298.15,101325.0,40.0,NULL,1.0,
       &parameters,&constraints,NULL,&stats);
-  chem_solver_workspace_destroy(&workspace);
   if (status || fabs(state[0]-1.0)>1.0e-12 || stats.accepted==0 ||
       stats.constraint_init_iterations == 0) return 2;
+  const chem_constraint_term scaled_terms[] = {{.species=0,.coefficient=1.0e-9}};
+  const chem_constraint scaled_constraint = {.kind=CHEM_CONSTRAINT_LINEAR,
+      .algebraic_species=0,.terms=scaled_terms,.term_count=1,.constant=1.0e-9};
+  const chem_constraint_set scaled_set = {.constraints=&scaled_constraint,
+      .constraint_count=1,.species_count=1};
+  double scaled_state[] = {0.0};
+  const int scaled_status = chem_rosenbrock_solve_constrained_with_parameters(
+      &mechanism,&workspace,scaled_state,298.15,101325.0,40.0,NULL,1.0,
+      &parameters,&scaled_set,NULL,&stats);
+  chem_solver_workspace_destroy(&workspace);
+  if (scaled_status || fabs(scaled_state[0]-1.0)>1.0e-12) return 3;
 
   const chem_species pair_species[] = {
       {.name="B",.initial_concentration=0.5},
@@ -1220,10 +1230,16 @@ static int check_constrained_solver(void) {
   const int consistent_status = chem_rosenbrock_solve_constrained_with_parameters(
       &pair_mechanism,&pair_workspace,pair_state,298.15,101325.0,40.0,NULL,0.1,
       NULL,&equilibrium_set,NULL,&stats);
-  chem_solver_workspace_destroy(&pair_workspace);
   if (consistent_status || fabs(pair_state[0]-0.5)>1.0e-12 ||
       fabs(pair_state[1]-1.0)>1.0e-12 || stats.constraint_init_iterations > 1)
     return 5;
+  pair_state[1] = 8.0;
+  const int repeat_status = chem_rosenbrock_solve_constrained_with_parameters(
+      &pair_mechanism,&pair_workspace,pair_state,298.15,101325.0,40.0,NULL,0.1,
+      NULL,&equilibrium_set,NULL,&stats);
+  chem_solver_workspace_destroy(&pair_workspace);
+  if (repeat_status || fabs(pair_state[1]-1.0)>1.0e-12 ||
+      stats.constraint_init_iterations == 0) return 6;
 
   const chem_species singular_species[] = {{.name="X"},{.name="Y"}};
   const chem_mechanism singular_mechanism = {
@@ -1234,14 +1250,14 @@ static int check_constrained_solver(void) {
   const chem_constraint_set singular_set = {.constraints=&singular_constraint,
       .constraint_count=1,.species_count=2};
   chem_solver_workspace singular_workspace = {0};
-  if (chem_solver_workspace_init(&singular_workspace,&singular_mechanism)) return 6;
+  if (chem_solver_workspace_init(&singular_workspace,&singular_mechanism)) return 7;
   double singular_state[] = {7.0,0.0};
   const int singular_status = chem_rosenbrock_solve_constrained_with_parameters(
       &singular_mechanism,&singular_workspace,singular_state,298.15,101325.0,
       40.0,NULL,0.1,NULL,&singular_set,NULL,NULL);
   chem_solver_workspace_destroy(&singular_workspace);
   if (singular_status == 0 || singular_state[0] != 7.0 || singular_state[1] != 0.0)
-    return 7;
+    return 8;
   return 0;
 }
 
