@@ -419,6 +419,10 @@ int chem_matrix_view_axpy(chem_matrix_view *destination,
 int chem_matrix_view_min(const chem_matrix_view *view, double *value);
 int chem_matrix_view_max(const chem_matrix_view *view, double *value);
 int chem_matrix_view_sum(const chem_matrix_view *view, double *value);
+int chem_matrix_view_write(FILE *file, const chem_matrix_view *view);
+int chem_matrix_view_scale_from_int_vector(chem_matrix_view *view,
+                                           const int *vector,
+                                           size_t vector_size, double scale);
 int chem_matrix_view_reduce_or(const chem_matrix_view *view,
                                chem_matrix_predicate predicate, void *context,
                                int initial, int *value);

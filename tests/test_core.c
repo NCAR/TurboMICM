@@ -1803,6 +1803,30 @@ static int check_matrix_view_api(void) {
       chem_matrix_view_reduce_strict(&const_loop_view,matrix_count,NULL,0.0,
                                      &value) || value != 12.0)
     return 63;
+  int dense_integer_values[12];
+  for (size_t i = 0; i < 12; ++i) dense_integer_values[i] = (int)i+1;
+  if (chem_matrix_view_scale_from_int_vector(&loop,dense_integer_values,12,
+                                              0.5) ||
+      chem_matrix_view_get(&loop,0,0,&value) || value != 0.5 ||
+      chem_matrix_view_get(&loop,2,3,&value) || value != 6.0 ||
+      chem_matrix_view_scale_from_int_vector(&loop,dense_integer_values,11,
+                                              0.5) == 0) return 82;
+  double print_matrix_data[] = {0,0,0,0,3,0};
+  chem_matrix_view print_matrix_view;
+  if (chem_matrix_view_init(&print_matrix_view,print_matrix_data,2,3,3,1) ||
+      chem_matrix_view_set(&print_matrix_view,1,1,3.0)) return 83;
+  FILE *dense_print_file = tmpfile();
+  char dense_print_output[64];
+  if (!dense_print_file ||
+      chem_matrix_view_write(dense_print_file,&print_matrix_view) ||
+      fflush(dense_print_file) || fseek(dense_print_file,0,SEEK_SET) ||
+      fread(dense_print_output,1,sizeof(dense_print_output)-1,
+            dense_print_file) == 0) return 84;
+  const size_t dense_print_length = ftell(dense_print_file);
+  if (dense_print_length >= sizeof(dense_print_output)) return 85;
+  dense_print_output[dense_print_length] = '\0';
+  fclose(dense_print_file);
+  if (strcmp(dense_print_output,"0,0,0\n0,3,0\n")) return 86;
   const size_t lane_widths[] = {1, 2, 4, 8};
   for (size_t w = 0; w < sizeof(lane_widths)/sizeof(lane_widths[0]); ++w) {
     const size_t width = lane_widths[w], logical_rows = 3*width, columns = 4;

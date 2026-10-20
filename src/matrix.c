@@ -641,6 +641,34 @@ int chem_matrix_view_sum(const chem_matrix_view *view, double *value) {
   return matrix_reduce(view, value, 0);
 }
 
+int chem_matrix_view_write(FILE *file, const chem_matrix_view *view) {
+  if (!file || !valid_view(view)) return 1;
+  for (size_t row = 0; row < view->rows; ++row) {
+    for (size_t column = 0; column < view->columns; ++column) {
+      const double value = view->data[row*view->row_stride +
+                                      column*view->column_stride];
+      if (fprintf(file,"%g%s",value,
+                  column + 1 == view->columns ? "\n" : ",") < 0) return 1;
+    }
+  }
+  return ferror(file) ? 1 : 0;
+}
+
+int chem_matrix_view_scale_from_int_vector(chem_matrix_view *view,
+                                           const int *vector,
+                                           size_t vector_size, double scale) {
+  if (!valid_view(view) ||
+      (view->columns && view->rows > (size_t)-1/view->columns) ||
+      vector_size != view->rows*view->columns ||
+      (vector_size && !vector)) return 1;
+  size_t index = 0;
+  for (size_t row = 0; row < view->rows; ++row)
+    for (size_t column = 0; column < view->columns; ++column)
+      view->data[row*view->row_stride + column*view->column_stride] =
+          (double)vector[index++]*scale;
+  return 0;
+}
+
 int chem_matrix_view_reduce_or(const chem_matrix_view *view,
                                chem_matrix_predicate predicate, void *context,
                                int initial, int *value) {
