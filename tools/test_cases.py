@@ -64,6 +64,8 @@ def main() -> int:
         PROJECT / "bin/test_analytical_simple", PROJECT / "bin/test_rosenbrock_utilities",
         PROJECT / "bin/test_analytical_additional",
         PROJECT / "bin/test_regression",
+        PROJECT / "bin/test_aerosol_equivalents",
+        PROJECT / "bin/test_external_constraints",
     ]
     if any(not path.is_file() for path in required):
         print("test binaries are missing; run make test-cpu")
@@ -173,6 +175,37 @@ def main() -> int:
             ok = run([str(PROJECT / "bin/test_regression"), test])
             status, reason = ("PASS", "C Chapman batch solves agree with per-cell integrations within MICM tolerance") if ok else (
                 "FAIL", "C Chapman batch solve differs from the per-cell integration")
+        elif suite in {"aerosol_model_backward_euler", "aerosol_model_rosenbrock"}:
+            method = "backward_euler" if suite == "aerosol_model_backward_euler" else "rosenbrock"
+            ok = run([str(PROJECT / "bin/test_aerosol_equivalents"), method, test.split(".", 1)[-1]])
+            status, reason = ("PASS", f"C {method} mechanism matches the stub aerosol state and process behavior") if ok else (
+                "FAIL", f"C {method} aerosol mechanism behavior differs from the reference")
+        elif suite == "external_model_constraints":
+            name = test.split(".", 1)[-1]
+            if test.startswith("ExternalModelFiniteDifferenceJacobian."):
+                if name == "ProcessForcingJacobian":
+                    ok = run([str(PROJECT / "bin/test_processes"), "ProcessSetFiniteDifferenceJacobian.Matrix"])
+                elif name == "ConstraintResidualJacobian":
+                    ok = run([str(PROJECT / "bin/test_constraints"), "LinearConstraint.FiniteDifferenceJacobianSimpleConservation"])
+                elif name == "EquilibriumConstraintModelJacobian":
+                    ok = run([str(PROJECT / "bin/test_constraints"), "EquilibriumConstraint.FiniteDifferenceJacobianSimple"])
+                else:
+                    ok = False
+                status, reason = ("PASS", "C finite-difference Jacobian agrees with the analytic process or constraint Jacobian") if ok else (
+                    "FAIL", "C finite-difference Jacobian differs from the analytic process or constraint Jacobian")
+            elif name in {
+                "ProcessJacobianElementInAlgebraicRowSurvivesFiltering",
+                "ProcessJacobianElementInBuiltInAlgebraicRowSurvivesFiltering",
+            }:
+                status, reason = "N/A", "the C constrained integrator uses dense matrices, so sparse algebraic-row filtering has no equivalent"
+            elif name == "BuilderCanBuildMultipleSolvers":
+                status, reason = "N/A", "C passes immutable mechanism and constraint descriptors directly instead of exposing a reusable solver builder"
+            elif name == "ConstraintActiveWhenProcessOnlyModelAddedFirst":
+                status, reason = "N/A", "C passes one flat mechanism and constraint set; it has no external-model registry whose constraint mask depends on model insertion order"
+            else:
+                ok = run([str(PROJECT / "bin/test_external_constraints"), name])
+                status, reason = ("PASS", "focused C mechanism and constraint regression matches this case") if ok else (
+                    "FAIL", "the focused C mechanism or constraint regression failed")
         elif suite == "backward_euler":
             ok = run([str(PROJECT / "bin/test_backward_euler"), test.split(".", 1)[-1]])
             status, reason = ("PASS", "C implicit backward Euler solve and convergence rule match the reference") if ok else (

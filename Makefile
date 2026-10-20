@@ -229,7 +229,21 @@ $(BUILD)/test_regression.o: tests/test_regression.c $(LIBHDR)
 $(BIN)/test_regression: $(BUILD)/test_regression.o $(BIN)/libchem.a
 	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
 
-test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_objects $(BIN)/test_processes $(BIN)/test_constraints $(BIN)/test_lu $(BIN)/test_chapman $(BIN)/test_grouped_views $(BIN)/test_matrix $(BIN)/test_sparse_matrix $(BIN)/test_backward_euler $(BIN)/test_analytical_simple $(BIN)/test_rosenbrock_utilities $(BIN)/test_analytical_additional $(BIN)/test_regression
+$(BUILD)/test_aerosol_equivalents.o: tests/test_aerosol_equivalents.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_aerosol_equivalents: $(BUILD)/test_aerosol_equivalents.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+$(BUILD)/test_external_constraints.o: tests/test_external_constraints.c $(LIBHDR)
+	@mkdir -p $(BUILD) $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BIN)/test_external_constraints: $(BUILD)/test_external_constraints.o $(BIN)/libchem.a
+	$(CC) $(OPTFLAGS) $(OPENMP_CFLAGS) $^ $(LDFLAGS) -o $@
+
+test-cpu: cpu $(BIN)/test_rates $(BIN)/test_example_no_user $(BIN)/test_example_user $(BIN)/test_tutorial_programs $(BIN)/test_jacobian_verification $(BIN)/test_solver_configuration $(BIN)/test_integration_equivalents $(BIN)/test_state $(BIN)/test_objects $(BIN)/test_processes $(BIN)/test_constraints $(BIN)/test_lu $(BIN)/test_chapman $(BIN)/test_grouped_views $(BIN)/test_matrix $(BIN)/test_sparse_matrix $(BIN)/test_backward_euler $(BIN)/test_analytical_simple $(BIN)/test_rosenbrock_utilities $(BIN)/test_analytical_additional $(BIN)/test_regression $(BIN)/test_aerosol_equivalents $(BIN)/test_external_constraints
 	$(PYTHON) tools/test_cases.py
 
 bench: cpu
