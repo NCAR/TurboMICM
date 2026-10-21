@@ -775,6 +775,87 @@ static int check_terminator_cases(void) {
   return 0;
 }
 
+static int check_chapman_solver_comparisons(const chem_mechanism *mechanism) {
+  const double temperatures[]={284.19,215.02,299.31};
+  const double pressures[]={101245.0,100789.2,101398.0};
+  const double photons[3][3]={{1e-4,1e-5,1e-6},
+      {3.2e-4,7.3e-5,3.2e-6},{5.2e-4,8.2e-5,4.6e-6}};
+  const double initial[3][9]={
+      {0.8,0.2,8.84,0.1,1.0,0.392,32.9,0.01,0.0169},
+      {1.2,0.4,7.2,0.3,1.0,0.39,30.0,0.02,0.014},
+      {0.4,0.1,9.3,0.5,1.0,0.4,34.0,0.01,0.02}};
+  const double gas_constant=8.31446261815324;
+  const chem_solver_options options={.relative_tolerance=1e-6,
+      .absolute_tolerance=1e-12,.max_steps=100000};
+  double reference[3][9];
+  const chem_rosenbrock_parameters baseline=
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_THREE_STAGE);
+  chem_solver_workspace baseline_workspace={0};
+  if (chem_solver_workspace_init_group(&baseline_workspace,mechanism,3)) return 1;
+  for (size_t cell=0;cell<3;++cell) {
+    memcpy(reference[cell],initial[cell],sizeof(reference[cell]));
+    const double density=pressures[cell]/(gas_constant*temperatures[cell]);
+    chem_solver_stats stats={0};
+    if (chem_rosenbrock_solve_with_parameters(mechanism,&baseline_workspace,
+          reference[cell],temperatures[cell],pressures[cell],density,photons[cell],
+          500,&baseline,&options,&stats) || stats.accepted==0) {
+      chem_solver_workspace_destroy(&baseline_workspace); return 2;
+    }
+  }
+  chem_solver_workspace_destroy(&baseline_workspace);
+
+  const chem_rosenbrock_parameter_set schemes[]={CHEM_ROSENBROCK_TWO_STAGE,
+      CHEM_ROSENBROCK_THREE_STAGE,CHEM_ROSENBROCK_FOUR_STAGE,
+      CHEM_ROSENBROCK_FOUR_STAGE_DAE,CHEM_ROSENBROCK_SIX_STAGE_DAE};
+  const double tolerances[]={1e-2,1e-4,1e-4,1e-4,1e-4};
+  for (size_t scheme=0;scheme<5;++scheme) {
+    chem_solver_workspace workspace={0};
+    if (chem_solver_workspace_init_group(&workspace,mechanism,3)) return 3;
+    const chem_rosenbrock_parameters parameters=
+        chem_rosenbrock_builtin_parameters(schemes[scheme]);
+    for (size_t cell=0;cell<3;++cell) {
+      double y[9]; memcpy(y,initial[cell],sizeof(y));
+      const double density=pressures[cell]/(gas_constant*temperatures[cell]);
+      chem_solver_stats stats={0};
+      if (chem_rosenbrock_solve_with_parameters(mechanism,&workspace,y,
+            temperatures[cell],pressures[cell],density,photons[cell],500,
+            &parameters,&options,&stats) || stats.accepted==0) {
+        chem_solver_workspace_destroy(&workspace); return 4;
+      }
+      const double abs_tol=1e-12;
+      for (size_t variable=0;variable<9;++variable)
+        if (fabs(y[variable]-reference[cell][variable])>
+            tolerances[scheme]*(fabs(y[variable])+fabs(reference[cell][variable]))+
+            abs_tol) {
+          chem_solver_workspace_destroy(&workspace); return 5;
+        }
+    }
+    chem_solver_workspace_destroy(&workspace);
+  }
+
+  /* VectorSolve instantiates the same solver at lane widths one through four. */
+  for (size_t width=1;width<=4;++width) {
+    chem_solver_workspace workspace={0};
+    if (chem_solver_workspace_init_group(&workspace,mechanism,width)) return 6;
+    for (size_t cell=0;cell<3;++cell) {
+      double y[9]; memcpy(y,initial[cell],sizeof(y));
+      const double density=pressures[cell]/(gas_constant*temperatures[cell]);
+      if (chem_rosenbrock3_solve_with_workspace(mechanism,&workspace,y,
+            temperatures[cell],pressures[cell],density,photons[cell],500,
+            &options,NULL)) {
+        chem_solver_workspace_destroy(&workspace); return 7;
+      }
+      for (size_t variable=0;variable<9;++variable)
+        if (fabs(y[variable]-reference[cell][variable])>
+            1e-4*(fabs(y[variable])+fabs(reference[cell][variable]))+1e-12) {
+          chem_solver_workspace_destroy(&workspace); return 8;
+        }
+    }
+    chem_solver_workspace_destroy(&workspace);
+  }
+  return 0;
+}
+
 static int check_chapman_integration(void) {
   const chem_species species[] = {
       {.name = "O"}, {.name = "O1D"}, {.name = "O2"}, {.name = "O3"},
@@ -983,7 +1064,7 @@ static int check_chapman_integration(void) {
   if (result) return result;
   if (!(state[2] < 0.5*initial[2] && state[0] > initial[0] &&
         state[0] > 0.5*oxygen_initial)) return 5;
-  return 0;
+  return check_chapman_solver_comparisons(&mechanism);
 }
 
 static int check_integrated_reaction_rates(void) {
@@ -2786,6 +2867,82 @@ static int check_temperature_dependent_equilibrium(void) {
     }
   }
   chem_solver_workspace_destroy(&workspace);
+  return 0;
+}
+
+static int check_process_jacobian_in_constraint_rows(void) {
+  const chem_species species[]={
+      {.name="A_GAS"},{.name="S"},{.name="B"},{.name="A_AQ"}};
+  const chem_term gas[]={{0,1}},solvent[]={{1,1}};
+  const chem_term to_b[]={{2,1}},to_aq[]={{3,1}};
+  const chem_reaction reactions[]={
+    {.kind=CHEM_ARRHENIUS,.reactants=gas,.reactant_count=1,.products=to_b,
+      .product_count=1,.p={0.1,0,0,300,0}},
+    {.kind=CHEM_ARRHENIUS,.reactants=solvent,.reactant_count=1,.products=to_aq,
+      .product_count=1,.p={0.2,0,0,300,0}}};
+  const chem_mechanism mechanism={.species=species,.species_count=4,
+      .reactions=reactions,.reaction_count=2};
+  const chem_constraint_term eq_r[]={{2,1}},eq_p[]={{3,1}};
+  const chem_constraint constraint={.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=3,.reactants=eq_r,.reactant_count=1,
+      .products=eq_p,.product_count=1,.equilibrium_constant_ref=5,
+      .reference_temperature=298};
+  const chem_constraint_set set={.constraints=&constraint,.constraint_count=1,
+      .species_count=4};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  const chem_rosenbrock_parameters dae=chem_rosenbrock_builtin_parameters(
+      CHEM_ROSENBROCK_FOUR_STAGE_DAE);
+  double y[]={1,1,0,0};
+  for (size_t step=0;step<20;++step)
+    if (chem_rosenbrock_solve_constrained_with_parameters(&mechanism,
+          &workspace,y,298,101325,40,NULL,0.5,&dae,&set,NULL,NULL)) {
+      chem_solver_workspace_destroy(&workspace); return 2;
+    }
+  chem_solver_workspace_destroy(&workspace);
+  return y[1]>=1.0 || y[2]<=0.0 || fabs(5.0*y[2]-y[3])>1e-6 ? 3 : 0;
+}
+
+static int check_constraint_workspace_reuse(void) {
+  const chem_species species[]={{.name="A"},{.name="B"},{.name="C"},{.name="D"}};
+  const chem_term a[]={{0,1}};
+  const chem_term to_b[]={{1,1}};
+  const chem_reaction reaction={.kind=CHEM_ARRHENIUS,.reactants=a,
+      .reactant_count=1,.products=to_b,.product_count=1,.p={0.1,0,0,300,0}};
+  const chem_mechanism mechanism={.species=species,.species_count=4,
+      .reactions=&reaction,.reaction_count=1};
+  const chem_constraint_term eq1_r[]={{0,1}},eq1_p[]={{3,1}},
+      eq2_r[]={{1,1}},eq2_p[]={{2,1}};
+  const chem_constraint constraints[]={
+    {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,.algebraic_species=3,
+      .reactants=eq1_r,.reactant_count=1,.products=eq1_p,.product_count=1,
+      .equilibrium_constant_ref=2,.reference_temperature=298},
+    {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,.algebraic_species=2,
+      .reactants=eq2_r,.reactant_count=1,.products=eq2_p,.product_count=1,
+      .equilibrium_constant_ref=5,.reference_temperature=298}};
+  const chem_constraint_set set={.constraints=constraints,.constraint_count=2,
+      .species_count=4};
+  const chem_rosenbrock_parameters dae=chem_rosenbrock_builtin_parameters(
+      CHEM_ROSENBROCK_FOUR_STAGE_DAE);
+  chem_solver_workspace workspaces[2]={{0}};
+  if (chem_solver_workspace_init(&workspaces[0],&mechanism) ||
+      chem_solver_workspace_init(&workspaces[1],&mechanism)) {
+    chem_solver_workspace_destroy(&workspaces[0]);
+    chem_solver_workspace_destroy(&workspaces[1]);
+    return 1;
+  }
+  double states[2][4]={{1,0,0,2},{1,0,0,2}};
+  int status=0;
+  for (size_t step=0;step<20 && !status;++step)
+    for (size_t solver=0;solver<2 && !status;++solver)
+      status=chem_rosenbrock_solve_constrained_with_parameters(&mechanism,
+          &workspaces[solver],states[solver],298,101325,40,NULL,1,&dae,&set,
+          NULL,NULL);
+  chem_solver_workspace_destroy(&workspaces[0]);
+  chem_solver_workspace_destroy(&workspaces[1]);
+  if (status || memcmp(states[0],states[1],sizeof(states[0]))!=0 ||
+      fabs(states[0][3]-2.0*states[0][0])>1e-6 ||
+      fabs(states[0][2]-5.0*states[0][1])>1e-6) return 2;
   return 0;
 }
 
@@ -5203,6 +5360,8 @@ int main(void) {
   { const int status=check_external_equilibrium_convergence(); if (status) return 150+status; }
   { const int status=check_composed_equilibrium_dae(); if (status) return 160+status; }
   { const int status=check_temperature_dependent_equilibrium(); if (status) return 170+status; }
+  { const int status=check_process_jacobian_in_constraint_rows(); if (status) return 180+status; }
+  { const int status=check_constraint_workspace_reuse(); if (status) return 190+status; }
   if (check_phase_system_metadata() != 0) return 67;
   if (check_species_properties() != 0) return 68;
   if (check_matrix_view_api() != 0) return 64;

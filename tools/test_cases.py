@@ -546,6 +546,16 @@ implemented.update({
     "external_model_constraints:ExternalModelConstraints.BuiltInVsExternalModelConstraintStepByStep",
     "external_model_constraints:ExternalModelConstraints.MultiEquilibriumKineticVsComposedConstraints",
     "external_model_constraints:ExternalModelConstraints.TemperatureDependentConstraintParameter",
+    "external_model_constraints:ExternalModelConstraints.ProcessJacobianElementInAlgebraicRowSurvivesFiltering",
+    "external_model_constraints:ExternalModelConstraints.ProcessJacobianElementInBuiltInAlgebraicRowSurvivesFiltering",
+    "external_model_constraints:ExternalModelConstraints.ConstraintActiveWhenProcessOnlyModelAddedFirst",
+    "external_model_constraints:ExternalModelConstraints.BuilderCanBuildMultipleSolvers",
+    "regression_test_solve:RegressionRosenbrock.TwoStageSolve",
+    "regression_test_solve:RegressionRosenbrock.ThreeStageSolve",
+    "regression_test_solve:RegressionRosenbrock.FourStageSolve",
+    "regression_test_solve:RegressionRosenbrock.FourStageDASolve",
+    "regression_test_solve:RegressionRosenbrock.SixStageDASolve",
+    "regression_test_solve:RegressionRosenbrock.VectorSolve",
 })
 
 _aerosol_state_cases = (
@@ -706,6 +716,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C generic Chapman integration matches the reference trajectory across concentration scales"
         elif case_id.startswith("regression_test_rosenbrock_dforce_dy:"):
             reason = "C generic Chapman negative Jacobian matches a directional finite difference"
+        elif case_id.startswith("regression_test_solve:"):
+            reason = "C Chapman solver variants agree with the three-stage reference trajectory across cells"
         elif case_id.startswith("dae_constraint_overshoot:"):
             reason = "C constrained Rosenbrock preserves nonnegative algebraic mass across parameter sets"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):
