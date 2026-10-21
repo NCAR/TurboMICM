@@ -20,7 +20,10 @@ uses a rate-kind enum. `chem_forcing` and `chem_jacobian` apply
 mass action and the mechanism's generic reaction terms. The same routines feed
 all solver schemes and TS1. Rate constants are evaluated before integration
 and cached per workspace until temperature, pressure, density, or custom rates
-change.
+change. Solver workspaces also precompute a mechanism-generic per-species list
+of reaction reactant terms for the negative-Jacobian accumulation. Each column
+still visits those dependencies in reaction order, preserving the reference
+summation sequence without scanning unrelated reactions on every step.
 
 `chem_matrix_view` is a non-owning rectangular view with explicit row and column
 strides. It provides checked element access, fill, conversion to and from a
@@ -49,15 +52,15 @@ and add residual and negative-Jacobian terms to cell-major forcing and dense
 Jacobian arrays. Equilibrium constraints use a van't Hoff temperature correction.
 The masked process helpers add reaction forcing and negative-Jacobian values to
 caller arrays while skipping algebraic rows.
-These are evaluation primitives; the solver does not yet use them for DAE
-stage equations or algebraic-row replacement. The optional constrained solve
-projects algebraic variables by Newton iteration at the start and after each
-accepted ODE step, using the constraint Jacobian restricted to algebraic columns.
-The initial Newton iteration count is reported in solver statistics.
-Projection stops when the algebraic correction is at most ten percent of the
-configured absolute-plus-relative state error scale. A backtracking line search
-keeps trial algebraic concentrations nonnegative and requires the normalized
-constraint residual to decrease.
+The constrained Rosenbrock solver adds constraint residuals and Jacobians to
+the stage equations, omits the alpha shift and interstage mass coupling on
+algebraic rows, and includes algebraic step changes in the normalized error
+estimate. It also projects the initial state and each accepted step by Newton
+iteration, solving only for the algebraic variables. Initial projection uses
+the configured state tolerance and reports its iteration count; accepted-step
+projection uses a strict residual tolerance to preserve the constraint
+manifold. A backtracking line search keeps trial algebraic concentrations
+nonnegative and requires the normalized constraint residual to decrease.
 The constrained group entry point currently runs cells sequentially with an
 independent scalar controller for each cell.
 
@@ -96,7 +99,9 @@ from generated defaults, runs the untimed warm-up and timed steps, and writes
 `--threads N` creates N contiguous cell groups. Each group
 shares one adaptive step controller and error norm, matching MICM's benchmark
 grouping. The current C implementation still factors each cell's matrix
-sequentially inside the group.
+sequentially inside the group. Jacobian zeroing and matrix copying visit only
+the symbolic sparse pattern, while the factor and solve loops reuse that same
+pattern.
 
 ## Extension points
 

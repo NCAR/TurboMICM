@@ -57,6 +57,11 @@
 - Repeated-reactant Jacobians now match for both separate unit terms (`B + B`)
   and one stoichiometric term (`2 B`), covering a coefficient case that the
   previous negative-Jacobian implementation mishandled.
+- Solver workspaces precompute the mechanism-generic Jacobian reactant
+  dependencies per species column. The schedule retains reaction accumulation
+  order and avoids scanning unrelated reactions on every step; Rosenbrock
+  Jacobian clearing and matrix copying also visit only the symbolic sparse
+  pattern.
 - Linear conservation and equilibrium constraint utilities validate
   caller-owned indexed records, construct algebraic masks and Jacobian patterns,
   and add residual and negative-Jacobian contributions for scalar and grouped
@@ -101,24 +106,21 @@
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
   statuses. 662 cases pass and 18 C++-only cases are marked N/A; neither target
-  reports a failed case. Both compiler runs were forced from clean rebuilds.
+  reports a failed case. Both compiler runs were forced full rebuilds.
 
 ## TS1 final-state comparison
 
-The seed-1 first cell, 100 steps at `DT = 30 s`, passed the supplied MICM
-comparison utility with both compilers. The 100-cell seed-1 run also passed:
+Seed-1 and seed-2026 final states passed the supplied MICM comparison utility.
+The 10,000-cell run exercised the full required scale with both compilers:
 
-| Run | Compiler | C elapsed time | MICM elapsed time | Solver steps | Largest relative difference |
+| Run | Compiler | C elapsed time | MICM elapsed time | Accepted steps | Largest relative difference |
 | --- | --- | ---: | ---: | ---: | ---: |
-| First cell | Clang | 168.976 ms | 10.767 ms | 900 | `0` |
-| First cell | GCC 15 | 156.311 ms | 10.767 ms | 900 | `5.69e-15` |
-| 100 cells, 4 threads | Clang | 4,398.141 ms | 354.051 ms | 3,600 | `1.32e-14` |
-| 100 cells, 4 threads | GCC 15 | 4,068.024 ms | 354.051 ms | 3,600 | `3.27e-14` |
+| First cell, seed 1 | Clang | 38.237 ms | 8.722 ms | 900 | `0` |
+| 100 cells, seed 1, 4 threads | Clang | 787.578 ms | 374.132 ms | 3,600 | `1.32e-14` |
+| 10,000 cells, seed 2026, 10 threads | Clang | 48,528.301 ms | 27,298.520 ms | 9,000 | `5.34e-14` |
+| 10,000 cells, seed 2026, 10 threads | GCC 15 | 55,820.845 ms | 27,298.520 ms | 9,000 | `1.43e-13` |
 
-The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
-298,417.976 ms; the reference completed in 26,129.420 ms. The comparison passed
-all 2,110,000 values; the largest relative difference was `5.34e-14` for
-BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
-MICM at this scale. The 100-cell and first-cell runs above also pass for both
-compilers. The final inventory has 662 passing cases and eighteen C++-only
-cases marked N/A.
+Both full runs passed all 2,110,000 values (Clang's largest relative difference
+was for BCARYO2VBS in cell 9034; GCC's was for BCARYO2VBS in cell 4054). The
+Clang implementation is 1.8 times slower than MICM on the 10,000-cell run. The
+final inventory has 662 passing cases and eighteen C++-only cases marked N/A.

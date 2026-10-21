@@ -36,12 +36,12 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mecha
 generated/ts1.c: mechanisms/ts1.json tools/generate_c.py
 	$(PYTHON) tools/generate_c.py $< $@
 
-bin/ts1_bench_cpu: src/main.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c generated/ts1.c include/chemistry.h
+bin/ts1_bench_cpu: src/main.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c generated/ts1.c include/chemistry.h src/mechanism_internal.h
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) $(OMPFLAGS) src/main.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c generated/ts1.c -o $@ $(LDFLAGS) $(OMPLIBS)
 
 
-bin/test_core: tests/test_core.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c include/chemistry.h
+bin/test_core: tests/test_core.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c include/chemistry.h src/mechanism_internal.h
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) $(OMPFLAGS) tests/test_core.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c -o $@ $(LDFLAGS) $(OMPLIBS)
 

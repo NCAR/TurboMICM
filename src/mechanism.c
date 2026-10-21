@@ -1,6 +1,7 @@
-#include "chemistry.h"
+#include "mechanism_internal.h"
 
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 static int chem_density_parameterized(const chem_species *species) {
@@ -9,6 +10,13 @@ static int chem_density_parameterized(const chem_species *species) {
 
 static double chem_density_factor(const chem_species *species) {
   return species->third_body ? 1.0 : species->density_factor;
+}
+
+static double chem_power(double value, double exponent) {
+  if (exponent == 0.0) return 1.0;
+  if (exponent == 1.0) return value;
+  if (exponent == 2.0) return value * value;
+  return pow(value, exponent);
 }
 
 int chem_species_is_parameterized(const chem_species *species) {
@@ -278,7 +286,7 @@ int chem_rate_constants(const chem_mechanism *mechanism, double temperature,
     for (size_t i = 0; i < reaction->reactant_count; ++i) {
       const chem_term *term = &reaction->reactants[i];
       if (chem_density_parameterized(&mechanism->species[term->species]))
-        rate_constants[r] *= pow(air_density *
+        rate_constants[r] *= chem_power(air_density *
             chem_density_factor(&mechanism->species[term->species]),
             term->coefficient);
     }
@@ -308,10 +316,10 @@ static int chem_forcing_impl(const chem_mechanism *mechanism, const double *conc
       const chem_term *term = &reaction->reactants[i];
       if (term->species >= mechanism->species_count) return 1;
       if (chem_density_parameterized(&mechanism->species[term->species]) && !constants)
-        rate *= pow(air_density * chem_density_factor(&mechanism->species[term->species]),
+        rate *= chem_power(air_density * chem_density_factor(&mechanism->species[term->species]),
                     term->coefficient);
       else if (!chem_density_parameterized(&mechanism->species[term->species]))
-        rate *= pow(concentration[term->species], term->coefficient);
+        rate *= chem_power(concentration[term->species], term->coefficient);
     }
     for (size_t i = 0; i < reaction->reactant_count; ++i) {
       const chem_term *term = &reaction->reactants[i];
@@ -365,10 +373,10 @@ static int chem_jacobian_impl(const chem_mechanism *mechanism, const double *con
     for (size_t i = 0; i < reaction->reactant_count; ++i) {
       const chem_term *term = &reaction->reactants[i];
       if (chem_density_parameterized(&mechanism->species[term->species]) && !constants)
-        rate *= pow(air_density * chem_density_factor(&mechanism->species[term->species]),
+        rate *= chem_power(air_density * chem_density_factor(&mechanism->species[term->species]),
                     term->coefficient);
       else if (!chem_density_parameterized(&mechanism->species[term->species]))
-        rate *= pow(concentration[term->species], term->coefficient);
+        rate *= chem_power(concentration[term->species], term->coefficient);
     }
     for (size_t q = 0; q < reaction->reactant_count; ++q) {
       const chem_term *variable = &reaction->reactants[q];
@@ -386,7 +394,7 @@ static int chem_jacobian_impl(const chem_mechanism *mechanism, const double *con
             derivative *= pow(air_density * chem_density_factor(&mechanism->species[term->species]),
                               term->coefficient);
           else if (!chem_density_parameterized(&mechanism->species[term->species]))
-            derivative *= pow(concentration[term->species], term->coefficient);
+            derivative *= chem_power(concentration[term->species], term->coefficient);
         }
       } else {
         derivative = 0.0;
@@ -422,49 +430,149 @@ int chem_jacobian_with_constants(const chem_mechanism *mechanism,
                             rate_constants, jacobian);
 }
 
+int chem_jacobian_plan_init(chem_jacobian_plan *plan,
+                            const chem_mechanism *mechanism) {
+  if (!plan || !mechanism ||
+      (mechanism->species_count && !mechanism->species) ||
+      (mechanism->reaction_count && !mechanism->reactions) ||
+      mechanism->species_count == (size_t)-1) return 1;
+  *plan = (chem_jacobian_plan){.species_count=mechanism->species_count};
+  const size_t n = mechanism->species_count;
+  plan->offsets = calloc(n+1, sizeof(*plan->offsets));
+  if (!plan->offsets) return 1;
+  size_t dependencies = 0;
+  for (size_t r = 0; r < mechanism->reaction_count; ++r) {
+    const chem_reaction *reaction = &mechanism->reactions[r];
+    if (reaction->reactant_count && !reaction->reactants) goto fail;
+    for (size_t q = 0; q < reaction->reactant_count; ++q) {
+      const size_t col = reaction->reactants[q].species;
+      if (col >= n) goto fail;
+      if (chem_density_parameterized(&mechanism->species[col])) continue;
+      if (dependencies == (size_t)-1 || plan->offsets[col+1] == (size_t)-1)
+        goto fail;
+      ++dependencies;
+      ++plan->offsets[col+1];
+    }
+  }
+  for (size_t col = 0; col < n; ++col) {
+    if (plan->offsets[col+1] > (size_t)-1-plan->offsets[col]) goto fail;
+    plan->offsets[col+1] += plan->offsets[col];
+  }
+  if (dependencies > (size_t)-1/sizeof(size_t)) goto fail;
+  plan->dependency_count = dependencies;
+  if (dependencies) {
+    plan->reactions = malloc(dependencies*sizeof(*plan->reactions));
+    plan->reactant_terms = malloc(dependencies*sizeof(*plan->reactant_terms));
+    if (!plan->reactions || !plan->reactant_terms) goto fail;
+  }
+  size_t *next = n ? malloc(n*sizeof(*next)) : NULL;
+  if (n && !next) goto fail;
+  if (n) memcpy(next, plan->offsets, n*sizeof(*next));
+  for (size_t r = 0; r < mechanism->reaction_count; ++r) {
+    const chem_reaction *reaction = &mechanism->reactions[r];
+    for (size_t q = 0; q < reaction->reactant_count; ++q) {
+      const size_t col = reaction->reactants[q].species;
+      if (chem_density_parameterized(&mechanism->species[col])) continue;
+      const size_t at = next[col]++;
+      plan->reactions[at] = r;
+      plan->reactant_terms[at] = q;
+    }
+  }
+  free(next);
+  return 0;
+fail:
+  chem_jacobian_plan_destroy(plan);
+  return 1;
+}
+
+void chem_jacobian_plan_destroy(chem_jacobian_plan *plan) {
+  if (!plan) return;
+  free(plan->offsets);
+  free(plan->reactions);
+  free(plan->reactant_terms);
+  *plan = (chem_jacobian_plan){0};
+}
+
 int chem_negative_jacobian_with_constants(
     const chem_mechanism *mechanism, const double *concentration,
     const double *rate_constants, double *negative_jacobian) {
+  chem_jacobian_plan plan = {0};
+  if (chem_jacobian_plan_init(&plan, mechanism)) return 1;
+  const int status = chem_negative_jacobian_with_plan(
+      mechanism, concentration, rate_constants, &plan, negative_jacobian);
+  chem_jacobian_plan_destroy(&plan);
+  return status;
+}
+
+int chem_negative_jacobian_with_plan(
+    const chem_mechanism *mechanism, const double *concentration,
+    const double *rate_constants, const chem_jacobian_plan *plan,
+    double *negative_jacobian) {
+  return chem_negative_jacobian_with_plan_pattern(
+      mechanism, concentration, rate_constants, plan, NULL, NULL,
+      negative_jacobian);
+}
+
+int chem_negative_jacobian_with_plan_pattern(
+    const chem_mechanism *mechanism, const double *concentration,
+    const double *rate_constants, const chem_jacobian_plan *plan,
+    const size_t *row_counts, const size_t *row_cols,
+    double *negative_jacobian) {
   if (!mechanism || !concentration || !rate_constants || !negative_jacobian ||
       (mechanism->species_count && !mechanism->species) ||
-      (mechanism->reaction_count && !mechanism->reactions)) return 1;
+      (mechanism->reaction_count && !mechanism->reactions) || !plan ||
+      plan->species_count != mechanism->species_count || !plan->offsets ||
+      ((row_counts == NULL) != (row_cols == NULL)) ||
+      (plan->dependency_count && (!plan->reactions || !plan->reactant_terms)) ||
+      (mechanism->species_count && mechanism->species_count >
+       (size_t)-1/mechanism->species_count) ||
+      mechanism->species_count*mechanism->species_count >
+       (size_t)-1/sizeof(*negative_jacobian)) return 1;
   const size_t n = mechanism->species_count;
-  memset(negative_jacobian, 0, n*n*sizeof(*negative_jacobian));
+  if (row_counts) {
+    for (size_t row = 0; row < n; ++row)
+      for (size_t q = 0; q < row_counts[row]; ++q)
+        negative_jacobian[row*n + row_cols[row*n + q]] = 0.0;
+  } else {
+    memset(negative_jacobian, 0, n*n*sizeof(*negative_jacobian));
+  }
   /* MICM accumulates Jacobian terms by independent variable, preserving
      reaction order within each column. Match that order for solver arithmetic. */
   for (size_t col = 0; col < n; ++col) {
     if (chem_density_parameterized(&mechanism->species[col])) continue;
-    for (size_t r = 0; r < mechanism->reaction_count; ++r) {
+    for (size_t dependency = plan->offsets[col];
+         dependency < plan->offsets[col+1]; ++dependency) {
+      const size_t r = plan->reactions[dependency];
+      const size_t q = plan->reactant_terms[dependency];
+      if (r >= mechanism->reaction_count) return 1;
       const chem_reaction *reaction = &mechanism->reactions[r];
-      for (size_t q = 0; q < reaction->reactant_count; ++q) {
-        const chem_term *independent = &reaction->reactants[q];
-        if (independent->species != col ||
-            chem_density_parameterized(&mechanism->species[col])) continue;
-        double derivative = rate_constants[r];
-        for (size_t i = 0; i < reaction->reactant_count; ++i) {
-          if (i == q) continue;
-          const chem_term *term = &reaction->reactants[i];
-          if (!chem_density_parameterized(&mechanism->species[term->species]))
-            derivative *= pow(concentration[term->species], term->coefficient);
-        }
-        derivative *= independent->coefficient;
-        if (independent->coefficient != 1.0)
-          derivative *= pow(concentration[col], independent->coefficient - 1.0);
-        for (size_t i = 0; i < reaction->reactant_count; ++i) {
-          if (i == q) continue;
-          const chem_term *term = &reaction->reactants[i];
-          if (!mechanism->species[term->species].third_body)
-            negative_jacobian[term->species*n + col] +=
-                term->coefficient * derivative;
-        }
-        negative_jacobian[col*n + col] +=
-            independent->coefficient * derivative;
-        for (size_t i = 0; i < reaction->product_count; ++i) {
-          const chem_term *term = &reaction->products[i];
-          if (!mechanism->species[term->species].third_body)
-            negative_jacobian[term->species*n + col] -=
-                term->coefficient * derivative;
-        }
+      if (q >= reaction->reactant_count || !reaction->reactants) return 1;
+      const chem_term *independent = &reaction->reactants[q];
+      if (independent->species != col) return 1;
+      double derivative = rate_constants[r];
+      for (size_t i = 0; i < reaction->reactant_count; ++i) {
+        if (i == q) continue;
+        const chem_term *term = &reaction->reactants[i];
+        if (!chem_density_parameterized(&mechanism->species[term->species]))
+          derivative *= chem_power(concentration[term->species], term->coefficient);
+      }
+      derivative *= independent->coefficient;
+      if (independent->coefficient != 1.0)
+        derivative *= chem_power(concentration[col], independent->coefficient - 1.0);
+      for (size_t i = 0; i < reaction->reactant_count; ++i) {
+        if (i == q) continue;
+        const chem_term *term = &reaction->reactants[i];
+        if (!mechanism->species[term->species].third_body)
+          negative_jacobian[term->species*n + col] +=
+              term->coefficient * derivative;
+      }
+      negative_jacobian[col*n + col] +=
+          independent->coefficient * derivative;
+      for (size_t i = 0; i < reaction->product_count; ++i) {
+        const chem_term *term = &reaction->products[i];
+        if (!mechanism->species[term->species].third_body)
+          negative_jacobian[term->species*n + col] -=
+              term->coefficient * derivative;
       }
     }
   }

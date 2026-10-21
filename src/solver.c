@@ -1,4 +1,5 @@
 #include "chemistry.h"
+#include "mechanism_internal.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -37,6 +38,7 @@ typedef struct {
   double *group_ynew, *group_yerror, *group_rate_constants, *group_cached_parameters;
   double *group_temperature, *group_pressure, *group_density;
   unsigned char *group_rate_constants_valid;
+  chem_jacobian_plan jacobian_plan;
 } solver_workspace_data;
 
 static int make_pattern(const chem_mechanism *m, unsigned char *pattern,
@@ -54,6 +56,7 @@ static void free_workspace_data(solver_workspace_data *w) {
   free(w->group_cached_parameters); free(w->group_temperature);
   free(w->group_pressure); free(w->group_density);
   free(w->group_rate_constants_valid);
+  chem_jacobian_plan_destroy(&w->jacobian_plan);
   free(w);
 }
 
@@ -115,6 +118,10 @@ int chem_solver_workspace_init_group(chem_solver_workspace *workspace,
       !w->cached_parameters || !w->group_ynew || !w->group_yerror || !w->group_rate_constants ||
       !w->group_cached_parameters || !w->group_temperature || !w->group_pressure ||
       !w->group_density || !w->group_rate_constants_valid) {
+    free_workspace_data(w);
+    return SOLVER_BAD_ARGUMENT;
+  }
+  if (chem_jacobian_plan_init(&w->jacobian_plan, mechanism)) {
     free_workspace_data(w);
     return SOLVER_BAD_ARGUMENT;
   }
@@ -509,7 +516,6 @@ static int rosenbrock_solve_impl(
       p->estimator_order <= 0.0) return SOLVER_BAD_ARGUMENT;
   chem_solver_stats local_stats = {0};
   if (statistics) *statistics = local_stats;
-  const size_t nn = n*n;
   double *jac = w->jac, *a = w->a, *forcing = w->forcing;
   double *stage = w->stage, *ynew = w->ynew, *yerror = w->yerror;
   double *stage_y = w->stage_y, *reused_forcing = w->reused_forcing;
@@ -562,8 +568,9 @@ static int rosenbrock_solve_impl(
       status = SOLVER_BAD_ARGUMENT; break;
     }
     ++local_stats.function_calls;
-    status = chem_negative_jacobian_with_constants(m, y, w->rate_constants,
-                                                    jac);
+    status = chem_negative_jacobian_with_plan_pattern(
+        m, y, w->rate_constants, &w->jacobian_plan, row_counts, row_cols,
+        jac);
     if (status) { status = SOLVER_BAD_ARGUMENT; break; }
     if (constraints && chem_constraint_set_add_negative_jacobian(
             constraints, y, &temperature, 1, jac)) {
@@ -574,7 +581,11 @@ static int rosenbrock_solve_impl(
     while (!accepted) {
       const double used_h = h;
       const double alpha = 1.0 / (h*p->gamma[0]);
-      for (size_t i = 0; i < nn; ++i) a[i] = jac[i];
+      for (size_t row = 0; row < n; ++row)
+        for (size_t q = 0; q < row_counts[row]; ++q) {
+          const size_t column = row_cols[row*n + q];
+          a[row*n + column] = jac[row*n + column];
+        }
       for (size_t i = 0; i < n; ++i)
         if (!row_is_algebraic(constraints, i)) a[i*n + i] += alpha;
       status = factor(a, n, row_counts, col_counts, row_cols, col_rows);
@@ -776,7 +787,6 @@ int chem_rosenbrock3_solve_group_with_workspace(
       return SOLVER_BAD_ARGUMENT;
 
   chem_solver_stats local = {0};
-  const size_t nn = n*n;
   const double eps = 2.2204460492503131e-16;
   const double hmin = 1.0e-15 * duration, hmax = duration;
   double h = o->initial_step > 0.0 ? fmin(o->initial_step,duration)
@@ -830,10 +840,16 @@ int chem_rosenbrock3_solve_group_with_workspace(
         status = chem_forcing_with_constants(m, y, rates, air_densities[c],
                                              w->forcing);
         if (status) { status = SOLVER_BAD_ARGUMENT; break; }
-        status = chem_negative_jacobian_with_constants(m, y, rates, w->jac);
+        status = chem_negative_jacobian_with_plan_pattern(
+            m, y, rates, &w->jacobian_plan, w->row_counts, w->row_cols,
+            w->jac);
         if (status) { status = SOLVER_BAD_ARGUMENT; break; }
         double alpha = 1.0 / (h*gamma);
-        for (size_t i = 0; i < nn; ++i) w->a[i] = w->jac[i];
+        for (size_t row = 0; row < n; ++row)
+          for (size_t q = 0; q < w->row_counts[row]; ++q) {
+            const size_t column = w->row_cols[row*n + q];
+            w->a[row*n + column] = w->jac[row*n + column];
+          }
         for (size_t i = 0; i < n; ++i) w->a[i*n + i] += alpha;
         status = factor(w->a, n, w->row_counts, w->col_counts,
                         w->row_cols, w->col_rows);
@@ -1011,8 +1027,8 @@ int chem_backward_euler_solve_with_workspace(
                                            air_density,delta);
       if (status) { status = SOLVER_BAD_ARGUMENT; break; }
       ++local.function_calls;
-      status = chem_negative_jacobian_with_constants(
-          m,next,w->rate_constants,negative_jacobian);
+      status = chem_negative_jacobian_with_plan(
+          m,next,w->rate_constants,&w->jacobian_plan,negative_jacobian);
       if (status) { status = SOLVER_BAD_ARGUMENT; break; }
       ++local.jacobian_updates;
       for (size_t row = 0; row < n; ++row)

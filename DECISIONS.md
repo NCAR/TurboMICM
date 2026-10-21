@@ -45,9 +45,18 @@
   Jacobian-pattern, and negative-Jacobian evaluation separate from solver
   integration so these primitives can be validated independently. Equilibrium
   constants use a van't Hoff correction from a reference temperature.
-  The optional constrained solve projects algebraic variables with a Newton
-  solve before integration and after accepted steps; it does not yet apply a
-  full Rosenbrock DAE stage formulation.
+  The constrained Rosenbrock solve adds the constraint forcing and Jacobian to
+  each stage, applies a zero diagonal mass term for algebraic rows, and includes
+  algebraic step changes in the error estimate. It projects the initial state
+  using configured tolerances and accepted states to a strict residual
+  tolerance. This preserves exact DAE invariants even when a differential
+  variable has a comparatively loose absolute tolerance.
+- Precompute a mechanism-generic Jacobian dependency list per solver workspace.
+  Each independent-variable column visits only its reactant dependencies in
+  original reaction order, preserving floating-point accumulation order while
+  avoiding a full reaction scan for every species at every solver stage.
+  Rosenbrock Jacobian initialization and matrix copying visit only the symbolic
+  sparse pattern used by the natural-order LU factorization.
 
 - Represent basic dense matrix access with a non-owning strided C view rather
   than an owning template type. Keep allocation with the caller and validate
