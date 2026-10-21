@@ -110,7 +110,7 @@ Transcripts
 | luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-16 06:47-08:11 | `217bf6e`, 08:10 (23 commits) | stopped; to rerun |
 | luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14-21:05 | `da2d722`, 21:05 (5 commits) | finished |
 | luna-xhigh | gpt-6-luna | xhigh | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-20 09:31-12:20 | `ada55d5`, 12:20 (28 commits) | finished |
-| luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code (rerun) | 2026-10-20 14:27- | | running |
+| luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code (rerun) | 2026-10-20 14:27-18:20 | `d3c2480`, 18:20 (128 commits) | finished |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -379,6 +379,40 @@ Token counts are as Codex reports them: total = uncached input + output.
   no Claude Code variables besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
 - Codex session `01a15aff-97c7-7251-a51e-5e14f2fa689d`. Codex's weekly usage
   window read 9 % at the start.
+- Progress, from Claude Code's checks every 20 minutes: the first turn ended at
+  14:35, seven minutes in, with 2 cases passing and "not complete"; a one-cell
+  TS1 mismatch at 20 minutes; the 10,000-cell gate failing with 2,185 of
+  2,110,000 values out of tolerance at 40 minutes (15:03), the first attempt's
+  count exactly. Five full comparisons from 15:03 to 15:38, each after a
+  different change (species order, pressure, falloff rates, shared step
+  control), gave the same 2,185; 44 cases passed at 81 minutes, and three turns
+  had ended "not complete".
+- Decision, 15:49, not to stop it: the case count was rising (2 to 44 in 40
+  minutes) and each attempt at the gate was a new hypothesis, not a repeat, so
+  by the standard Claude Code had set (a count that stalls or falls while the
+  agent circles the same ground) it was slow, not floundering; the unchanged
+  2,185 was the warning sign, to be weighed again at the next checks. At 16:02
+  the agent clamped the solver states, and the gate passed at 16:09 (largest
+  relative difference 5.34e-14). Cases then climbed: 89 at 16:17, 171 at 16:37,
+  340 at 16:57, 551 at 17:19, 621 at 17:54, and 662 passing, none failing, 18
+  N/A at 18:09.
+- Session end: the tenth turn ended at 18:09:56 with DONE; the goal started an
+  eleventh, which audited the work against the prompt, sped up the sparse
+  Jacobian construction (its own 10,000-cell time from about 298 s to 72.8 s,
+  then 48.5 s, against MICM's 27.3 s), and ended at 18:20:21 with DONE. The
+  record was idle 10 minutes by 18:30; Claude Code quit Codex (`/quit`) and
+  closed the tmux session.
+- Final commit `d3c2480` (18:20), 128 commits; collected as `runs/luna/high`.
+- Tokens: 4,475,652 total; input 3,325,961 (plus 372,281,344 cached); output
+  1,149,691 (533,305 reasoning). Codex's weekly usage window read 10 % at the
+  end.
+- Other load during the session: Claude Code's read-only progress checks, its
+  writing of luna-xhigh's records and wiki pages, and, in the first minutes, a
+  read-only subagent drafting luna-xhigh's section of Tier 1 Implementations.
+  No builds, tests, or timing by the experimenter.
+- Transcript archived as `transcripts/luna-high.jsonl.gz`. The credential scan's
+  only matches (55 of the `sk-` pattern, one of `gho_`) were inside encrypted
+  content.
 
 # Tier 3
 
