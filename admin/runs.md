@@ -413,6 +413,15 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Transcript archived as `transcripts/luna-high.jsonl.gz`. The credential scan's
   only matches (55 of the `sk-` pattern, one of `gho_`) were inside encrypted
   content.
+- Verified, 18:31, with `admin/verify_tier3.py --stages build,tests,ts1,audit`
+  (`results/2026-10-20-luna-high-verification`): 662 PASS, 0 FAIL, 18 N/A with
+  each compiler, every id once (10 of the N/A cases N/A in no other entry); the
+  TS1 gate passes (5.34e-14 with clang, 1.43e-13 with gcc-15); the audit finds
+  nothing outside the rules (the banned-construct scan's 75 matches are all a
+  parameter or variable named `vector_size`); no warnings with either compiler.
+  One group per thread, with MICM's default solver work at ten threads.
+- Not yet timed: at 18:33 the SSE deferred the timing session, all nine entries
+  with MICM's three programs, to a follow-on session.
 
 # Tier 3
 
