@@ -1694,22 +1694,56 @@ static int check_analytical_mechanism_chain(const chem_mechanism *mechanism,
   return 0;
 }
 
-static int check_superstiff_troe(int backward_euler) {
+static int check_superstiff_mechanism(int variant, int backward_euler) {
   const chem_species species[]={{.name="A1"},{.name="A2"},
                                 {.name="B"},{.name="C"}};
   const chem_term a1[]={{0,1}},a2[]={{1,1}},b[]={{2,1}};
   const chem_term to_b[]={{2,1}},to_c[]={{3,1}},to_a2[]={{1,1}},to_a1[]={{0,1}};
-  const chem_reaction reactions[]={
-    {.kind=CHEM_TROE,.reactants=a1,.reactant_count=1,.products=to_b,
-      .product_count=1,.p={4e-11,0,0,1,0,0,0.6,1}},
-    {.kind=CHEM_TROE,.reactants=a2,.reactant_count=1,.products=to_b,
-      .product_count=1,.p={4e-11,0,0,1,0,0,0.6,1}},
-    {.kind=CHEM_TROE,.reactants=b,.reactant_count=1,.products=to_c,
-      .product_count=1,.p={1.2e-3,1.6,3,136,5,24,0.9,0.8}},
+  chem_reaction reactions[]={
+    {.reactants=a1,.reactant_count=1,.products=to_b,.product_count=1},
+    {.reactants=a2,.reactant_count=1,.products=to_b,.product_count=1},
+    {.reactants=b,.reactant_count=1,.products=to_c,.product_count=1},
     {.kind=CHEM_ARRHENIUS,.reactants=a1,.reactant_count=1,.products=to_a2,
       .product_count=1,.p={4e10,0,0,300,0}},
     {.kind=CHEM_ARRHENIUS,.reactants=a2,.reactant_count=1,.products=to_a1,
       .product_count=1,.p={3.6e10,0,0,300,0}}};
+  double tolerance=1e-5;
+  if (variant==0) {
+    reactions[0].kind=reactions[1].kind=reactions[2].kind=CHEM_TROE;
+    memcpy(reactions[0].p,(double[]){4e-11,0,0,1,0,0,0.6,1},8*sizeof(double));
+    memcpy(reactions[1].p,reactions[0].p,8*sizeof(double));
+    memcpy(reactions[2].p,(double[]){1.2e-3,1.6,3,136,5,24,0.9,0.8},8*sizeof(double));
+  } else if (variant==1) {
+    reactions[0].kind=reactions[1].kind=reactions[2].kind=CHEM_TERNARY_ACTIVATION;
+    memcpy(reactions[0].p,(double[]){4e-5,0,0,1,0,0,0.6,1},8*sizeof(double));
+    memcpy(reactions[1].p,reactions[0].p,8*sizeof(double));
+    memcpy(reactions[2].p,(double[]){1.2e-3,1.6,3,136,5,24,0.9,0.8},8*sizeof(double));
+    tolerance=backward_euler?1e-2:2e-3;
+  } else if (variant==2) {
+    reactions[0].kind=reactions[1].kind=reactions[2].kind=CHEM_TUNNELING;
+    memcpy(reactions[0].p,(double[]){4e-3,0,0},3*sizeof(double));
+    memcpy(reactions[1].p,reactions[0].p,3*sizeof(double));
+    memcpy(reactions[2].p,(double[]){1.2e-4,167,1e8},3*sizeof(double));
+    tolerance=backward_euler?1e-3:1e-4;
+  } else if (variant==3) {
+    reactions[0].kind=reactions[1].kind=reactions[2].kind=CHEM_ARRHENIUS;
+    memcpy(reactions[0].p,(double[]){4e-3,0,50,300,0},5*sizeof(double));
+    memcpy(reactions[1].p,reactions[0].p,5*sizeof(double));
+    memcpy(reactions[2].p,(double[]){1.2e-4,1.6,75,50,0.5},5*sizeof(double));
+    tolerance=backward_euler?1e-3:2e-5;
+  } else {
+    const double ref_a=2e-22*6.02214076e23*1e-6*exp(2.0)*2.45e19;
+    const double ref_b=0.43*pow(293.0/298.0,-8.0);
+    const double ref_av=ref_a/(1.0+ref_a/ref_b)*
+        pow(0.41,1.0/(1.0+pow(log10(ref_a/ref_b),2.0)));
+    const double z=ref_av*(1.0-1e-3)/1e-3;
+    reactions[0].kind=reactions[1].kind=CHEM_BRANCHED_ALKOXY;
+    reactions[2].kind=CHEM_BRANCHED_NITRATE;
+    memcpy(reactions[0].p,(double[]){1e-4,204.3,1e-3,2.0,z},5*sizeof(double));
+    memcpy(reactions[1].p,reactions[0].p,5*sizeof(double));
+    memcpy(reactions[2].p,reactions[0].p,5*sizeof(double));
+    tolerance=backward_euler?1e-2:2e-3;
+  }
   const chem_mechanism mechanism={.species=species,.species_count=4,
       .reactions=reactions,.reaction_count=5};
   const double temperatures[]={272.5,254.7,312.6};
@@ -1755,9 +1789,9 @@ static int check_superstiff_troe(int backward_euler) {
           initial*k1/(k2-k1)*(e1-e2),
           initial*(1.0+(k1*e2-k2*e1)/(k2-k1))};
         if (status || stats.accepted==0 ||
-            fabs(y[4*cell]+y[4*cell+1]-expected[0])>1e-5 ||
-            fabs(y[4*cell+2]-expected[1])>1e-5 ||
-            fabs(y[4*cell+3]-expected[2])>1e-5) {
+            fabs(y[4*cell]+y[4*cell+1]-expected[0])>tolerance ||
+            fabs(y[4*cell+2]-expected[1])>tolerance ||
+            fabs(y[4*cell+3]-expected[2])>tolerance) {
           chem_solver_workspace_destroy(&workspace);
           return 3;
         }
@@ -4865,7 +4899,9 @@ int main(void) {
   if (check_process_set_forcing_and_jacobian() != 0) return 57;
   const int backward_euler_status = check_backward_euler();
   if (backward_euler_status != 0) return 70 + backward_euler_status;
-  if (check_superstiff_troe(0) != 0 || check_superstiff_troe(1) != 0) return 134;
+  for (int variant=0;variant<5;++variant)
+    if (check_superstiff_mechanism(variant,0) ||
+        check_superstiff_mechanism(variant,1)) return 134+variant;
   if (check_terminator_cases() != 0) return 58;
   { const int status=check_chapman_integration();
     if (status) return 59+status; }

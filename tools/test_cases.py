@@ -522,6 +522,14 @@ implemented.update({
     "dae_constraint_overshoot:DAEConstraintOvershoot.EquilibriumPlusConservation",
     "analytical_rosenbrock_integration:AnalyticalExamples.TroeSuperStiffButAnalytical",
     "analytical_backward_euler:AnalyticalExamples.TroeSuperStiffButAnalytical",
+    "analytical_rosenbrock_integration:AnalyticalExamples.TernaryChemicalActivationSuperStiffButAnalytical",
+    "analytical_backward_euler:AnalyticalExamples.TernaryChemicalActivationSuperStiffButAnalytical",
+    "analytical_rosenbrock_integration:AnalyticalExamples.TunnelingSuperStiffButAnalytical",
+    "analytical_backward_euler:AnalyticalExamples.TunnelingSuperStiffButAnalytical",
+    "analytical_rosenbrock_integration:AnalyticalExamples.ArrheniusSuperStiffButAnalytical",
+    "analytical_backward_euler:AnalyticalExamples.ArrheniusSuperStiffButAnalytical",
+    "analytical_rosenbrock_integration:AnalyticalExamples.BranchedSuperStiffButAnalytical",
+    "analytical_backward_euler:AnalyticalExamples.BranchedSuperStiffButAnalytical",
 })
 
 _aerosol_state_cases = (
@@ -640,7 +648,9 @@ for raw in case_file.read_text().splitlines():
         elif case_id.endswith("PhotolysisSuperStiffButAnalytical"):
             reason = "C solvers integrate the fast-equilibrium photolysis chain against its closed form"
         elif case_id.endswith("TroeSuperStiffButAnalytical"):
-            reason = "C solvers integrate the fast-exchange Troe mechanism against its closed form"
+            reason = "C Rosenbrock parameter sets and backward Euler integrate the fast-exchange rate mechanism against its closed form"
+        elif case_id.endswith("SuperStiffButAnalytical"):
+            reason = "C Rosenbrock parameter sets and backward Euler integrate the fast-exchange rate mechanism against its closed form"
         elif case_id.endswith("AnalyticalExamples.Robertson"):
             reason = "C Rosenbrock parameter sets match the published Robertson trajectory"
         elif case_id.endswith("AnalyticalExamples.HIRES"):
