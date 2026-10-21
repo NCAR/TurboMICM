@@ -2614,6 +2614,83 @@ static int check_external_constraint_equivalents(void) {
   return 0;
 }
 
+static int check_external_equilibrium_convergence(void) {
+  const chem_species species[]={{.name="A"},{.name="B"},{.name="C"}};
+  const chem_term a[]={{0,1}},b[]={{1,1}},c[]={{2,1}};
+  const chem_term to_b[]={{1,1}},to_c[]={{2,1}},to_b_product[]={{1,1}};
+  const chem_reaction kinetic_reactions[]={
+    {.kind=CHEM_ARRHENIUS,.reactants=a,.reactant_count=1,.products=to_b,
+      .product_count=1,.p={0.1,0,0,300,0}},
+    {.kind=CHEM_ARRHENIUS,.reactants=b,.reactant_count=1,.products=to_c,
+      .product_count=1,.p={10,0,0,300,0}},
+    {.kind=CHEM_ARRHENIUS,.reactants=c,.reactant_count=1,.products=to_b_product,
+      .product_count=1,.p={2,0,0,300,0}}};
+  const chem_mechanism kinetic={.species=species,.species_count=3,
+      .reactions=kinetic_reactions,.reaction_count=3};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&kinetic)) return 1;
+  double kinetic_y[]={1,0,0};
+  for (size_t step=0;step<200;++step)
+    if (chem_rosenbrock3_solve_with_workspace(&kinetic,&workspace,kinetic_y,
+          298,101325,40,NULL,1,NULL,NULL)) {
+      chem_solver_workspace_destroy(&workspace); return 2;
+    }
+  chem_solver_workspace_destroy(&workspace);
+
+  const chem_reaction drive={.kind=CHEM_ARRHENIUS,.reactants=a,
+      .reactant_count=1,.products=to_b,.product_count=1,.p={0.1,0,0,300,0}};
+  const chem_mechanism dae_mechanism={.species=species,.species_count=3,
+      .reactions=&drive,.reaction_count=1};
+  const chem_constraint_term eq_r[]={{1,1}},eq_p[]={{2,1}},
+      mass_terms[]={{0,1},{1,1},{2,1}};
+  const chem_constraint conservative_constraints[]={
+    {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,.algebraic_species=2,
+      .reactants=eq_r,.reactant_count=1,.products=eq_p,.product_count=1,
+      .equilibrium_constant_ref=5,.reference_temperature=298},
+    {.kind=CHEM_CONSTRAINT_LINEAR,.algebraic_species=1,.terms=mass_terms,
+      .term_count=3,.constant=1}};
+  const chem_constraint_set conservative_set={.constraints=conservative_constraints,
+      .constraint_count=2,.species_count=3};
+  const chem_rosenbrock_parameters dae=chem_rosenbrock_builtin_parameters(
+      CHEM_ROSENBROCK_FOUR_STAGE_DAE);
+  if (chem_solver_workspace_init(&workspace,&dae_mechanism)) return 3;
+  double conservative_y[]={1,0,0};
+  for (size_t step=0;step<200;++step)
+    if (chem_rosenbrock_solve_constrained_with_parameters(&dae_mechanism,
+          &workspace,conservative_y,298,101325,40,NULL,1,&dae,
+          &conservative_set,NULL,NULL)) {
+      chem_solver_workspace_destroy(&workspace); return 4;
+    }
+  chem_solver_workspace_destroy(&workspace);
+
+  const chem_constraint simple_constraint={.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=2,.reactants=eq_r,.reactant_count=1,
+      .products=eq_p,.product_count=1,.equilibrium_constant_ref=5,
+      .reference_temperature=298};
+  const chem_constraint_set simple_set={.constraints=&simple_constraint,
+      .constraint_count=1,.species_count=3};
+  if (chem_solver_workspace_init(&workspace,&dae_mechanism)) return 5;
+  double simple_y[]={1,0,0};
+  for (size_t step=0;step<200;++step)
+    if (chem_rosenbrock_solve_constrained_with_parameters(&dae_mechanism,
+          &workspace,simple_y,298,101325,40,NULL,1,&dae,&simple_set,NULL,NULL)) {
+      chem_solver_workspace_destroy(&workspace); return 6;
+    }
+  chem_solver_workspace_destroy(&workspace);
+
+  const double expected_b=1.0/6.0,expected_c=5.0/6.0;
+  if (fabs(kinetic_y[0])>1e-6 || fabs(conservative_y[0])>1e-6 ||
+      fabs(kinetic_y[1]-expected_b)>1e-3 ||
+      fabs(conservative_y[1]-expected_b)>1e-3 ||
+      fabs(kinetic_y[2]-expected_c)>1e-3 ||
+      fabs(conservative_y[2]-expected_c)>1e-3 ||
+      fabs(kinetic_y[0]+kinetic_y[1]+kinetic_y[2]-1.0)>1e-6 ||
+      fabs(conservative_y[0]+conservative_y[1]+conservative_y[2]-1.0)>1e-3 ||
+      fabs(simple_y[2]/simple_y[1]-5.0)>1e-3 ||
+      fabs(simple_y[0]+simple_y[1]+simple_y[2]-6.0)>0.1) return 7;
+  return 0;
+}
+
 static int check_phase_system_metadata(void) {
   const chem_species species[] = {
       {.name="foo"},{.name="bar",.density_parameterized=1,.density_factor=42.0},
@@ -5025,6 +5102,7 @@ int main(void) {
   if (check_equilibrium_conservation_overshoot()!=0) return 132;
   if (check_process_algebraic_mask() != 0) return 66;
   { const int status=check_external_constraint_equivalents(); if (status) return 135+status; }
+  { const int status=check_external_equilibrium_convergence(); if (status) return 150+status; }
   if (check_phase_system_metadata() != 0) return 67;
   if (check_species_properties() != 0) return 68;
   if (check_matrix_view_api() != 0) return 64;

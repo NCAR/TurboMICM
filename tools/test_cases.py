@@ -541,6 +541,9 @@ implemented.update({
     "external_model_constraints:ExternalModelFiniteDifferenceJacobian.ProcessForcingJacobian",
     "external_model_constraints:ExternalModelFiniteDifferenceJacobian.ConstraintResidualJacobian",
     "external_model_constraints:ExternalModelFiniteDifferenceJacobian.EquilibriumConstraintModelJacobian",
+    "external_model_constraints:ExternalModelConstraints.KineticVsConservativeConstraintConvergence",
+    "external_model_constraints:ExternalModelConstraints.SimpleConstraintPreservesRatioNotMass",
+    "external_model_constraints:ExternalModelConstraints.BuiltInVsExternalModelConstraintStepByStep",
 })
 
 _aerosol_state_cases = (
