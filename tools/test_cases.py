@@ -538,6 +538,9 @@ implemented.update({
     "external_model_constraints:ExternalModelConstraints.AddExternalModelOnlyStandardRosenbrock",
     "external_model_constraints:ExternalModelConstraints.AddExternalModelConstraintsOnly",
     "external_model_constraints:ExternalModelConstraints.MultiGridCell",
+    "external_model_constraints:ExternalModelFiniteDifferenceJacobian.ProcessForcingJacobian",
+    "external_model_constraints:ExternalModelFiniteDifferenceJacobian.ConstraintResidualJacobian",
+    "external_model_constraints:ExternalModelFiniteDifferenceJacobian.EquilibriumConstraintModelJacobian",
 })
 
 _aerosol_state_cases = (
@@ -677,6 +680,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C workspace builds, solve entry points, and species-use validation checked"
         elif case_id.startswith("aerosol_model_"):
             reason = "C generic mechanism reproduces aerosol state, forcing, Jacobian, and solver behavior"
+        elif case_id.startswith("external_model_constraints:ExternalModelFiniteDifferenceJacobian."):
+            reason = "C process and constraint Jacobians match finite-difference residual derivatives"
         elif case_id.startswith("external_model_constraints:"):
             reason = "C mechanism and constraint descriptors reproduce process, algebraic-row, and mult-cell behavior"
         elif case_id.startswith("regression_test_rosenbrock_p_force:"):
