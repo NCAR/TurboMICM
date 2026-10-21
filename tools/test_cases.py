@@ -530,6 +530,14 @@ implemented.update({
     "analytical_backward_euler:AnalyticalExamples.ArrheniusSuperStiffButAnalytical",
     "analytical_rosenbrock_integration:AnalyticalExamples.BranchedSuperStiffButAnalytical",
     "analytical_backward_euler:AnalyticalExamples.BranchedSuperStiffButAnalytical",
+    "external_model_constraints:ExternalModelConstraints.AddExternalModelWithConstraints",
+    "external_model_constraints:ExternalModelConstraints.AddExternalModelProcessOnly",
+    "external_model_constraints:ExternalModelConstraints.DAESolveEnforcesConservation",
+    "external_model_constraints:ExternalModelConstraints.AlgebraicRowHoldsOnlyConstraintTerms",
+    "external_model_constraints:ExternalModelConstraints.CombinedBuiltInAndExternalConstraints",
+    "external_model_constraints:ExternalModelConstraints.AddExternalModelOnlyStandardRosenbrock",
+    "external_model_constraints:ExternalModelConstraints.AddExternalModelConstraintsOnly",
+    "external_model_constraints:ExternalModelConstraints.MultiGridCell",
 })
 
 _aerosol_state_cases = (
@@ -669,6 +677,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C workspace builds, solve entry points, and species-use validation checked"
         elif case_id.startswith("aerosol_model_"):
             reason = "C generic mechanism reproduces aerosol state, forcing, Jacobian, and solver behavior"
+        elif case_id.startswith("external_model_constraints:"):
+            reason = "C mechanism and constraint descriptors reproduce process, algebraic-row, and mult-cell behavior"
         elif case_id.startswith("regression_test_rosenbrock_p_force:"):
             reason = "generic C Chapman mechanism rates and forcing match independent formulas"
         elif case_id.startswith("regression:") and case_id.endswith("FlowTube"):

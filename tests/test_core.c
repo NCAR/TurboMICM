@@ -2510,6 +2510,110 @@ static int check_process_algebraic_mask(void) {
   return 0;
 }
 
+static int check_external_constraint_equivalents(void) {
+  const chem_species species[]={{.name="A_GAS"},{.name="A_AQ"}};
+  const chem_term gas[]={{0,1}},aq[]={{1,1}};
+  const chem_reaction reaction={.kind=CHEM_ARRHENIUS,.reactants=gas,
+      .reactant_count=1,.products=aq,.product_count=1,.p={0.1,0,0,300,0}};
+  const chem_mechanism mechanism={.species=species,.species_count=2,
+      .reactions=&reaction,.reaction_count=1};
+  const chem_constraint_term mass_terms[]={{0,1},{1,1}};
+  const chem_constraint mass={.kind=CHEM_CONSTRAINT_LINEAR,.name="mass",
+      .algebraic_species=1,.terms=mass_terms,.term_count=2,.constant=1.0};
+  const chem_constraint_set set={.constraints=&mass,.constraint_count=1,
+      .species_count=2};
+  unsigned char algebraic[2]={0};
+  if (chem_constraint_set_validate(&set) ||
+      chem_constraint_set_algebraic_mask(&set,algebraic) ||
+      algebraic[0] || !algebraic[1]) return 1;
+
+  /* A process-only model is the same mechanism without its constraint set. */
+  chem_solver_workspace ode_workspace={0};
+  if (chem_solver_workspace_init(&ode_workspace,&mechanism)) return 2;
+  double ode_state[]={1.0,0.0};
+  const chem_solver_options ode_options=chem_solver_default_options();
+  const int ode_status=chem_rosenbrock3_solve_with_workspace(&mechanism,
+      &ode_workspace,ode_state,298,101325,40,NULL,10,&ode_options,NULL);
+  chem_solver_workspace_destroy(&ode_workspace);
+  if (ode_status || !(ode_state[0]<1.0) || !(ode_state[1]>0.0) ||
+      fabs(ode_state[0]+ode_state[1]-1.0)>1.0e-10) return 3;
+
+  /* The algebraic row contains constraint forcing/Jacobian only. */
+  const unsigned char mask[]={0,1};
+  const double y[]={0.7,0.2},rates[]={10.0};
+  double forcing[]={0,0},negative_jacobian[4]={0};
+  if (chem_forcing_add_with_algebraic_mask(&mechanism,y,rates,40,mask,forcing) ||
+      chem_constraint_set_add_forcing(&set,y,NULL,1,forcing) ||
+      chem_negative_jacobian_add_with_algebraic_mask(&mechanism,y,rates,mask,
+                                                       negative_jacobian) ||
+      chem_constraint_set_add_negative_jacobian(&set,y,NULL,1,negative_jacobian))
+    return 4;
+  if (fabs(forcing[0]+7.0)>1e-12 || fabs(forcing[1]+0.1)>1e-12 ||
+      fabs(negative_jacobian[0]-10.0)>1e-12 ||
+      fabs(negative_jacobian[2]+1.0)>1e-12 ||
+      fabs(negative_jacobian[3]+1.0)>1e-12) return 5;
+
+  /* Constraint-only and process-plus-constraint solves both preserve mass. */
+  chem_solver_workspace dae_workspace={0};
+  if (chem_solver_workspace_init(&dae_workspace,&mechanism)) return 6;
+  const chem_rosenbrock_parameters dae=chem_rosenbrock_builtin_parameters(
+      CHEM_ROSENBROCK_FOUR_STAGE_DAE);
+  double y_dae[]={0.9,0.1};
+  for (size_t step=0;step<20;++step) {
+    if (chem_rosenbrock_solve_constrained_with_parameters(&mechanism,
+          &dae_workspace,y_dae,298,101325,40,NULL,10,&dae,&set,NULL,NULL) ||
+        fabs(y_dae[0]+y_dae[1]-1.0)>1e-10) {
+      chem_solver_workspace_destroy(&dae_workspace);
+      return 7;
+    }
+  }
+  chem_solver_workspace_destroy(&dae_workspace);
+  chem_mechanism constraint_only={.species=species,.species_count=2};
+  if (chem_solver_workspace_init(&dae_workspace,&constraint_only)) return 8;
+  double only_state[]={0.8,0.2};
+  const int only_status=chem_rosenbrock_solve_constrained_with_parameters(
+      &constraint_only,&dae_workspace,only_state,298,101325,40,NULL,50,&dae,
+      &set,NULL,NULL);
+  chem_solver_workspace_destroy(&dae_workspace);
+  if (only_status || fabs(only_state[0]+only_state[1]-1.0)>1e-12) return 9;
+
+  /* Three independent cells follow the same conservation constraint. */
+  chem_solver_workspace group_workspace={0};
+  if (chem_solver_workspace_init_group(&group_workspace,&mechanism,3)) return 10;
+  double group_state[]={0.9,0.1,0.7,0.3,0.5,0.5};
+  const double temperatures[]={298,298,298},pressures[]={101325,101325,101325};
+  const double densities[]={40,40,40};
+  const int group_status=chem_rosenbrock_solve_constrained_group_with_parameters(
+      &mechanism,&group_workspace,group_state,temperatures,pressures,densities,
+      NULL,3,10,&dae,&set,NULL,NULL);
+  chem_solver_workspace_destroy(&group_workspace);
+  if (group_status) return 11;
+  for (size_t cell=0;cell<3;++cell)
+    if (fabs(group_state[2*cell]+group_state[2*cell+1]-1.0)>1e-10) return 12;
+
+  /* A built-in equilibrium and a second model constraint merge into one set. */
+  const chem_species combined_species[]={{.name="A_GAS"},{.name="A_AQ"},
+      {.name="B"},{.name="C"}};
+  const chem_constraint_term combined_mass[]={{0,1},{1,1}};
+  const chem_constraint_term eq_reactant[]={{2,1}},eq_product[]={{3,1}};
+  const chem_constraint combined[]={
+    {.kind=CHEM_CONSTRAINT_LINEAR,.algebraic_species=1,
+      .terms=combined_mass,.term_count=2,.constant=1.0},
+    {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,.algebraic_species=3,
+      .reactants=eq_reactant,.reactant_count=1,.products=eq_product,
+      .product_count=1,.equilibrium_constant_ref=5.0,
+      .reference_temperature=298}};
+  const chem_constraint_set combined_set={.constraints=combined,
+      .constraint_count=2,.species_count=4};
+  unsigned char combined_mask[4]={0};
+  if (sizeof(combined_species)/sizeof(combined_species[0]) != combined_set.species_count ||
+      chem_constraint_set_validate(&combined_set) ||
+      chem_constraint_set_algebraic_mask(&combined_set,combined_mask) ||
+      !combined_mask[1] || !combined_mask[3] || combined_mask[0] ||
+      combined_mask[2]) return 13;
+  return 0;
+}
+
 static int check_phase_system_metadata(void) {
   const chem_species species[] = {
       {.name="foo"},{.name="bar",.density_parameterized=1,.density_factor=42.0},
@@ -4920,6 +5024,7 @@ int main(void) {
   if (check_all_constrained_overshoot_orders()!=0) return 131;
   if (check_equilibrium_conservation_overshoot()!=0) return 132;
   if (check_process_algebraic_mask() != 0) return 66;
+  { const int status=check_external_constraint_equivalents(); if (status) return 135+status; }
   if (check_phase_system_metadata() != 0) return 67;
   if (check_species_properties() != 0) return 68;
   if (check_matrix_view_api() != 0) return 64;
