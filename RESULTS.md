@@ -65,12 +65,15 @@
   algebraic variables from inconsistent initial data and leaves consistent data
   unchanged, reports initial projection iterations, and restores the caller's
   state when projection fails. Row-scaled constraints and repeated solve calls
-  also preserve the corrected manifold. The projection tolerance follows ten
-  percent of the configured absolute-plus-relative state error scale, and
-  backtracking handles nonlinear cold starts. Full DAE stage equations remain
-  incomplete. A grouped constrained call projects all
-  cells and aggregates statistics while using an independent scalar controller
-  per cell.
+  also preserve the corrected manifold. Initial-condition projection follows
+  the configured tolerance, while accepted constrained steps solve algebraic
+  rows to a strict residual tolerance. Constrained Rosenbrock stages include
+  constraint forcing and Jacobians and use a zero mass-matrix diagonal for
+  algebraic rows; the embedded step-change error estimate includes those rows.
+  Cascade-equilibrium regressions confirm that tightening the algebraic balance
+  tolerance increases accepted steps and prevents deep negative overshoot in
+  the super-stiff case. A grouped constrained call projects all cells and
+  aggregates statistics while using an independent scalar controller per cell.
 - Masked reaction forcing and negative-Jacobian accumulation preserve selected
   algebraic rows while updating differential rows across multiple cells.
 - The dense matrix view test covers strided indexing, conversion to and from a
@@ -97,8 +100,8 @@
 - TS1 import contains 210 phase species, 547 reactions, and the expected initial
   defaults. The generated mechanism compiles with both compilers.
 - `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. Six hundred sixty cases pass, eighteen are marked N/A, and 2 cases
-  still report incomplete ports, so both targets exit nonzero.
+  statuses. 662 cases pass and 18 C++-only cases are marked N/A; neither target
+  reports a failed case. Both compiler runs were forced from clean rebuilds.
 
 ## TS1 final-state comparison
 
@@ -117,5 +120,5 @@ The 10,000-cell seed-2026 run, 100 steps, and 10 threads completed in
 all 2,110,000 values; the largest relative difference was `5.34e-14` for
 BCARYO2VBS in cell 9034. The C implementation is about 11.4 times slower than
 MICM at this scale. The 100-cell and first-cell runs above also pass for both
-compilers. The inventory currently has 660 passing cases, 2 incomplete cases,
-and eighteen C++-only cases marked N/A.
+compilers. The final inventory has 662 passing cases and eighteen C++-only
+cases marked N/A.

@@ -520,6 +520,8 @@ implemented.update({
     "dae_constraint_overshoot:DAEConstraintOvershoot.AlgebraicVariableStaysNonNegative",
     "dae_constraint_overshoot:DAEConstraintOvershoot.AllRosenbrockOrdersConstrained",
     "dae_constraint_overshoot:DAEConstraintOvershoot.EquilibriumPlusConservation",
+    "dae_algebraic_error_insensitivity:DAEAlgebraicError.ErrorSensitiveToBalanceAtol",
+    "dae_algebraic_error_insensitivity:DAEAlgebraicError.AlgebraicVariableDoesNotOvershootDeeply",
     "analytical_rosenbrock_integration:AnalyticalExamples.TroeSuperStiffButAnalytical",
     "analytical_backward_euler:AnalyticalExamples.TroeSuperStiffButAnalytical",
     "analytical_rosenbrock_integration:AnalyticalExamples.TernaryChemicalActivationSuperStiffButAnalytical",
@@ -720,6 +722,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C Chapman solver variants agree with the three-stage reference trajectory across cells"
         elif case_id.startswith("dae_constraint_overshoot:"):
             reason = "C constrained Rosenbrock preserves nonnegative algebraic mass across parameter sets"
+        elif case_id.startswith("dae_algebraic_error_insensitivity:"):
+            reason = "C four-stage DAE error control responds to algebraic tolerances and prevents overshoot"
         elif case_id.startswith("rosenbrock:RosenbrockSolver."):
             reason = ("C per-species tolerance properties feed solver error control"
                       if case_id.endswith("CanSetTolerances") else

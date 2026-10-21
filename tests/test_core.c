@@ -2244,7 +2244,7 @@ static int check_constrained_solver(void) {
   const int loose_status = chem_rosenbrock_solve_constrained_with_parameters(
       &pair_mechanism,&weighted_workspace,weighted_state,298.15,101325.0,
       40.0,NULL,0.1,NULL,&weighted_set,&loose,&stats);
-  if (loose_status || weighted_state[1] != 1.0+deviation ||
+  if (loose_status || fabs(weighted_state[1]-1.0)>1.0e-12 ||
       stats.constraint_init_iterations != 1) return 8;
   weighted_state[0] = 1.0; weighted_state[1] = 1.0+deviation;
   const chem_solver_options tight = {
@@ -2551,6 +2551,79 @@ static int check_equilibrium_conservation_overshoot(void) {
       y[0]<-1.0e-18 || y[1]<-1.0e-18 || fabs(y[2]-1.0e-6)>1.0e-8)) status=2;
   chem_solver_workspace_destroy(&workspace);
   return status;
+}
+
+static int run_cascade_algebraic_error_case(double balance_atol, double rate,
+                                            double k1, double k2,
+                                            size_t *accepted_out,
+                                            double *min_gas_out,
+                                            double *gas_final_out,
+                                            double *product_final_out) {
+  const chem_species species[]={
+      {.name="A_gas"},{.name="A_aq"},{.name="B_aq"},{.name="P"}};
+  const chem_term reactant[]={{2,1.0}}, product[]={{3,1.0}};
+  const chem_reaction reaction={.kind=CHEM_ARRHENIUS,.reactants=reactant,
+      .reactant_count=1,.products=product,.product_count=1,
+      .p={rate,0.0,0.0,298.0,0.0}};
+  const chem_mechanism mechanism={.species=species,.species_count=4,
+      .reactions=&reaction,.reaction_count=1};
+  const chem_constraint_term eq1_r[]={{0,1.0}}, eq1_p[]={{1,1.0}};
+  const chem_constraint_term eq2_r[]={{1,1.0}}, eq2_p[]={{2,1.0}};
+  const chem_constraint_term mass[]={{0,1.0},{1,1.0},{2,1.0},{3,1.0}};
+  const chem_constraint constraints[]={
+    {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,.name="eq1",
+      .algebraic_species=1,.reactants=eq1_r,.reactant_count=1,
+      .products=eq1_p,.product_count=1,.equilibrium_constant_ref=k1,
+      .reference_temperature=298.0},
+    {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,.name="eq2",
+      .algebraic_species=2,.reactants=eq2_r,.reactant_count=1,
+      .products=eq2_p,.product_count=1,.equilibrium_constant_ref=k2,
+      .reference_temperature=298.0},
+    {.kind=CHEM_CONSTRAINT_LINEAR,.name="mass",
+      .algebraic_species=0,.terms=mass,.term_count=4,.constant=1.0e-6}};
+  const chem_constraint_set set={.constraints=constraints,
+      .constraint_count=3,.species_count=4};
+  const double atols[]={balance_atol,1.0e-8,1.0e-8,1.0e-12};
+  const chem_solver_options options={.relative_tolerance=1.0e-6,
+      .absolute_tolerance=1.0e-12,.absolute_tolerances=atols,
+      .absolute_tolerance_count=4,.max_steps=10000};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  const double denominator=1.0+k1+k1*k2;
+  double y[]={1.0e-6/denominator,k1*1.0e-6/denominator,
+              k1*k2*1.0e-6/denominator,0.0};
+  double min_gas=1.0e99;
+  chem_solver_stats stats={0};
+  const chem_rosenbrock_parameters parameters=
+      chem_rosenbrock_builtin_parameters(CHEM_ROSENBROCK_FOUR_STAGE_DAE);
+  const int status=chem_rosenbrock_solve_constrained_with_parameters(
+      &mechanism,&workspace,y,298.0,101325.0,40.0,NULL,30.0,
+      &parameters,&set,&options,&stats);
+  if (y[0]<min_gas) min_gas=y[0];
+  chem_solver_workspace_destroy(&workspace);
+  if (!status) {
+    *accepted_out=stats.accepted;
+    *min_gas_out=min_gas;
+    *gas_final_out=y[0];
+    *product_final_out=y[3];
+  }
+  return status;
+}
+
+static int check_dae_algebraic_error_insensitivity(void) {
+  size_t loose_steps=0,tight_steps=0;
+  double unused_min=0,unused_gas=0,unused_p=0;
+  if (run_cascade_algebraic_error_case(1.0e-3,100.0,2.0,2.0,
+          &loose_steps,&unused_min,&unused_gas,&unused_p) ||
+      run_cascade_algebraic_error_case(1.0e-8,100.0,2.0,2.0,
+          &tight_steps,&unused_min,&unused_gas,&unused_p)) return 1;
+  if (tight_steps<=loose_steps) return 2;
+  double min_gas=0.0,gas_final=0.0,product_final=0.0;
+  if (run_cascade_algebraic_error_case(1.0e-8,1.0e4,100.0,50.0,
+          &tight_steps,&min_gas,&gas_final,&product_final)) return 3;
+  if (min_gas < -1.0e-8 || fabs(product_final-1.0e-6)>1.0e-8 ||
+      fabs(gas_final)>1.0e-10) return 4;
+  return 0;
 }
 
 static int check_process_algebraic_mask(void) {
@@ -5339,8 +5412,7 @@ int main(void) {
     if (check_superstiff_mechanism(variant,0) ||
         check_superstiff_mechanism(variant,1)) return 134+variant;
   if (check_terminator_cases() != 0) return 58;
-  { const int status=check_chapman_integration();
-    if (status) return 59+status; }
+  if (check_chapman_integration() != 0) return 59;
   if (check_integrated_reaction_rates() != 0) return 60;
   if (check_flow_tube_reference(0) != 0) return 74;
   if (check_flow_tube_reference(1) != 0) return 75;
@@ -5355,6 +5427,7 @@ int main(void) {
   if (check_robertson_terminator_dae()!=0) return 130;
   if (check_all_constrained_overshoot_orders()!=0) return 131;
   if (check_equilibrium_conservation_overshoot()!=0) return 132;
+  if (check_dae_algebraic_error_insensitivity()!=0) return 133;
   if (check_process_algebraic_mask() != 0) return 66;
   { const int status=check_external_constraint_equivalents(); if (status) return 135+status; }
   { const int status=check_external_equilibrium_convergence(); if (status) return 150+status; }

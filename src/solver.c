@@ -557,17 +557,26 @@ static int rosenbrock_solve_impl(
     status = chem_forcing_with_constants(m, y, w->rate_constants,
                                          air_density, forcing);
     if (status) { status = SOLVER_BAD_ARGUMENT; break; }
+    if (constraints && chem_constraint_set_add_forcing(
+            constraints, y, &temperature, 1, forcing)) {
+      status = SOLVER_BAD_ARGUMENT; break;
+    }
     ++local_stats.function_calls;
     status = chem_negative_jacobian_with_constants(m, y, w->rate_constants,
                                                     jac);
     if (status) { status = SOLVER_BAD_ARGUMENT; break; }
+    if (constraints && chem_constraint_set_add_negative_jacobian(
+            constraints, y, &temperature, 1, jac)) {
+      status = SOLVER_BAD_ARGUMENT; break;
+    }
     ++local_stats.jacobian_updates;
     int accepted = 0;
     while (!accepted) {
       const double used_h = h;
       const double alpha = 1.0 / (h*p->gamma[0]);
       for (size_t i = 0; i < nn; ++i) a[i] = jac[i];
-      for (size_t i = 0; i < n; ++i) a[i*n + i] += alpha;
+      for (size_t i = 0; i < n; ++i)
+        if (!row_is_algebraic(constraints, i)) a[i*n + i] += alpha;
       status = factor(a, n, row_counts, col_counts, row_cols, col_rows);
       ++local_stats.decompositions;
       if (status) break;
@@ -586,6 +595,10 @@ static int rosenbrock_solve_impl(
                                                air_density, ks);
           ++local_stats.function_calls;
           if (status) { status = SOLVER_BAD_ARGUMENT; break; }
+          if (constraints && chem_constraint_set_add_forcing(
+                  constraints, stage_y, &temperature, 1, ks)) {
+            status = SOLVER_BAD_ARGUMENT; break;
+          }
         } else if (s > 0) {
           memcpy(ks, reused_forcing, n*sizeof(*ks));
         }
@@ -593,7 +606,9 @@ static int rosenbrock_solve_impl(
           memcpy(reused_forcing, ks, n*sizeof(*reused_forcing));
         for (size_t j = 0; j < s; ++j) {
           const double scale = p->c[coefficient_offset+j] / h;
-          for (size_t i = 0; i < n; ++i) ks[i] += scale*stage[j*n + i];
+          for (size_t i = 0; i < n; ++i)
+            if (!row_is_algebraic(constraints, i))
+              ks[i] += scale*stage[j*n + i];
         }
         solve_factored(a, n, row_counts, row_cols, ks);
         ++local_stats.solves;
@@ -608,20 +623,21 @@ static int rosenbrock_solve_impl(
         }
       }
       if (constraints && project_constraints(constraints, ynew, temperature,
-                                             stage_y, jac,
-                                             o->relative_tolerance,
-                                             o->absolute_tolerance, NULL)) {
+                                             stage_y, jac, 1.0e-12,
+                                             1.0e-12, NULL)) {
         status = SOLVER_STEP_FAILURE;
         break;
       }
       double sum = 0.0;
       size_t error_variables = 0;
       for (size_t i = 0; i < n; ++i) {
-        if (m->species[i].third_body || row_is_algebraic(constraints, i)) continue;
+        if (m->species[i].third_body) continue;
         ++error_variables;
         const double scale = solver_absolute_tolerance(o, i) +
             o->relative_tolerance*fmax(fabs(y[i]), fabs(ynew[i]));
-        const double v = yerror[i]/scale;
+        const double estimate = row_is_algebraic(constraints, i)
+            ? ynew[i] - y[i] : yerror[i];
+        const double v = estimate/scale;
         sum += v*v;
       }
       double error = error_variables
@@ -654,6 +670,10 @@ static int rosenbrock_solve_impl(
   for (size_t i = 0; i < n; ++i)
     if (!m->species[i].third_body && !row_is_algebraic(constraints, i) &&
         y[i] < 0.0) y[i] = 0.0;
+  if (!status && constraints && project_constraints(
+          constraints, y, temperature, stage_y, jac, 1.0e-12, 1.0e-12,
+          NULL))
+    status = SOLVER_STEP_FAILURE;
   if (statistics) *statistics = local_stats;
   return status;
 }
