@@ -197,7 +197,9 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Before it, `codex --yolo` was opened in the directory at 21:14, with memories on,
   and closed before any message; it left no session record.
 - The whole run was one turn, from the goal at 21:17:29 to its end at 23:35:50;
-  the session's context was compacted twice along the way. Every turn context
+  the session's context was compacted four times along the way, at 21:52, 22:21,
+  22:50, and 23:17 (the transcript's `compacted` records; this log said twice
+  until 2026-10-21). Every turn context
   shows gpt-6-astra at xhigh, and no model switch.
 - Tokens: 1,879,105 total; input 1,607,225 (plus 31,004,544 cached); output
   271,880 (48,132 reasoning).

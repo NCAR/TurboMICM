@@ -114,6 +114,12 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - **Wiki layout:** each tier has Design, Prompt, and Results pages (`Tier-1-*`,
   `Tier-2-*`, `Tier-3-*`), plus Home, Running-the-Experiment, and
   Role-of-Claude-in-the-Design.
+  - Tier 1 also has Tier-1-Judging (criteria, exercises, a results column per
+    judge), one report page per judge (`Tier-1-Judging-Opus`, then Fable's and
+    the SSE's), and `Entrant-<run>` for each of the nine entrants: the same
+    sections in the same order and six diagrams each. Keep them consistent
+    when one changes; `results/2026-10-20-tier1-judging-opus/brief/PAGE_TEMPLATE.md`
+    is the template.
   - Inside a table, use `[text](Page)` links: the `|` in `[[text|Page]]` splits
     the cell.
   Agents' self-reports appear only as a one-line finding.
@@ -121,6 +127,10 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   in the preamble of Role-of-Claude-in-the-Design, and use no pronouns for them.
 - **Judging:** since 2026-10-16 no Claude model competes, and Opus and Fable judge
   the entries. Keep the blind review blind: fresh sessions, anonymized copies.
+  Tier 1's secondary criteria are judged instead by three judges in turn (the
+  SSE's decision, 2026-10-20): Opus 5.5 at max, in the open, in the
+  orchestrating session (done 2026-10-21); Fable 5.1 at max; then the SSE.
+  Exercises on paper, nothing built.
   The Role page describes the roles; its old conflict-of-interest disclosure is
   gone.
 - **Git:**
@@ -278,7 +288,16 @@ Tier-2-Results.
 
 ## Open items
 
-- Rank with an undisclosed seed, and run the blind review.
+- Rank with an undisclosed seed.
+- Tier 1's secondary criteria: Judge 1, Opus, reported on 2026-10-21 (wiki
+  Tier-1-Judging and Tier-1-Judging-Opus; `results/2026-10-20-tier1-judging-opus`):
+  astra-xhigh 23.8 of 30, sol-xhigh 22.6, astra-high and astra-max 22.4, sol-high
+  20.6, sol-max 19.2, luna-xhigh 15.0, luna-max 13.8, luna-high 9.4. Next, Judge 2
+  (Fable 5.1 at max) and Judge 3 (the SSE): each gets a report page and a column
+  in Tier-1-Judging's Results table. Its findings for the SSE bear on the gate:
+  luna-high prints its PASS lines from a list once one program passes; luna-max
+  and luna-xhigh report many ids from shared checks; the Luna readers convert
+  MICM's units with fixed exponents.
 - Time the entries on an x86-64 Linux machine.
 - Tier 3: Luna's arm, if its Tier 1 passes (it needs new held-out scenarios,
   since `tier3/heldout/` is public). Fable's reference solution (not a

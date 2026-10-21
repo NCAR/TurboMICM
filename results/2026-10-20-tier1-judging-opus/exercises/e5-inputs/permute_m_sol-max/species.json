@@ -1,0 +1,25 @@
+{
+ "camp-data": [
+  {
+   "name": "M",
+   "type": "CHEM_SPEC",
+   "parameterization": "third body"
+  },
+  {
+   "name": "A",
+   "type": "CHEM_SPEC"
+  },
+  {
+   "name": "B",
+   "type": "CHEM_SPEC"
+  },
+  {
+   "name": "C",
+   "type": "CHEM_SPEC"
+  },
+  {
+   "name": "D",
+   "type": "CHEM_SPEC"
+  }
+ ]
+}

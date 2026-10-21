@@ -1,0 +1,326 @@
+{
+ "sol-max": {
+  "lines": {
+   "other": 23448,
+   "docs": 356,
+   "c_lib": 2106,
+   "c_bench": 186,
+   "py_tests": 3609,
+   "c_tests": 308,
+   "py_tools": 384
+  },
+  "files": {
+   "other": 28,
+   "docs": 5,
+   "c_lib": 18,
+   "c_bench": 1,
+   "py_tests": 24,
+   "c_tests": 1,
+   "py_tools": 4
+  },
+  "generated": {
+   "generated/ts1.c": 21407
+  },
+  "functions": 113,
+  "median_function": 9,
+  "over_60": 4,
+  "over_100": 3,
+  "largest": [
+   "chem_rosenbrock_parameters (src/parameters.c:4, 202 lines)",
+   "chem_model_finalize (src/model.c:168, 141 lines)",
+   "main (src/bench.c:85, 102 lines)",
+   "chem_solve (src/rosenbrock.c:114, 79 lines)",
+   "chem_constraints (src/process.c:81, 57 lines)",
+   "chem_rate_value (src/rates.c:27, 55 lines)"
+  ],
+  "lines_with_comments": 0.017
+ },
+ "astra-xhigh": {
+  "lines": {
+   "other": 24169,
+   "docs": 549,
+   "c_tests": 6573,
+   "c_lib": 3085,
+   "c_bench": 227,
+   "py_tools": 464,
+   "py_tests": 66
+  },
+  "files": {
+   "other": 29,
+   "docs": 5,
+   "c_tests": 36,
+   "c_lib": 28,
+   "c_bench": 1,
+   "py_tools": 6,
+   "py_tests": 2
+  },
+  "generated": {
+   "generated/ts1.c": 16341
+  },
+  "functions": 214,
+  "median_function": 7,
+  "over_60": 5,
+  "over_100": 2,
+  "largest": [
+   "chem_ros_parameters_default (src/parameters.c:6, 174 lines)",
+   "chem_model_create (src/model.c:53, 157 lines)",
+   "chem_ros_solve (src/rosenbrock.c:34, 87 lines)",
+   "main (src/bench.c:144, 84 lines)",
+   "chem_external_prepare (src/external.c:40, 78 lines)",
+   "chem_be_solve (src/backward_euler.c:19, 57 lines)"
+  ],
+  "lines_with_comments": 0.021
+ },
+ "sol-xhigh": {
+  "lines": {
+   "other": 23128,
+   "docs": 457,
+   "c_lib": 3472,
+   "c_bench": 354,
+   "c_tests": 7840,
+   "py_tools": 381,
+   "py_tests": 78
+  },
+  "files": {
+   "other": 27,
+   "docs": 6,
+   "c_lib": 16,
+   "c_bench": 1,
+   "c_tests": 30,
+   "py_tools": 4,
+   "py_tests": 1
+  },
+  "generated": {
+   "generated/ts1.c": 1840
+  },
+  "functions": 133,
+  "median_function": 12,
+  "over_60": 11,
+  "over_100": 6,
+  "largest": [
+   "ck_model_create_with_order (src/model.c:248, 297 lines)",
+   "ck_rosenbrock_parameters_init (src/parameters.c:6, 192 lines)",
+   "main (src/bench.c:215, 140 lines)",
+   "ck_solve_raw (src/solver.c:44, 133 lines)",
+   "read_cells (src/bench.c:72, 117 lines)",
+   "symbolic (src/model.c:88, 101 lines)"
+  ],
+  "lines_with_comments": 0.01
+ },
+ "astra-max": {
+  "lines": {
+   "other": 24549,
+   "docs": 626,
+   "c_lib": 2570,
+   "py_tests": 3666,
+   "c_tests": 386,
+   "py_tools": 343,
+   "c_bench": 207
+  },
+  "files": {
+   "other": 28,
+   "docs": 6,
+   "c_lib": 15,
+   "py_tests": 26,
+   "c_tests": 2,
+   "py_tools": 3,
+   "c_bench": 1
+  },
+  "generated": {
+   "build/generated/ts1.c": 1543
+  },
+  "functions": 182,
+  "median_function": 7,
+  "over_60": 4,
+  "over_100": 2,
+  "largest": [
+   "ch_rosenbrock_default (src/parameters.c:7, 175 lines)",
+   "ch_model_finalize (src/model.c:136, 125 lines)",
+   "main (tools/ts1_bench.c:112, 96 lines)",
+   "ch_solve (src/rosenbrock.c:34, 86 lines)",
+   "ch_lu_factor_work (src/sparse.c:130, 54 lines)",
+   "ch_sparse_create (src/sparse.c:34, 53 lines)"
+  ],
+  "lines_with_comments": 0.023
+ },
+ "sol-high": {
+  "lines": {
+   "other": 24546,
+   "docs": 429,
+   "c_lib": 2808,
+   "c_bench": 226,
+   "c_tests": 477,
+   "py_tests": 5190,
+   "py_tools": 328
+  },
+  "files": {
+   "other": 28,
+   "docs": 4,
+   "c_lib": 21,
+   "c_bench": 1,
+   "c_tests": 3,
+   "py_tests": 31,
+   "py_tools": 2
+  },
+  "generated": {
+   "build/ts1.c": 1651
+  },
+  "functions": 188,
+  "median_function": 6,
+  "over_60": 6,
+  "over_100": 3,
+  "largest": [
+   "chem_rosenbrock_parameters (src/parameters.c:6, 176 lines)",
+   "chem_mechanism_create (src/mechanism.c:65, 105 lines)",
+   "integrate (src/rosenbrock.c:28, 104 lines)",
+   "chem_builder_build (src/builder.c:57, 80 lines)",
+   "main (src/bench.c:148, 79 lines)",
+   "chem_rate_evaluate (src/rates.c:32, 67 lines)"
+  ],
+  "lines_with_comments": 0.033
+ },
+ "astra-high": {
+  "lines": {
+   "other": 23103,
+   "docs": 862,
+   "c_lib": 3410,
+   "c_bench": 186,
+   "c_tests": 5332,
+   "py_tools": 325,
+   "py_tests": 271
+  },
+  "files": {
+   "other": 30,
+   "docs": 5,
+   "c_lib": 28,
+   "c_bench": 1,
+   "c_tests": 32,
+   "py_tools": 2,
+   "py_tests": 5
+  },
+  "generated": {
+   "build/ts1.c": 6459
+  },
+  "functions": 252,
+  "median_function": 7,
+  "over_60": 5,
+  "over_100": 1,
+  "largest": [
+   "chem_rosenbrock_parameters (src/rosenbrock_parameters.c:8, 175 lines)",
+   "chem_mechanism_create (src/mechanism.c:27, 93 lines)",
+   "main (src/ts1_bench.c:106, 81 lines)",
+   "chem_mechanism_create_with_models (src/external.c:54, 81 lines)",
+   "chem_solve (src/rosenbrock.c:146, 80 lines)",
+   "chem_initialize_constraints (src/constraint_initialization.c:43, 60 lines)"
+  ],
+  "lines_with_comments": 0.039
+ },
+ "luna-xhigh": {
+  "lines": {
+   "other": 16777,
+   "docs": 528,
+   "c_lib": 4873,
+   "c_bench": 394,
+   "c_tests": 7050,
+   "py_tools": 504,
+   "py_tests": 332
+  },
+  "files": {
+   "other": 16,
+   "docs": 5,
+   "c_lib": 15,
+   "c_bench": 1,
+   "c_tests": 22,
+   "py_tools": 2,
+   "py_tests": 1
+  },
+  "generated": {
+   "build/generated/ts1.c": 3328
+  },
+  "functions": 190,
+  "median_function": 10,
+  "over_60": 12,
+  "over_100": 7,
+  "largest": [
+   "chem_integrate_group_with_constraints (src/chem.c:1282, 233 lines)",
+   "chem_integrate_group_steps_with_parameters (src/chem.c:1061, 207 lines)",
+   "chem_constraint_set_initialize (src/constraints.c:319, 199 lines)",
+   "chem_symbolic_build (src/chem.c:444, 177 lines)",
+   "chem_integrate_group_backward_euler_with_parameters (src/backward_euler.c:83, 169 lines)",
+   "main (src/ts1_bench.c:256, 139 lines)"
+  ],
+  "lines_with_comments": 0.02
+ },
+ "luna-max": {
+  "lines": {
+   "other": 16102,
+   "docs": 270,
+   "c_lib": 3903,
+   "c_bench": 372,
+   "py_tests": 151,
+   "c_tests": 4877,
+   "py_tools": 505
+  },
+  "files": {
+   "other": 13,
+   "docs": 4,
+   "c_lib": 14,
+   "c_bench": 1,
+   "py_tests": 1,
+   "c_tests": 3,
+   "py_tools": 2
+  },
+  "generated": {
+   "build/ts1_model.c": 950
+  },
+  "functions": 148,
+  "median_function": 13,
+  "over_60": 10,
+  "over_100": 3,
+  "largest": [
+   "chem_constraint_set_project (src/constraint.c:470, 155 lines)",
+   "solve_group (src/solver.c:644, 154 lines)",
+   "main (src/benchmark.c:259, 114 lines)",
+   "chem_make_pattern (src/solver.c:93, 98 lines)",
+   "chem_solver_step (src/solver.c:939, 91 lines)",
+   "chem_rate_constant (src/kinetics.c:24, 91 lines)"
+  ],
+  "lines_with_comments": 0.003
+ },
+ "luna-high": {
+  "lines": {
+   "other": 18931,
+   "docs": 648,
+   "c_lib": 4276,
+   "c_bench": 391,
+   "py_tests": 907,
+   "c_tests": 5445,
+   "py_tools": 453
+  },
+  "files": {
+   "other": 4,
+   "docs": 5,
+   "c_lib": 12,
+   "c_bench": 1,
+   "py_tests": 2,
+   "c_tests": 1,
+   "py_tools": 3
+  },
+  "generated": {
+   "generated/ts1.c": 5648
+  },
+  "functions": 199,
+  "median_function": 10,
+  "over_60": 10,
+  "over_100": 5,
+  "largest": [
+   "rosenbrock_solve_impl (src/solver.c:489, 202 lines)",
+   "main (src/main.c:199, 193 lines)",
+   "chem_rosenbrock3_solve_group_with_workspace (src/solver.c:767, 179 lines)",
+   "project_constraints (src/solver.c:353, 135 lines)",
+   "chem_backward_euler_solve_with_workspace (src/solver.c:972, 124 lines)",
+   "chem_reaction_rate (src/mechanism.c:140, 86 lines)"
+  ],
+  "lines_with_comments": 0.004
+ }
+}

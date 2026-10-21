@@ -1,0 +1,14 @@
+{
+  "camp-data": [
+    {
+      "name": "permutation and unit probe",
+      "type": "MECHANISM",
+      "reactions": [
+        {"type": "ARRHENIUS", "reactants": {"A": {}, "B": {}}, "products": {"C": {}}, "A": 1.0e-12, "C": -100.0},
+        {"type": "ARRHENIUS", "reactants": {"C": {}}, "products": {"A": {}, "D": {}}, "A": 2.0e-3},
+        {"type": "TROE", "reactants": {"D": {}}, "products": {"B": {}}, "k0_A": 1.0e-20, "k0_B": 0.0, "k0_C": 0.0, "kinf_A": 5.0e-4, "kinf_B": 0.0, "kinf_C": 0.0, "Fc": 0.6, "N": 1.0},
+        {"type": "TERNARY_CHEMICAL_ACTIVATION", "reactants": {"A": {}, "D": {}}, "products": {"B": {}}, "k0_A": 1.0e-15, "k0_B": 0.0, "k0_C": 0.0, "kinf_A": 1.0e-12, "kinf_B": 0.0, "kinf_C": 0.0, "Fc": 0.6, "N": 1.0}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+ "judge": "Claude Opus 5.5, max effort",
+ "order": 1,
+ "blind": false,
+ "date": "2026-10-21",
+ "criteria": [
+  "readability",
+  "maintainability",
+  "extensibility"
+ ],
+ "exercises": [
+  "E1 parameter set",
+  "E2 controller",
+  "E3 linear solver",
+  "E4 rate type",
+  "E5 another mechanism"
+ ],
+ "extensibility_rule": "twice the mean of the five exercise ratings, one decimal",
+ "scores": {
+  "astra-xhigh": {
+   "readability": 7,
+   "maintainability": 8,
+   "exercises": [
+    5,
+    5,
+    5,
+    4,
+    3
+   ],
+   "extensibility": 8.8,
+   "total": 23.8
+  },
+  "sol-xhigh": {
+   "readability": 8,
+   "maintainability": 7,
+   "exercises": [
+    5,
+    4,
+    4,
+    3,
+    3
+   ],
+   "extensibility": 7.6,
+   "total": 22.6
+  },
+  "astra-high": {
+   "readability": 6,
+   "maintainability": 8,
+   "exercises": [
+    5,
+    4,
+    5,
+    3,
+    4
+   ],
+   "extensibility": 8.4,
+   "total": 22.4
+  },
+  "astra-max": {
+   "readability": 7,
+   "maintainability": 7,
+   "exercises": [
+    5,
+    4,
+    5,
+    3,
+    4
+   ],
+   "extensibility": 8.4,
+   "total": 22.4
+  },
+  "sol-high": {
+   "readability": 6,
+   "maintainability": 7,
+   "exercises": [
+    5,
+    4,
+    3,
+    3,
+    4
+   ],
+   "extensibility": 7.6,
+   "total": 20.6
+  },
+  "sol-max": {
+   "readability": 6,
+   "maintainability": 6,
+   "exercises": [
+    5,
+    4,
+    3,
+    3,
+    3
+   ],
+   "extensibility": 7.2,
+   "total": 19.2
+  },
+  "luna-xhigh": {
+   "readability": 5,
+   "maintainability": 4,
+   "exercises": [
+    5,
+    3,
+    2,
+    3,
+    2
+   ],
+   "extensibility": 6.0,
+   "total": 15.0
+  },
+  "luna-max": {
+   "readability": 4,
+   "maintainability": 3,
+   "exercises": [
+    4,
+    4,
+    4,
+    3,
+    2
+   ],
+   "extensibility": 6.8,
+   "total": 13.8
+  },
+  "luna-high": {
+   "readability": 3,
+   "maintainability": 2,
+   "exercises": [
+    2,
+    2,
+    2,
+    3,
+    2
+   ],
+   "extensibility": 4.4,
+   "total": 9.4
+  }
+ },
+ "rank": [
+  "astra-xhigh",
+  "sol-xhigh",
+  "astra-high",
+  "astra-max",
+  "sol-high",
+  "sol-max",
+  "luna-xhigh",
+  "luna-max",
+  "luna-high"
+ ]
+}

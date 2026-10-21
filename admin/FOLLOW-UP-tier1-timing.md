@@ -99,6 +99,13 @@ session. The wiki says "not yet timed" wherever luna-high's time would go.
    - **Tier-1-Implementations:** the "At a glance" TS1 column for every row,
      and luna-high's "not yet timed".
    - **Tier-3-Results:** the Luna sentence.
+   - **Entrant-<run>, all nine:** the At a glance rows "TS1, 10 threads", "TS1,
+     1 thread", and "Speedup, 1 to 10 threads" (luna-high's "not yet timed"),
+     the summary's time where it gives one, and the Records line naming the
+     session the times come from. Tier-1-Judging holds no times;
+     Tier-1-Judging-Opus quotes one comparison (astra-xhigh 3.8 % slower than
+     sol-max at ten threads, under "What the order shows"): update it if the
+     gap changes.
 5. `admin/runs.md`: a "Timed with all entries" bullet under "luna-high
    (rerun)". `CLAUDE.md`: the Luna item and the timing reference (the newest
    results folder). Then delete this file and CLAUDE.md's pointer to it,
