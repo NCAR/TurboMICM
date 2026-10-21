@@ -7,6 +7,18 @@ coding agents. Every agent gets the same prompt: port MICM's CPU solver to
 portable C (C11, libm, and OpenMP) and make it fast without depending on one chip,
 compiler, or operating system.
 
+## REAPER
+
+The framework that the contest feeds into takes mechanism-specific kernels to a
+host model by its run-time path, REAPER: Run-time: Emit, Assemble, Plug in,
+Execute, Reuse. Emit straight-line C from the mechanism the model loaded;
+assemble it with the system compiler; plug the kernels in through function
+pointers, after a fingerprint check, with the generic solver as the fallback;
+execute; and reuse the shared library, cached under a hash of the mechanism,
+the compiler, and the flags. A reaper cuts a field into straight rows; REAPER
+cuts a mechanism's reaction graph into straight-line code. The design is on the
+wiki: [From contest to framework](https://github.com/NCAR/TurboMICM/wiki/From-Contest-to-Framework).
+
 ## Layout
 
 `main` holds the experiment:

@@ -364,8 +364,11 @@ Tier-2-Results.
   analysis pass: how mechanism-specific kernels could reach MUSICA's API.
   - Ahead of time: a CMake function that generates and links a mechanism's
     kernels when the host model is built, as KPP-based models do.
-  - At run time: generate C, compile it once with the system compiler, cache the
-    shared library by a hash of mechanism, compiler, and flags, and `dlopen` it.
+  - At run time, named REAPER (Run-time: Emit, Assemble, Plug in, Execute,
+    Reuse; the SSE's choice, 2026-10-21, with the reaper analogy, in README.md
+    and on From-Contest-to-Framework): generate C, compile it once with the
+    system compiler, cache the shared library by a hash of mechanism, compiler,
+    and flags, and `dlopen` it.
   - Embedded JIT (LLVM ORC or MLIR): MICM removed its LLVM JIT in PR #886,
     2025-12-10, as unused, not shipped with musica, costly to keep in step with
     interface changes, and pinned to an old LLVM.
