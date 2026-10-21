@@ -1694,6 +1694,80 @@ static int check_analytical_mechanism_chain(const chem_mechanism *mechanism,
   return 0;
 }
 
+static int check_superstiff_troe(int backward_euler) {
+  const chem_species species[]={{.name="A1"},{.name="A2"},
+                                {.name="B"},{.name="C"}};
+  const chem_term a1[]={{0,1}},a2[]={{1,1}},b[]={{2,1}};
+  const chem_term to_b[]={{2,1}},to_c[]={{3,1}},to_a2[]={{1,1}},to_a1[]={{0,1}};
+  const chem_reaction reactions[]={
+    {.kind=CHEM_TROE,.reactants=a1,.reactant_count=1,.products=to_b,
+      .product_count=1,.p={4e-11,0,0,1,0,0,0.6,1}},
+    {.kind=CHEM_TROE,.reactants=a2,.reactant_count=1,.products=to_b,
+      .product_count=1,.p={4e-11,0,0,1,0,0,0.6,1}},
+    {.kind=CHEM_TROE,.reactants=b,.reactant_count=1,.products=to_c,
+      .product_count=1,.p={1.2e-3,1.6,3,136,5,24,0.9,0.8}},
+    {.kind=CHEM_ARRHENIUS,.reactants=a1,.reactant_count=1,.products=to_a2,
+      .product_count=1,.p={4e10,0,0,300,0}},
+    {.kind=CHEM_ARRHENIUS,.reactants=a2,.reactant_count=1,.products=to_a1,
+      .product_count=1,.p={3.6e10,0,0,300,0}}};
+  const chem_mechanism mechanism={.species=species,.species_count=4,
+      .reactions=reactions,.reaction_count=5};
+  const double temperatures[]={272.5,254.7,312.6};
+  const double pressures[]={101253.3,100672.5,101319.8};
+  const double gas_constant=8.31446261815324;
+  double rates[3][5];
+  for (size_t c=0;c<3;++c) {
+    const double density=pressures[c]/(gas_constant*temperatures[c]);
+    if (chem_rate_constants(&mechanism,temperatures[c],pressures[c],density,
+                            NULL,rates[c])) return 1;
+  }
+  const chem_rosenbrock_parameter_set schemes[]={CHEM_ROSENBROCK_TWO_STAGE,
+      CHEM_ROSENBROCK_THREE_STAGE,CHEM_ROSENBROCK_FOUR_STAGE,
+      CHEM_ROSENBROCK_FOUR_STAGE_DAE,CHEM_ROSENBROCK_SIX_STAGE_DAE};
+  const size_t scheme_count=backward_euler?1:5;
+  for (size_t scheme=0;scheme<scheme_count;++scheme) {
+    double y[12]={0};
+    for (size_t cell=0;cell<3;++cell) {
+      const double total=1.0-(double)cell/3.0;
+      y[cell*4]=0.5*total; y[cell*4+1]=0.5*total;
+    }
+    chem_solver_workspace workspace={0};
+    if (chem_solver_workspace_init_group(&workspace,&mechanism,3)) return 2;
+    const chem_solver_options ros_options=chem_solver_default_options();
+    const chem_backward_euler_options be_options=chem_backward_euler_default_options();
+    const chem_rosenbrock_parameters parameters=
+        chem_rosenbrock_builtin_parameters(schemes[scheme]);
+    for (size_t step=1;step<1000;++step) {
+      for (size_t cell=0;cell<3;++cell) {
+        const double density=pressures[cell]/(gas_constant*temperatures[cell]);
+        chem_solver_stats stats={0};
+        const int status=backward_euler
+          ? chem_backward_euler_solve_with_workspace(&mechanism,&workspace,
+                y+4*cell,temperatures[cell],pressures[cell],density,NULL,1.0,
+                &be_options,&stats)
+          : chem_rosenbrock_solve_with_parameters(&mechanism,&workspace,
+                y+4*cell,temperatures[cell],pressures[cell],density,NULL,1.0,
+                &parameters,&ros_options,&stats);
+        const double initial=1.0-(double)cell/3.0;
+        const double k1=rates[cell][0],k2=rates[cell][2],t=(double)step;
+        const double e1=exp(-k1*t),e2=exp(-k2*t);
+        const double expected[]={initial*e1,
+          initial*k1/(k2-k1)*(e1-e2),
+          initial*(1.0+(k1*e2-k2*e1)/(k2-k1))};
+        if (status || stats.accepted==0 ||
+            fabs(y[4*cell]+y[4*cell+1]-expected[0])>1e-5 ||
+            fabs(y[4*cell+2]-expected[1])>1e-5 ||
+            fabs(y[4*cell+3]-expected[2])>1e-5) {
+          chem_solver_workspace_destroy(&workspace);
+          return 3;
+        }
+      }
+    }
+    chem_solver_workspace_destroy(&workspace);
+  }
+  return 0;
+}
+
 static int check_backward_euler(void) {
   const double absolute_tolerances[] = {1e-6,1e-6,1e-6};
   double residual_data[12] = {0}, state_data[12] = {0};
@@ -4791,6 +4865,7 @@ int main(void) {
   if (check_process_set_forcing_and_jacobian() != 0) return 57;
   const int backward_euler_status = check_backward_euler();
   if (backward_euler_status != 0) return 70 + backward_euler_status;
+  if (check_superstiff_troe(0) != 0 || check_superstiff_troe(1) != 0) return 134;
   if (check_terminator_cases() != 0) return 58;
   { const int status=check_chapman_integration();
     if (status) return 59+status; }

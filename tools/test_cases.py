@@ -520,6 +520,8 @@ implemented.update({
     "dae_constraint_overshoot:DAEConstraintOvershoot.AlgebraicVariableStaysNonNegative",
     "dae_constraint_overshoot:DAEConstraintOvershoot.AllRosenbrockOrdersConstrained",
     "dae_constraint_overshoot:DAEConstraintOvershoot.EquilibriumPlusConservation",
+    "analytical_rosenbrock_integration:AnalyticalExamples.TroeSuperStiffButAnalytical",
+    "analytical_backward_euler:AnalyticalExamples.TroeSuperStiffButAnalytical",
 })
 
 _aerosol_state_cases = (
@@ -637,6 +639,8 @@ for raw in case_file.read_text().splitlines():
             reason = "C user-defined rates drive backward Euler and Rosenbrock closed-form checks"
         elif case_id.endswith("PhotolysisSuperStiffButAnalytical"):
             reason = "C solvers integrate the fast-equilibrium photolysis chain against its closed form"
+        elif case_id.endswith("TroeSuperStiffButAnalytical"):
+            reason = "C solvers integrate the fast-exchange Troe mechanism against its closed form"
         elif case_id.endswith("AnalyticalExamples.Robertson"):
             reason = "C Rosenbrock parameter sets match the published Robertson trajectory"
         elif case_id.endswith("AnalyticalExamples.HIRES"):
