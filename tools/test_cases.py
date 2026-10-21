@@ -544,6 +544,8 @@ implemented.update({
     "external_model_constraints:ExternalModelConstraints.KineticVsConservativeConstraintConvergence",
     "external_model_constraints:ExternalModelConstraints.SimpleConstraintPreservesRatioNotMass",
     "external_model_constraints:ExternalModelConstraints.BuiltInVsExternalModelConstraintStepByStep",
+    "external_model_constraints:ExternalModelConstraints.MultiEquilibriumKineticVsComposedConstraints",
+    "external_model_constraints:ExternalModelConstraints.TemperatureDependentConstraintParameter",
 })
 
 _aerosol_state_cases = (

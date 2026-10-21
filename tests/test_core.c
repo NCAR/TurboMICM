@@ -2691,6 +2691,104 @@ static int check_external_equilibrium_convergence(void) {
   return 0;
 }
 
+static int check_composed_equilibrium_dae(void) {
+  const chem_species species[]={{.name="A"},{.name="B"},{.name="C"},{.name="D"}};
+  const chem_term a[]={{0,1}},b[]={{1,1}},c[]={{2,1}},d[]={{3,1}};
+  const chem_term to_b[]={{1,1}},to_c[]={{2,1}},to_d[]={{3,1}};
+  const chem_reaction kinetic_reactions[]={
+    {.kind=CHEM_ARRHENIUS,.reactants=a,.reactant_count=1,.products=to_b,
+      .product_count=1,.p={0.1,0,0,300,0}},
+    {.kind=CHEM_ARRHENIUS,.reactants=b,.reactant_count=1,.products=to_c,
+      .product_count=1,.p={10,0,0,300,0}},
+    {.kind=CHEM_ARRHENIUS,.reactants=c,.reactant_count=1,.products=to_b,
+      .product_count=1,.p={2,0,0,300,0}},
+    {.kind=CHEM_ARRHENIUS,.reactants=b,.reactant_count=1,.products=to_d,
+      .product_count=1,.p={8,0,0,300,0}},
+    {.kind=CHEM_ARRHENIUS,.reactants=d,.reactant_count=1,.products=to_b,
+      .product_count=1,.p={8.0/3.0,0,0,300,0}}};
+  const chem_mechanism kinetic={.species=species,.species_count=4,
+      .reactions=kinetic_reactions,.reaction_count=5};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&kinetic)) return 1;
+  double kinetic_y[]={1,0,0,0};
+  for (size_t step=0;step<200;++step)
+    if (chem_rosenbrock3_solve_with_workspace(&kinetic,&workspace,kinetic_y,
+          298,101325,40,NULL,1,NULL,NULL)) {
+      chem_solver_workspace_destroy(&workspace); return 2;
+    }
+  chem_solver_workspace_destroy(&workspace);
+
+  const chem_reaction drive={.kind=CHEM_ARRHENIUS,.reactants=a,
+      .reactant_count=1,.products=to_b,.product_count=1,.p={0.1,0,0,300,0}};
+  const chem_mechanism dae_mechanism={.species=species,.species_count=4,
+      .reactions=&drive,.reaction_count=1};
+  const chem_constraint_term br[]={{1,1}},cp[]={{2,1}},dp[]={{3,1}},
+      mass[]={{0,1},{1,1},{2,1},{3,1}};
+  const chem_constraint constraints[]={
+    {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,.algebraic_species=2,
+      .reactants=br,.reactant_count=1,.products=cp,.product_count=1,
+      .equilibrium_constant_ref=5,.reference_temperature=298},
+    {.kind=CHEM_CONSTRAINT_EQUILIBRIUM,.algebraic_species=3,
+      .reactants=br,.reactant_count=1,.products=dp,.product_count=1,
+      .equilibrium_constant_ref=3,.reference_temperature=298},
+    {.kind=CHEM_CONSTRAINT_LINEAR,.algebraic_species=1,
+      .terms=mass,.term_count=4,.constant=1}};
+  const chem_constraint_set set={.constraints=constraints,.constraint_count=3,
+      .species_count=4};
+  if (chem_solver_workspace_init(&workspace,&dae_mechanism)) return 3;
+  const chem_rosenbrock_parameters dae=chem_rosenbrock_builtin_parameters(
+      CHEM_ROSENBROCK_FOUR_STAGE_DAE);
+  double dae_y[]={1,0,0,0};
+  for (size_t step=0;step<200;++step)
+    if (chem_rosenbrock_solve_constrained_with_parameters(&dae_mechanism,
+          &workspace,dae_y,298,101325,40,NULL,1,&dae,&set,NULL,NULL)) {
+      chem_solver_workspace_destroy(&workspace); return 4;
+    }
+  chem_solver_workspace_destroy(&workspace);
+  const double expected_b=1.0/9.0;
+  if (fabs(kinetic_y[0])>1e-6 || fabs(dae_y[0])>1e-6 ||
+      fabs(kinetic_y[1]-expected_b)>1e-3 || fabs(dae_y[1]-expected_b)>1e-3 ||
+      fabs(kinetic_y[2]-5*expected_b)>1e-3 || fabs(dae_y[2]-5*expected_b)>1e-3 ||
+      fabs(kinetic_y[3]-3*expected_b)>1e-3 || fabs(dae_y[3]-3*expected_b)>1e-3 ||
+      fabs(dae_y[0]+dae_y[1]+dae_y[2]+dae_y[3]-1)>1e-3) return 5;
+  return 0;
+}
+
+static int check_temperature_dependent_equilibrium(void) {
+  const chem_species species[]={{.name="A"},{.name="B"},{.name="C"}};
+  const chem_term a[]={{0,1}},b[]={{1,1}};
+  const chem_reaction reaction={.kind=CHEM_ARRHENIUS,.reactants=a,
+      .reactant_count=1,.products=b,.product_count=1,.p={0.1,0,0,300,0}};
+  const chem_mechanism mechanism={.species=species,.species_count=3,
+      .reactions=&reaction,.reaction_count=1};
+  const chem_constraint_term eq_r[]={{1,1}},eq_p[]={{2,1}};
+  const chem_constraint eq={.kind=CHEM_CONSTRAINT_EQUILIBRIUM,
+      .algebraic_species=2,.reactants=eq_r,.reactant_count=1,
+      .products=eq_p,.product_count=1,.equilibrium_constant_ref=2.0,
+      .enthalpy_change=-3000.0*8.31446261815324,.reference_temperature=298.15};
+  const chem_constraint_set set={.constraints=&eq,.constraint_count=1,
+      .species_count=3};
+  const chem_rosenbrock_parameters dae=chem_rosenbrock_builtin_parameters(
+      CHEM_ROSENBROCK_FOUR_STAGE_DAE);
+  const double temperatures[]={298.15,350.0};
+  chem_solver_workspace workspace={0};
+  if (chem_solver_workspace_init(&workspace,&mechanism)) return 1;
+  for (size_t i=0;i<2;++i) {
+    double y[]={1,0,0};
+    for (size_t step=0;step<200;++step)
+      if (chem_rosenbrock_solve_constrained_with_parameters(&mechanism,
+            &workspace,y,temperatures[i],101325,40,NULL,1,&dae,&set,NULL,NULL)) {
+        chem_solver_workspace_destroy(&workspace); return 2;
+      }
+    const double expected=2.0*exp(3000.0*(1.0/298.15-1.0/temperatures[i]));
+    if (!(y[1]>0) || fabs(y[2]/y[1]-expected)>1e-4) {
+      chem_solver_workspace_destroy(&workspace); return 3;
+    }
+  }
+  chem_solver_workspace_destroy(&workspace);
+  return 0;
+}
+
 static int check_phase_system_metadata(void) {
   const chem_species species[] = {
       {.name="foo"},{.name="bar",.density_parameterized=1,.density_factor=42.0},
@@ -5103,6 +5201,8 @@ int main(void) {
   if (check_process_algebraic_mask() != 0) return 66;
   { const int status=check_external_constraint_equivalents(); if (status) return 135+status; }
   { const int status=check_external_equilibrium_convergence(); if (status) return 150+status; }
+  { const int status=check_composed_equilibrium_dae(); if (status) return 160+status; }
+  { const int status=check_temperature_dependent_equilibrium(); if (status) return 170+status; }
   if (check_phase_system_metadata() != 0) return 67;
   if (check_species_properties() != 0) return 68;
   if (check_matrix_view_api() != 0) return 64;
