@@ -115,6 +115,10 @@ session. The wiki says "not yet timed" wherever luna-high's time would go.
 - For the analysis pass (CLAUDE.md): luna-xhigh's setup inside its timer and
   its 2.79-fold scaling; luna-high's timed loop should be read the same way.
 - Codex's weekly usage window read 10 % at 18:20 (resets 2026-10-27 00:33).
-- luna-high's section of Tier-1-Implementations was being drafted at 18:50; if
-  the page has no "### luna-high" section, write it as luna-xhigh's was (a
-  read-only agent with the page's template, its citations spot-checked).
+- luna-high's section of Tier-1-Implementations is published (17 citations
+  checked). Two findings from it are on Tier-1-Results' Notes and in the
+  results folder: its case report prints PASS lines from a fixed list once
+  its one C test program passes, and its generator mislabels species for CAMP
+  configurations that its Markowitz order permutes (TS1 unaffected). For the
+  analysis pass or the review: audit the mapping of `tests/test_core.c`'s
+  checks to MICM's case ids.

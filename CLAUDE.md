@@ -332,6 +332,9 @@ Tier-2-Results.
     them every step (`src/ts1_bench.c:154`).
   - Compile time of the generated kernels (16,000 to 21,000 lines of C), with
     clang and gcc-15.
+  - luna-high: audit the mapping of `tests/test_core.c`'s checks to the 662
+    case ids its runner prints as PASS from a fixed list
+    (`tools/test_cases.py:640-778`).
   - luna-xhigh: the cost of the setup inside its timer (each group's symbolic
     build, about 38 MB of allocation, transposes, rate constants; once per
     group, `src/chem.c:1080-1113`), and why it speeds up only 2.79 times from
