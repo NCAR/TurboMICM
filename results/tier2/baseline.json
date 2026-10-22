@@ -1,0 +1,106 @@
+{
+  "initial": {
+    "1": {
+      "runs": [
+        {
+          "elapsed_ms": 41750.274897,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100
+        }
+      ],
+      "median_ms": 41750.274897
+    },
+    "18": {
+      "runs": [
+        {
+          "elapsed_ms": 3145.853043,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100
+        },
+        {
+          "elapsed_ms": 3156.603813,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100
+        },
+        {
+          "elapsed_ms": 3168.081045,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100
+        }
+      ],
+      "median_ms": 3156.603813
+    }
+  },
+  "tier1": {
+    "1": {
+      "runs": [
+        {
+          "elapsed_ms": 38305.035114,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100
+        }
+      ],
+      "median_ms": 38305.035114
+    },
+    "18": {
+      "runs": [
+        {
+          "elapsed_ms": 2913.006067,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100
+        },
+        {
+          "elapsed_ms": 3001.632929,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100
+        },
+        {
+          "elapsed_ms": 3079.200983,
+          "internal_steps": 281700,
+          "accepted": 281700,
+          "rejected": 0,
+          "function_calls": 563400,
+          "jacobian_updates": 281700,
+          "decompositions": 281700,
+          "solves": 845100
+        }
+      ],
+      "median_ms": 3001.632929
+    }
+  }
+}

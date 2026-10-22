@@ -8,6 +8,7 @@ void chem_state_destroy(chem_state *s)
     if (!s) return;
     free(s->y); free(s->rates); free(s->custom); free(s->atol); free(s->conditions);
     free(s->work); free(s->jacobian); free(s->scratch); free(s->external_work);
+    free(s->specialized_work);
     memset(s,0,sizeof(*s));
 }
 

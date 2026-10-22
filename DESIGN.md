@@ -172,3 +172,45 @@ constraint initialization, factor and solve entry points allow a new integrator
 to reuse chemistry and algebra without changing mechanism descriptions. The
 benchmark's integrator call is explicit in `src/bench.c`; experiments can replace
 that call while retaining CSV initialization, cell grouping and timing.
+
+## Complete generated solvers
+
+`tools/specialize.py CONFIG OUTPUT --symbol NAME` emits a `chem_specialized`
+descriptor, its immutable mechanism and all numerical kernels. `symbolic.py`
+shares ordering and fill with the Tier 1 descriptor emitter. `specialize_rates.py`
+lowers rate formulas, `split_kernels.py` bounds function sizes, and `tiled.py`
+handles the private cell layout. `ros3.c.in` is the readable, mechanism-independent
+method template. Generated C belongs under ignored `generated/`; do not edit it.
+
+The descriptor's `rates` refreshes the ordinary state rate array. `solve` uses
+those rates and live state tolerances, returning the same result/statistics type
+as the library. It uses MICM's default Rosenbrock-3 parameters. Callers clamp at
+external step boundaries, just as they do with the generic low-level solver.
+The model must use the descriptor's mechanism and its default Markowitz/Mozart
+ordering. No constraints or external callbacks are described by the configuration
+reader; those remain features of the generic library's C API.
+
+Generated solver workspace is lazy, reusable and state-owned. Copying a state
+copies its public numerical data and creates an empty generated-workspace cache;
+subsequent solves repack it. The normal benchmark allocates this cache during
+warm-up. A scenario has no warm-up and includes its first allocation in the timer.
+Sharing the immutable descriptor/model is safe; each thread owns its states.
+
+Additional build parameters (all positive integers) are `CHEMISTRY_BATCH` (8),
+`ALGEBRA_BATCH` (8), `FUNCTION_LINES` (256), and `TILE_SIZE` (4). They control
+reactions/Jacobian jobs per SIMD loop, elimination updates per loop, approximate
+function size, and private tile width. `GROUP_SIZE` (32) sets the drivers' default
+group size and can still be overridden with `--group-size`. Tile width and group
+size are independent. `SPECIAL_EXTRA=--flat` disables packing for experiments.
+Compilers choose SIMD width. Small and irregular groups and widths larger than
+a group are supported by zero padding and strict active-lane error reduction.
+Changing these Make parameters automatically regenerates or rebuilds their
+consumers. Every generated translation unit uses `CC` and `OPTFLAGS`.
+
+The packed LU can store reciprocal pivots, replacing the three triangular-solve
+divisions per diagonal by multiplications. `SPECIAL_EXTRA=--division` restores
+division. This is the same direct factorization and solve in double precision;
+roundoff need not be bitwise identical. Doolittle elimination accumulates each entry locally with the same symbolic
+fill and is the default. `SPECIAL_EXTRA='--lu mozart'` restores the initial
+Mozart schedule. `SPECIAL_EXTRA=--direct-calls` allows fixed kernel parts to be
+inlined. These alternatives are measured in SPECIALIZATION.md.

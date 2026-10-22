@@ -138,3 +138,15 @@ outside the timer; intervals between snapshots execute whole groups in parallel.
 The timer includes photolysis parameter assignment and rate recalculation at
 every step, including interpolation of the light table. Default absolute tolerances come from species metadata; --atol
 replaces every species tolerance.
+
+The packed layout changes storage only, not cell-group membership. The public
+state remains interoperable with the generic library. Padding is zero chemistry,
+never part of the adaptive error norm. A sequential, active-only reduction keeps
+reference species/cell order. This was verified against all five disclosed
+scenarios before further optimization.
+
+Fixed-width function parts use private volatile function pointers to preserve
+portable call boundaries. Direct calls caused large compiler expansions and
+slower execution. This uses only ISO C; the alternative --direct-calls option is
+available for compilers where inlining is beneficial. No target attributes,
+intrinsics, builtins, special floating-point flags or optimization flags are used.

@@ -32,7 +32,12 @@ LDLIBS := $(OMP_LIBS) -lm
 
 env: .conda/conda-meta/history
 .conda/conda-meta/history: environment.yml
-	CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes
+	@if [ -f $@ ]; then \
+	  CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env update --prefix $(CURDIR)/.conda --file environment.yml --prune; \
+	else \
+	  CONDA_REGISTER_ENVS=false CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes; \
+	fi
+	@touch $@
 
 SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/verify.c src/array.c src/sparse.c src/factor.c src/version.c src/system.c src/process.c src/solver.c src/external.c
 OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
@@ -59,14 +64,14 @@ build/%.o: src/%.c $(wildcard include/*.h) $(wildcard src/*.h) build/compiler.co
 build/libchem.a: $(OBJECTS)
 	$(AR) rcs $@ $^
 
-generated/ts1.c: configs/ts1.json tools/configure.py tools/generate.py .conda/conda-meta/history
+generated/ts1.c: configs/ts1.json tools/configure.py tools/generate.py tools/symbolic.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py $< $@ --symbol ts1_mechanism
 
 build/ts1.o: generated/ts1.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-generated/chapman.c: configs/chapman.json tools/configure.py tools/generate.py .conda/conda-meta/history
+generated/chapman.c: configs/chapman.json tools/configure.py tools/generate.py tools/symbolic.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py $< $@ --symbol chapman_mechanism
 
 build/chapman.o: generated/chapman.c $(wildcard include/*.h) build/compiler.conf
@@ -101,21 +106,21 @@ bin/tutorial: examples/main.c examples/tutorials.h build/tutorials.o build/libch
 	@mkdir -p bin
 	$(CC) $(CFLAGS) -Iexamples examples/main.c build/tutorials.o build/libchem.a $(LDLIBS) -o $@
 
-generated/robertson.c: $(wildcard configs/robertson/*) tools/configure.py tools/generate.py .conda/conda-meta/history
+generated/robertson.c: $(wildcard configs/robertson/*) tools/configure.py tools/generate.py tools/symbolic.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py configs/robertson/config.json $@ --symbol robertson_mechanism
 
 build/config_robertson.o: generated/robertson.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-generated/rates.c: $(wildcard configs/rate_constants_no_user_defined/*) tools/configure.py tools/generate.py .conda/conda-meta/history
+generated/rates.c: $(wildcard configs/rate_constants_no_user_defined/*) tools/configure.py tools/generate.py tools/symbolic.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py configs/rate_constants_no_user_defined/config.yaml $@ --symbol rates_mechanism
 
 build/config_rates.o: generated/rates.c $(wildcard include/*.h) build/compiler.conf
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-generated/user_rates.c: $(wildcard configs/rate_constants_user_defined/*) tools/configure.py tools/generate.py .conda/conda-meta/history
+generated/user_rates.c: $(wildcard configs/rate_constants_user_defined/*) tools/configure.py tools/generate.py tools/symbolic.py .conda/conda-meta/history
 	$(PYTHON) tools/generate.py configs/rate_constants_user_defined/config.json $@ --symbol user_rates_mechanism
 
 build/config_user_rates.o: generated/user_rates.c $(wildcard include/*.h) build/compiler.conf
@@ -128,11 +133,14 @@ build/reference-compiler.conf: FORCE
 	@cmp -s build/reference-compiler.conf.tmp $@ && rm build/reference-compiler.conf.tmp || mv build/reference-compiler.conf.tmp $@
 
 # Generator tuning parameters. Every positive batch size is valid.
-CHEMISTRY_BATCH ?= 1
+CHEMISTRY_BATCH ?= 8
 ALGEBRA_BATCH ?= 8
+FUNCTION_LINES ?= 256
+TILE_SIZE ?= 4
+SPECIAL_EXTRA ?=
 GROUP_SIZE ?= 32
-SPECIALIZER := tools/specialize.py tools/symbolic.py tools/specialize_rates.py tools/ros3.c.in tools/generate.py tools/configure.py
-SPECIAL_FLAGS := --chemistry-batch $(CHEMISTRY_BATCH) --algebra-batch $(ALGEBRA_BATCH)
+SPECIALIZER := tools/specialize.py tools/tiled.py tools/split_kernels.py tools/symbolic.py tools/specialize_rates.py tools/ros3.c.in tools/generate.py tools/configure.py
+SPECIAL_FLAGS := --chemistry-batch $(CHEMISTRY_BATCH) --algebra-batch $(ALGEBRA_BATCH) --function-lines $(FUNCTION_LINES) --tile-size $(TILE_SIZE) $(SPECIAL_EXTRA)
 
 build/specialization.conf: FORCE
 	@mkdir -p build
@@ -188,3 +196,13 @@ bin/test_specialized: tests/specialized/check.c $(SPECIAL_OBJECTS) build/libchem
 .PHONY: test-specialized
 test-specialized: bin/test_specialized
 	bin/test_specialized
+
+bin/kernel_bench: tools/kernel_bench.c build/ts1.o build/ts1_specialized.o build/libchem.a build/compiler.conf
+	$(CC) $(CFLAGS) $< build/ts1.o build/ts1_specialized.o build/libchem.a $(LDLIBS) -o $@
+
+SCENARIOS ?= ../scenarios
+.PHONY: micm-scenario
+micm-scenario: bin/micm_scenario
+bin/micm_scenario: $(SCENARIOS)/micm_scenario.cpp build/reference-compiler.conf
+	@mkdir -p bin
+	clang++ -std=c++20 $(OPTFLAGS) -I$(MICM)/include -I$(MICM)/test/benchmark $< -o $@

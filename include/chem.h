@@ -172,6 +172,9 @@ typedef struct chem_state {
     chem_status (*solve_linear)(const struct chem_state *, double *, void *);
     void *linear_context;
     double *external_work;
+    /* Optional generated-solver workspace; no persistent numerical state. */
+    double *specialized_work;
+    size_t specialized_capacity;
 } chem_state;
 chem_status chem_state_create(chem_state *state, const chem_model *model, size_t cells);
 void chem_state_destroy(chem_state *state);

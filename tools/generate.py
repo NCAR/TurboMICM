@@ -3,35 +3,13 @@ import argparse
 import json
 from pathlib import Path
 from configure import read, number, rate_initializer
+from symbolic import Plan
 
 
 def emit(config, symbol, kernels=True):
     species=config['species']; reactions=config['reactions']
-    variables=[i for i,s in enumerate(species) if s.get('parameterization')!='air density']
-    var={s:i for i,s in enumerate(variables)}
-    n=len(var)
-    # Reference Markowitz selection, including isolated-node unsigned costs.
-    graph=set()
-    for rx in reactions:
-        rs=[var[x] for x in rx['reactants'] if x in var]
-        ps=[var[x] for x,v in rx['products'] if x in var]
-        graph.update((row,col) for col in rs for row in rs+ps)
-    alive=set(range(n)); permutation=[]
-    # Only the ordering of large unsigned costs matters; all supported hosts have
-    # size_t at least 32 bits, far larger than mechanism degrees.
-    mask=(1<<64)-1
-    while alive:
-        def cost(v):
-            row=sum((v,j) in graph for j in alive)
-            col=sum((i,v) in graph for i in alive)
-            return ((row-1)*(col-1)) & mask
-        pivot=min(alive,key=lambda v:(cost(v),v))
-        permutation.append(pivot); alive.remove(pivot)
-        ins=[i for i in alive if (i,pivot) in graph]
-        cols=[j for j in alive if (pivot,j) in graph]
-        graph.update((i,j) for i in ins for j in cols)
-    variables=[variables[i] for i in permutation]
-    var={s:i for i,s in enumerate(variables)}
+    plan = Plan.create(config)
+    var = plan.variable
     lines=['/* Generated from a mechanism configuration; do not edit. */', '#include "chem.h"', '']
     lines.append('static const chem_species species[]={')
     for sp in species:
@@ -58,22 +36,7 @@ def emit(config, symbol, kernels=True):
     if not defaults: lines.append('    {0,0}')
     lines.append('};')
     if kernels:
-        # Identical symbolic fill to the runtime planner, independent of LU algorithm.
-        pattern={(i,i) for i in range(n)}
-        jobs=[]
-        for i,rx in enumerate(reactions):
-            rs=[var[x] for x in rx['reactants'] if x in var]
-            ps=[(var[x],v) for x,v in rx['products'] if x in var]
-            for col in rs:
-                for row in rs+[p[0] for p in ps]: pattern.add((row,col))
-                deps=rs.copy(); deps.remove(col)
-                jobs.append((col,i,deps,ps))
-        for i in range(n):
-            for k in range(i+1,n):
-                if (i,k) in pattern:
-                    for j in range(i+1,n):
-                        if (j,i) in pattern: pattern.add((j,k))
-        flat={pos:i for i,pos in enumerate(sorted(pattern))}
+        flat, jobs = plan.flat, plan.jobs
         def start(name):
             lines.extend([f'static void {name}(const chem_model *model, size_t cells, const double *restrict rates,',
                           '                      const double *restrict y, double *restrict out)', '{', '    (void)model;'])

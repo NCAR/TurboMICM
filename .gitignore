@@ -11,3 +11,4 @@ PROMPT.md
 
 ts1_snapshots.csv
 /build-*.log
+/.runs/

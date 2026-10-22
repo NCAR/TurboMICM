@@ -1,3 +1,4 @@
+# Build-time readers and generators; NumPy also supports retained Tier 1 tools.
 channels:
   - conda-forge
   - nodefaults

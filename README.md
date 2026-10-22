@@ -96,3 +96,48 @@ The retained TS1 configuration can be regenerated without compiling its source:
 DESIGN.md describes ownership, layouts, tuning parameters, and the extension
 points for replacing a controller, solver, linear backend, or rate type.
 RESULTS.md records validation and performance measurements.
+
+## Specialized solvers and day-night runs
+
+```sh
+make bench test-specialized CC=clang
+bin/ts1_bench_specialized --threads 18 10000 100 30 CELLS_CSV
+bin/ts1_scenario_specialized --threads 18 --group-size 32 --rtol 1e-6 --atol 1e-15 \
+  ../scenarios/diurnal-10min/scenario.txt
+```
+
+The specialized benchmark accepts the same options and has the same warm-up,
+timing boundary, output and statistics as `ts1_bench_cpu`. `--generic` selects
+the generic library for cross-checking. The scenario runner has no warm-up. It
+reads cells and a piecewise-linear photolysis table relative to the scenario
+file, updates all `j*` parameters at every step, and writes `ts1_final.csv` and
+`ts1_snapshots.csv`. Snapshot I/O is excluded from its elapsed time. Relative and
+absolute tolerances default to MICM's; the strict values above are appropriate
+for the supplied day-night comparisons.
+
+`make test-specialized` generates and compiles TS1, Chapman, all three tutorial
+configuration mechanisms, an additional rate/duplicate-term/isolated-species
+fixture, and a mechanism with no reactions. It compares rates, forcing,
+Jacobians, factorization, triangular solutions and integration with the generic
+library at relative tolerance 1e-10, using multiple group sizes and tolerances.
+It fails if any comparison fails. Both Clang and GCC use the same target.
+
+```sh
+.conda/bin/python tools/check_scenarios.py --output build/day-night
+.conda/bin/python tools/check_ts1.py --binary bin/ts1_bench_specialized \
+  --output build/specialized-gate
+```
+
+To generate another complete solver:
+
+```sh
+.conda/bin/python tools/specialize.py path/to/config.yaml generated/example.c --symbol example
+```
+
+Compile the generated C with the library and reference
+`extern const chem_specialized example` from `chem_specialized.h`. Create a
+Markowitz/Mozart model from `example.mechanism`, create its state, set runtime
+inputs, call `example.rates(&state)`, then `example.solve(&state, dt)`. See
+DESIGN.md for ownership and build parameters, and SPECIALIZATION.md for the
+specializations and measured alternatives. Python is never invoked by any
+solver, benchmark or scenario executable.

@@ -5,7 +5,7 @@ static double sp_max(double a, double b) { return a < b ? b : a; }
 static chem_result specialized_solve(chem_state *s, double dt)
 {
     chem_result result = {CHEM_OK, {0}};
-    if (!s || s->model->mechanism != &@MECHANISM@ || dt < 0 || !isfinite(dt)) {
+    if (!s || !s->model || s->model->mechanism != &@MECHANISM@ || dt < 0 || !isfinite(dt)) {
         result.status = CHEM_INVALID;
         return result;
     }

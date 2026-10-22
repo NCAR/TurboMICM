@@ -73,7 +73,7 @@ static int check(const chem_specialized *sp, const char *name, size_t cells, int
             b.conditions[c]=a.conditions[c];
         }
         sp->rates(&a); chem_calculate_rates(&b);
-        double dt=m.n_species>20 ? 30 : .01;
+        double dt=strict && m.n_species>20 ? 30 : .01;
         chem_result ra=sp->solve(&a,dt), rb=chem_ros_solve(&b,dt,&p,NULL,NULL);
         if (ra.status!=CHEM_OK || rb.status!=CHEM_OK) {
             fprintf(stderr,"solve status %d/%d\n",ra.status,rb.status); goto done;
@@ -83,6 +83,12 @@ static int check(const chem_specialized *sp, const char *name, size_t cells, int
             fprintf(stderr,"Step-control statistics differ\n"); goto done;
         }
         chem_state_clamp(&a); chem_state_clamp(&b);
+        if (step==2) {
+            chem_state copy={0};
+            if (chem_state_copy(&copy,&a)!=CHEM_OK) goto done;
+            chem_state_destroy(&a);
+            a=copy;
+        }
     }
     ok=1;
 done:
