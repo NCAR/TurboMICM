@@ -308,3 +308,29 @@ schedules, multiple thread counts, single-cell groups, partial groups and a
 group request larger than the cell count. Optimization flags remain exactly the
 required default. Source checks found no extended floating type, intrinsics,
 compiler vector extensions, target-specific flags/pragmas, or OS APIs in C.
+
+## Mechanism specialization
+
+The Tier 2 generator reuses the validated CAMP reader and preserves its supported
+format, including ordered reactants/products, all ten rate types, parameterized
+air density, and surface custom parameters. It computes the stable rate ordering,
+Markowitz permutation, symbolic fill and Mozart operation order in Python.
+Runtime state still owns temperature, pressure, independently supplied density,
+all custom parameters, concentrations, tolerances, and interval lengths.
+
+The generic and generated solvers instantiate the same Rosenbrock implementation
+in `src/rosenbrock_step.inc`. This avoids divergent copies of error control and
+rejection behavior while allowing direct generated chemistry calls. Prepared
+branched and surface constants are calculated once using the C library's libm,
+not Python's libm, to avoid introducing platform-dependent folding differences.
+
+Scenario integration uses consecutive groups and no warm-up. Snapshot I/O is
+outside the measured intervals; photolysis interpolation, parameter changes,
+rate evaluation and integration are inside. The interpolation expression matches
+the supplied MICM driver. Missing snapshot frequency means only the final step
+is recorded. Unknown/duplicate scenario fields and invalid dimensions fail.
+
+Generator equivalence tests suppress the six unphysical unit-rate photolysis
+defaults identified by the supplied cell generator. Leaving these enabled in
+perturbed tight-tolerance fixtures made both the generic and generated solvers
+fail identically, rather than testing the intended atmospheric conditions.

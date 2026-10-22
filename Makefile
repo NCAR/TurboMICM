@@ -12,8 +12,9 @@ export SDKROOT := $(shell xcrun --sdk macosx --show-sdk-path)
 endif
 ifneq (,$(findstring clang,$(COMPILER_VERSION)))
 ifeq ($(UNAME_S),Darwin)
-OMPFLAGS = -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include
-OMPLIBS = -L/opt/homebrew/opt/libomp/lib -lomp
+OMP_PREFIX ?= $(shell brew --prefix libomp)
+OMPFLAGS = -Xpreprocessor -fopenmp -isystem $(OMP_PREFIX)/include
+OMPLIBS = -L$(OMP_PREFIX)/lib -lomp
 else
 OMPFLAGS = -fopenmp
 OMPLIBS = -fopenmp
@@ -22,7 +23,7 @@ else
 OMPFLAGS = -fopenmp
 OMPLIBS = -fopenmp
 endif
-CFLAGS = -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMPFLAGS) -Iinclude
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMPFLAGS) -Iinclude -Isrc
 LDLIBS = $(OMPLIBS) -lm
 .PHONY: env cpu test-cpu bench micm-ref clean
 env: .conda/bin/python
@@ -101,3 +102,43 @@ build/config_extra.o: build/config_extra.c include/chem.h build/compiler-setting
 bin/test_config_extra: tests/config_extra.c tests/test.h build/config_extra.o build/libchem.a build/compiler-settings
 	$(CC) $(CFLAGS) tests/config_extra.c build/config_extra.o build/libchem.a $(LDLIBS) -o $@
 test-cpu test-config: bin/test_config_extra
+
+# Mechanism-specialized build products; never checked in or hand edited.
+GROUP_SIZE ?= 32
+GEN_CHUNK ?= 32
+GEN_OPTIONS ?=
+SPECIALIZED_NAMES = ts1 no_user with_user robertson extra
+SPECIALIZED_OBJECTS = $(SPECIALIZED_NAMES:%=build/specialized/%.o)
+build/specialization-settings: FORCE
+	@mkdir -p build
+	@printf '%s\n' '$(GROUP_SIZE)' '$(GEN_CHUNK)' '$(GEN_OPTIONS)' > $@.tmp
+	@cmp -s $@.tmp $@ || cp $@.tmp $@
+	@rm $@.tmp
+build/specialized/ts1.c: mechanisms/ts1.json tools/configure.py tools/specialize.py build/specialization-settings | env
+	$(PYTHON) tools/specialize.py $< $@ --symbol ts1 --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+build/specialized/no_user.c: mechanisms/tutorial/rate_constants_no_user_defined/config.yaml mechanisms/tutorial/rate_constants_no_user_defined/species.yaml mechanisms/tutorial/rate_constants_no_user_defined/reactions.yaml tools/configure.py tools/specialize.py build/specialization-settings | env
+	$(PYTHON) tools/specialize.py $< $@ --symbol no_user --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+build/specialized/with_user.c: mechanisms/tutorial/rate_constants_user_defined/config.json mechanisms/tutorial/rate_constants_user_defined/species.json mechanisms/tutorial/rate_constants_user_defined/reactions.json tools/configure.py tools/specialize.py build/specialization-settings | env
+	$(PYTHON) tools/specialize.py $< $@ --symbol with_user --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+build/specialized/robertson.c: mechanisms/tutorial/robertson/config.json mechanisms/tutorial/robertson/species.json mechanisms/tutorial/robertson/reactions.json tools/configure.py tools/specialize.py build/specialization-settings | env
+	$(PYTHON) tools/specialize.py $< $@ --symbol robertson --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+build/specialized/extra.c: mechanisms/config_extra.json tools/configure.py tools/specialize.py build/specialization-settings | env
+	$(PYTHON) tools/specialize.py $< $@ --symbol extra --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+build/specialized/%.o: build/specialized/%.c src/rosenbrock_step.inc src/solver_internal.h src/internal.h include/chem.h include/chem_solver.h build/compiler-settings
+	$(CC) $(CFLAGS) -c $< -o $@
+$(SPECIALIZED_OBJECTS): build/compiler-settings
+build/rosenbrock.o: src/rosenbrock_step.inc
+bin/ts1_bench_cpu: src/ts1_driver.h
+bin/ts1_bench_specialized: src/ts1_bench.c src/ts1_driver.h build/specialized/ts1.o build/libchem.a build/compiler-settings build/specialization-settings
+	@mkdir -p bin
+	$(CC) $(CFLAGS) -DCHEM_SPECIALIZED -DCHEM_GROUP_SIZE=$(GROUP_SIZE) src/ts1_bench.c build/specialized/ts1.o build/libchem.a $(LDLIBS) -o $@
+bin/ts1_scenario_specialized: src/ts1_scenario.c src/ts1_driver.h build/specialized/ts1.o build/libchem.a build/compiler-settings build/specialization-settings
+	@mkdir -p bin
+	$(CC) $(CFLAGS) -DCHEM_SPECIALIZED -DCHEM_GROUP_SIZE=$(GROUP_SIZE) src/ts1_scenario.c build/specialized/ts1.o build/libchem.a $(LDLIBS) -o $@
+bench: bin/ts1_bench_specialized bin/ts1_scenario_specialized
+bin/test_specialized: tests/test_specialized.c $(SPECIALIZED_OBJECTS) build/libchem.a build/compiler-settings
+	@mkdir -p bin
+	$(CC) $(CFLAGS) tests/test_specialized.c $(SPECIALIZED_OBJECTS) build/libchem.a $(LDLIBS) -o $@
+.PHONY: test-specialized
+test-specialized: bin/test_specialized
+	bin/test_specialized
