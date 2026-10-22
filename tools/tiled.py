@@ -49,6 +49,10 @@ static void packed_linear(size_t cells, const double *a, double *x)
 def transform_solver(template, species, reactions, nnz, width):
     # Space for y, the six stage/work vectors, rates and the factorized Jacobian.
     count = 7*species + reactions + nnz
+    pack_rates = f"""    for (size_t i=0; i<{reactions}; ++i)
+        for (size_t c=0; c<padded; ++c)
+            view.rates[(c/{width})*{reactions*width}+i*{width}+c%{width}] = c<active ? s->rates[i*active+c] : 0.0;
+""" if reactions else ''
     setup = f'''
     chem_state *original = s;
     const size_t active = s->cells;
@@ -71,10 +75,7 @@ def transform_solver(template, species, reactions, nnz, width):
     for (size_t i=0; i<{species}; ++i)
         for (size_t c=0; c<padded; ++c)
             view.y[(c/{width})*{species*width}+i*{width}+c%{width}] = c<active ? s->y[i*active+c] : 0.0;
-    for (size_t i=0; i<{reactions}; ++i)
-        for (size_t c=0; c<padded; ++c)
-            view.rates[(c/{width})*{reactions*width}+i*{width}+c%{width}] = c<active ? s->rates[i*active+c] : 0.0;
-    s = &view;
+{pack_rates}    s = &view;
 '''
     template = template.replace('    const size_t cells = s->cells,', setup+'    const size_t cells = s->cells,')
     for name in ('forcing', 'jacobian', 'add_alpha', 'factor', 'linear'):

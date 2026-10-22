@@ -141,7 +141,7 @@ def rate_initializer(rx, species):
         typ,member='TUNNELING','tunneling'; p=fields(dict(A=1,B=0,C=0))
     elif kind=='BRANCHED':
         typ,member='BRANCHED','branched'
-        p=fields(dict(X=1,Y=0,a0=0,n=0))+f", .nitrate={int(rx['branch']=='nitrate')}"
+        p=fields(dict(X=1,Y=0,a0=0))+', .n=(size_t)'+number(rx.get('n',0))+f", .nitrate={int(rx['branch']=='nitrate')}"
     elif kind=='REVERSIBLE':
         typ,member='REVERSIBLE','reversible'; p=fields(dict(A=1,C=0,k_r=0))
     elif kind in ('USER_DEFINED','PHOTOLYSIS','EMISSION','FIRST_ORDER_LOSS'):

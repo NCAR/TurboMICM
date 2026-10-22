@@ -143,6 +143,8 @@ static int snapshot(FILE *file, chem_state *states, size_t groups, size_t step)
 int main(int argc, char **argv)
 {
     size_t threads=(size_t)omp_get_num_procs(), group_size=CHEM_GROUP_SIZE;
+    size_t chunk=0;
+    omp_sched_t schedule=omp_sched_static;
     double rtol=1e-6, atol=0;
     int first=1, generic=0;
     while (first<argc && argv[first][0]=='-') {
@@ -152,11 +154,18 @@ int main(int argc, char **argv)
         const char *value=argv[first++];
         if (!strcmp(key,"--threads")) { if (!integer(value,&threads,0)) goto usage; }
         else if (!strcmp(key,"--group-size")) { if (!integer(value,&group_size,0)) goto usage; }
+        else if (!strcmp(key,"--chunk")) { if (!integer(value,&chunk,0)) goto usage; }
+        else if (!strcmp(key,"--schedule")) {
+            if (!strcmp(value,"static")) schedule=omp_sched_static;
+            else if (!strcmp(value,"dynamic")) schedule=omp_sched_dynamic;
+            else if (!strcmp(value,"guided")) schedule=omp_sched_guided;
+            else goto usage;
+        }
         else if (!strcmp(key,"--rtol")) { if (!real_number(value,&rtol) || rtol<=0) goto usage; }
         else if (!strcmp(key,"--atol")) { if (!real_number(value,&atol) || atol<=0) goto usage; }
         else goto usage;
     }
-    if (argc-first!=1 || threads>INT_MAX || !group_size) goto usage;
+    if (argc-first!=1 || threads>INT_MAX || chunk>INT_MAX || !group_size) goto usage;
     scenario sc={0}; chem_model model={0}; chem_state *states=NULL;
     chem_result *results=NULL; double **base=NULL;
     light_point *light=NULL; size_t light_count=0, groups=0;
@@ -186,13 +195,14 @@ int main(int argc, char **argv)
     for (size_t i=0; i<model.n_species; ++i) fprintf(snapshots,",%s",model.mechanism->species[model.var_to_spec[i]].name);
     fputc('\n',snapshots);
     omp_set_num_threads((int)threads);
+    omp_set_schedule(schedule,(int)chunk);
     double elapsed=0;
     chem_ros_parameters parameters=chem_ros_parameters_default(CHEM_ROS3);
     size_t interval=sc.snapshot_every ? sc.snapshot_every : sc.steps;
     for (size_t begin=0; begin<sc.steps;) {
         size_t end=interval>sc.steps-begin ? sc.steps : begin+interval;
         double start=omp_get_wtime();
-        #pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(runtime)
         for (size_t g=0; g<groups; ++g) {
             chem_state *s=&states[g];
             for (size_t step=begin; step<end; ++step) {
@@ -227,6 +237,6 @@ done:
     free(sc.cells_path); free(sc.light_path); chem_model_destroy(&model);
     return success ? 0 : 1;
 usage:
-    fprintf(stderr,"Usage: %s [--threads N] [--group-size G] [--rtol R] [--atol A] [--generic] SCENARIO\n",argv[0]);
+    fprintf(stderr,"Usage: %s [--threads N] [--group-size G] [--schedule static|dynamic|guided] [--chunk K] [--rtol R] [--atol A] [--generic] SCENARIO\n",argv[0]);
     return 2;
 }

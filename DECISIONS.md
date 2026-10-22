@@ -150,3 +150,33 @@ portable call boundaries. Direct calls caused large compiler expansions and
 slower execution. This uses only ISO C; the alternative --direct-calls option is
 available for compilers where inlining is beneficial. No target attributes,
 intrinsics, builtins, special floating-point flags or optimization flags are used.
+
+Performance defaults were selected from complete, sequential 10,000-cell runs,
+not from compiler flags or changed tolerances. Four-cell tiles and eight-job
+chemistry batches won the local comparisons. Doolittle accumulation uses the
+same Markowitz fill and increasing-pivot contributions; it stores each entry
+once after accumulation. Reciprocal pivots are a direct-solve representation,
+not a factorization approximation. Both original division and Mozart are
+selectable. Static scheduling beat dynamic in the measured comparison.
+
+The final validation also includes a separately generated 48-hour scenario:
+65 cells, seed 9410, 52 N, day 172, starting at 19:00, NOx scaled by 3.5, and
+450-second steps. Its half-table-interval steps exercise interpolation, and its
+last one-cell group exercises padding. A fresh MICM run with identical settings
+provides its comparison; it is not claimed to be an undisclosed gate case.
+
+The existing reader accepts a numeric branched-rate heavy-atom count, while the
+library stores it as size_t. The specialized rate formula explicitly performs
+that same conversion before computing its prepared constant. The edge fixture
+includes a fractional input to verify compatibility with that existing coercion;
+normal mechanism atom counts are integers. The descriptor emitter now spells
+out the conversion as well, avoiding implicit-conversion diagnostics.
+
+Generator comparisons enforce a pure relative infinity-norm error <=1e-10,
+without an absolute floor, and additionally check every value using the supplied
+TS1 gate's rtol=1e-10, atol=1e-30 rule. A trial with a purely relative per-value
+check exposed differences only in the synthetic TS1 trajectory's vanishing
+concentrations (examples near 1e-47 and 1e-226), far below either solver's absolute
+error tolerance. The per-value floor follows the reference gate; the additional
+norm check ensures an entire small vector cannot pass merely because of that
+floor. These tests retain all original inputs and all component comparisons.

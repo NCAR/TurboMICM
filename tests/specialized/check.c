@@ -9,10 +9,18 @@ extern const chem_specialized rates_specialized, user_rates_specialized, edges_s
 
 static int close_values(const char *what, const double *got, const double *expected, size_t n)
 {
+    double reference_norm=0, difference_norm=0;
     for (size_t i=0; i<n; ++i) {
         if (!isfinite(got[i]) || !isfinite(expected[i]) || fabs(got[i]-expected[i])>1e-30+1e-10*fabs(expected[i])) {
             fprintf(stderr,"%s[%zu]: %.17g != %.17g\n",what,i,got[i],expected[i]); return 0;
         }
+        reference_norm=fmax(reference_norm,fabs(expected[i]));
+        difference_norm=fmax(difference_norm,fabs(got[i]-expected[i]));
+    }
+    /* Also enforce a pure relative vector norm, without an absolute floor.
+     * The component check above uses the supplied TS1 gate's zero-scale rule. */
+    if (difference_norm>1e-10*reference_norm) {
+        fprintf(stderr,"%s relative infinity-norm check failed\n",what); return 0;
     }
     return 1;
 }

@@ -48,7 +48,7 @@ def formula(rx, species, offset):
     elif kind == 'TUNNELING':
         value = f'{p("A", 1)} * exp(-({p("B", 0)}) / T + {p("C", 0)} / (T * T * T))'
     elif kind == 'BRANCHED':
-        setup += [f'double k0 = 2.0e-22 * 6.02214076e23 * 1.0e-6 * exp({p("n", 0)});',
+        setup += [f'double k0 = 2.0e-22 * 6.02214076e23 * 1.0e-6 * exp((double)(size_t){p("n", 0)});',
                   'double a0 = k0 * (2.45e19 / 6.02214076e23 * 1.0e6);',
                   'double b0 = 0.43 * pow(293.0 / 298.0, -8.0);',
                   'double A0 = a0 / (1.0 + a0 / b0) * pow(0.41, 1.0 / (1.0 + pow(log10(a0 / b0), 2.0)));',

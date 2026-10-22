@@ -1,0 +1,85 @@
+{
+  "host": {
+    "cpu": "Apple M5 Pro",
+    "cores": 18,
+    "memory_GiB": 24,
+    "os": "macOS 26.7.1"
+  },
+  "flags": "-O3 -DNDEBUG; C11, warning, include, OpenMP and link flags only",
+  "clean_bench_build_seconds": {
+    "clang": 46.53,
+    "gcc-15": 38.36
+  },
+  "build_command": "make -j6 CC=COMPILER bench after make clean; existing local conda environment",
+  "generated_ts1": {
+    "bytes": 2607627,
+    "lines": 75172,
+    "sha256": "8dfab0bad384847980a94e14128662bb35cc3ca46e5a239c6e5549b15ce0b4de"
+  },
+  "cpu_cases": {
+    "clang": 680,
+    "gcc-15": 680
+  },
+  "specialized_cases": {
+    "clang": 70,
+    "gcc-15": 70
+  },
+  "ts1_gate": {
+    "100_cell_settings_per_compiler_and_binary": 9,
+    "large_cells": 10000,
+    "seed": 2026,
+    "specialized_max_relative_error": {
+      "clang": 2.96e-13,
+      "gcc-15": 2.75e-13
+    }
+  },
+  "alternate_parameters": {
+    "compiler": "gcc-15",
+    "tile": 3,
+    "group_default": 7,
+    "chemistry_batch": 3,
+    "algebra_batch": 5,
+    "function_lines": 97,
+    "lu": "mozart",
+    "pivots": "division",
+    "specialized_cases": 70,
+    "checks": [
+      "100-cell TS1 gate",
+      "polluted-10min at group size 32"
+    ]
+  },
+  "extra_scenario": {
+    "cells": 65,
+    "seed": 9410,
+    "dt": 450,
+    "steps": 384,
+    "latitude": 52,
+    "day_of_year": 172,
+    "start_hour": 19,
+    "nox_scale": 3.5,
+    "snapshot_every": 48,
+    "group_size": 32,
+    "rtol": 1e-06,
+    "atol": 1e-15
+  },
+  "ts1_translation": "byte-identical to the configuration transcribed from MICM e15898ce",
+  "case_registry": "byte-identical to the supplied 680-case list",
+  "final_rechecks": {
+    "cpu_and_specialized_both_compilers": "PASS, warning-free",
+    "restored_default_clang_specialized": "PASS",
+    "production_ts1_source_unchanged_after_regression_fixes": true,
+    "micm_18_replicates_bitwise_identical": true,
+    "both_compilers_relative_norm_and_component_tests": "70 PASS each",
+    "final_default_clang_cpu_cases": 680,
+    "scenario_scheduling": [
+      "static: all disclosed cases, both compilers",
+      "dynamic and guided: additional 48-hour case"
+    ],
+    "final_scenario_driver_gates": "both compilers, five disclosed scenarios, final and snapshots PASS"
+  },
+  "comparison_rules": {
+    "relative_infinity_norm": 1e-10,
+    "component_rtol": 1e-10,
+    "component_atol": 1e-30
+  }
+}

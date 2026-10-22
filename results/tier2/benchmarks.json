@@ -1,0 +1,183 @@
+{
+  "generic-1": {
+    "runs": [
+      {
+        "elapsed_ms": 38235.26597,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      }
+    ],
+    "median_ms": 38235.26597
+  },
+  "specialized-1": {
+    "runs": [
+      {
+        "elapsed_ms": 27458.709955,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      }
+    ],
+    "median_ms": 27458.709955
+  },
+  "generic-18": {
+    "runs": [
+      {
+        "elapsed_ms": 3029.112101,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      {
+        "elapsed_ms": 3122.687101,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      {
+        "elapsed_ms": 3194.312811,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      }
+    ],
+    "median_ms": 3122.687101
+  },
+  "micm-18": {
+    "runs": [
+      {
+        "elapsed_ms": 11289.919,
+        "internal_steps": 16200,
+        "accepted": 16200,
+        "rejected": 0,
+        "function_calls": 32400,
+        "jacobian_updates": 16200,
+        "decompositions": 16200,
+        "solves": 48600
+      },
+      {
+        "elapsed_ms": 11878.097,
+        "internal_steps": 16200,
+        "accepted": 16200,
+        "rejected": 0,
+        "function_calls": 32400,
+        "jacobian_updates": 16200,
+        "decompositions": 16200,
+        "solves": 48600
+      },
+      {
+        "elapsed_ms": 12576.31,
+        "internal_steps": 16200,
+        "accepted": 16200,
+        "rejected": 0,
+        "function_calls": 32400,
+        "jacobian_updates": 16200,
+        "decompositions": 16200,
+        "solves": 48600
+      }
+    ],
+    "median_ms": 11878.097
+  },
+  "micm-1": {
+    "runs": [
+      {
+        "elapsed_ms": 138063.983,
+        "internal_steps": 900,
+        "accepted": 900,
+        "rejected": 0,
+        "function_calls": 1800,
+        "jacobian_updates": 900,
+        "decompositions": 900,
+        "solves": 2700,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 0 (rtol 1e-10, atol 1e-30)"
+      }
+    ],
+    "median_ms": 138063.983
+  },
+  "specialized-18": {
+    "runs": [
+      {
+        "elapsed_ms": 1950.429916,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      {
+        "elapsed_ms": 1968.983889,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      {
+        "elapsed_ms": 2012.084007,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      {
+        "elapsed_ms": 2058.240175,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      {
+        "elapsed_ms": 2077.06809,
+        "internal_steps": 281700,
+        "accepted": 281700,
+        "rejected": 0,
+        "function_calls": 563400,
+        "jacobian_updates": 281700,
+        "decompositions": 281700,
+        "solves": 845100,
+        "gate": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      }
+    ],
+    "median_ms": 2012.084007
+  }
+}

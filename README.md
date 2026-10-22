@@ -108,7 +108,8 @@ bin/ts1_scenario_specialized --threads 18 --group-size 32 --rtol 1e-6 --atol 1e-
 
 The specialized benchmark accepts the same options and has the same warm-up,
 timing boundary, output and statistics as `ts1_bench_cpu`. `--generic` selects
-the generic library for cross-checking. The scenario runner has no warm-up. It
+the generic library for cross-checking. The scenario runner also accepts `--schedule static|dynamic|guided` and
+`--chunk K`, and has no warm-up. It
 reads cells and a piecewise-linear photolysis table relative to the scenario
 file, updates all `j*` parameters at every step, and writes `ts1_final.csv` and
 `ts1_snapshots.csv`. Snapshot I/O is excluded from its elapsed time. Relative and

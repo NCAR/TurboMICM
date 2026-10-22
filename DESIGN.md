@@ -96,7 +96,7 @@ Custom functions can use the lambda-rate callback without adding a tag.
 | Schedule chunk | OpenMP policy default | `--chunk K`, positive number of groups |
 | SIMD width | compiler-selected | portable `omp simd`, no hardware-specific width |
 | Chemistry evaluator | automatically generated | `--generic` for the generic table evaluator |
-| LU method | Mozart in benchmark | library `chem_lu_algorithm` |
+| LU method (generic benchmark) | Mozart | library `chem_lu_algorithm` |
 
 There are no target-specific flags, intrinsics, vector extensions, or alternative
 floating-point modes. Group size affects work distribution and the common error
@@ -214,3 +214,7 @@ roundoff need not be bitwise identical. Doolittle elimination accumulates each e
 fill and is the default. `SPECIAL_EXTRA='--lu mozart'` restores the initial
 Mozart schedule. `SPECIAL_EXTRA=--direct-calls` allows fixed kernel parts to be
 inlined. These alternatives are measured in SPECIALIZATION.md.
+
+Both TS1 drivers expose `--schedule static|dynamic|guided` and `--chunk K`
+(positive groups per chunk). Both default to static scheduling with the OpenMP
+policy's default chunk; scenario scheduling changes only group assignment.

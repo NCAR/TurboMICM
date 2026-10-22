@@ -7,7 +7,7 @@ input and rebuilding.
 
 The reader resolves included files, expands repeated reactants and branched
 reactions, and converts rate units. The symbolic planner determines variable
-species, reference Markowitz order, Jacobian entries, sparse fill, Mozart
+species, reference Markowitz order, Jacobian entries, sparse fill, LU
 elimination operations and triangular dependencies. The emitter fixes these
 indices, stoichiometric coefficients and rate parameters in portable C11. All
 reaction, Jacobian and sparse operation lists become straight-line arithmetic

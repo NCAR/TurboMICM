@@ -1,0 +1,138 @@
+{
+  "clang": {
+    "snapshots": {
+      "overall_digits": 14.178,
+      "worst_species": [
+        [
+          "MVK",
+          13.712
+        ],
+        [
+          "MPAN",
+          13.739
+        ],
+        [
+          "HYDRALD",
+          13.76
+        ],
+        [
+          "MACR",
+          13.78
+        ],
+        [
+          "TERPROD2",
+          13.782
+        ]
+      ],
+      "values_counted": 73961,
+      "species_counted": 179,
+      "rows": 520,
+      "nonfinite": 0,
+      "below_floor": 0,
+      "gate": "PASS",
+      "level": 10.0,
+      "level_result": "PASS"
+    },
+    "final": {
+      "overall_digits": 14.116,
+      "worst_species": [
+        [
+          "IEPOX",
+          13.561
+        ],
+        [
+          "C2H4",
+          13.637
+        ],
+        [
+          "XYLENOOH",
+          13.695
+        ],
+        [
+          "POOH",
+          13.721
+        ],
+        [
+          "XYLOLOOH",
+          13.729
+        ]
+      ],
+      "values_counted": 7729,
+      "species_counted": 146,
+      "rows": 65,
+      "nonfinite": 0,
+      "below_floor": 0,
+      "gate": "PASS",
+      "level": 10.0,
+      "level_result": "PASS"
+    }
+  },
+  "gcc": {
+    "snapshots": {
+      "overall_digits": 14.181,
+      "worst_species": [
+        [
+          "MVK",
+          13.755
+        ],
+        [
+          "MPAN",
+          13.783
+        ],
+        [
+          "TERP2OOH",
+          13.783
+        ],
+        [
+          "TERPROD2",
+          13.794
+        ],
+        [
+          "HYDRALD",
+          13.797
+        ]
+      ],
+      "values_counted": 73961,
+      "species_counted": 179,
+      "rows": 520,
+      "nonfinite": 0,
+      "below_floor": 0,
+      "gate": "PASS",
+      "level": 10.0,
+      "level_result": "PASS"
+    },
+    "final": {
+      "overall_digits": 14.095,
+      "worst_species": [
+        [
+          "IEPOX",
+          13.534
+        ],
+        [
+          "C2H4",
+          13.592
+        ],
+        [
+          "XYLENO2",
+          13.625
+        ],
+        [
+          "XYLOLOOH",
+          13.64
+        ],
+        [
+          "POOH",
+          13.652
+        ]
+      ],
+      "values_counted": 7729,
+      "species_counted": 146,
+      "rows": 65,
+      "nonfinite": 0,
+      "below_floor": 0,
+      "gate": "PASS",
+      "level": 10.0,
+      "level_result": "PASS"
+    }
+  }
+}

@@ -1,4 +1,113 @@
-# Validation and performance
+# Tier 2 validation and performance
+
+Measured on 2026-10-22 on the supplied Apple M5 Pro, 18 cores and 24 GiB,
+macOS 26.7.1, with Apple Clang 21.0.0 and Homebrew GCC 15.3.0. MICM is the
+read-only e15898ce input. Every implementation uses `-O3 -DNDEBUG`; C adds only
+C11, warnings, includes, OpenMP and link flags. These are local measurements;
+the experimenter's independent timing determines the ranking.
+
+## Final correctness checks
+
+Both compilers pass all 680 retained CPU cases and all 70 specialized cases.
+The latter cover seven mechanisms, five group sizes and two tolerance settings,
+including changing runtime inputs, copied states, padded tiles, every rate
+family supported by the reader, duplicate terms/labels, isolated species, and
+zero reactions. Component and full-solution comparisons enforce a pure relative infinity-norm
+error of at most 1e-10, plus per-value comparisons at rtol=1e-10 and atol=1e-30
+(the supplied TS1 gate's zero-scale rule). The branched fixture also verifies the reader's
+existing conversion of its atom-count parameter to the library's integer type.
+
+Both generic and specialized benchmarks pass all nine supplied 100-cell TS1
+settings with each compiler: scalar, irregular/oversized groups, multiple thread
+counts, static/dynamic/guided scheduling, and generic evaluation. Both binaries
+also pass the full 10,000-cell seed-2026 gate with each compiler. The specialized
+maximum relative differences are 2.96e-13 with Clang and 2.75e-13 with GCC,
+well within the required 1e-10. No tolerances were relaxed.
+
+All five disclosed day-night scenarios pass on both compilers at group size 32,
+rtol=1e-6 and atol=1e-15. Both final states and every snapshot are checked with
+the supplied scorer. All values are finite and none are below the negative
+floor. The table reports snapshot digits overall, with the worst species in
+parentheses. The last column is comparison to the supplied high-accuracy
+reference; it reflects the retained method's discretization error, not the
+much smaller difference from MICM's three-stage result.
+
+| Scenario | Clang vs MICM | GCC vs MICM | Clang vs high-accuracy reference |
+| --- | ---: | ---: | ---: |
+| diurnal-30min | 14.377 (13.828) | 14.363 (13.791) | 4.748 (3.610) |
+| diurnal-10min | 14.285 (13.656) | 14.292 (13.687) | 5.052 (3.824) |
+| diurnal-5min | 14.230 (13.688) | 14.232 (13.537) | 5.214 (4.328) |
+| polluted-10min | 14.047 (13.305) | 14.050 (13.432) | 5.398 (4.257) |
+| clean-10min | 14.342 (13.793) | 14.335 (13.811) | 4.907 (3.766) |
+
+The additional 48-hour scenario described in DECISIONS.md passes against a fresh
+MICM run: snapshot agreement is 14.178 digits overall (13.712 worst species) for
+Clang and 14.181 (13.755) for GCC. It exercises 450-second interpolation, a
+different season/start time/NOx scale, and a one-cell tail group. An alternative
+GCC build also passes all 70 specialized cases, the TS1 gate, and polluted-10min
+with tile width 3, default group size 7, chemistry/algebra batches 3/5, function
+size 97, and Mozart/division. The scenario explicitly selects 32-cell groups.
+
+The case registry matches the supplied 680-case list byte for byte. Retranscribing
+TS1 from its read-only header reproduces configs/ts1.json byte for byte. Source
+inspection found no intrinsics, extended vector types, target attributes,
+long double, offload, operating-system APIs, or forbidden compiler flags in the
+C implementation. The Clang executable links only libomp and the system C
+runtime. Portability was tested with the two supplied compilers on this host;
+no Linux execution is claimed.
+
+## Final benchmark timings
+
+Input: 10,000 cells, seed 2026, 100 timed steps of 30 seconds after one untimed
+warm-up. Runs were sequential, without overlapping compilation or benchmarks.
+All timed-run final states were checked against the fresh MICM result. The
+specialized 18-thread result is the median of five runs; the other 18-thread
+results are medians of three. One-thread results each have one sample.
+
+| Implementation | Threads | Cells per group | Elapsed ms |
+| --- | ---: | ---: | ---: |
+| Specialized C / Clang | 18 | 32 | 2,012.084 |
+| Tier 1 C / Clang | 18 | 32 | 3,122.687 |
+| MICM / clang++ | 18 | 555 or 556 | 11,878.097 |
+| Specialized C / Clang | 1 | 32 | 27,458.710 |
+| Tier 1 C / Clang | 1 | 32 | 38,235.266 |
+| MICM / clang++ | 1 | 10,000 | 138,063.983 |
+
+The specialized solver is 1.55 times faster than Tier 1 and 5.90 times faster
+than the supplied MICM benchmark at 18 threads. The respective one-thread ratios
+are 1.39 and 5.03. MICM uses its supplied default of one group per thread; the C
+benchmarks use 32-cell groups. Each cell takes nine internal steps per requested
+interval at the default tolerances. Both C implementations report 281,700
+internal/accepted steps, zero counted rejections, 563,400 forcing calls,
+281,700 Jacobians/factorizations and 845,100 solves over the timed region. MICM
+reports the corresponding statistics over its smaller number of groups.
+
+## Build and reproduction
+
+After `make clean`, with the local conda environment already present,
+`make -j6 CC=COMPILER bench` took 46.53 s with Clang and 38.36 s with GCC.
+The default TS1 generated translation unit is 2,607,627 bytes and 75,172 lines.
+It includes descriptor/inspection kernels as well as the packed solver. All
+C build products are regenerated from the configuration and compiled through
+Make with the selected compiler and flags.
+
+```sh
+make env
+make bench test-cpu test-specialized CC=clang
+.conda/bin/python tools/check_ts1.py --output .runs/gate-cpu
+.conda/bin/python tools/check_ts1.py --binary bin/ts1_bench_specialized --output .runs/gate-specialized
+.conda/bin/python tools/check_scenarios.py --output .runs/day-night
+make bench test-cpu test-specialized CC=gcc-15
+```
+
+SPECIALIZATION.md records the performance experiments, including the slower
+alternatives. Compact measured results, per-scenario scores, build metadata and
+the generated-source checksum are in results/tier2/. Full local CSVs and logs
+are retained under ignored .runs/. The following section preserves the Tier 1
+measurements on its original machine; it is historical, not a second set of
+Tier 2 timings.
+
+# Tier 1 retained results
 
 Measurements were made on the supplied Apple M5 host (10 CPU cores, 16 GB),
 macOS 27.0.1, using Apple Clang 21.0.0 and GCC 15.2.0. Every C object used
