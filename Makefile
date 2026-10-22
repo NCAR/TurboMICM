@@ -7,7 +7,7 @@ KERNEL_BLOCK ?= 32
 KERNEL_FIXED ?= 1
 KERNEL_LU ?= mozart
 KERNEL_WIDTH ?= $(GROUP_SIZE)
-KERNEL_FUSION ?= 1
+KERNEL_FUSION ?= 4
 GENERATOR_OPTIONS = --block $(KERNEL_BLOCK) --fixed $(KERNEL_FIXED) --lu $(KERNEL_LU) --fusion $(KERNEL_FUSION)
 LIBOMP_PREFIX ?= $(shell brew --prefix libomp 2>/dev/null)
 CONDA ?= $(HOME)/miniforge3/bin/conda
@@ -42,7 +42,7 @@ SPECIALIZED_EXAMPLES = no_user user robertson all_rates empty
 SPECIALIZED_TESTS = bin/test_specialized_ts1 $(addprefix bin/test_specialized_,$(SPECIALIZED_EXAMPLES))
 .SECONDARY:
 
-.PHONY: all cpu env bench test-cpu test-specialized micm-ref clean FORCE
+.PHONY: all cpu env bench test-cpu test-specialized micm-ref micm-scenario clean FORCE
 all: cpu
 env:
 	@if test -x .conda/bin/python; then \
@@ -142,6 +142,11 @@ test-cpu: cpu bin/test_native_cpu bin/tutorial_cpu
 
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mechanism.hpp build/flags
+	@mkdir -p bin
+	clang++ -std=c++20 $(OPTFLAGS) -I../micm/include -I../micm/test/benchmark $< -o $@
+
+micm-scenario: bin/micm_scenario
+bin/micm_scenario: ../scenarios/micm_scenario.cpp ../micm/test/benchmark/ts1_mechanism.hpp build/flags
 	@mkdir -p bin
 	clang++ -std=c++20 $(OPTFLAGS) -I../micm/include -I../micm/test/benchmark $< -o $@
 

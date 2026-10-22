@@ -1,0 +1,54 @@
+[
+  {
+    "compiler": "clang",
+    "options": [
+      "GROUP_SIZE=7",
+      "KERNEL_WIDTH=7",
+      "KERNEL_BLOCK=5",
+      "KERNEL_FUSION=3",
+      "KERNEL_LU=doolittle"
+    ],
+    "tests": [
+      "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS no_user_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS user_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS robertson_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS all_rates_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS empty_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)"
+    ]
+  },
+  {
+    "compiler": "gcc-15",
+    "options": [
+      "GROUP_SIZE=7",
+      "KERNEL_WIDTH=7",
+      "KERNEL_BLOCK=5",
+      "KERNEL_FUSION=3",
+      "KERNEL_LU=doolittle"
+    ],
+    "tests": [
+      "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS no_user_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS user_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS robertson_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS all_rates_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS empty_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)"
+    ]
+  },
+  {
+    "compiler": "clang",
+    "options": [
+      "KERNEL_FIXED=0",
+      "KERNEL_BLOCK=64",
+      "KERNEL_FUSION=9"
+    ],
+    "tests": [
+      "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS no_user_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS user_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS robertson_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS all_rates_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+      "PASS empty_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)"
+    ]
+  }
+]

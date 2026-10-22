@@ -1,0 +1,82 @@
+[
+  {
+    "case": "no-interval",
+    "final_score": {
+      "overall_digits": 14.816,
+      "worst_species": [
+        [
+          "ISOPNO3",
+          14.431
+        ],
+        [
+          "NTERPO2",
+          14.508
+        ],
+        [
+          "OH",
+          14.521
+        ],
+        [
+          "IVOCO2VBS",
+          14.558
+        ],
+        [
+          "ISOPAO2",
+          14.564
+        ]
+      ],
+      "values_counted": 5749,
+      "species_counted": 177,
+      "rows": 33,
+      "nonfinite": 0,
+      "below_floor": 0,
+      "gate": "PASS",
+      "level": 10.0,
+      "level_result": "PASS"
+    },
+    "snapshots": 33,
+    "steps": [
+      8
+    ]
+  },
+  {
+    "case": "long-interval",
+    "final_score": {
+      "overall_digits": 14.816,
+      "worst_species": [
+        [
+          "ISOPNO3",
+          14.431
+        ],
+        [
+          "NTERPO2",
+          14.508
+        ],
+        [
+          "OH",
+          14.521
+        ],
+        [
+          "IVOCO2VBS",
+          14.558
+        ],
+        [
+          "ISOPAO2",
+          14.564
+        ]
+      ],
+      "values_counted": 5749,
+      "species_counted": 177,
+      "rows": 33,
+      "nonfinite": 0,
+      "below_floor": 0,
+      "gate": "PASS",
+      "level": 10.0,
+      "level_result": "PASS"
+    },
+    "snapshots": 33,
+    "steps": [
+      8
+    ]
+  }
+]

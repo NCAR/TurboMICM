@@ -1,5 +1,152 @@
 # Results
 
+## Tier 2: mechanism compiler
+
+Validated on 2026-10-22 on the supplied Apple M5 Pro (18 cores, 24 GB),
+macOS 26.7.1. Compilers: Apple clang 21.0.0 and Homebrew GCC 15.3.0.
+All C builds used `OPTFLAGS='-O3 -DNDEBUG'` plus the Makefile's language,
+warning, include, PIC, OpenMP, and link flags. The MICM baseline used clang++,
+C++20, and the same optimization flags. No compiler optimization flags were tuned.
+
+The selected generator settings are 32-cell groups, 32 operation units per
+function, four units per SIMD loop, a full-group cell tile, constant-stride
+variants enabled, and Mozart LU. OpenMP uses dynamic group scheduling by default.
+
+### Tests and gates
+
+| Check | clang | GCC |
+| --- | --- | --- |
+| `make cpu` and `make bench` | PASS | PASS |
+| `make test-cpu` | 680 PASS, 0 FAIL, 0 N/A | 680 PASS, 0 FAIL, 0 N/A |
+| `make test-specialized` | All six mechanisms PASS | All six mechanisms PASS |
+| Generic and specialized 100-cell MICM gate | PASS | PASS |
+| Generic and specialized 10,000-cell MICM gate, every timing run | PASS | PASS |
+| All five disclosed day-night scenarios, final states and snapshots | PASS | PASS |
+| Additional 48-hour and interpolation scenarios | PASS | PASS |
+
+Generator tests cover TS1, the three Tier 1 configuration-file mechanisms, all
+supported rate families together, and a reaction-free mechanism. Each checks
+rates, forcing, negative Jacobian, LU, direct solves, and five evolving steps
+against the generic implementation at `1e-10` relative plus a `1e-30` absolute
+floor. They exercise 1, 3, 7, 32, and 33 cells, default and tight tolerances,
+forced initial rejections, and changed conditions, independent air density, and
+custom parameters. The two compiler builds generated identical source hashes.
+Additional parameter checks pass with seven-cell fixed groups, Doolittle LU,
+five-unit functions and three-unit loops on both compilers, and with runtime
+strides only, 64-unit functions and nine-unit loops on clang. These results are
+recorded in `validation/parameter-checks.json`.
+
+The full benchmark gate checks all 2,110,000 values against a freshly run MICM
+reference. The largest differences remain below `3e-13` relative. Complete
+per-case results are in `validation/clang-cases.txt` and `validation/gcc-cases.txt`;
+timings, exact gate output, source hashes, and both snapshot/final scenario scores
+are in [`validation/clang-tier2.json`](validation/clang-tier2.json) and
+[`validation/gcc-tier2.json`](validation/gcc-tier2.json).
+
+### Full TS1 benchmark
+
+Workload: 10,000 cells, seed 2026, 100 timed steps of 30 seconds, after one
+untimed warm-up. All 18-thread figures are medians of three sequential runs;
+one-thread figures are single observations. No build or test ran concurrently
+with a timing run. C solvers use groups of 32; MICM uses its benchmark default
+of one group per worker. The supplied cell generator's output is identical to
+the Tier 1 seed-2026 input (checksum below).
+
+| Program | Compiler | 18 threads, seconds | 1 thread, seconds |
+| --- | --- | ---: | ---: |
+| MICM | clang++ | 11.906 | 136.212 |
+| Generic C | clang | 3.872 | 45.126 |
+| Specialized C | clang | **3.063** | **37.398** |
+| Generic C | GCC | 3.982 | 52.858 |
+| Specialized C | GCC | 3.379 | 39.581 |
+
+The specialized clang solver is **1.26× faster than the generic library and
+3.89× faster than MICM on 18 threads**. On one thread the corresponding ratios
+are 1.21× and 3.64×. These are local measurements on a disclosed seed, separate
+from the experimenter's idle-machine, undisclosed-seed ranking.
+
+Every C run takes 281,700 internal steps across 313 groups, with 281,700 accepted,
+zero counted rejections, 563,400 function calls, 281,700 Jacobian updates and
+factorizations, and 845,100 triangular solves. Each cell follows the same nine
+internal steps per timed interval. MICM's different number of groups changes
+its summed counters, as in Tier 1.
+
+### Build and generated size
+
+| Clean `make -j6 bench` | Seconds |
+| --- | ---: |
+| clang | 12.589 |
+| GCC | 43.713 |
+
+These wall times start after `make clean`, with the conda environment already
+present. They include configuration generation, the generic library/benchmark,
+and both specialized executables; reference C++ and test builds are separate.
+The two TS1 generated C files total **2,863,137 bytes** (2.73 MiB), including
+the constructor, dispatch, and numerical kernels. Headers and JSON metadata
+are not included in that byte count. Generated C is a reproducible build product.
+
+### Day-night results
+
+All runs use consecutive 32-cell groups, relative tolerance `1e-6`, and absolute
+tolerance `1e-15`. The following scores compare all four disclosed snapshots
+(4,000 rows per scenario) with MICM. Both snapshot and final-state files pass
+`score.py --level 10`, with no nonfinite value and none below `-1e-20`.
+
+| Scenario | clang overall digits | clang worst species (digits) | GCC overall digits | GCC worst species (digits) |
+| --- | ---: | --- | ---: | --- |
+| diurnal-30min | 14.365 | ISOP (13.780) | 14.363 | ISOP (13.791) |
+| diurnal-10min | 14.288 | ISOP (13.717) | 14.292 | ISOP (13.687) |
+| diurnal-5min | 14.229 | ISOP (13.643) | 14.232 | ISOPNO3 (13.537) |
+| polluted-10min | 14.071 | ISOPNO3 (13.428) | 14.050 | ISOP (13.432) |
+| clean-10min | 14.334 | ISOP (13.813) | 14.335 | ISOP (13.811) |
+
+The reference-solution scores below are the same to the displayed precision
+with either compiler. They reflect the accuracy of MICM's three-stage method
+at the requested tolerances, rather than a change in numerical method.
+
+| Scenario | Internal steps (both compilers and MICM) | clang ms | GCC ms | Reference overall digits | Reference worst species (digits) |
+| --- | ---: | ---: | ---: | ---: | --- |
+| diurnal-30min | 48,619 | 539.574 | 570.636 | 4.748 | ISOP (3.610) |
+| diurnal-10min | 90,980 | 1,020.266 | 1,060.500 | 5.052 | ISOP (3.824) |
+| diurnal-5min | 145,891 | 1,626.636 | 1,734.086 | 5.214 | ISOP (4.328) |
+| polluted-10min | 106,393 | 1,189.592 | 1,268.854 | 5.398 | ISOP (4.257) |
+| clean-10min | 84,273 | 949.237 | 980.386 | 4.907 | ISOP (3.766) |
+
+Additional checks use independently run MICM three-stage results:
+
+- A 48-hour summer case: 65 cells, seed 4242, 55° latitude, day 172, start at
+  19:00, NOx multiplied by three, 192 steps of 900 s, snapshots every six hours.
+  Clang agrees to 14.246 digits overall, worst species 13.871; GCC to 14.270,
+  worst 13.903. The final group contains one cell.
+- An interpolation case: 33 cells, eight 450-second steps, photolysis samples
+  at 600, 1,234, and 2,200 s, snapshots at steps 3, 6, and 8. It tests both
+  endpoint clamps, interpolation between rows, and an irregular final snapshot.
+  Clang agrees to 14.866 digits overall, worst 14.464; GCC to 14.856,
+  worst 14.492.
+
+Omitting the snapshot interval or setting it longer than the run also produces
+the correct final-only snapshot and passes the MICM final-state score; see
+`validation/scenario-format-checks.json`. Source inspection found no prohibited
+extensions, intrinsics, or precision types. The default native executables link
+only the system C runtime and OpenMP; the generator environment contains the
+specified Python 3.12.12, NumPy 2.2.6, and PyYAML 6.0.3.
+
+To reproduce all clean builds, gates, timings, and scenario scores:
+
+```sh
+make env
+.conda/bin/python tools/validate_tier2.py
+```
+
+This writes only in this checkout. The supplied `../reference`, `../scenarios`,
+and `../micm` inputs are read-only. Individual commands and generator tuning
+controls are documented in [README.md](README.md) and [DESIGN.md](DESIGN.md);
+all retained and discarded tuning experiments are in
+[SPECIALIZATION.md](SPECIALIZATION.md). Linux/x86-64 execution was unavailable;
+the source restrictions and both supplied compilers were checked on this host.
+
+## Tier 1 historical results
+
 Validated on 2026-10-16 on the supplied Apple M5 machine (10 CPU cores, 16 GB
 memory, macOS 27.0.1). C compilers were Apple clang 21.0.0 and Homebrew GCC
 15.2.0 (`gcc-15`). Every C build used `OPTFLAGS='-O3 -DNDEBUG'`, with the

@@ -1,0 +1,101 @@
+[
+  {
+    "name": "doolittle-b32-f1-w32",
+    "build_seconds": 15.870288084000094,
+    "check": "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)\n",
+    "profile": "generic cells=32 force_ms=30.439 jacobian_ms=58.412 factor_ms=97.655 linear_ms=24.096\nspecialized cells=32 force_ms=16.110 jacobian_ms=41.160 factor_ms=105.783 linear_ms=27.344\n",
+    "samples": [
+      "elapsed_ms=395.431\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n",
+      "elapsed_ms=384.323\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+    ],
+    "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)\n"
+  },
+  {
+    "name": "mozart-b8-f1-w32",
+    "build_seconds": 24.47174350000023,
+    "check": "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)\n",
+    "profile": "generic cells=32 force_ms=30.209 jacobian_ms=57.327 factor_ms=97.619 linear_ms=24.277\nspecialized cells=32 force_ms=16.262 jacobian_ms=41.135 factor_ms=98.436 linear_ms=27.723\n",
+    "samples": [
+      "elapsed_ms=409.667\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n",
+      "elapsed_ms=397.603\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+    ],
+    "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)\n"
+  },
+  {
+    "name": "mozart-b128-f1-w32",
+    "build_seconds": 33.55185362500015,
+    "check": "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)\n",
+    "profile": "generic cells=32 force_ms=30.861 jacobian_ms=58.521 factor_ms=98.636 linear_ms=24.440\nspecialized cells=32 force_ms=16.413 jacobian_ms=40.913 factor_ms=95.552 linear_ms=28.004\n",
+    "samples": [
+      "elapsed_ms=400.455\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n",
+      "elapsed_ms=388.487\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+    ],
+    "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)\n"
+  },
+  {
+    "name": "doolittle-b8-f1-w32",
+    "build_seconds": 15.38214245800009,
+    "check": "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)\n",
+    "profile": "generic cells=32 force_ms=31.440 jacobian_ms=61.337 factor_ms=102.776 linear_ms=24.650\nspecialized cells=32 force_ms=16.655 jacobian_ms=41.296 factor_ms=106.231 linear_ms=27.259\n",
+    "samples": [
+      "elapsed_ms=405.194\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n",
+      "elapsed_ms=387.154\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+    ],
+    "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)\n"
+  },
+  {
+    "name": "doolittle-b128-f1-w32",
+    "build_seconds": 19.763402167000095,
+    "check": "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)\n",
+    "profile": "generic cells=32 force_ms=31.036 jacobian_ms=59.408 factor_ms=100.153 linear_ms=24.847\nspecialized cells=32 force_ms=16.589 jacobian_ms=40.917 factor_ms=106.347 linear_ms=28.749\n",
+    "samples": [
+      "elapsed_ms=395.657\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n",
+      "elapsed_ms=384.928\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+    ],
+    "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)\n"
+  },
+  {
+    "name": "mozart-b32-f4-w32",
+    "build_seconds": 12.2160504579997,
+    "check": "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)\n",
+    "profile": "generic cells=32 force_ms=31.155 jacobian_ms=59.264 factor_ms=100.349 linear_ms=24.708\nspecialized cells=32 force_ms=17.280 jacobian_ms=38.059 factor_ms=85.044 linear_ms=30.211\n",
+    "samples": [
+      "elapsed_ms=379.961\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n",
+      "elapsed_ms=369.675\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+    ],
+    "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)\n"
+  },
+  {
+    "name": "mozart-b32-f1-w16",
+    "build_seconds": 26.034237959000166,
+    "check": "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)\n",
+    "profile": "generic cells=32 force_ms=31.742 jacobian_ms=59.680 factor_ms=100.206 linear_ms=25.092\nspecialized cells=32 force_ms=18.690 jacobian_ms=48.660 factor_ms=115.320 linear_ms=30.096\n",
+    "samples": [
+      "elapsed_ms=453.696\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n",
+      "elapsed_ms=445.168\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+    ],
+    "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)\n"
+  },
+  {
+    "name": "mozart-b32-f8-w32",
+    "build_seconds": 12.06832837499951,
+    "check": "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)\n",
+    "profile": "generic cells=32 force_ms=30.684 jacobian_ms=58.267 factor_ms=97.502 linear_ms=24.116\nspecialized cells=32 force_ms=17.914 jacobian_ms=36.195 factor_ms=100.860 linear_ms=35.339\n",
+    "samples": [
+      "elapsed_ms=423.611\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n",
+      "elapsed_ms=411.425\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+    ],
+    "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)\n"
+  },
+  {
+    "name": "mozart-b32-f16-w32",
+    "build_seconds": 13.868162875000053,
+    "check": "PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)\n",
+    "profile": "generic cells=32 force_ms=30.596 jacobian_ms=57.747 factor_ms=98.049 linear_ms=24.452\nspecialized cells=32 force_ms=18.312 jacobian_ms=40.150 factor_ms=91.752 linear_ms=39.211\n",
+    "samples": [
+      "elapsed_ms=445.676\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n",
+      "elapsed_ms=433.219\ninternal_steps=3600 accepted=3600 rejected=0 function_calls=7200 jacobian_updates=3600 decompositions=3600 solves=10800\n"
+    ],
+    "gate": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)\n"
+  }
+]

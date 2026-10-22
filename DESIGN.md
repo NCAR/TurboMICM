@@ -119,8 +119,51 @@ first-order loss use named custom rate parameters.
 The generated C contains data and calls to the same model API used by hand-built
 tests. It finalizes with reordering enabled and unused species permitted.
 Generated files live under `build/generated` and are compiled with `CC` and
-`OPTFLAGS`. No generated mechanism-specific numerical solver exists. Changes to
-the reader or configuration trigger regeneration.
+`OPTFLAGS`. This constructor-only path remains available to the generic library.
+Changes to the reader or configuration trigger regeneration.
+
+### Specialized compiler
+
+`tools/specialize.py` reuses the normalized configuration, then builds a `Plan`:
+active species, stable Markowitz order, ordered reaction terms, filled sparse
+rows, and fixed matrix indices. `Emitter` converts ordered scalar operations to
+OpenMP SIMD loops across independent cells. `rate_expression` contains one
+explicit emitter for each supported rate formula. The compiler has no TS1-specific
+reaction or species knowledge.
+
+The outputs are a constructor/dispatch/integrator C file, a `_kernels.c` file,
+a declaration header, and JSON metadata recording the plan and generation
+options. Separating the kernel definitions from the dispatch code bounds compiler
+inlining without nonstandard attributes or optimization flags. Both translation
+units are built with `CC` and `OPTFLAGS`. All files live in `build/generated`.
+
+Forcing and negative-Jacobian contributions preserve the generic library's
+reaction, multiplicity, and accumulation order. Mozart emits each pivot inverse,
+lower scaling, and outer-product update; optional Doolittle collects a matrix
+entry's ordered products before storing it. Both are exact direct factorizations
+of the same shifted analytical Jacobian. Triangular solves are fixed-index row
+expressions, with cached pivot inverses. Fill entries are initialized on every
+Jacobian evaluation, including after a rejection.
+
+Full default-sized groups use constant array strides. An optional cell tile can
+subdivide a kernel, but never the adaptive group. The fixed path is used only
+when the requested group matches `GROUP_SIZE` and is divisible by `KERNEL_WIDTH`.
+All other positive sizes take generated loops with runtime strides. There is no
+padding in the state or its error norm. This includes the last eight cells of
+a 1,000-cell scenario, and arbitrary caller-selected group sizes.
+
+`tools/specialized_solver.h` is the readable three-stage integration template.
+It calls generated kernels directly and fuses stage vector passes, retaining
+the original order of additions. The existing ordered RMS error and controller
+are shared with the generic solver. `dt`, tolerances, and the Rosenbrock control
+parameters remain runtime values. No Jacobian or factorization is reused beyond
+the original method's three stages.
+
+The generated model owns ordinary generic metadata, used during setup, CSV name
+resolution, and output. The timed kernels do not interpret it. The specialized
+API requires a state from its matching constructor; editing a finalized model's
+rate coefficients does not modify the generated kernels. Regenerate instead.
+The ordinary generic API retains its existing configurability.
 
 `tools/translate_ts1.py` parses the supplied TS1 data declarations, verifies 210
 species and 547 reactions, and emits the committed `configs/ts1.json`. It reads
@@ -145,9 +188,14 @@ does not depend on a fixed size, SIMD width, or worker identity.
 | Utility-array group width | Caller supplied | Zero for ordinary row/block storage; any positive width for grouped storage. Independent of solver group size. |
 | LU algorithm | Mozart (0) | `ch_state_set_lu(state,0)` or Doolittle (1). A callback pair may replace both. |
 | Species reordering | Caller supplied | `ch_model_finalize(model,reorder,ignore_unused)`; generated constructors enable reordering. |
+| Generated function block | 32 units | `KERNEL_BLOCK=N` / generator `--block N`; any positive integer. A unit is a reaction, derivative, elimination update, or triangular row. Controls source/function splitting. |
+| Units per SIMD loop | 4 | `KERNEL_FUSION=N` / `--fusion N`; any positive integer, capped by the function's block. Ordered units can share a cell loop. |
+| Constant-stride variant | 1 | `KERNEL_FIXED=0` or `1` / `--fixed`; zero emits only runtime-stride kernels. |
+| Cell tile width | `GROUP_SIZE` | `KERNEL_WIDTH=N`; any positive integer. Nondivisible groups use the runtime-stride path. Does not change the error norm or adaptive grouping. |
+| Generated LU | Mozart | `KERNEL_LU=mozart` or `doolittle` / `--lu`; both retain double precision and solve the full system. |
 
-No hard-coded vector width, processor affinity, architecture flags, or compiler
-optimization experiments are used. Larger groups reduce dispatch overhead but
+No processor affinity, architecture flags, or compiler optimization experiments
+are used. SIMD lane selection is left to the compiler. Larger groups reduce dispatch overhead but
 increase working-set size. The measured 16/32/64/128/256 sweep favored 32; this is
 a configurable default, not a numerical requirement. The primary runtime uses
 all cores and dynamic group assignment to allow different group costs.
