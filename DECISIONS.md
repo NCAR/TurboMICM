@@ -60,3 +60,31 @@
   `OMP_SCHEDULE` can select a different OpenMP runtime schedule, and
   `OMP_NUM_THREADS` or `--threads` controls the thread limit. Positive group
   sizes are configurable at build time or runtime; partial groups are unpadded.
+
+## Mechanism specialization
+
+- Share the existing CAMP reader and unit conversion with the generator, and
+  independently reproduce model binding in Python. Retain the generic C model
+  constructor for names, defaults, workspace allocation and branch-rate
+  preparation, outside the timed integration. Tests compare every generated
+  numerical kernel with that independently bound C model.
+- Preserve the default species permutation, reaction ordering and each cell's
+  arithmetic accumulation order. This leaves ample numerical margin for the
+  stringent day-night gate while removing dynamic chemistry/sparsity dispatch.
+- The generated entry point uses MICM's default three-stage Rosenbrock method.
+  Concentrations, environmental conditions, all custom parameters, dt and
+  tolerances remain state/call data. Other integrators remain available in the
+  unchanged generic library.
+- Scenarios retain consecutive groups at the requested width even on small
+  inputs, because group error norms determine the trajectory. Snapshot states
+  are copied between timed blocks; all photolysis interpolation, custom-rate
+  updates and solves are timed. No chemistry warm-up is performed for scenarios.
+- Keep group width and arithmetic batching configurable. A preferred width may
+  receive a constant-stride path, with a dynamic-stride path for all other
+  widths, including the final partial group. Tuning never changes valid inputs
+  or removes runtime parameters.
+- The additional rate fixture covers all configurable types, repeated reactants
+  and products, a parameterized reactant and an isolated species. The TS1
+  equivalence fixture zeros the same six unphysical default photolysis values
+  that the reference cell generator zeros; realistic day-night tests use the
+  unmodified disclosed CSV inputs.

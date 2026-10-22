@@ -23,7 +23,7 @@ is installed into the base environment.
 
 `CC` defaults to clang and `OPTFLAGS` to `-O3 -DNDEBUG`. Switching either rebuilds
 all C objects. On macOS Make sets `SDKROOT` and selects the requested compiler's
-OpenMP flags. Apple clang uses `/opt/homebrew/opt/libomp`; GCC uses `-fopenmp`.
+OpenMP flags. Apple clang uses `/Users/dfillmor/homebrew/opt/libomp`; GCC uses `-fopenmp`.
 On Linux the compiler uses `-fopenmp`. `OMPFLAGS` and `OMPLIBS` can be overridden
 for another OpenMP installation. Make adds language/warning/include/OpenMP/link
 flags only. `make clean` removes build products and generated C.
@@ -100,3 +100,51 @@ for the tutorials. No C++ translation is needed at build or runtime. Generated
 C contains immutable descriptors and is compiled by Make with `CC`/`OPTFLAGS`.
 Numerical formulas and test data derived from MICM retain Apache-2.0 attribution
 in [NOTICE](NOTICE) and [LICENSE](LICENSE).
+
+## Generated mechanism solvers
+
+```sh
+make -j6 bench test-specialized
+bin/ts1_bench_specialized --threads 18 100 100 30 ../reference/ts1_cells_100_seed1.csv
+bin/ts1_scenario_specialized --threads 18 --group-size 32 --rtol 1e-6 --atol 1e-15 ../scenarios/diurnal-10min/scenario.txt
+make CC=gcc-15 -j6 bench test-cpu test-specialized
+```
+
+`tools/specialize.py` reads the same CAMP JSON/YAML configurations as the generic
+reader and emits C11 chemistry, rate and sparse linear algebra kernels. The
+three-stage Rosenbrock method retains MICM's coefficients, error norm and step
+controller. `make bench` builds both Tier 1 and specialized benchmarks and the
+specialized scenario driver. Their runtime requires C, libm and OpenMP only.
+
+`make test-specialized` generates TS1, the three Tier 1 configuration-file
+mechanisms and a fixture covering every supported configurable rate. It compares
+rates, forcing, Jacobians, factorizations, direct solves, trajectories and solver
+statistics against the generic library, using a relative bound of `1e-10`.
+Widths 1, 3, 32, 37 and 64 exercise full and partial groups; tolerances,
+environmental inputs and custom parameters change during testing. Python tests
+also exercise regeneration after a reaction/parameter edit.
+
+The benchmark has the same arguments, warm-up, timed region, output and default
+tolerances as `ts1_bench_cpu`. Scenario files follow `../scenarios/README.md`:
+paths resolve relative to the scenario file, each step scales every `j*` custom
+parameter from its original CSV value, and there is no warm-up. Scenario timing
+includes interpolation, rate updates and solves, excluding input/output and
+snapshot copies. `ts1_final.csv` and requested `ts1_snapshots.csv` use 17 digits.
+Scenario group size defaults to 32 and never shrinks according to thread count.
+`--rtol` and `--atol` override relative and uniform absolute tolerances; omitted
+options retain MICM defaults. Day-night verification uses `1e-6` and `1e-15`.
+
+To generate a different mechanism:
+
+```sh
+.conda/bin/python tools/specialize.py path/to/config.yaml generated/custom.c --symbol custom
+```
+
+Compile the output with the same include paths as Make, and link
+`build/libchem.a`, OpenMP and libm. Include `chem_specialized.h`, declare
+`extern const ck_specialized custom`, construct a model from `custom.mechanism`,
+and use `custom.update_rates(state)` and `custom.solve(state, dt, &stats)`.
+These kernels require states from that descriptor's default ordered model.
+All generated C is disposable and is regenerated from configuration dependencies.
+See [SPECIALIZATION.md](SPECIALIZATION.md) for measured experiments and
+[DESIGN.md](DESIGN.md) for tuning parameters.

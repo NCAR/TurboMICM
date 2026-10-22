@@ -170,3 +170,64 @@ precompute contiguous bases. Iteration, fill/copy, reduction and prepared array
 callbacks validate shape/order/writability at runtime. `chem_verify.h` provides
 central/one-sided finite differences, negative-Jacobian comparisons and missing
 sparsity detection.
+
+## Specialized code generation
+
+`tools/specialize.py` imports the validated CAMP reader. `bind` applies stable
+rate-type sorting, removes parameterized species from integrated variables,
+computes the reference Markowitz permutation, performs symbolic fill and creates
+fixed-index derivative, factorization and triangular-solve schedules. Repeated
+reactants/products remain separate and preserve their update order. No TS1 name,
+reaction count, initial concentration or photolysis assumption enters binding.
+
+`rate_body` emits fixed-parameter C formulas for every supported configurable
+rate, keeping temperature, pressure, independently supplied air density and all
+custom parameters as inputs. Parameterized reactants multiply the calculated
+rate for every occurrence. Prepared branch constants use the C model's setup
+calculations to avoid introducing Python/libm rounding differences. All other
+rate constants are calculated by generated C; Python never runs at integration
+time. Initial concentrations, initial custom values and tolerances are defaults,
+never constants in the numerical kernels.
+
+`Emitter.function` batches scalar arithmetic units inside independent-cell
+OpenMP SIMD loops, splits helpers at a configurable boundary, and can emit both
+constant-stride and dynamic-stride versions. Full groups use the preferred width;
+any other width uses the dynamic version with its actual cell count. A separate
+C translation unit dispatches the LU/solve helper arrays to bound compiler
+inlining cost. The schedules and arithmetic are generated; helper dispatch has
+no sparsity lookup or chemistry decisions.
+
+`src/specialized_solver.h` is included into each generated translation unit.
+It explicitly performs MICM's three stages, copying the shared forcing before
+adding stage terms, and fuses independent array passes while retaining each
+element's arithmetic order. It recalculates the Jacobian after rejection,
+refactors for every attempted step and applies the public nonnegative clamp.
+The ordered error reduction is shared with the generic solver. The specialized
+API selects the default three-stage coefficients and controller; the full generic
+API continues to support other methods, custom controllers and constraints.
+
+| Build parameter | Default | Meaning |
+|---|---:|---|
+| `GROUP_SIZE` | 32 | Driver's default consecutive cell-group width |
+| `SPECIALIZE_WIDTH` | `GROUP_SIZE` | Preferred constant stride; 0 emits only dynamic paths |
+| `SPECIALIZE_BATCH` | 8 | Chemistry reactions/derivative jobs per SIMD cell loop |
+| `SPECIALIZE_ALGEBRA_BATCH` | 1 | Factorization/triangular operations per cell loop |
+| `SPECIALIZE_SPLIT` | 32 | Arithmetic units per helper before starting another helper |
+
+All batching/splitting values must be positive; preferred width may be zero.
+Every setting preserves arithmetic dependencies and supports all positive
+runtime group widths. Group width is also selectable with `--group-size` or
+`CK_GROUP_SIZE`; threads and scheduling use the existing OpenMP settings.
+Generator options `--batch`, `--algebra-batch`, `--split` and `--width` expose the
+same controls for standalone generation. Make tracks these values separately
+from compiler flags and regenerates/rebuilds when they change. Configuration
+includes are Make dependencies for the bundled mechanisms; a new mechanism's
+rule must likewise list its included files. `make clean` removes every emitted
+source. No compiler optimization flags beyond `OPTFLAGS` are added.
+
+`src/bench_common.h` shares CSV validation, state grouping and final output
+between both benchmarks and the scenario driver. The scenario driver retains
+original custom values independently of the current photolysis-scaled values.
+Interpolation matches MICM at knots and outside table endpoints. At snapshot
+boundaries it completes the parallel solve block, pauses timing, copies states
+and resumes; file output follows integration.

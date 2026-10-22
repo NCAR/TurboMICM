@@ -9,8 +9,8 @@ CC_VERSION := $(shell $(CC) --version 2>/dev/null | head -1)
 ifeq ($(UNAME),Darwin)
 export SDKROOT := $(shell xcrun --sdk macosx --show-sdk-path)
 ifneq (,$(findstring clang,$(CC_VERSION)))
-OMPFLAGS = -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include
-OMPLIBS = -L/opt/homebrew/opt/libomp/lib -lomp
+OMPFLAGS = -Xpreprocessor -fopenmp -isystem /Users/dfillmor/homebrew/opt/libomp/include
+OMPLIBS = -L/Users/dfillmor/homebrew/opt/libomp/lib -lomp
 else
 OMPFLAGS = -fopenmp
 OMPLIBS = -fopenmp
@@ -19,7 +19,7 @@ else
 OMPFLAGS = -fopenmp
 OMPLIBS = -fopenmp
 endif
-CPPFLAGS += -Iinclude -Igenerated
+CPPFLAGS += -Iinclude -Igenerated -Isrc
 CFLAGS = $(OPTFLAGS) -std=c11 -Wall -Wextra -Wpedantic $(OMPFLAGS)
 LDLIBS = $(OMPLIBS) -lm
 .PHONY: env cpu bench test-cpu micm-ref clean FORCE
@@ -28,7 +28,7 @@ env: .conda/bin/python
 	@if test -x $@; then CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env update --prefix $(CURDIR)/.conda --file environment.yml; else CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml; fi
 	@touch $@
 cpu: bin/ts1_bench_cpu
-bench: cpu
+bench: cpu bin/ts1_bench_specialized bin/ts1_scenario_specialized
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mechanism.hpp build/configuration.txt
 	@mkdir -p bin
@@ -36,7 +36,7 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mecha
 clean:
 	rm -rf build bin generated
 
-LIB_SOURCES = src/rates.c src/model.c src/state.c src/process.c src/parameters.c src/solver.c src/constraints.c src/backward_euler.c src/matrix.c src/system.c src/external.c src/verify.c
+LIB_SOURCES = src/specialized.c src/rates.c src/model.c src/state.c src/process.c src/parameters.c src/solver.c src/constraints.c src/backward_euler.c src/matrix.c src/system.c src/external.c src/verify.c
 LIB_OBJECTS = $(LIB_SOURCES:src/%.c=build/%.o)
 build/%.o: src/%.c $(wildcard include/*.h) src/internal.h build/configuration.txt
 	@mkdir -p build
@@ -51,7 +51,7 @@ build/ts1.o: generated/ts1.c include/chem.h build/configuration.txt
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 GROUP_SIZE ?= 32
-bin/ts1_bench_cpu: src/bench.c build/ts1.o build/libchem.a
+bin/ts1_bench_cpu: src/bench.c src/bench_common.h build/ts1.o build/libchem.a
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) -DCK_DEFAULT_GROUP_SIZE=$(GROUP_SIZE) $< build/ts1.o build/libchem.a $(LDLIBS) -o $@
 
@@ -84,3 +84,50 @@ build/configuration.txt: FORCE
 	@mkdir -p build
 	@printf '%s\n' '$(CC)' '$(OPTFLAGS)' '$(CPPFLAGS)' '$(OMPFLAGS)' '$(OMPLIBS)' '$(GROUP_SIZE)' > build/configuration.new
 	@if cmp -s build/configuration.new $@; then rm build/configuration.new; else mv build/configuration.new $@; fi
+
+# Mechanism specialization: generated C is always a disposable build product.
+SPECIALIZE_BATCH ?= 8
+SPECIALIZE_SPLIT ?= 32
+SPECIALIZE_ALGEBRA_BATCH ?= 1
+SPECIALIZE_WIDTH ?= $(GROUP_SIZE)
+SPECIALIZED_OBJECTS = build/sp_ts1.o build/sp_tutorial_no.o build/sp_tutorial_user.o build/sp_tutorial_robertson.o
+SPECIALIZE_DEPS = tools/specialize.py tools/configure.py .conda/bin/python build/specialization.txt
+build/specialization.txt: FORCE
+	@mkdir -p build
+	@printf '%s\n' '$(SPECIALIZE_BATCH)' '$(SPECIALIZE_SPLIT)' '$(SPECIALIZE_ALGEBRA_BATCH)' '$(SPECIALIZE_WIDTH)' > build/specialization.new
+	@if cmp -s build/specialization.new $@; then rm build/specialization.new; else mv build/specialization.new $@; fi
+
+generated/sp_ts1.c: mechanisms/ts1.json $(SPECIALIZE_DEPS)
+	$(PYTHON) tools/specialize.py $< $@ --symbol ts1_specialized --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
+generated/sp_tutorial_no.c: $(wildcard mechanisms/tutorial/rate_constants_no_user_defined/*) $(SPECIALIZE_DEPS)
+	$(PYTHON) tools/specialize.py mechanisms/tutorial/rate_constants_no_user_defined/config.yaml $@ --symbol sp_tutorial_no --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
+generated/sp_tutorial_user.c: $(wildcard mechanisms/tutorial/rate_constants_user_defined/*) $(SPECIALIZE_DEPS)
+	$(PYTHON) tools/specialize.py mechanisms/tutorial/rate_constants_user_defined/config.json $@ --symbol sp_tutorial_user --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
+generated/sp_tutorial_robertson.c: $(wildcard mechanisms/tutorial/robertson/*) $(SPECIALIZE_DEPS)
+	$(PYTHON) tools/specialize.py mechanisms/tutorial/robertson/config.json $@ --symbol sp_tutorial_robertson --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
+build/sp_%.o: generated/sp_%.c $(wildcard include/*.h) src/internal.h src/specialized_solver.h build/configuration.txt
+	@mkdir -p build
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+bin/ts1_bench_specialized: src/bench.c src/bench_common.h build/sp_ts1.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) -DCK_DEFAULT_GROUP_SIZE=$(GROUP_SIZE) -DCK_SPECIALIZED $< build/sp_ts1.o build/libchem.a $(LDLIBS) -o $@
+
+bin/ts1_scenario_specialized: src/scenario.c src/bench_common.h build/sp_ts1.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) -DCK_DEFAULT_GROUP_SIZE=$(GROUP_SIZE) -DCK_SPECIALIZED $< build/sp_ts1.o build/libchem.a $(LDLIBS) -o $@
+
+generated/extended.json: tools/make_specialized_fixture.py .conda/bin/python
+	$(PYTHON) $<
+generated/sp_extended.c: generated/extended.json $(SPECIALIZE_DEPS)
+	$(PYTHON) tools/specialize.py $< $@ --symbol sp_extended --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
+bin/test_specialized: tests/test_specialized.c $(SPECIALIZED_OBJECTS) build/sp_extended.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(SPECIALIZED_OBJECTS) build/sp_extended.o build/libchem.a $(LDLIBS) -o $@
+.PHONY: test-specialized
+test-specialized: bin/test_specialized
+	$(PYTHON) tools/test_specialize.py
+	bin/test_specialized
+
+bin/bench_kernels: tools/bench_kernels.c build/sp_ts1.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< build/sp_ts1.o build/libchem.a $(LDLIBS) -o $@

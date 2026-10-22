@@ -1,3 +1,4 @@
+# Build-time parsing, specialization and formatting; no Python runtime dependency.
 name: chemistry-c-tooling
 channels:
   - conda-forge
