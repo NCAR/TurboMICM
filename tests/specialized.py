@@ -26,7 +26,7 @@ def compare(actual, expected, count, what, rtol=1e-10):
     for i in range(count):
         a, b = actual[i], expected[i]
         assert math.isfinite(a) and math.isfinite(b), (what, i, a, b)
-        assert abs(a-b) <= 1e-30+rtol*abs(b), (what, i, a, b, abs(a-b)/(abs(b)+1e-300))
+        assert abs(a-b) <= rtol*abs(b), (what, i, a, b, abs(a-b)/(abs(b)+1e-300))
 
 
 def initialize(state, name):
@@ -127,7 +127,7 @@ def check_mechanism(name, cells):
 
 def main():
     for name in ('ts1','example_no_user','example_user','example_robertson','validation','edges','ts1_variant'):
-        for cells in (1,7,32,33):
+        for cells in (1,2,4,7,32,33):
             check_mechanism(name,cells)
 
 

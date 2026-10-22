@@ -183,3 +183,5 @@ bin/micm_ts1_ref: $(ROOT)/reference/micm_ts1_ref.cpp build/reference-flags
 	clang++ -std=c++20 $(OPTFLAGS) -I$(ROOT)/micm/include -I$(ROOT)/micm/test/benchmark $< -o $@
 clean:
 	rm -rf build bin generated
+
+-include $(wildcard generated/*.d)

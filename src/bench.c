@@ -15,8 +15,10 @@ ChemStatus chem_solve_ts1_specialized(double dt, ChemState *state, ChemStats *st
 #define chem_load_ts1 chem_load_ts1_specialized
 #define chem_calculate_rates chem_rates_ts1_specialized
 #define BENCH_SOLVE(solver, dt, state, stats) chem_solve_ts1_specialized(dt, state, stats)
+#define BENCH_SOLVER(name) ((void)0)
 #else
 #define BENCH_SOLVE(solver, dt, state, stats) chem_solve(solver, dt, state, stats)
+#define BENCH_SOLVER(name) ChemSolver name = chem_solver(3)
 #endif
 #ifndef CHEM_GROUP_SIZE
 #define CHEM_GROUP_SIZE 32
@@ -58,7 +60,7 @@ int main(int argc, char **argv) {
     if (!s) { statuses[g] = CHEM_MEMORY; continue; }
     state_initialize(s,&table,first);
     chem_calculate_rates(s);
-    ChemSolver solver = chem_solver(3); ChemStats warmup; (void)solver;
+    BENCH_SOLVER(solver); ChemStats warmup;
     statuses[g] = BENCH_SOLVE(&solver, dt, s, &warmup);
   }
   for (size_t g = 0; g < groups; ++g) if (statuses[g]) { fprintf(stderr, "warm-up group %zu: %s\n", g, chem_status_string(statuses[g])); failed = 1; }
@@ -66,7 +68,7 @@ int main(int argc, char **argv) {
   if (!failed) {
     #pragma omp parallel for schedule(runtime)
     for (size_t g = 0; g < groups; ++g) {
-      ChemSolver solver = chem_solver(3); (void)solver;
+      BENCH_SOLVER(solver);
       for (size_t step = 0; step < steps; ++step) {
         ChemStats stats;
         statuses[g] = BENCH_SOLVE(&solver, dt, states[g], &stats);

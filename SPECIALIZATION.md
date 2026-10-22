@@ -28,6 +28,12 @@ All local timings below use clang with `-O3 -DNDEBUG`, without extra optimizatio
 | Four-cell tiles with left-looking LU | 329.369 | 500.600 | Mozart row loops faster; dropped as default |
 | Four-cell tiles, one pivot/row per helper | 309.089 | 466.880 | Selected default |
 | Same, chemistry helper chunk reduced from 32 to 8 | 306.338 | 477.512 | No consistent benefit; retain chunk 32 |
+| Selected defaults with `FUSE_KERNELS=0` | 308.285 | 510.227 | Retain fusion; small single-worker difference |
+| Selected defaults with `INITIALIZE_KERNELS=0` | 335.181 | 505.254 | Retain first-write initialization |
+| Selected defaults with `VECTOR_ERROR=0` | 307.093 | 474.138 | Small/no isolated effect here; retain SIMD terms with serial sum |
+| Generic stage loop (disables the tile pipeline) | 659.850 | 961.081 | Retain the specialized stage/tile pipeline |
+| Selected defaults with generic factor/solve callbacks | 780.260 | 1176.314 | Unrolled linear work is essential at the selected tile size |
+| `OMP_SCHEDULE=dynamic,1`, selected defaults | — | 456.033 | Static in the paired run was 465.674 ms; difference too small to change the existing static default |
 
 Diagnostic kernel timings used 5,000 repetitions on one 32-cell state. The initial fused 8-pivot backend took 991.942 ms for factorization versus 222.192 ms for Tier 1, and 118.011 versus 63.367 ms for a triangular solve. Separate restricted-pointer loops reduced those to 215.624 and 62.821 ms (matching Tier 1 rather than materially improving it). Left-looking accumulation took 260.501 and 69.775 ms. These measurements motivated blocking the complete stage pipeline rather than only changing sparse operation syntax.
 

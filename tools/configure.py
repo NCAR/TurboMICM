@@ -15,12 +15,14 @@ C_KINDS = ['ARRHENIUS', 'TROE', 'TERNARY', 'JPL19', 'BRANCHED', 'TUNNELING', 'TA
 def read_configuration(path):
     records, initial = [], {}
     active = set()
+    sources = []
 
     def visit(path, inherited_units='molecule cm-3'):
         path = Path(path).resolve()
         if path in active:
             raise ValueError(f'cyclic camp-files inclusion: {path}')
         active.add(path)
+        sources.append(path)
         data = json.loads(path.read_text()) if path.suffix.lower() == '.json' else yaml.safe_load(path.read_text())
         if not isinstance(data, dict):
             raise ValueError(f'{path}: configuration must be an object')
@@ -99,7 +101,22 @@ def read_configuration(path):
             key = 'X' if kind == 'BRANCHED' else 'A'
             r[key] = float(r.get(key,1))*conversion**(order-1)
     reactions.sort(key=lambda r: KINDS.index(r['type']))
-    return {'species': species, 'reactions': reactions, 'initial': initial}
+    return {'species': species, 'reactions': reactions, 'initial': initial,
+            'sources': list(dict.fromkeys(sources))}
+
+
+def write_dependencies(output, sources):
+    """GNU Make dependencies for every recursively included configuration.
+
+    Empty source rules permit removing an old include and its file together,
+    like compiler-generated -MP depfiles. Depfiles themselves are build products.
+    """
+    def escape(path):
+        return str(path).replace('\\', '\\\\').replace('$', '$$').replace('#', '\\#').replace(' ', '\\ ').replace(':', '\\:')
+    target = escape(output)
+    paths = [escape(path) for path in sources]
+    Path(output).with_suffix('.d').write_text(target + ': ' + ' '.join(paths) + '\n' +
+                                            ''.join(path + ':\n' for path in paths))
 
 
 def literal(value, numeric=False):
@@ -288,5 +305,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if not re.fullmatch('[a-zA-Z_][a-zA-Z_0-9]*', args.name):
         parser.error('name must be a C identifier')
+    config = read_configuration(args.config)
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.output).write_text(generate(read_configuration(args.config), args.name,args.kernel_chunk))
+    Path(args.output).write_text(generate(config, args.name,args.kernel_chunk))
+    write_dependencies(args.output,config['sources'])
