@@ -1,0 +1,18 @@
+{
+  "camp-data": [
+    {"type":"CHEM_SPEC","name":"A"},
+    {"type":"CHEM_SPEC","name":"B"},
+    {"type":"CHEM_SPEC","name":"C"},
+    {"type":"CHEM_SPEC","name":"isolated"},
+    {"type":"CHEM_SPEC","name":"M","parameterization":"air density"},
+    {"type":"MECHANISM","reactions":[
+      {"type":"TAYLOR_SERIES","reactants":["A","A"],"products":[{"species":"B","yield":0.4},{"species":"B","yield":0.6}],"A":0.01,"B":-0.3,"C":2,"E":1e-6,"coefficients":[1,0.001,1e-8],"concentration units":"mol m-3"},
+      {"type":"TERNARY_CHEMICAL_ACTIVATION_JPL19","reactants":["B"],"products":{"C":{}},"k0_A":0.001,"kinf_A":0.1,"kint_A":0.002,"k0_B":0.7,"kinf_C":-30,"kint_D":280,"concentration units":"mol m-3"},
+      {"type":"REVERSIBLE","reactants":["C","M"],"products":{"A":{}},"A":0.001,"C":25,"k_r":0.02,"concentration units":"mol m-3"},
+      {"type":"USER_DEFINED","reactants":["A"],"products":{"B":{}},"MUSICA name":"shared","scaling factor":1.2},
+      {"type":"PHOTOLYSIS","reactants":["B"],"products":{"C":{}},"MUSICA name":"shared","scaling factor":0.3},
+      {"type":"EMISSION","species":"A","MUSICA name":"source"},
+      {"type":"FIRST_ORDER_LOSS","species":"C","MUSICA name":"loss"}
+    ]}
+  ]
+}

@@ -14,8 +14,9 @@ export SDKROOT := $(shell xcrun --sdk macosx --show-sdk-path)
 endif
 ifneq (,$(findstring clang,$(CC_VERSION)))
 ifeq ($(UNAME_S),Darwin)
-OMP_CFLAGS := -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include
-OMP_LIBS := -L/opt/homebrew/opt/libomp/lib -lomp
+LIBOMP ?= $(shell brew --prefix libomp)
+OMP_CFLAGS := -Xpreprocessor -fopenmp -isystem $(LIBOMP)/include
+OMP_LIBS := -L$(LIBOMP)/lib -lomp
 else
 OMP_CFLAGS := -fopenmp
 OMP_LIBS := -fopenmp
@@ -37,7 +38,7 @@ SOURCES := src/rates.c src/linear.c src/model.c src/state.c src/parameters.c src
 OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
 
 cpu: bin/ts1_bench_cpu bin/tutorial build/libchem.a
-bench: cpu
+bench: cpu bin/ts1_bench_specialized bin/ts1_scenario_specialized
 
 test-cpu: cpu bin/test_cpu
 	bin/test_cpu $(TEST_FILTER)
@@ -125,3 +126,65 @@ build/reference-compiler.conf: FORCE
 	@mkdir -p build
 	@printf '%s\n' "clang++" "$(OPTFLAGS)" > build/reference-compiler.conf.tmp
 	@cmp -s build/reference-compiler.conf.tmp $@ && rm build/reference-compiler.conf.tmp || mv build/reference-compiler.conf.tmp $@
+
+# Generator tuning parameters. Every positive batch size is valid.
+CHEMISTRY_BATCH ?= 1
+ALGEBRA_BATCH ?= 8
+GROUP_SIZE ?= 32
+SPECIALIZER := tools/specialize.py tools/symbolic.py tools/specialize_rates.py tools/ros3.c.in tools/generate.py tools/configure.py
+SPECIAL_FLAGS := --chemistry-batch $(CHEMISTRY_BATCH) --algebra-batch $(ALGEBRA_BATCH)
+
+build/specialization.conf: FORCE
+	@mkdir -p build
+	@printf '%s\n' "$(SPECIAL_FLAGS)" > $@.tmp
+	@cmp -s $@.tmp $@ && rm $@.tmp || mv $@.tmp $@
+
+build/driver.conf: FORCE
+	@mkdir -p build
+	@printf '%s\n' "$(GROUP_SIZE)" > $@.tmp
+	@cmp -s $@.tmp $@ && rm $@.tmp || mv $@.tmp $@
+
+generated/ts1_specialized.c: configs/ts1.json $(SPECIALIZER) build/specialization.conf .conda/conda-meta/history
+	$(PYTHON) tools/specialize.py $< $@ --symbol ts1_specialized $(SPECIAL_FLAGS)
+
+build/ts1_specialized.o: generated/ts1_specialized.c $(wildcard include/*.h) build/compiler.conf
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/bench.o: src/bench_io.h
+build/bench_specialized.o: src/bench.c src/bench_io.h $(wildcard include/*.h) build/compiler.conf build/driver.conf
+	$(CC) $(CFLAGS) -DCHEM_SPECIALIZED -DCHEM_GROUP_SIZE=$(GROUP_SIZE) -c $< -o $@
+
+bin/ts1_bench_specialized: build/bench_specialized.o build/ts1_specialized.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
+
+build/scenario.o: src/scenario.c src/bench_io.h $(wildcard include/*.h) build/compiler.conf build/driver.conf
+	$(CC) $(CFLAGS) -DCHEM_GROUP_SIZE=$(GROUP_SIZE) -c $< -o $@
+
+bin/ts1_scenario_specialized: build/scenario.o build/ts1_specialized.o build/libchem.a
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
+
+generated/chapman_specialized.c: configs/chapman.json $(SPECIALIZER) build/specialization.conf .conda/conda-meta/history
+	$(PYTHON) tools/specialize.py $< $@ --symbol chapman_specialized $(SPECIAL_FLAGS)
+generated/robertson_specialized.c: $(wildcard configs/robertson/*) $(SPECIALIZER) build/specialization.conf .conda/conda-meta/history
+	$(PYTHON) tools/specialize.py configs/robertson/config.json $@ --symbol robertson_specialized $(SPECIAL_FLAGS)
+generated/rates_specialized.c: $(wildcard configs/rate_constants_no_user_defined/*) $(SPECIALIZER) build/specialization.conf .conda/conda-meta/history
+	$(PYTHON) tools/specialize.py configs/rate_constants_no_user_defined/config.yaml $@ --symbol rates_specialized $(SPECIAL_FLAGS)
+generated/user_rates_specialized.c: $(wildcard configs/rate_constants_user_defined/*) $(SPECIALIZER) build/specialization.conf .conda/conda-meta/history
+	$(PYTHON) tools/specialize.py configs/rate_constants_user_defined/config.json $@ --symbol user_rates_specialized $(SPECIAL_FLAGS)
+generated/edges_specialized.c: tests/specialized/edges.json $(SPECIALIZER) build/specialization.conf .conda/conda-meta/history
+	$(PYTHON) tools/specialize.py $< $@ --symbol edges_specialized $(SPECIAL_FLAGS)
+generated/empty_specialized.c: tests/specialized/empty.json $(SPECIALIZER) build/specialization.conf .conda/conda-meta/history
+	$(PYTHON) tools/specialize.py $< $@ --symbol empty_specialized $(SPECIAL_FLAGS)
+build/%_specialized.o: generated/%_specialized.c $(wildcard include/*.h) build/compiler.conf
+	$(CC) $(CFLAGS) -c $< -o $@
+
+SPECIAL_OBJECTS := $(addprefix build/,$(addsuffix _specialized.o,ts1 chapman robertson rates user_rates edges empty))
+bin/test_specialized: tests/specialized/check.c $(SPECIAL_OBJECTS) build/libchem.a build/compiler.conf
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $< $(SPECIAL_OBJECTS) build/libchem.a $(LDLIBS) -o $@
+
+.PHONY: test-specialized
+test-specialized: bin/test_specialized
+	bin/test_specialized

@@ -48,6 +48,7 @@ def emit(config, symbol, kernels=True):
         prod=','.join('{'+str(s)+','+number(y)+'}' for s,y in rx['products']) or '{0,0}'
         lines.append(f'static const chem_product p{i}[]={{'+prod+'};')
     lines.append('static const chem_reaction reactions[]={')
+    if not reactions: lines.append('    {0}')
     for i,rx in enumerate(reactions):
         lines.append(f'    {{{len(rx["reactants"])},{len(rx["products"])},r{i},p{i},'+rate_initializer(rx,species)+'},')
     lines.append('};')

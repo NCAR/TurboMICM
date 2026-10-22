@@ -116,3 +116,25 @@ host. Static, dynamic and guided schedules and explicit chunk sizes are exposed
 for other machines. Numerical checks cover all three policies, irregular tails,
 and groups larger than the domain. Full measurements and sample counts are in
 RESULTS.md; reference single samples are not presented as medians of repeated runs.
+
+## Mechanism specialization
+
+The specialized API accepts the same mutable state as the generic library but
+fixes the method to MICM's default three-stage Rosenbrock. Configuration includes,
+units, branched reactions, repeated terms and named rate parameters keep the
+Tier 1 reader's semantics. Runtime parameter slots are never replaced by initial
+values. Construction and CSV lookup still use the generic model, outside the
+timed region; numerical kernels use generated indices and operation sequences.
+
+The initial implementation retains reference Markowitz ordering and Mozart LU
+arithmetic order, including the sequential error-norm reduction. This gives a
+strong numerical baseline for the strict day-night gate before performance
+experiments. The generic library and its other methods remain available.
+
+Scenario paths resolve against the scenario file. Unknown and repeated keys,
+nonfinite numbers, nonpositive step lengths and unsorted light tables are errors.
+Without snapshot_every, the runner records the last step. Snapshot writing is
+outside the timer; intervals between snapshots execute whole groups in parallel.
+The timer includes photolysis parameter assignment and rate recalculation at
+every step, including interpolation of the light table. Default absolute tolerances come from species metadata; --atol
+replaces every species tolerance.
