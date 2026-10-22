@@ -568,7 +568,7 @@ Calibration on this machine
 | Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|---|
 | astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive | 2026-10-22 09:58–11:06 | `cf16213` | done, verified, timed |
-| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | 2026-10-22 12:06– | | running |
+| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | 2026-10-22 12:06–13:20 | `1c9112c` | done, verified, timed |
 | astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | | | set up |
@@ -664,6 +664,59 @@ Calibration on this machine
 - Codex session `01a1645d-8d6b-7ea1-adde-c65151f4d896`; process 40578;
   `caffeinate -ims -w 40578`. No other Codex session was running; the machine
   was idle (load averages 1.35, 1.41, 2.12) and on AC power.
+- Progress, from Claude Code's read-only checks every 20 minutes: at 20
+  minutes, a first commit (12:19) extending its Tier 1 generator to the LU
+  factorization, triangular solves, and the stages, passing the TS1 gate and
+  diurnal-30min (14.37 digits) but slower than Tier 1 (3.16 against 3.00 s);
+  at 40, four-cell tiles, reciprocal pivots, and Doolittle LU at 1.99 s, and a
+  second commit (12:45); at 60, both compilers' full checks. The compliance
+  scan found nothing outside the run directory and its inputs.
+- Codex's usage window: 18 % at the launch, 21 % at 13:04; at 13:11:55 it
+  read 0 %, with a new window ending 2026-10-29 13:11: the SSE's usage reset.
+- Session end: the one turn ended at 13:20:57 with DONE (1 h 14 min 0 s from
+  the goal), no context compaction, no warning; Codex showed "Goal achieved
+  (1h 13m)". Every turn context shows gpt-6-astra at xhigh, approval `never`,
+  sandbox `danger-full-access`. The record was idle 10 minutes by 13:31;
+  Claude Code quit Codex (`/quit`, 13:31:34) and closed the tmux session.
+- Final commit `1c9112c` (13:20), 3 commits after `fbd365c` (`c64e3c1`, 12:19,
+  "Generate fixed-mechanism Rosenbrock kernels and add scenario driver";
+  `e47de9b`, 12:45, "Tile generated solvers and accumulate sparse LU entries
+  locally"; `1c9112c`, "Verify both compilers, scenario gates and benchmark
+  results"): 33 files changed, 3,842 lines added and 182 removed. In `src/`
+  and `include/`: the benchmark's input and output moved to `src/bench_io.h`,
+  a new day-night driver `src/scenario.c`, a specialized-solver header, and one
+  line of `src/state.c`. The working tree is clean. Collected as
+  `tier2/astra/xhigh`.
+- Tokens: 369,502 total; input 266,838 (plus 13,663,872 cached); output
+  102,664 (57,149 reasoning).
+- Other load during the session: Claude Code's read-only progress checks and
+  record keeping. No builds, tests, or timing by the experimenter.
+- Self-reported, not yet verified: both compilers pass the 680 cases, 70
+  specialized cases, and every disclosed scenario at more than 14 digits;
+  2.012 s at 18 threads, 1.55 times its Tier 1 benchmark and 5.90 times MICM.
+- Transcript archived as `transcripts/tier2/astra-xhigh.jsonl.gz` (925 lines,
+  2.7 MB). The credential scan's three matches were inside encrypted content.
+- Verified, 13:32–13:37, with `admin/verify_tier2.py`
+  (`results/2026-10-22-tier2-astra-xhigh-verification`): both compilers build
+  without warnings (clean builds 71.2 s with clang, 73.6 s with gcc-15); 680
+  PASS, 0 FAIL, 0 N/A with each; the Tier 1 TS1 gate passes (2.03e-13,
+  2.14e-13); bin/ts1_bench_specialized passes on the seed-2026 cells (2.96e-13,
+  2.75e-13) and the undisclosed input (1.4e-13, 1.5e-13), with MICM's 281,700
+  internal steps; `make test-specialized` passes (70 cases, seven mechanisms);
+  the day-night gate passes on all ten scenarios with both compilers, 14.05 to
+  14.45 digits overall and at least 13.31 per species, with MICM's internal
+  steps exactly; the audit finds nothing outside the rules in 82 C files.
+  Generated C for TS1: `generated/ts1_specialized.c`, 75,172 lines, 2.61 MB;
+  the Tier 2 generator adds 492 lines of Python and a 112-line C template to
+  Tier 1's generator.
+- Timed, 13:46–13:54, provisionally at 18 threads (5 rounds, the undisclosed
+  input, after 10 idle minutes; all 35 runs pass the gate): specialized
+  2,098.4 ms; its generic 3,170.3 ms and its Tier 1 commit's 3,152.0 ms; MICM
+  11,969.9 ms by default, 10,630.6 ms with 32-cell groups, 4,423.0 ms in its
+  fastest configuration; astra-max's specialized 3,045.5 ms (its own session:
+  3,084.5). Specialization gains 1.51 times over its own generic solver; 5.70
+  times MICM's default and 2.11 times its fastest; 1.45 times astra-max's
+  specialized solver.
 
 # Tier 3
 

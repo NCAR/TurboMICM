@@ -1,0 +1,48 @@
+== 2026-10-22 13:46:46 { 1.04 1.36 1.56 } Now drawing from 'AC Power'
+  2.2 /usr/libexec/trustd
+  1.5 /Library/Application Support/JAMF/Jamf.app/Contents/MacOS/JamfDaemon.app/Contents/MacOS/JamfDaemon
+  1.1 /Applications/Druva inSync.app/Contents/MacOS/inSync
+  0.4 zsh
+  0.3 claude
+== 2026-10-22 13:47:46 { 6.81 3.23 2.26 } Now drawing from 'AC Power'
+ 90.7 ~/NSF-NCAR/tier2-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_bench_cpu
+  0.7 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  0.4 claude
+  0.2 /usr/sbin/bluetoothd
+  0.1 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+== 2026-10-22 13:48:46 { 15.73 6.30 3.46 } Now drawing from 'AC Power'
+  2.6 claude
+  1.8 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  0.6 /Applications/Druva inSync.app/Contents/MacOS/inSync
+  0.5 /System/Library/PrivateFrameworks/BackgroundTaskManagement.framework/Resources/backgroundtaskmanagementd
+  0.3 /usr/libexec/trustd
+== 2026-10-22 13:49:46 { 11.67 6.68 3.79 } Now drawing from 'AC Power'
+ 98.2 /Library/Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python
+  9.6 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  3.0 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  2.3 /usr/libexec/airportd
+  1.6 /usr/libexec/locationd
+== 2026-10-22 13:50:46 { 9.27 7.00 4.11 } Now drawing from 'AC Power'
+ 16.4 /usr/libexec/logd
+ 12.9 (log)
+  2.6 /Applications/Druva inSync.app/Contents/MacOS/inSync
+  2.6 /usr/libexec/trustd
+  1.7 /System/Library/DriverExtensions/AppleCentauriAlpha.dext/AppleCentauriAlpha
+== 2026-10-22 13:51:46 { 11.66 8.42 4.86 } Now drawing from 'AC Power'
+  4.2 /usr/libexec/trustd
+  2.0 /Library/Application Support/JAMF/Jamf.app/Contents/MacOS/JamfDaemon.app/Contents/MacOS/JamfDaemon
+  1.0 ps
+  0.8 zsh
+  0.7 head
+== 2026-10-22 13:52:47 { 13.90 9.80 5.61 } Now drawing from 'AC Power'
+  6.4 /usr/libexec/trustd
+  1.9 /Library/Application Support/JAMF/Jamf.app/Contents/MacOS/JamfDaemon.app/Contents/MacOS/JamfDaemon
+  1.8 /System/Library/PrivateFrameworks/BackgroundTaskManagement.framework/Resources/backgroundtaskmanagementd
+  0.7 /usr/libexec/smd
+  0.6 /usr/sbin/notifyd
+== 2026-10-22 13:53:47 { 15.66 10.87 6.28 } Now drawing from 'AC Power'
+1783.9 ~/NSF-NCAR/tier2-work/bin/micm_ts1_ref
+  2.7 /usr/libexec/trustd
+  1.6 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  0.4 /usr/libexec/airportd
+  0.3 zsh
