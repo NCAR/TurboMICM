@@ -13,7 +13,10 @@ static ck_status SP_FN(_solve)(ck_state *s, double dt, ck_stats *stats)
     return CK_INVALID;
   memset(stats, 0, sizeof *stats);
   if (dt == 0)
+  {
+    ck_post_solve_clamp(s);
     return CK_OK;
+  }
   ck_workspace *w = s->workspace;
   const size_t cells = s->cells, size = SP_N * cells;
   const double h_min = 1e-15 * dt;
@@ -33,9 +36,13 @@ static ck_status SP_FN(_solve)(ck_state *s, double dt, ck_stats *stats)
       break;
     }
     h = fmin(h, fabs(dt - time));
+#if SP_FUSE
+    SP_FN(_both)(s, s->y, w->initial, w->jacobian);
+#else
     SP_FN(_forcing)(s, s->y, w->initial);
-    ++stats->function_calls;
     SP_FN(_jacobian)(s, s->y, w->jacobian);
+#endif
+    ++stats->function_calls;
     ++stats->jacobian_updates;
     int accepted = 0;
     while (!accepted)
@@ -150,3 +157,4 @@ done:
 #undef SP_PREFIX
 #undef SP_N
 #undef SP_NNZ
+#undef SP_FUSE

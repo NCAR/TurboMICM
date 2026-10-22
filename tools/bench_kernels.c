@@ -21,30 +21,50 @@ int main(void)
     const int repeats = 2000;
     double start = omp_get_wtime();
     for (int i = 0; i < repeats; ++i)
-      if (specialized) ts1_specialized.forcing(s, s->y, w->initial);
-      else ck_forcing(s, s->y, w->initial);
-    printf("%s forcing %.3f us\n", specialized ? "generated" : "generic", (omp_get_wtime()-start)*1e6/repeats);
+      if (specialized)
+        ts1_specialized.update_rates(s);
+      else
+        ck_update_rates(s);
+    printf("%s rate update %.3f us\n", specialized ? "generated" : "generic",
+           (omp_get_wtime() - start) * 1e6 / repeats);
     start = omp_get_wtime();
     for (int i = 0; i < repeats; ++i)
-      if (specialized) ts1_specialized.jacobian(s, s->y, w->jacobian);
-      else ck_jacobian(s, s->y, w->jacobian);
-    printf("%s jacobian %.3f us\n", specialized ? "generated" : "generic", (omp_get_wtime()-start)*1e6/repeats);
+      if (specialized)
+        ts1_specialized.forcing(s, s->y, w->initial);
+      else
+        ck_forcing(s, s->y, w->initial);
+    printf("%s forcing %.3f us\n", specialized ? "generated" : "generic",
+           (omp_get_wtime() - start) * 1e6 / repeats);
+    start = omp_get_wtime();
+    for (int i = 0; i < repeats; ++i)
+      if (specialized)
+        ts1_specialized.jacobian(s, s->y, w->jacobian);
+      else
+        ck_jacobian(s, s->y, w->jacobian);
+    printf("%s jacobian %.3f us\n", specialized ? "generated" : "generic",
+           (omp_get_wtime() - start) * 1e6 / repeats);
     start = omp_get_wtime();
     for (int i = 0; i < repeats; ++i)
     {
-      memcpy(w->jacobian, matrix, m->nnz*s->cells*sizeof(double));
-      if (specialized) ts1_specialized.factor(s->cells, w->jacobian);
-      else ck_factor(m, s->cells, w->jacobian, CK_LU_MOZART);
+      memcpy(w->jacobian, matrix, m->nnz * s->cells * sizeof(double));
+      if (specialized)
+        ts1_specialized.factor(s->cells, w->jacobian);
+      else
+        ck_factor(m, s->cells, w->jacobian, CK_LU_MOZART);
     }
-    printf("%s factor+copy %.3f us\n", specialized ? "generated" : "generic", (omp_get_wtime()-start)*1e6/repeats);
+    printf("%s factor+copy %.3f us\n", specialized ? "generated" : "generic",
+           (omp_get_wtime() - start) * 1e6 / repeats);
     start = omp_get_wtime();
     for (int i = 0; i < repeats; ++i)
     {
-      memcpy(w->stage[0], s->y, m->n*s->cells*sizeof(double));
-      if (specialized) ts1_specialized.linear_solve(s->cells, w->jacobian, w->stage[0]);
-      else ck_linear_solve(m, s->cells, w->jacobian, w->stage[0]);
+      memcpy(w->stage[0], s->y, m->n * s->cells * sizeof(double));
+      if (specialized)
+        ts1_specialized.linear_solve(s->cells, w->jacobian, w->stage[0]);
+      else
+        ck_linear_solve(m, s->cells, w->jacobian, w->stage[0]);
     }
-    printf("%s solve+copy %.3f us\n", specialized ? "generated" : "generic", (omp_get_wtime()-start)*1e6/repeats);
+    printf("%s solve+copy %.3f us\n", specialized ? "generated" : "generic",
+           (omp_get_wtime() - start) * 1e6 / repeats);
   }
   free(matrix);
   ck_state_free(s);

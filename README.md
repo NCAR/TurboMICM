@@ -23,7 +23,7 @@ is installed into the base environment.
 
 `CC` defaults to clang and `OPTFLAGS` to `-O3 -DNDEBUG`. Switching either rebuilds
 all C objects. On macOS Make sets `SDKROOT` and selects the requested compiler's
-OpenMP flags. Apple clang uses `/Users/dfillmor/homebrew/opt/libomp`; GCC uses `-fopenmp`.
+OpenMP flags. Apple clang uses `OMP_PREFIX=/Users/dfillmor/homebrew/opt/libomp`; GCC uses `-fopenmp`.
 On Linux the compiler uses `-fopenmp`. `OMPFLAGS` and `OMPLIBS` can be overridden
 for another OpenMP installation. Make adds language/warning/include/OpenMP/link
 flags only. `make clean` removes build products and generated C.
@@ -117,7 +117,8 @@ controller. `make bench` builds both Tier 1 and specialized benchmarks and the
 specialized scenario driver. Their runtime requires C, libm and OpenMP only.
 
 `make test-specialized` generates TS1, the three Tier 1 configuration-file
-mechanisms and a fixture covering every supported configurable rate. It compares
+mechanisms and fixtures covering every supported configurable rate and a zero-order mechanism. An additional build tests combined forcing/Jacobian
+emission, row-oriented LU updates, and odd preferred/tile widths together. It compares
 rates, forcing, Jacobians, factorizations, direct solves, trajectories and solver
 statistics against the generic library, using a relative bound of `1e-10`.
 Widths 1, 3, 32, 37 and 64 exercise full and partial groups; tolerances,
@@ -148,3 +149,9 @@ These kernels require states from that descriptor's default ordered model.
 All generated C is disposable and is regenerated from configuration dependencies.
 See [SPECIALIZATION.md](SPECIALIZATION.md) for measured experiments and
 [DESIGN.md](DESIGN.md) for tuning parameters.
+
+The disclosed scenario gate can be reproduced with
+`tools/check_scenarios.sh clang 18` after a clang build, or
+`tools/check_scenarios.sh gcc 18` after a GCC build. Each run stays under
+`results/<label>/`, checks final states and snapshots against MICM, and reports
+snapshot agreement with the high-accuracy reference.

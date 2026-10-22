@@ -64,7 +64,7 @@ class Plan:
         return len(self.indices)
 
 
-def bind(mechanism):
+def bind(mechanism, lu_order="column"):
     variables = [i for i, s in enumerate(mechanism.species) if not s.get('parameterization')]
     if not variables:
         raise ConfigurationError('At least one integrated species is required')
@@ -115,8 +115,10 @@ def bind(mechanism):
     for i in range(n):
         lower = [row for row in range(i + 1, n) if i in pattern[row]]
         divisions = [indices[row, i] for row in lower]
-        updates = [(indices[row, col], indices[row, i], indices[i, col])
-                   for col in rows[i] if col > i for row in lower]
+        pairs = [(row, col) for row in lower for col in rows[i] if col > i]
+        if lu_order == 'column':
+            pairs.sort(key=lambda pair: (pair[1], pair[0]))
+        updates = [(indices[row, col], indices[row, i], indices[i, col]) for row, col in pairs]
         pivots.append((indices[i, i], divisions, updates))
     return Plan(variables, reactions, rows, indices, derivatives, pivots, custom)
 
@@ -176,8 +178,9 @@ def rate_body(rate):
 
 
 class Emitter:
-    def __init__(self, symbol, batch, split, width):
+    def __init__(self, symbol, batch, split, width, tile):
         self.symbol, self.batch, self.split, self.width = symbol, batch, split, width
+        self.tile = tile
         self.lines = []
 
     def add(self, *lines):
@@ -195,30 +198,46 @@ class Emitter:
             helpers.append(helper)
             versions = ['dynamic', 'fixed'] if self.width else ['dynamic']
             for version in versions:
-                signature = arguments
-                if version == 'fixed':
-                    signature = signature.replace('size_t cells', 'size_t unused_cells', 1)
+                signature = arguments.replace('size_t cells, ', 'size_t cells, size_t lanes, ', 1)
                 self.add(f'static void {helper}_{version}({signature})', '{')
                 if version == 'fixed':
-                    self.add('  (void)unused_cells;', f'  const size_t cells = {self.width};')
+                    self.add('  (void)cells;')
+                for argument in arguments.split(', '):
+                    if '*' in argument:
+                        self.add('  (void)' + argument.split()[-1] + ';')
+                if version == 'fixed':
+                    self.add(f'  const size_t stride = {self.width};')
                 for begin in range(start, min(start + self.split, len(units)), lane_batch):
-                    self.add('#pragma omp simd', '  for (size_t c = 0; c < cells; ++c)', '  {')
+                    self.add('#pragma omp simd', '  for (size_t c = 0; c < lanes; ++c)', '  {')
                     for unit in units[begin:min(begin + lane_batch, start + self.split, len(units))]:
-                        self.add('    {', *('      ' + line for line in unit), '    }')
+                        body = [line.replace(' * cells + c', ' * stride + c') for line in unit] if version == 'fixed' else unit
+                        self.add('    {', *('      ' + line for line in body), '    }')
                     self.add('  }')
                 self.add('}')
-            names = [arg.split()[-1] for arg in arguments.split(', ')]
-            call = ', '.join(names)
-            self.add(f'static void {helper}({arguments})', '{')
-            if self.width:
-                self.add(f'  if (cells == {self.width}) {helper}_fixed({call});', '  else')
-            self.add(f'    {helper}_dynamic({call});', '}')
         return helpers
 
+    def dispatch(self, kind, helpers, arguments):
+        """Choose a stride once, then call bounded helpers through another TU.
 
-def emit(mechanism, symbol, batch=8, split=32, algebra_batch=1, width=32):
-    plan = bind(mechanism)
-    e = Emitter(symbol, batch, split, width)
+        Helpers keep a runtime loop bound even in the fixed-stride case. This
+        avoids expanding every cell lane into code and overflowing instruction
+        caches. Both compiler optimizers see ordinary C, without attributes.
+        """
+        if not helpers:
+            return
+        cells = arguments[0]
+        versions = ['fixed', 'dynamic'] if self.width else ['dynamic']
+        for version in versions:
+            if self.width:
+                self.add(f'  if ({cells} == {self.width})' if version == 'fixed' else '  else')
+            self.add('  {', f'    static const ck_{kind}_kernel kernels[] = {{' +
+                     ','.join(h + '_' + version for h in helpers) + '};',
+                     f'    ck_run_{kind}_kernels(' + ', '.join(arguments) + f', {len(helpers)}, kernels, {self.tile});', '  }')
+
+
+def emit(mechanism, symbol, batch=8, split=32, algebra_batch=8, width=32, tile=0, fuse=False, joint_batch=1, lu_order="column"):
+    plan = bind(mechanism, lu_order)
+    e = Emitter(symbol, batch, split, width, tile)
     e.add(configure.emit(mechanism, symbol + '_mechanism'), '#include "internal.h"',
           '#include "chem_specialized.h"')
     ix = lambda array, i: f'{array}[{i} * cells + c]'
@@ -230,10 +249,12 @@ def emit(mechanism, symbol, batch=8, split=32, algebra_batch=1, width=32):
         unit += [f'{ix("out", j)} -= rate;' for j in r['reactants']]
         unit += [f'{ix("out", j)} += {number(y)} * rate;' for j, y in r['products']]
         units.append(unit)
+    forcing_units = units
     helpers = e.function('forcing', arguments, units, batch)
     e.add(f'static void {symbol}_forcing(const ck_state *s, const double *restrict y, double *restrict out)',
           '{', f'  memset(out, 0, {plan.n} * s->cells * sizeof(double));')
-    e.add(*(f'  {h}(s->cells, y, s->rates, out);' for h in helpers), '}')
+    e.dispatch('chemistry', helpers, ['s->cells', 'y', 's->rates', 'out'])
+    e.add('}')
     units = []
     for ri, reactants, targets, products in plan.derivatives:
         unit = [f'double rate = {ix("rates", ri)};']
@@ -243,8 +264,35 @@ def emit(mechanism, symbol, batch=8, split=32, algebra_batch=1, width=32):
         units.append(unit)
     helpers = e.function('jacobian', arguments, units, batch)
     e.add(f'static void {symbol}_jacobian(const ck_state *s, const double *restrict y, double *restrict out)',
-          '{', f'  memset(out, 0, {plan.nnz} * s->cells * sizeof(double));')
-    e.add(*(f'  {h}(s->cells, y, s->rates, out);' for h in helpers), '}')
+          '{', '  (void)y;', f'  memset(out, 0, {plan.nnz} * s->cells * sizeof(double));')
+    e.dispatch('chemistry', helpers, ['s->cells', 'y', 's->rates', 'out'])
+    e.add('}')
+    if fuse:
+        # A matrix entry has one column. For that entry, reaction order is
+        # unchanged when independent columns are interleaved by reaction.
+        # This permits computing forcing and its derivatives together.
+        joint_units = []
+        by_reaction = [[] for _ in plan.reactions]
+        for ri, reactants, targets, products in plan.derivatives:
+            derivative = [f'double rate = {ix("rates", ri)};']
+            derivative += [f'rate *= {ix("y", j)};' for j in reactants]
+            derivative += [f'{ix("jacobian", j)} += rate;' for j in targets]
+            derivative += [f'{ix("jacobian", j)} -= {number(y)} * rate;' for j, y in products]
+            by_reaction[ri].append(derivative)
+        for ri, forcing in enumerate(forcing_units):
+            unit = ['{'] + ['  ' + line.replace('out[', 'forcing[') for line in forcing] + ['}']
+            for derivative in by_reaction[ri]:
+                unit += ['{'] + ['  ' + line for line in derivative] + ['}']
+            joint_units.append(unit)
+        joint_arguments = ('size_t cells, const double *restrict y, const double *restrict rates, '
+                           'double *restrict forcing, double *restrict jacobian')
+        helpers = e.function('both', joint_arguments, joint_units, joint_batch)
+        e.add(f'static void {symbol}_both(const ck_state *s, const double *restrict y, '
+              'double *restrict forcing, double *restrict jacobian)', '{',
+              f'  memset(forcing, 0, {plan.n} * s->cells * sizeof(double));',
+              f'  memset(jacobian, 0, {plan.nnz} * s->cells * sizeof(double));')
+        e.dispatch('joint', helpers, ['s->cells', 'y', 's->rates', 'forcing', 'jacobian'])
+        e.add('}')
     units = []
     for diagonal, divisions, updates in plan.pivots:
         units += [[f'{ix("a", j)} *= 1.0 / {ix("a", diagonal)};'] for j in divisions]
@@ -253,8 +301,7 @@ def emit(mechanism, symbol, batch=8, split=32, algebra_batch=1, width=32):
     helpers = e.function('factor', 'size_t cells, double *restrict a', units, algebra_batch)
     e.add(f'static void {symbol}_factor(size_t cells, double *restrict a)', '{')
     if helpers:
-        e.add('  static const ck_factor_kernel kernels[] = {' + ','.join(helpers) + '};',
-              f'  ck_run_factor_kernels(cells, a, {len(helpers)}, kernels);')
+        e.dispatch('factor', helpers, ['cells', 'a'])
     else:
         e.add('  (void)cells; (void)a;')
     e.add('}')
@@ -267,9 +314,9 @@ def emit(mechanism, symbol, batch=8, split=32, algebra_batch=1, width=32):
             if not forward:
                 units.append([f'{ix("x", row)} /= {ix("a", plan.indices[row, row])};'])
     helpers = e.function('linear', 'size_t cells, const double *restrict a, double *restrict x', units, algebra_batch)
-    e.add(f'static void {symbol}_linear(size_t cells, const double *restrict a, double *restrict x)', '{',
-          '  static const ck_solve_kernel kernels[] = {' + ','.join(helpers) + '};',
-          f'  ck_run_solve_kernels(cells, a, x, {len(helpers)}, kernels);', '}')
+    e.add(f'static void {symbol}_linear(size_t cells, const double *restrict a, double *restrict x)', '{')
+    e.dispatch('solve', helpers, ['cells', 'a', 'x'])
+    e.add('}')
     e.add(f'static ck_status {symbol}_update(ck_state *s)', '{', '  if (!s) return CK_INVALID;',
           '  const size_t cells = s->cells;')
     for ri, r in enumerate(plan.reactions):
@@ -293,7 +340,8 @@ def emit(mechanism, symbol, batch=8, split=32, algebra_batch=1, width=32):
         e.add(*('      ' + line for line in body), f'      {ix("s->rates", ri)} = k;', '    }', '  }')
     e.add('  return CK_OK;', '}')
     # Template macros are local to this translation unit.
-    e.add(f'#define SP_PREFIX {symbol}', f'#define SP_N {plan.n}', f'#define SP_NNZ {plan.nnz}')
+    e.add(f'#define SP_PREFIX {symbol}', f'#define SP_N {plan.n}', f'#define SP_NNZ {plan.nnz}',
+          f'#define SP_FUSE {int(fuse)}')
     e.add('static const size_t sp_diagonal[] = {' + ','.join(str(plan.indices[i, i]) for i in range(plan.n)) + '};',
           '#include "specialized_solver.h"',
           f'const ck_specialized {symbol} = {{ &{symbol}_mechanism, {symbol}_update, {symbol}_forcing,',
@@ -308,12 +356,16 @@ def main():
     parser.add_argument('--symbol', default='specialized')
     parser.add_argument('--batch', type=int, default=8, help='chemistry units per cell loop')
     parser.add_argument('--split', type=int, default=32, help='units per helper function')
-    parser.add_argument('--algebra-batch', type=int, default=1, help='LU/solve operations per cell loop')
+    parser.add_argument('--algebra-batch', type=int, default=8, help='LU/solve operations per cell loop')
     parser.add_argument('--width', type=int, default=32, help='fixed-stride fast path; 0 disables it')
+    parser.add_argument('--tile', type=int, default=0, help='independent cell tile; 0 uses the full group')
+    parser.add_argument('--fuse', type=int, choices=[0, 1], default=0, help='combine initial forcing and Jacobian')
+    parser.add_argument('--joint-batch', type=int, default=1, help='combined chemistry units per cell loop')
+    parser.add_argument('--lu-order', choices=['row', 'column'], default='column', help='independent updates within a pivot')
     args = parser.parse_args()
-    if min(args.batch, args.split, args.algebra_batch, args.width) < 1 or args.width < 0:
-        parser.error('batch, split and algebra-batch must be positive')
-    content = emit(configure.read(args.configuration), args.symbol, args.batch, args.split, args.algebra_batch, args.width)
+    if min(args.batch, args.split, args.algebra_batch, args.joint_batch) < 1 or min(args.width, args.tile) < 0:
+        parser.error('batch, split and algebra-batch must be positive; width and tile must be nonnegative')
+    content = emit(configure.read(args.configuration), args.symbol, args.batch, args.split, args.algebra_batch, args.width, args.tile, args.fuse, args.joint_batch, args.lu_order)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(content)
 

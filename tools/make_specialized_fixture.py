@@ -39,3 +39,13 @@ data = {'concentration units': 'mol m-3', 'camp-data': species + [
 path = pathlib.Path('generated/extended.json')
 path.parent.mkdir(exist_ok=True)
 path.write_text(json.dumps(data, indent=2) + '\n')
+
+# A valid mechanism with no concentration derivatives and no LU updates.
+path.with_name('emission.json').write_text(json.dumps({
+    'concentration units': 'mol m-3', 'camp-data': [
+        {'type': 'CHEM_SPEC', 'name': 'A'},
+        {'type': 'CHEM_SPEC', 'name': 'M', 'parameterization': 'air-density'},
+        {'type': 'MECHANISM', 'name': 'zero-order', 'reactions': [
+            {'type': 'EMISSION', 'species': 'A', 'label': 'emission'},
+            {'type': 'ARRHENIUS', 'A': 1e-12, 'reactants': ['M'], 'products': {'A': {}}}]}]
+}, indent=2) + '\n')

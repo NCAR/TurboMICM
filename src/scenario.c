@@ -196,8 +196,8 @@ static double photo_factor(const photo_point *p, size_t count, double time)
   double weight = (time - p[lo - 1].time) / (p[lo].time - p[lo - 1].time);
   return (1.0 - weight) * p[lo - 1].factor + weight * p[lo].factor;
 }
-static int write_snapshots(const ck_model *model, const group *groups, size_t ngroups,
-                           double **snapshots, const scenario *sc, size_t nsnap)
+static int write_snapshots(const ck_model *model, const group *groups, size_t ngroups, double **snapshots,
+                           const scenario *sc, size_t nsnap)
 {
   FILE *file = fopen("ts1_snapshots.csv", "w");
   if (!file)
@@ -216,8 +216,8 @@ static int write_snapshots(const ck_model *model, const group *groups, size_t ng
       const double *values = snapshots[g] + snap * n * s->cells;
       for (size_t c = 0; c < s->cells; ++c)
       {
-        fprintf(file, "%zu,%zu,%.17g,%.17g", step, groups[g].first + c,
-                s->conditions[c].temperature, s->conditions[c].pressure);
+        fprintf(file, "%zu,%zu,%.17g,%.17g", step, groups[g].first + c, s->conditions[c].temperature,
+                s->conditions[c].pressure);
         for (size_t v = 0; v < n; ++v)
           fprintf(file, ",%.17g", values[v * s->cells + c]);
         fputc('\n', file);
@@ -273,6 +273,7 @@ int main(int argc, char **argv)
   ck_model *model = NULL;
   group *groups = NULL;
   double **snapshots = NULL, **base = NULL;
+  size_t *photo_indices = NULL, nphoto = 0;
   if (!read_scenario(path, &sc) || !read_photolysis(sc.photo_path, &points, &npoints))
   {
     fprintf(stderr, "Cannot read scenario or photolysis table\n");
@@ -293,6 +294,12 @@ int main(int argc, char **argv)
   if (!groups || !snapshots || !base)
     goto done;
   size_t n = ck_model_nspecies(model), nc = ck_model_ncustom(model);
+  photo_indices = calloc(nc + !nc, sizeof *photo_indices);
+  if (!photo_indices)
+    goto done;
+  for (size_t j = 0; j < nc; ++j)
+    if (ck_custom_name(model, j)[0] == 'j')
+      photo_indices[nphoto++] = j;
   size_t nsnap = sc.every ? (sc.steps - 1) / sc.every + 1 : 0;
   for (size_t g = 0; g < ngroups; ++g)
   {
@@ -307,8 +314,7 @@ int main(int argc, char **argv)
     if (atol)
       for (size_t v = 0; v < n; ++v)
         s->absolute_tolerance[v] = atol;
-    if (nc > SIZE_MAX / count / sizeof(double) ||
-        (nsnap && nsnap > SIZE_MAX / n / count / sizeof(double)))
+    if (nc > SIZE_MAX / count / sizeof(double) || (nsnap && nsnap > SIZE_MAX / n / count / sizeof(double)))
       goto done;
     base[g] = calloc(nc * count + !nc, sizeof(double));
     snapshots[g] = calloc(nsnap ? nsnap * n * count : 1, sizeof(double));
@@ -321,6 +327,11 @@ int main(int argc, char **argv)
     memcpy(base[g], groups[g].state->custom, nc * groups[g].state->cells * sizeof(double));
   ck_rosenbrock_parameters parameters;
   ck_rosenbrock_parameters_init(3, &parameters);
+  /* Start the OpenMP workers without advancing the chemistry. */
+#pragma omp parallel
+  {
+#pragma omp barrier
+  }
   double elapsed = 0;
   /* Time each group's steps; buffer snapshots outside each timed solve. The
      shared clock measures the parallel wall time, with output copying excluded
@@ -339,10 +350,13 @@ int main(int argc, char **argv)
       for (size_t step = first; step < last; ++step)
       {
         double factor = photo_factor(points, npoints, (double)step * sc.dt);
-        for (size_t j = 0; j < nc; ++j)
-          if (ck_custom_name(model, j)[0] == 'j')
-            for (size_t c = 0; c < s->cells; ++c)
-              s->custom[j * s->cells + c] = base[g][j * s->cells + c] * factor;
+        for (size_t p = 0; p < nphoto; ++p)
+        {
+          size_t j = photo_indices[p];
+#pragma omp simd
+          for (size_t c = 0; c < s->cells; ++c)
+            s->custom[j * s->cells + c] = base[g][j * s->cells + c] * factor;
+        }
         groups[g].status = bench_update(s);
         if (groups[g].status)
           break;
@@ -399,6 +413,7 @@ done:
   free(snapshots);
   ck_model_free(model);
   free(points);
+  free(photo_indices);
   free(sc.cells_path);
   free(sc.photo_path);
   return result;

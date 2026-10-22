@@ -88,3 +88,14 @@
   equivalence fixture zeros the same six unphysical default photolysis values
   that the reference cell generator zeros; realistic day-night tests use the
   unmodified disclosed CSV inputs.
+- Default to constant strides with runtime loop bounds, eight chemistry and
+  algebra operations per loop, and 32 units per helper. Retain the reference
+  column traversal within each LU pivot. Disable tiling and joint chemistry by
+  default because their full-run measurements were slower here; expose them
+  for other machines and verify a combined alternate configuration numerically.
+- Keep the scalar error reduction's original species/cell order. Symbolic
+  minimum-fill exploration saved under 10% of LU updates, so it did not justify
+  introducing a second species ordering during this implementation.
+- Initialize the scenario worker pool before timing without advancing chemistry.
+  Cache the list of photolysis parameter indices during setup, then time every
+  interpolation, scaling operation, generated rate update and integration step.

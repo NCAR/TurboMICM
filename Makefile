@@ -9,8 +9,9 @@ CC_VERSION := $(shell $(CC) --version 2>/dev/null | head -1)
 ifeq ($(UNAME),Darwin)
 export SDKROOT := $(shell xcrun --sdk macosx --show-sdk-path)
 ifneq (,$(findstring clang,$(CC_VERSION)))
-OMPFLAGS = -Xpreprocessor -fopenmp -isystem /Users/dfillmor/homebrew/opt/libomp/include
-OMPLIBS = -L/Users/dfillmor/homebrew/opt/libomp/lib -lomp
+OMP_PREFIX ?= /Users/dfillmor/homebrew/opt/libomp
+OMPFLAGS = -Xpreprocessor -fopenmp -isystem $(OMP_PREFIX)/include
+OMPLIBS = -L$(OMP_PREFIX)/lib -lomp
 else
 OMPFLAGS = -fopenmp
 OMPLIBS = -fopenmp
@@ -88,23 +89,27 @@ build/configuration.txt: FORCE
 # Mechanism specialization: generated C is always a disposable build product.
 SPECIALIZE_BATCH ?= 8
 SPECIALIZE_SPLIT ?= 32
-SPECIALIZE_ALGEBRA_BATCH ?= 1
+SPECIALIZE_ALGEBRA_BATCH ?= 8
 SPECIALIZE_WIDTH ?= $(GROUP_SIZE)
+SPECIALIZE_TILE ?= 0
+SPECIALIZE_FUSE ?= 0
+SPECIALIZE_JOINT_BATCH ?= 1
+SPECIALIZE_LU_ORDER ?= column
 SPECIALIZED_OBJECTS = build/sp_ts1.o build/sp_tutorial_no.o build/sp_tutorial_user.o build/sp_tutorial_robertson.o
 SPECIALIZE_DEPS = tools/specialize.py tools/configure.py .conda/bin/python build/specialization.txt
 build/specialization.txt: FORCE
 	@mkdir -p build
-	@printf '%s\n' '$(SPECIALIZE_BATCH)' '$(SPECIALIZE_SPLIT)' '$(SPECIALIZE_ALGEBRA_BATCH)' '$(SPECIALIZE_WIDTH)' > build/specialization.new
+	@printf '%s\n' '$(SPECIALIZE_BATCH)' '$(SPECIALIZE_SPLIT)' '$(SPECIALIZE_ALGEBRA_BATCH)' '$(SPECIALIZE_WIDTH)' '$(SPECIALIZE_TILE)' '$(SPECIALIZE_FUSE)' '$(SPECIALIZE_JOINT_BATCH)' '$(SPECIALIZE_LU_ORDER)' > build/specialization.new
 	@if cmp -s build/specialization.new $@; then rm build/specialization.new; else mv build/specialization.new $@; fi
 
 generated/sp_ts1.c: mechanisms/ts1.json $(SPECIALIZE_DEPS)
-	$(PYTHON) tools/specialize.py $< $@ --symbol ts1_specialized --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
+	$(PYTHON) tools/specialize.py $< $@ --symbol ts1_specialized --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH) --tile $(SPECIALIZE_TILE) --fuse $(SPECIALIZE_FUSE) --joint-batch $(SPECIALIZE_JOINT_BATCH) --lu-order $(SPECIALIZE_LU_ORDER)
 generated/sp_tutorial_no.c: $(wildcard mechanisms/tutorial/rate_constants_no_user_defined/*) $(SPECIALIZE_DEPS)
-	$(PYTHON) tools/specialize.py mechanisms/tutorial/rate_constants_no_user_defined/config.yaml $@ --symbol sp_tutorial_no --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
+	$(PYTHON) tools/specialize.py mechanisms/tutorial/rate_constants_no_user_defined/config.yaml $@ --symbol sp_tutorial_no --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH) --tile $(SPECIALIZE_TILE) --fuse $(SPECIALIZE_FUSE) --joint-batch $(SPECIALIZE_JOINT_BATCH) --lu-order $(SPECIALIZE_LU_ORDER)
 generated/sp_tutorial_user.c: $(wildcard mechanisms/tutorial/rate_constants_user_defined/*) $(SPECIALIZE_DEPS)
-	$(PYTHON) tools/specialize.py mechanisms/tutorial/rate_constants_user_defined/config.json $@ --symbol sp_tutorial_user --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
+	$(PYTHON) tools/specialize.py mechanisms/tutorial/rate_constants_user_defined/config.json $@ --symbol sp_tutorial_user --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH) --tile $(SPECIALIZE_TILE) --fuse $(SPECIALIZE_FUSE) --joint-batch $(SPECIALIZE_JOINT_BATCH) --lu-order $(SPECIALIZE_LU_ORDER)
 generated/sp_tutorial_robertson.c: $(wildcard mechanisms/tutorial/robertson/*) $(SPECIALIZE_DEPS)
-	$(PYTHON) tools/specialize.py mechanisms/tutorial/robertson/config.json $@ --symbol sp_tutorial_robertson --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
+	$(PYTHON) tools/specialize.py mechanisms/tutorial/robertson/config.json $@ --symbol sp_tutorial_robertson --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH) --tile $(SPECIALIZE_TILE) --fuse $(SPECIALIZE_FUSE) --joint-batch $(SPECIALIZE_JOINT_BATCH) --lu-order $(SPECIALIZE_LU_ORDER)
 build/sp_%.o: generated/sp_%.c $(wildcard include/*.h) src/internal.h src/specialized_solver.h build/configuration.txt
 	@mkdir -p build
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
@@ -119,10 +124,10 @@ bin/ts1_scenario_specialized: src/scenario.c src/bench_common.h build/sp_ts1.o b
 generated/extended.json: tools/make_specialized_fixture.py .conda/bin/python
 	$(PYTHON) $<
 generated/sp_extended.c: generated/extended.json $(SPECIALIZE_DEPS)
-	$(PYTHON) tools/specialize.py $< $@ --symbol sp_extended --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH)
-bin/test_specialized: tests/test_specialized.c $(SPECIALIZED_OBJECTS) build/sp_extended.o build/libchem.a
+	$(PYTHON) tools/specialize.py $< $@ --symbol sp_extended --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH) --tile $(SPECIALIZE_TILE) --fuse $(SPECIALIZE_FUSE) --joint-batch $(SPECIALIZE_JOINT_BATCH) --lu-order $(SPECIALIZE_LU_ORDER)
+bin/test_specialized: tests/test_specialized.c $(SPECIALIZED_OBJECTS) build/sp_extended.o build/sp_emission.o build/sp_alternate.o build/libchem.a
 	@mkdir -p bin
-	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(SPECIALIZED_OBJECTS) build/sp_extended.o build/libchem.a $(LDLIBS) -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $< $(SPECIALIZED_OBJECTS) build/sp_extended.o build/sp_emission.o build/sp_alternate.o build/libchem.a $(LDLIBS) -o $@
 .PHONY: test-specialized
 test-specialized: bin/test_specialized
 	$(PYTHON) tools/test_specialize.py
@@ -131,3 +136,12 @@ test-specialized: bin/test_specialized
 bin/bench_kernels: tools/bench_kernels.c build/sp_ts1.o build/libchem.a
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) $< build/sp_ts1.o build/libchem.a $(LDLIBS) -o $@
+
+generated/emission.json: generated/extended.json
+	@test -f $@ || $(PYTHON) tools/make_specialized_fixture.py
+generated/sp_emission.c: generated/emission.json $(SPECIALIZE_DEPS)
+	$(PYTHON) tools/specialize.py $< $@ --symbol sp_emission --batch $(SPECIALIZE_BATCH) --split $(SPECIALIZE_SPLIT) --algebra-batch $(SPECIALIZE_ALGEBRA_BATCH) --width $(SPECIALIZE_WIDTH) --tile $(SPECIALIZE_TILE) --fuse $(SPECIALIZE_FUSE) --joint-batch $(SPECIALIZE_JOINT_BATCH) --lu-order $(SPECIALIZE_LU_ORDER)
+
+# Exercise optional transformations together, including odd fixed/tile widths.
+generated/sp_alternate.c: generated/extended.json $(SPECIALIZE_DEPS)
+	$(PYTHON) tools/specialize.py $< $@ --symbol sp_alternate --batch 64 --split 7 --algebra-batch 64 --width 3 --tile 2 --fuse 1 --joint-batch 4 --lu-order row

@@ -193,8 +193,10 @@ never constants in the numerical kernels.
 OpenMP SIMD loops, splits helpers at a configurable boundary, and can emit both
 constant-stride and dynamic-stride versions. Full groups use the preferred width;
 any other width uses the dynamic version with its actual cell count. A separate
-C translation unit dispatches the LU/solve helper arrays to bound compiler
-inlining cost. The schedules and arithmetic are generated; helper dispatch has
+C translation unit dispatches helper arrays to bound compiler inlining cost.
+Even constant-stride helpers retain runtime loop bounds so the compiler does
+not expand the entire cell group into instructions. Optional tiling changes
+only the independent-cell traversal, while retaining the full group stride. The schedules and arithmetic are generated; helper dispatch has
 no sparsity lookup or chemistry decisions.
 
 `src/specialized_solver.h` is included into each generated translation unit.
@@ -202,7 +204,12 @@ It explicitly performs MICM's three stages, copying the shared forcing before
 adding stage terms, and fuses independent array passes while retaining each
 element's arithmetic order. It recalculates the Jacobian after rejection,
 refactors for every attempted step and applies the public nonnegative clamp.
-The ordered error reduction is shared with the generic solver. The specialized
+The initial forcing and Jacobian may be computed together, grouping derivative
+jobs by reaction. For any matrix entry, its column and the order of contributing
+reactions remain fixed; independent-column interleaving does not change its
+arithmetic. Within each LU pivot, updates target distinct entries and read only
+the completed pivot row/column, so row and column traversal orders perform the
+same arithmetic per entry. The ordered error reduction is shared with the generic solver. The specialized
 API selects the default three-stage coefficients and controller; the full generic
 API continues to support other methods, custom controllers and constraints.
 
@@ -211,15 +218,19 @@ API continues to support other methods, custom controllers and constraints.
 | `GROUP_SIZE` | 32 | Driver's default consecutive cell-group width |
 | `SPECIALIZE_WIDTH` | `GROUP_SIZE` | Preferred constant stride; 0 emits only dynamic paths |
 | `SPECIALIZE_BATCH` | 8 | Chemistry reactions/derivative jobs per SIMD cell loop |
-| `SPECIALIZE_ALGEBRA_BATCH` | 1 | Factorization/triangular operations per cell loop |
+| `SPECIALIZE_ALGEBRA_BATCH` | 8 | Factorization/triangular operations per cell loop |
 | `SPECIALIZE_SPLIT` | 32 | Arithmetic units per helper before starting another helper |
+| `SPECIALIZE_TILE` | 0 | Cells per kernel tile; 0 uses the full group |
+| `SPECIALIZE_FUSE` | 0 | Combine the initial forcing and Jacobian pass (0 or 1) |
+| `SPECIALIZE_JOINT_BATCH` | 1 | Combined reaction/derivative units per cell loop |
+| `SPECIALIZE_LU_ORDER` | column | Independent updates within each pivot, row or column |
 
-All batching/splitting values must be positive; preferred width may be zero.
+All batching/splitting values must be positive; preferred width and tile may be zero.
 Every setting preserves arithmetic dependencies and supports all positive
 runtime group widths. Group width is also selectable with `--group-size` or
 `CK_GROUP_SIZE`; threads and scheduling use the existing OpenMP settings.
-Generator options `--batch`, `--algebra-batch`, `--split` and `--width` expose the
-same controls for standalone generation. Make tracks these values separately
+Generator options `--batch`, `--algebra-batch`, `--split`, `--width`, `--tile`,
+`--fuse`, `--joint-batch` and `--lu-order` expose the same controls for standalone generation. Make tracks these values separately
 from compiler flags and regenerates/rebuilds when they change. Configuration
 includes are Make dependencies for the bundled mechanisms; a new mechanism's
 rule must likewise list its included files. `make clean` removes every emitted

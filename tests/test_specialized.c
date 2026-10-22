@@ -2,8 +2,8 @@
 #include "chem_specialized.h"
 #include <stdio.h>
 
-extern const ck_specialized ts1_specialized, sp_tutorial_no, sp_tutorial_user,
-    sp_tutorial_robertson, sp_extended;
+extern const ck_specialized ts1_specialized, sp_tutorial_no, sp_tutorial_user, sp_tutorial_robertson,
+    sp_extended, sp_emission, sp_alternate;
 
 static int compare(const char *what, const double *reference, const double *actual, size_t size)
 {
@@ -16,8 +16,15 @@ static int compare(const char *what, const double *reference, const double *actu
     }
   return 1;
 }
-#define REQUIRE(condition) do { if (!(condition)) { \
-  fprintf(stderr, "line %d: %s\n", __LINE__, #condition); return 0; } } while (0)
+#define REQUIRE(condition)                                                                                   \
+  do                                                                                                         \
+  {                                                                                                          \
+    if (!(condition))                                                                                        \
+    {                                                                                                        \
+      fprintf(stderr, "line %d: %s\n", __LINE__, #condition);                                                \
+      return 0;                                                                                              \
+    }                                                                                                        \
+  } while (0)
 
 static int check(const ck_specialized *sp, size_t cells, int tight)
 {
@@ -32,15 +39,14 @@ static int check(const ck_specialized *sp, size_t cells, int tight)
     ck_ideal_air_density(&a->conditions[c]);
     a->conditions[c].air_density *= 1.001;
     for (size_t v = 0; v < m->n; ++v)
-      a->y[v * cells + c] = ts1_case ? a->y[v * cells + c] * (0.8 + 0.01 * c) :
-                                                     1e-12 * (v + 1) * (1 + 0.03 * c);
+      a->y[v * cells + c] =
+          ts1_case ? a->y[v * cells + c] * (0.8 + 0.01 * c) : 1e-12 * (v + 1) * (1 + 0.03 * c);
     for (size_t j = 0; j < m->nc; ++j)
     {
       const char *name = ck_custom_name(m, j);
       double value = a->custom[j * cells + c];
-      if (ts1_case && (!strcmp(name, "jo2_a") || !strcmp(name, "jh2o_b") ||
-                       !strcmp(name, "jh2o_c") || !strcmp(name, "jch4_a") ||
-                       !strcmp(name, "jch4_b") || !strcmp(name, "jhf")))
+      if (ts1_case && (!strcmp(name, "jo2_a") || !strcmp(name, "jh2o_b") || !strcmp(name, "jh2o_c") ||
+                       !strcmp(name, "jch4_a") || !strcmp(name, "jch4_b") || !strcmp(name, "jhf")))
         value = 0;
       else if (strstr(name, "effective radius"))
         value = 1e-7;
@@ -94,7 +100,8 @@ static int check(const ck_specialized *sp, size_t cells, int tight)
     ck_stats sa, sb;
     double dt = ts1_case ? (tight ? 0.01 : 30) : 0.1;
     ck_status status = ck_solve(a, dt, &p, &sa);
-    if (status) fprintf(stderr, "generic step %zu: %s\n", step, ck_status_string(status));
+    if (status)
+      fprintf(stderr, "generic step %zu: %s\n", step, ck_status_string(status));
     REQUIRE(status == CK_OK);
     REQUIRE(sp->solve(b, dt, &sb) == CK_OK);
     REQUIRE(sa.internal_steps == sb.internal_steps && sa.accepted == sb.accepted &&
@@ -106,15 +113,21 @@ static int check(const ck_specialized *sp, size_t cells, int tight)
   ck_stats zero;
   REQUIRE(sp->solve(b, 0, &zero) == CK_OK && zero.internal_steps == 0);
   REQUIRE(sp->solve(b, -1, &zero) == CK_INVALID);
-  free(fa); free(fb); free(ja); free(jb);
-  ck_state_free(a); ck_state_free(b); ck_model_free(m);
+  free(fa);
+  free(fb);
+  free(ja);
+  free(jb);
+  ck_state_free(a);
+  ck_state_free(b);
+  ck_model_free(m);
   return 1;
 }
 
 int main(void)
 {
-  const ck_specialized *cases[] = {&ts1_specialized, &sp_tutorial_no, &sp_tutorial_user,
-                                  &sp_tutorial_robertson, &sp_extended};
+  const ck_specialized *cases[] = {&ts1_specialized,       &sp_tutorial_no, &sp_tutorial_user,
+                                   &sp_tutorial_robertson, &sp_extended,    &sp_emission,
+                                   &sp_alternate};
   const size_t widths[] = {1, 3, 32, 37, 64};
   for (size_t i = 0; i < sizeof cases / sizeof *cases; ++i)
     for (size_t w = 0; w < sizeof widths / sizeof *widths; ++w)
