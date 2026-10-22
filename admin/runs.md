@@ -571,7 +571,7 @@ Calibration on this machine
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | 2026-10-22 12:06–13:20 | `1c9112c` | done, verified, timed |
 | astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | 2026-10-22 13:56–15:03 | `f478080` | done, verified, timed |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | 2026-10-22 15:39–17:21 | `ca0119e` | done, verified, timed |
-| sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | 2026-10-22 17:58– | | running |
+| sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | 2026-10-22 17:58–18:33 | `7af0738` | done, verified, timed |
 | sol-high | gpt-6.1-sol | high | `1d944f4` | Codex CLI 0.163.0, interactive | | | set up |
 | luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | | | set up |
 | luna-xhigh | gpt-6-luna | xhigh | `ada55d5` | Codex CLI 0.163.0, interactive | | | set up |
@@ -867,6 +867,65 @@ Calibration on this machine
   besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
 - Codex session `01a1659f-81c3-7d00-b307-1f319db2589c`; process 90297;
   `caffeinate -ims -w 90297`. No other Codex session was running; AC power.
+- Progress, from Claude Code's read-only checks every 20 minutes: at 20
+  minutes, a first commit (18:09) of generated fixed-index solvers and a
+  day-night driver, its 100-cell result bit-identical to MICM's, diurnal-10min
+  at 14.29 digits, generated-against-generic tests on five mechanisms; tiling
+  tried and left off (slower here). The turn ended before the 40-minute check.
+  The compliance scan found nothing outside the run directory and its inputs
+  (its apparent hits, relative paths after a `cd` inside the command, led to
+  the scanner's following such `cd`s).
+- Session end: the one turn ended at 18:33:12 with DONE (34 min 35 s from the
+  goal, the shortest Tier 2 run so far), no context compaction, no warning.
+  Every turn context shows gpt-6.1-sol at xhigh, approval `never`, sandbox
+  `danger-full-access`. The record was idle 10 minutes by 18:43; Claude Code
+  quit Codex (18:43:36) and collected and archived it with
+  `admin/collect_tier2.sh`.
+- Final commit `7af0738` (18:32), 3 commits after `171f54a` (`e1b1338`, 18:09,
+  "Generate fixed-index mechanism solvers and add day-night driver";
+  `148be07`, 18:24, "Bound generated kernels, select measured defaults and
+  verify optional transformations"; `7af0738`, "Record cross-compiler gates,
+  benchmark results and completed specialization audit"): 20 files changed,
+  2,103 lines added and 227 removed; in `src/`, the benchmark's common code
+  moved to `src/bench_common.h`, and new `src/scenario.c`,
+  `src/specialized.c`, and `src/specialized_solver.h`. The working tree is
+  clean. Collected as `tier2/sol/xhigh`.
+- Tokens: 207,782 total; input 122,093 (plus 10,847,872 cached); output 85,689
+  (36,129 reasoning). Codex's usage window stayed at 3 %.
+- Other load during the session: Claude Code's read-only progress checks,
+  record keeping, and copying two mechanisms from MUSICA for the review's
+  exercises. No builds, tests, or timing by the experimenter.
+- Self-reported, not yet verified: both compilers pass the Tier 1 suite, 70
+  specialized checks, and every disclosed scenario; 2.61 s at 18 threads and
+  36.17 s on one, 1.32 and 1.21 times its generic solver.
+- Transcript archived as `transcripts/tier2/sol-xhigh.jsonl.gz` (728 lines,
+  2.2 MB). The credential scan's two matches were inside encrypted content.
+- Verified, 18:43–18:47, with `admin/verify_tier2.py`
+  (`results/2026-10-22-tier2-sol-xhigh-verification`): both compilers build
+  without warnings (clean builds 18.3 s with clang, 46.1 s with gcc-15); 675
+  PASS, 0 FAIL, 5 N/A with each (as in Tier 1); the Tier 1 TS1 gate passes (0
+  with clang, 1.43e-13 with gcc-15); bin/ts1_bench_specialized passes on the
+  seed-2026 cells (2.31e-14, 1.43e-13) and the undisclosed input (1.95e-14,
+  1.52e-13), with MICM's 281,700 internal steps; `make test-specialized` passes
+  (70 checks); the day-night gate passes on all ten scenarios with both
+  compilers, 14.08 to 14.46 digits overall and at least 13.42 per species, with
+  MICM's internal steps exactly; the audit finds nothing outside the rules in
+  65 C files. Generated C for TS1: `generated/sp_ts1.c`, 112,387 lines, 3.43 MB.
+- Its outputs are byte-identical to astra-high's in all six TS1 runs and 18 of
+  the 20 day-night runs (the other two, clean-10min with each compiler, agree
+  to 15.4 digits). Checked as a possible copy, it is convergence: the two
+  generators are independent work (374 and 406 lines sharing 7 substantive
+  lines, all boilerplate), no command of sol-xhigh's session lists the run root
+  or reaches into another run, and both entries reproduce MICM's operation
+  order and emit literal-coefficient rate formulas in it.
+- Timed, 19:08–19:18, provisionally at 18 threads (5 rounds, the undisclosed
+  input; the idle wait restarted after more than one core of other load at
+  18:57; all 50 runs pass the gate): specialized 2,741.5 ms; its generic
+  3,672.0 ms and its Tier 1 commit's 3,664.9 ms; MICM 11,977.9, 10,993.3, and
+  4,452.4 ms; sol-max's specialized 2,474.6, astra-xhigh's 2,068.9,
+  astra-max's 3,007.4, astra-high's 3,233.4 ms. Specialization gains 1.34 times
+  over its own generic solver; 4.37 times MICM's default and 1.62 times its
+  fastest.
 
 # Tier 3
 

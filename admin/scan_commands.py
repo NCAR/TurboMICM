@@ -83,8 +83,17 @@ findings = {"paths outside the run directory and its inputs": [], "other runs an
 total = 0
 for stamp, text, cwd in commands(args.record):
     total += 1
-    # Codex's own check for instruction files in the parent folders names them, and nothing else
-    away = [t for t in outside(text, cwd) if not re.search(r"(AGENTS|CLAUDE)\.md$", t)]
+    # Follow "cd DIR" within the command, so that relative paths after it resolve from DIR
+    away, here = [], cwd
+    for segment in re.split(r"&&|\|\||;|\n", text):
+        moved = re.match(r"\s*(?:do\s+|then\s+|else\s+)?\(?\s*cd\s+([^\s;&|()]+)\s*$", segment)
+        if moved:
+            target = moved.group(1).strip("'\"")
+            here = str((Path(here) / target).resolve()) if not target.startswith(("/", "~")) else \
+                str(Path(target.replace("~", home, 1)).resolve())
+            continue
+        # Codex's own check for instruction files in the parent folders names them, and nothing else
+        away += [t for t in outside(segment, here) if not re.search(r"(AGENTS|CLAUDE)\.md$", t)]
     if away:
         findings["paths outside the run directory and its inputs"].append((stamp, text, away))
     if siblings.search(text.replace(Path(run).name, "")) or private.search(text):
