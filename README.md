@@ -26,6 +26,7 @@ below.
 |---|---|---|---|---:|
 | `transcripts/tier2/astra-max.jsonl.gz` | Tier 2 astra-max | Codex CLI 0.163.0 | `01a163e7-f388-7153-baf9-d8a8478cce81` | 1.8 MB |
 | `transcripts/tier2/astra-xhigh.jsonl.gz` | Tier 2 astra-xhigh | Codex CLI 0.163.0 | `01a1645d-8d6b-7ea1-adde-c65151f4d896` | 2.7 MB |
+| `transcripts/tier2/astra-high.jsonl.gz` | Tier 2 astra-high | Codex CLI 0.163.0 | `01a164c1-c86d-74f1-a385-74d24b64d3a1` | 2.3 MB |
 
 ## Tier 3 runs
 
