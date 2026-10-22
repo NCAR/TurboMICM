@@ -15,6 +15,17 @@ from agents that are still running.
 | `transcripts/astra-xhigh.jsonl.gz` | astra-xhigh | Codex CLI 0.163.0 | `01a142b6-b159-7d52-801a-7ac70fa3fed4` | 9.9 MB |
 | `transcripts/astra-max.jsonl.gz` | astra-max | Codex CLI 0.163.0 | `01a14386-84c0-70a3-867a-6cf69b22b824` | 7.1 MB |
 
+## Tier 2 runs
+
+Each Tier 2 run starts from a copy of the same model's Tier 1 repository, without
+web search, on a second machine, an Apple M5 Pro (Tiers 1 and 3 ran on an Apple
+M5). The file format and the redaction are those described under Contest runs,
+below.
+
+| File | Run | Harness | Session id | Original size |
+|---|---|---|---|---:|
+| `transcripts/tier2/astra-max.jsonl.gz` | Tier 2 astra-max | Codex CLI 0.163.0 | `01a163e7-f388-7153-baf9-d8a8478cce81` | 1.8 MB |
+
 ## Tier 3 runs
 
 Each Tier 3 run starts from a clone of the same model's Tier 1 repository and
