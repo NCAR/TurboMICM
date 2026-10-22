@@ -27,7 +27,7 @@ typedef struct {
 static int failures;
 static void compare(const char *what,const double *a,const double *b,size_t n)
 {
-    for (size_t i=0;i<n;++i) if (!isfinite(a[i]) || !isfinite(b[i]) || fabs(a[i]-b[i])>1e-30+1e-10*fabs(b[i])) {
+    for (size_t i=0;i<n;++i) if (!isfinite(a[i]) || !isfinite(b[i]) || fabs(a[i]-b[i])>1e-10*fabs(b[i])) {
         fprintf(stderr,"%s[%zu]: %.17g != %.17g\n",what,i,a[i],b[i]); ++failures; return;
     }
 }

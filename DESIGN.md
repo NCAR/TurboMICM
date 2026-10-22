@@ -191,3 +191,91 @@ and timed steps. Statistics sum over groups, so group size changes their totals.
 The benchmark uses the same generic mechanism and solver functions as the tests;
 there is no hand-written TS1 numerical kernel. Generated C currently supplies
 mechanism data, not specialized arithmetic.
+
+## Build-time mechanism specialization
+
+`tools/specialize.py` shares `tools/configure.py`'s validation and normalized
+mechanism representation. Its passes are:
+
+1. Stable rate-type sorting and custom-parameter indexing, excluding
+   parameterized species from the solution vector.
+2. Markowitz ordering with the same ties and unsigned-cost ordering as the
+   generic implementation, followed by complete symbolic Mozart fill.
+3. Ordered forcing and derivative operations, with literal matrix/species
+   indices and yields. Repeated reactants remain repeated operations.
+4. Emission of fixed-parameter rate formulas, pivot operations, forward/backward
+   substitution and mass-diagonal updates as C11 cell loops.
+5. Instantiation of the common Rosenbrock template with direct chemistry calls,
+   a known three-stage loop and a fused final-state/error-estimate loop.
+
+`Plan` owns the symbolic representation; `Emitter` handles C loops and function
+boundaries. Separate rate, chemistry, factor, solve and integrator emitters keep
+numerical expressions separate from formatting. Adding an existing rate-type
+reaction requires only a configuration edit. Adding a new rate type requires
+reader, generic evaluator and specialized rate-expression support, plus tests.
+Generated source dependencies include every transitive CAMP input.
+
+Species ordering and sparse offsets are known during generation. The runtime
+builder still creates ordinary generic-library metadata and reproduces the
+ordering once, allowing shared allocation, named setters and CSV I/O. This setup
+is outside benchmark timing. Generated kernels never traverse reaction objects,
+derivative plans or sparse index maps in their full-width arithmetic. The two
+prepared branched constants and surface molecular-speed constant are read from
+immutable metadata; C computes them once so Python/libm differences cannot enter
+these constants.
+
+Temperature, pressure, density, all custom parameters, concentrations, interval
+lengths and tolerances remain runtime inputs. A per-state exact-input cache holds
+copies of the three condition fields and all custom parameters. A cache hit
+requires byte-identical inputs, including signed zero. A miss evaluates rates
+normally and replaces the snapshot. Allocation failure simply disables caching.
+The generic updater invalidates the cache; state copies start without a cache,
+and destruction frees it. No Jacobian or factorization is cached. Concentrations
+do not belong in this cache because CAMP rate constants depend only on conditions
+and custom parameters; concentration products are recomputed at every stage.
+
+The generated mechanism must remain immutable and the solver must be attached to
+that same mechanism and ordering. Generic external processes, constraints and
+runtime mechanism edits remain available through the generic API. The supported
+configuration reader does not construct these callback-based features. The
+specialized three-stage path removes their empty checks. Other Rosenbrock stage
+counts delegate to the generic integrator, retaining the attached exact algebra.
+
+The common template preserves MICM's stage equations, ordered RMS sum, acceptance,
+rejection, step-size bounds, statistics and final concentration clamp. Fusing the
+three final-state additions and the three error additions changes traversal, not
+the arithmetic order for an element. SIMD applies only across independent cells;
+there is no floating-point SIMD reduction in the adaptive error norm. The LU
+singularity check reduces an integer flag. No precision or compiler math mode is
+changed.
+
+### Parameters
+
+| Setting | Default | Meaning and valid alternatives |
+| --- | --- | --- |
+| `GROUP_SIZE` | 32 | Positive default group size for specialized drivers; also default generated stride |
+| `GEN_WIDTH` / `--width` | `GROUP_SIZE` / 32 | Positive fixed stride, or 0 for variable-stride generated kernels |
+| `GEN_CHUNK` / `--chunk` | 32 | Positive operations or pivots per generated helper function |
+| `GEN_FUSION` / `--fusion` | 1 | Positive operations fused into one SIMD cell loop, bounded by a helper's size |
+| `GEN_OPTIONS=--split-lu` | off | Separate cell loop for each LU update instead of fusing a pivot |
+| `GEN_OPTIONS=--no-cache` | off | Recompute rates even when all inputs are unchanged |
+| `GEN_OPTIONS=--generic-stages` | off | Dynamic stage loops and separate final-state/error loops |
+| `GEN_OPTIONS=--joint-initial` | off | Combine the initial forcing and Jacobian pass, preserving each entry's accumulation order |
+| `CHEM_GROUP_SIZE` | build default | Positive runtime group-size override |
+| `--group-size` | environment/build default | Scenario-specific runtime group override |
+| `--threads` | OpenMP maximum | Positive thread count, bounded by `INT_MAX` |
+| `OMP_SCHEDULE` | static | OpenMP runtime schedule and optional chunk |
+| `OPTFLAGS` | `-O3 -DNDEBUG` | User/compiler experiment flags; no extra optimization flags are added |
+| `OMP_PREFIX` | `brew --prefix libomp` on macOS Clang | OpenMP include/library installation |
+
+Combine generator switches in `GEN_OPTIONS`, for example
+`make GEN_WIDTH=0 GEN_CHUNK=17 GEN_FUSION=3 test-specialized`.
+All positive sizes must fit the available address space/memory; allocation failure
+is reported normally. No size changes the chemistry. Group sizes affect adaptive
+error averaging, so scenario comparisons must use the same grouping as MICM.
+The fixed-stride kernels dispatch mismatched/tail groups to generic kernels;
+variable-stride generation specializes every group size.
+
+No SIMD length or thread count is hard-coded into the kernels. The C compiler
+chooses SIMD instructions from ordinary C and `omp simd`. Helper chunk sizes,
+loop fusion, cell groups and scheduling are all exposed above.

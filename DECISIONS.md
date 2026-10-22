@@ -334,3 +334,24 @@ Generator equivalence tests suppress the six unphysical unit-rate photolysis
 defaults identified by the supplied cell generator. Leaving these enabled in
 perturbed tight-tolerance fixtures made both the generic and generated solvers
 fail identically, rather than testing the intended atmospheric conditions.
+
+Fixed strides and a per-state exact rate-input cache are retained after timing.
+Dynamic-stride unrolling alone was slower than the generic library on the full
+benchmark. Wider expression fusion, four-cell kernel tiling, and separate LU
+update loops were also slower. Four-cell tiling was removed because it additionally
+made compilation much slower. The joint initial forcing/Jacobian pass remains an
+optional experiment; it did not improve the default. Sixteen-cell and 32-cell
+full benchmark times were close, so 32 remains the default and matches the
+scenario gate directly. No compiler flags were tuned.
+
+The generator retains the original species ordering even though alternative
+exact factorizations are permitted. It already has modest fill, and preserving
+accumulation order makes long-time comparisons easier to verify. No alternative
+ordering or approximate Jacobian is used. An unchanged rate vector can be reused
+because it is an exact function of unchanged inputs; all Jacobians and
+factorizations are still recomputed on MICM's schedule.
+
+The conda environment now uses a readiness stamp. `make env` creates a missing
+prefix or updates an existing prefix when environment.yml changes, always with
+the package cache and prefix inside this repository. This makes regeneration
+idempotent while preserving the pinned Python/PyYAML versions.

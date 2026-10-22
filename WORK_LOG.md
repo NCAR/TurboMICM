@@ -176,6 +176,40 @@ a mechanism. Linear-solver and step-controller callbacks are public interfaces.
 
 Existing generated objects and validation files are under ignored `build/`.
 All Python invocations must use `.conda/bin/python`. Read-only input trees are
-`../micm` and `../reference`; do not inspect other sibling directories. Run MICM
-tests only from a copy of its build tree inside this repository. The explicit
-`make micm-ref` reference executable is the only linked MICM benchmark allowed.
+`../micm`, `../reference`, and (for Tier 2) `../scenarios`; do not inspect other sibling directories. Run MICM
+tests only from a copy of its build tree inside this repository. Only the explicit `make micm-ref` and Tier 2 `make micm-scenario-ref`
+reference executables link MICM; the C library and production drivers do not.
+
+
+## Tier 2 completion audit
+
+- The shared CAMP reader feeds the new Python symbolic planner and C emitters.
+  Fixed chemistry indices/yields, sparse fill, LU/substitution operations, rate
+  formulas and three-stage traversal are generated; runtime inputs remain data.
+  Re-running the generator reproduced the built TS1 C byte for byte. Make
+  dependency files name all transitive CAMP includes.
+- Generic library and benchmark remain operational. Clean `cpu bench` builds
+  pass with Clang 21 and GCC 15.3 using only the required optimization flags.
+  Both `test-cpu` runs report 680 PASS, zero failures/skips, plus supplemental
+  configuration, tutorial and TS1 checks.
+- `test-specialized` passes on both compilers with a strict 1e-10 relative bound
+  and no absolute allowance. It covers all five Tier 1 file mechanisms and a
+  generated mutation, five cell counts, two tolerances, rate cache invalidation,
+  factorization, substitution, singular pivots, concentrations and statistics.
+  An alternate variable-stride/chunk/fusion build also passes.
+- Both C drivers pass the full 10,000-cell/100-step gate at 18 and 1 threads on
+  both compilers. Supplied seed-1 data also passes with groups of 7 and 32,
+  static/dynamic scheduling and four threads, for both drivers/compilers.
+- Every disclosed scenario passes score.py level 10 for snapshots and final
+  states with both compilers, correct grouping and required tolerances. An extra
+  48-hour case verifies a different season/latitude/start/NOx, interpolation
+  between table points and a one-cell tail. All nonfinite/negative gates pass.
+- Source/generated-source portability audit found no forbidden constructs.
+  C remains C11 plus libm/OpenMP. Python is build/test orchestration only.
+- SPECIALIZATION, README, DESIGN, DECISIONS, RESULTS and environment.yml cover
+  the generator, all tuning settings, regeneration, experiments, full timings,
+  clean-build times and numerical results. Historical Tier 1 data is retained
+  and identified separately. Default Clang executables are restored locally.
+
+Authoritative run evidence is retained under ignored `validation/clang/`,
+`validation/gcc-15/`, `validation/seasonal/` and `validation/tuning/`.

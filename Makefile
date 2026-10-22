@@ -40,6 +40,12 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp
 	@mkdir -p bin
 	clang++ -std=c++20 $(OPTFLAGS) -I ../micm/include -I ../micm/test/benchmark $< -o $@
 
+.PHONY: micm-scenario-ref
+micm-scenario-ref: bin/micm_scenario
+bin/micm_scenario: ../scenarios/micm_scenario.cpp
+	@mkdir -p bin
+	clang++ -std=c++20 $(OPTFLAGS) -I ../micm/include -I ../micm/test/benchmark $< -o $@
+
 clean:
 	rm -rf build bin
 
