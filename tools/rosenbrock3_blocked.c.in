@@ -1,0 +1,158 @@
+/* Cache-blocked execution of the same independent cell systems.
+ * Numerical method: Copyright (C) 2023-2026 University Corporation for Atmospheric Research.
+ * SPDX-License-Identifier: Apache-2.0
+ * A tile completes all three stages before the next tile. Acceptance and the
+ * serial error sum still use the entire original cell group, in species order. */
+static void @NAME@_attempt(const ChemRosenbrock *p, double h, ChemState *q) {
+  const size_t nc = q->cells, s = q->stride, ny = @N@*s;
+  const ChemModel *m = q->model;
+  double *restrict y = q->variables, *restrict yn = q->new_y;
+  double *restrict k1 = q->stages[0], *restrict k2 = q->stages[1], *restrict k3 = q->stages[2];
+  #if !@INITIALIZE@
+  memset(q->jacobian,0,@NNZ@*s*sizeof(double));
+  #endif
+  @NAME@_jacobian(m,nc,s,y,q->rates,q->jacobian);
+  @NAME@_shift(q,1.0/(h*p->gamma[0]));
+  @FACTOR_CALL@
+  memcpy(k1,q->forcing,ny*sizeof(double));
+  chem_linear_@NAME@(m,nc,s,q->jacobian,k1);
+  for (size_t v = 0; v < @N@; ++v) {
+    #pragma omp simd
+    for (size_t c = 0; c < nc; ++c) { size_t i = v*s+c; yn[i] = y[i] + p->a[0]*k1[i]; }
+  }
+  #if !@INITIALIZE@
+  memset(k2,0,ny*sizeof(double));
+  #endif
+  @NAME@_force(m,nc,s,yn,q->rates,k2);
+  double c0 = p->c[0]/h, c1 = p->c[1]/h, c2 = p->c[2]/h;
+  for (size_t v = 0; v < @N@; ++v) {
+    #pragma omp simd
+    for (size_t c = 0; c < nc; ++c) { size_t i = v*s+c; k3[i] = k2[i]; k2[i] += c0*k1[i]; }
+  }
+  chem_linear_@NAME@(m,nc,s,q->jacobian,k2);
+  for (size_t v = 0; v < @N@; ++v) {
+    #pragma omp simd
+    for (size_t c = 0; c < nc; ++c) { size_t i = v*s+c; k3[i] += c1*k1[i]; k3[i] += c2*k2[i]; }
+  }
+  chem_linear_@NAME@(m,nc,s,q->jacobian,k3);
+  for (size_t v = 0; v < @N@; ++v) {
+    #pragma omp simd
+    for (size_t c = 0; c < nc; ++c) {
+      size_t i = v*s+c;
+      double value = y[i];
+      value += p->m[0]*k1[i]; value += p->m[1]*k2[i]; value += p->m[2]*k3[i];
+      yn[i] = value;
+      double error = 0.0;
+      error += p->e[0]*k1[i]; error += p->e[1]*k2[i]; error += p->e[2]*k3[i];
+      #if @VECTOR_ERROR@
+      double ymax = fabs(y[i]) > fabs(value) ? fabs(y[i]) : fabs(value);
+      double scaled = error/(q->absolute_tolerance[v]+q->relative_tolerance*ymax);
+      q->error[i] = scaled*scaled;
+      #else
+      q->error[i] = error;
+      #endif
+    }
+  }
+}
+
+ChemStatus chem_solve_@NAME@(double dt, ChemState *state, ChemStats *stats) {
+  if (!state || !stats || !isfinite(dt) || dt < 0.0 ||
+      state->model->nvariables != @N@ || state->model->nnz != @NNZ@ ||
+      state->model->nconstraints || state->stride != state->cells) return CHEM_INVALID;
+  memset(stats,0,sizeof *stats);
+  const ChemRosenbrock p = chem_rosenbrock_parameters(3);
+  const size_t nc = state->cells, stride = state->stride, ny = @N@*stride;
+  const size_t tile = @TILE@;
+  if (tile > SIZE_MAX/(@NNZ@+@R@+7*@N@)/sizeof(double)) return CHEM_MEMORY;
+  const size_t needed = (@NNZ@+@R@+7*@N@)*tile;
+  /* The unused three stage vectors often hold the whole tile workspace. */
+  double *allocated = needed > 3*ny ? malloc(needed*sizeof(double)) : NULL;
+  if (needed > 3*ny && !allocated) return CHEM_MEMORY;
+  double *scratch = allocated ? allocated : state->stages[3];
+  ChemState q = {0};
+  q.model = state->model; q.stride = tile;
+  q.relative_tolerance = state->relative_tolerance; q.absolute_tolerance = state->absolute_tolerance;
+  q.jacobian = scratch; q.rates = q.jacobian+@NNZ@*tile;
+  q.variables = q.rates+@R@*tile; q.new_y = q.variables+@N@*tile;
+  q.forcing = q.new_y+@N@*tile; q.error = q.forcing+@N@*tile;
+  for (size_t j = 0; j < 3; ++j) q.stages[j] = q.error+(j+1)*@N@*tile;
+  /* Padding is initialized once and never enters the controller's error norm. */
+  memset(scratch,0,needed*sizeof(double));
+  double *restrict y = state->variables, *restrict yn = state->new_y;
+  double hmin = 1e-15*dt, hmax = dt, hstart = 1e-6*dt;
+  double h = fmin(fmax(hmin,fabs(hstart)),fabs(hmax)), time = 0.0;
+  int reject_last = 0, reject_more = 0;
+  ChemStatus status = CHEM_OK;
+  while (time-dt+p.roundoff <= 0.0) {
+    if (stats->internal_steps > p.max_steps) { status = CHEM_MAX_STEPS; break; }
+    if (time+0.1*h == time || h <= fmin(p.roundoff,hmin)) { status = CHEM_SMALL_STEP; break; }
+    h = fmin(h,fabs(dt-time));
+    #if !@INITIALIZE@
+    memset(state->forcing,0,ny*sizeof(double));
+    #endif
+    @NAME@_force(state->model,nc,stride,y,state->rates,state->forcing);
+    ++stats->function_calls; ++stats->jacobian_updates;
+    int accepted = 0;
+    while (!accepted) {
+      for (size_t first = 0; first < nc; first += tile) {
+        q.cells = nc-first < tile ? nc-first : tile;
+        for (size_t v = 0; v < @N@; ++v) {
+          #pragma omp simd
+          for (size_t c = 0; c < q.cells; ++c) {
+            q.variables[v*tile+c] = y[v*stride+first+c];
+            q.forcing[v*tile+c] = state->forcing[v*stride+first+c];
+          }
+        }
+        for (size_t r = 0; r < @R@; ++r) {
+          #pragma omp simd
+          for (size_t c = 0; c < q.cells; ++c) q.rates[r*tile+c] = state->rates[r*stride+first+c];
+        }
+        @NAME@_attempt(&p,h,&q);
+        for (size_t v = 0; v < @N@; ++v) {
+          #pragma omp simd
+          for (size_t c = 0; c < q.cells; ++c) {
+            yn[v*stride+first+c] = q.new_y[v*tile+c];
+            state->error[v*stride+first+c] = q.error[v*tile+c];
+          }
+        }
+      }
+      ++stats->decompositions; stats->solves += 3; ++stats->function_calls;
+      double total = 0.0;
+      for (size_t v = 0; v < @N@; ++v) for (size_t c = 0; c < nc; ++c) {
+        size_t i = v*stride+c;
+        #if @VECTOR_ERROR@
+        total += state->error[i];
+        #else
+        double ymax = fabs(y[i]) > fabs(yn[i]) ? fabs(y[i]) : fabs(yn[i]);
+        double scaled = state->error[i]/(state->absolute_tolerance[v]+state->relative_tolerance*ymax);
+        total += scaled*scaled;
+        #endif
+      }
+      double error = sqrt(total/ny);
+      error = error < 1e-10 ? 1e-10 : error;
+      double hnew = h*chem_default_controller(error,&p,NULL);
+      ++stats->internal_steps;
+      if (isnan(error)) { status = CHEM_NAN; goto finished; }
+      if (isinf(error)) { status = CHEM_INF; goto finished; }
+      if (error < 1.0 || h < hmin) {
+        ++stats->accepted; time += h;
+        memcpy(y,yn,ny*sizeof(double));
+        hnew = fmax(hmin,fmin(hnew,hmax));
+        if (reject_last) hnew = fmin(hnew,h);
+        reject_last = reject_more = 0; h = hnew; accepted = 1;
+      } else {
+        if (reject_more) hnew = h*p.rejection_factor;
+        reject_more = reject_last; reject_last = 1; h = hnew;
+        if (stats->accepted >= 1) ++stats->rejected;
+        ++stats->jacobian_updates;
+        if (!(h > 0.0) || time+0.1*h == time) { status = CHEM_SMALL_STEP; goto finished; }
+      }
+    }
+  }
+finished:
+  #pragma omp simd
+  for (size_t i = 0; i < ny; ++i) y[i] = y[i] < 0.0 ? 0.0 : y[i];
+  stats->final_time = time;
+  free(allocated);
+  return status;
+}

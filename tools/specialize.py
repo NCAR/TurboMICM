@@ -126,75 +126,207 @@ def emit_rates(config, name, chunk):
     return '\n'.join(lines + [f'void chem_rates_{name}(ChemState *state) {{'] + calls + ['}'])
 
 
-def emit_linear(name, n, indices, chunk):
-    """Unroll sparse Mozart elimination and forward/back substitution.
-
-    A chunk contains successive pivots (or rows), fused inside one cell loop.
-    This retains every multiply/subtract and division in reference order.
-    Functions bound compiler work without imposing a cell vector length.
-    """
+def linear_plan(n, indices):
+    """Tuples name an operation and its fixed array indices, in execution order."""
     factor, forward, backward = [], [], []
     for i in range(n):
         lower = [j for j in range(i+1, n) if (j, i) in indices]
         upper = [j for j in range(i+1, n) if (i, j) in indices]
         block = []
         if lower:
-            block += [f'double inverse = 1.0 / a[{indices[i,i]}*s+c];']
-            block += [f'a[{indices[j,i]}*s+c] *= inverse;' for j in lower]
-            block += [f'a[{indices[j,k]}*s+c] -= a[{indices[j,i]}*s+c] * a[{indices[i,k]}*s+c];'
-                      for k in upper for j in lower]
+            block += [('inverse', indices[i,i])]
+            block += [('scale', indices[j,i]) for j in lower]
+            block += [('update', indices[j,k], indices[j,i], indices[i,k]) for k in upper for j in lower]
         factor.append(block)
-        forward.append([f'x[{i}*s+c] -= a[{indices[i,j]}*s+c] * x[{j}*s+c];'
-                        for j in range(i) if (i, j) in indices])
+        forward.append([('subtract', i, indices[i,j], j) for j in range(i) if (i, j) in indices])
     for i in reversed(range(n)):
-        backward.append([f'x[{i}*s+c] -= a[{indices[i,j]}*s+c] * x[{j}*s+c];'
-                         for j in range(i+1, n) if (i, j) in indices] +
-                        [f'x[{i}*s+c] /= a[{indices[i,i]}*s+c];'])
+        backward.append([('subtract', i, indices[i,j], j) for j in range(i+1, n) if (i, j) in indices] +
+                        [('divide', i, indices[i,i])])
+    return [('factor', factor), ('forward', forward), ('backward', backward)]
+
+
+def linear_statement(op):
+    kind, i, *rest = op
+    if kind == 'inverse':
+        return f'double inverse = 1.0 / a[{i}*s+c];'
+    if kind == 'scale':
+        return f'a[{i}*s+c] *= inverse;'
+    if kind == 'update':
+        j, k = rest
+        return f'a[{i}*s+c] -= a[{j}*s+c] * a[{k}*s+c];'
+    if kind == 'subtract':
+        j, k = rest
+        return f'x[{i}*s+c] -= a[{j}*s+c] * x[{k}*s+c];'
+    j, = rest
+    return f'x[{i}*s+c] /= a[{j}*s+c];'
+
+
+def linear_operation_loop(op, pointers):
+    """Small SIMD loop; restrict also describes distinct sparse element arrays."""
+    kind, i, *rest = op
+    statement = linear_statement(op).replace('double inverse =', 'inverse[c] =').replace('*= inverse;', '*= inverse[c];')
+    declarations = []
+    if pointers:
+        if kind == 'inverse':
+            declarations = [f'const double *restrict diagonal = a+{i}*s;']
+            statement = 'inverse[c] = 1.0 / diagonal[c];'
+        elif kind == 'scale':
+            declarations = [f'double *restrict target = a+{i}*s;']
+            statement = 'target[c] *= inverse[c];'
+        elif kind == 'update':
+            j, k = rest
+            declarations = [f'double *restrict target = a+{i}*s;',
+                            f'const double *restrict left = a+{j}*s, *restrict right = a+{k}*s;']
+            statement = 'target[c] -= left[c]*right[c];'
+        elif kind == 'subtract':
+            j, k = rest
+            declarations = [f'double *restrict target = x+{i}*s;',
+                            f'const double *restrict left = a+{j}*s, *restrict right = x+{k}*s;']
+            statement = 'target[c] -= left[c]*right[c];'
+        else:
+            j, = rest
+            declarations = [f'double *restrict target = x+{i}*s;', f'const double *restrict diagonal = a+{j}*s;']
+            statement = 'target[c] /= diagonal[c];'
+    return ['  {'] + ['    '+line for line in declarations] + [
+        '    #pragma omp simd', '    for (size_t c = 0; c < nc; ++c) {', '      '+statement, '    }', '  }']
+
+
+def dot_factor_blocks(n, indices):
+    """Left-looking exact LU: accumulate each element once, in pivot order.
+
+    Each element sees the same subtractions as Mozart, followed by the same
+    column reciprocal multiplication. Completed L/U entries are the operands.
+    The sparse elimination tree is unchanged; only independent work moves.
+    """
+    blocks = []
+    for i in range(n):
+        block = []
+        upper = [(i,k,False) for k in range(i,n) if (i,k) in indices]
+        lower = [(j,i,True) for j in range(i+1,n) if (j,i) in indices]
+        for row, col, scale in upper+lower:
+            if scale and col == i and row == lower[0][0]:
+                block += linear_operation_loop(('inverse',indices[i,i]), True)
+            target = indices[row,col]
+            body = [f'double value = target[c];']
+            for p in range(i):
+                if (row,p) in indices and (p,col) in indices:
+                    body += [f'value -= a[{indices[row,p]}*s+c] * a[{indices[p,col]}*s+c];']
+            body += ['target[c] = value * inverse[c];' if scale else 'target[c] = value;']
+            if len(body) == 2 and not scale:
+                continue  # unchanged U entry, including an isolated diagonal
+            block += ['  {', f'    double *restrict target = a+{target}*s;',
+                      '    #pragma omp simd', '    for (size_t c = 0; c < nc; ++c) {']
+            block += ['      '+line for line in body] + ['    }', '  }']
+        blocks.append(block)
+    return blocks
+
+
+def dot_solve_block(body):
+    """Keep a triangular row's partial sum in a SIMD register."""
+    i = body[0][1]
+    statements = ['double value = target[c];']
+    for op in body:
+        if op[0] == 'subtract':
+            _, _, j, k = op
+            statements += [f'value -= a[{j}*s+c] * x[{k}*s+c];']
+        else:
+            statements += [f'value /= a[{op[2]}*s+c];']
+    statements += ['target[c] = value;']
+    return ['  {', f'    double *restrict target = x+{i}*s;',
+            '    #pragma omp simd', '    for (size_t c = 0; c < nc; ++c) {'] + [
+                '      '+line for line in statements] + ['    }','  }']
+
+
+def emit_linear(name, n, indices, chunk, loop, cell_stride=0):
+    """Unroll sparse Mozart elimination and forward/back substitution.
+
+    A chunk contains successive pivots (or rows), fused inside one cell loop.
+    This retains every multiply/subtract and division in reference order.
+    Functions bound compiler work without imposing a cell vector length.
+    """
     lines, wrappers = [], []
-    for family, blocks in [('factor', factor), ('forward', forward), ('backward', backward)]:
+    for family, blocks in linear_plan(n, indices):
+        if family == 'factor' and loop == 'dot':
+            blocks = dot_factor_blocks(n,indices)
         calls = []
-        args = 'double *restrict a' if family == 'factor' else 'const double *restrict a, double *restrict x'
-        actual = 'nc, s, a' if family == 'factor' else 'nc, s, a, x'
+        args = 'double *restrict a, double *restrict inverse' if family == 'factor' else 'const double *restrict a, double *restrict x'
+        actual = 'nc, s, a, inverse' if family == 'factor' else 'nc, s, a, x'
         for start in range(0, len(blocks), chunk):
             selected = [b for b in blocks[start:start+chunk] if b]
             if not selected:
                 continue
             fn = f'{name}_{family}_{start//chunk}'
             calls.append(f'  {fn}({actual});')
-            lines += [f'static void {fn}(size_t nc, size_t s, {args}) {{',
-                      '  #pragma omp simd', '  for (size_t c = 0; c < nc; ++c) {']
-            for body in selected:
-                lines += ['    {'] + ['      '+line for line in body] + ['    }']
-            lines += ['  }', '}']
+            lines += [f'static void {fn}(size_t nc, size_t s, {args}) {{']
+            if cell_stride:
+                lines[-1] = lines[-1].replace('size_t nc, size_t s,', 'size_t unused_nc, size_t unused_s,')
+                lines += [f'  const size_t nc = {cell_stride}, s = {cell_stride};', '  (void)unused_nc; (void)unused_s;']
+            if family == 'factor':
+                lines += ['  (void)inverse;']
+            if loop == 'dot':
+                for body in selected:
+                    lines += body if family == 'factor' else dot_solve_block(body)
+            elif loop in ('operations', 'pointers'):
+                for body in selected:
+                    for op in body:
+                        lines += linear_operation_loop(op,loop == 'pointers')
+            else:
+                lines += ['  #pragma omp simd', '  for (size_t c = 0; c < nc; ++c) {']
+                for body in selected:
+                    lines += ['    {'] + ['      '+linear_statement(op) for op in body] + ['    }']
+                lines += ['  }']
+            lines += ['}']
         wrappers += [f'static void {name}_{family}(size_t nc, size_t s, {args}) {{',
                      '  (void)nc; (void)s; (void)a;']
         if family != 'factor':
             wrappers += ['  (void)x;']
+        else:
+            wrappers += ['  (void)inverse;']
         wrappers += calls + ['}']
     lines += wrappers
     lines += [f'void chem_factor_{name}(const ChemModel *m, size_t nc, size_t s, double *a) {{',
-              f'  (void)m; {name}_factor(nc, s, a);', '}',
+              '  double *inverse = malloc(nc*sizeof(double));',
+              '  if (!inverse) { for (size_t c = 0; c < nc; ++c) a[m->diagonal[0]*s+c] = NAN; return; }',
+              f'  {name}_factor(nc, s, a, inverse); free(inverse);', '}',
               f'void chem_linear_{name}(const ChemModel *m, size_t nc, size_t s, const double *a, double *x) {{',
               f'  (void)m; {name}_forward(nc, s, a, x); {name}_backward(nc, s, a, x);', '}']
     return '\n'.join(lines)
 
 
-def specialize(config, name, kernel_chunk=32, linear_chunk=8, fuse_kernels=False,
-               linear='unrolled', fuse_stages=True, specialize_rates=True):
+def specialize(config, name, kernel_chunk=32, linear_chunk=1, fuse_kernels=True,
+               linear='unrolled', fuse_stages=True, specialize_rates=True, linear_loop='rows',
+               vector_error=True, cell_stride=4, initialize=True, solver_tile=4):
     if linear_chunk < 1:
         raise ValueError('linear chunk must be positive')
+    if cell_stride < 0:
+        raise ValueError('cell stride must be nonnegative')
+    if solver_tile < 0:
+        raise ValueError('solver tile must be nonnegative')
     vmap, indices = mechanism_layout(config)
     n = len(vmap)
     if n == 0:
         raise ValueError('a solver needs at least one variable species')
-    lines = [generate(config, name, kernel_chunk, fuse_kernels),
+    lines = []
+    if cell_stride:
+        lines += [generate(config,name+'_fixed',kernel_chunk,fuse_kernels,cell_stride,False,initialize=initialize)]
+    lines += [generate(config, name, kernel_chunk, fuse_kernels,dispatch_stride=cell_stride,initialize=initialize),
              '#include <math.h>', '#include <float.h>', '#include <string.h>']
     if specialize_rates:
         lines += [emit_rates(config, name, kernel_chunk)]
     else:
         lines += [f'void chem_rates_{name}(ChemState *s) {{ chem_calculate_rates(s); }}']
     if linear == 'unrolled':
-        lines += [emit_linear(name, n, indices, linear_chunk)]
+        if cell_stride:
+            lines += [emit_linear(name+'_dynamic', n, indices, linear_chunk, linear_loop),
+                      emit_linear(name+'_fixed', n, indices, linear_chunk, linear_loop,cell_stride),
+                      f'void chem_factor_{name}(const ChemModel *m, size_t nc, size_t s, double *a) {{',
+                      f'  if (nc == {cell_stride} && s == {cell_stride}) chem_factor_{name}_fixed(m,nc,s,a);',
+                      f'  else chem_factor_{name}_dynamic(m,nc,s,a);', '}',
+                      f'void chem_linear_{name}(const ChemModel *m, size_t nc, size_t s, const double *a, double *x) {{',
+                      f'  if (nc == {cell_stride} && s == {cell_stride}) chem_linear_{name}_fixed(m,nc,s,a,x);',
+                      f'  else chem_linear_{name}_dynamic(m,nc,s,a,x);', '}']
+        else:
+            lines += [emit_linear(name, n, indices, linear_chunk, linear_loop)]
     else:
         lines += [f'void chem_factor_{name}(const ChemModel *m, size_t n, size_t s, double *a) {{ chem_lu_mozart(m,n,s,a); }}',
                   f'void chem_linear_{name}(const ChemModel *m, size_t n, size_t s, const double *a, double *x) {{ chem_linear_solve(m,n,s,a,x); }}']
@@ -204,8 +336,23 @@ def specialize(config, name, kernel_chunk=32, linear_chunk=8, fuse_kernels=False
                   '  #pragma omp simd', '  for (size_t c = 0; c < state->cells; ++c) {']
         lines += [f'    a[{indices[i,i]}*s+c] += alpha;' for i in range(n)]
         lines += ['  }', '}']
-        template = Path(__file__).with_name('rosenbrock3.c.in').read_text()
-        lines += [template.replace('@NAME@', name).replace('@N@', str(n)).replace('@NNZ@', str(len(indices)))]
+        if solver_tile:
+            template = Path(__file__).with_name('rosenbrock3_blocked.c.in').read_text()
+            if linear == 'unrolled':
+                if cell_stride:
+                    factor = (f'if (nc == {cell_stride} && s == {cell_stride}) '
+                              f'{name}_fixed_factor(nc,s,q->jacobian,q->error); '
+                              f'else {name}_dynamic_factor(nc,s,q->jacobian,q->error);')
+                else:
+                    factor = f'{name}_factor(nc,s,q->jacobian,q->error);'
+            else:
+                factor = f'chem_factor_{name}(m,nc,s,q->jacobian);'
+            template = template.replace('@FACTOR_CALL@',factor).replace('@TILE@',str(solver_tile)).replace('@R@',str(len(config['reactions'])))
+        else:
+            template = Path(__file__).with_name('rosenbrock3.c.in').read_text()
+        lines += [template.replace('@NAME@', name).replace('@N@', str(n)).replace('@NNZ@', str(len(indices)))
+                  .replace('@VECTOR_ERROR@', str(int(vector_error)))]
+        lines[-1] = lines[-1].replace('@INITIALIZE@',str(int(initialize)))
     else:
         # Used for measured ablation of stage fusion; same generated chemistry/LU.
         lines += [f'ChemStatus chem_solve_{name}(double dt, ChemState *s, ChemStats *stats) {{',
@@ -221,11 +368,16 @@ def main():
     parser.add_argument('output')
     parser.add_argument('--name', required=True)
     parser.add_argument('--kernel-chunk', type=int, default=32)
-    parser.add_argument('--linear-chunk', type=int, default=8)
-    parser.add_argument('--fuse-kernels', type=int, choices=(0, 1), default=0)
+    parser.add_argument('--linear-chunk', type=int, default=1)
+    parser.add_argument('--fuse-kernels', type=int, choices=(0, 1), default=1)
     parser.add_argument('--linear', choices=('unrolled', 'generic'), default='unrolled')
+    parser.add_argument('--linear-loop', choices=('operations', 'pointers', 'rows', 'dot'), default='rows')
     parser.add_argument('--fuse-stages', type=int, choices=(0, 1), default=1)
     parser.add_argument('--specialize-rates', type=int, choices=(0, 1), default=1)
+    parser.add_argument('--vector-error', type=int, choices=(0, 1), default=1)
+    parser.add_argument('--cell-stride', type=int, default=4)
+    parser.add_argument('--initialize-kernels', type=int, choices=(0,1), default=1)
+    parser.add_argument('--solver-tile', type=int, default=4)
     args = parser.parse_args()
     if not re.fullmatch('[a-zA-Z_][a-zA-Z_0-9]*', args.name):
         parser.error('name must be a C identifier')
@@ -233,7 +385,8 @@ def main():
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(specialize(read_configuration(args.config), args.name, args.kernel_chunk,
                                args.linear_chunk, bool(args.fuse_kernels), args.linear,
-                               bool(args.fuse_stages), bool(args.specialize_rates)))
+                               bool(args.fuse_stages), bool(args.specialize_rates), args.linear_loop,
+                               bool(args.vector_error), args.cell_stride, bool(args.initialize_kernels), args.solver_tile))
 
 
 if __name__ == '__main__':

@@ -7,11 +7,16 @@ export TMPDIR := $(CURDIR)/build/tmp
 OPTFLAGS ?= -O3 -DNDEBUG
 GROUP_SIZE ?= 32
 KERNEL_CHUNK ?= 32
-LINEAR_CHUNK ?= 8
-FUSE_KERNELS ?= 0
+LINEAR_CHUNK ?= 1
+FUSE_KERNELS ?= 1
 FUSE_STAGES ?= 1
 SPECIALIZE_RATES ?= 1
 LINEAR_MODE ?= unrolled
+LINEAR_LOOP ?= rows
+VECTOR_ERROR ?= 1
+SOLVER_TILE ?= 4
+SPECIALIZED_STRIDE ?= $(if $(filter 0,$(SOLVER_TILE)),$(GROUP_SIZE),$(SOLVER_TILE))
+INITIALIZE_KERNELS ?= 1
 ifeq ($(origin CC),default)
 CC := clang
 endif
@@ -41,7 +46,7 @@ endif
 CFLAGS := -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMPFLAGS)
 CPPFLAGS := -Iinclude -Igenerated -DCHEM_GROUP_SIZE=$(GROUP_SIZE)
 GENFLAGS := --kernel-chunk $(KERNEL_CHUNK)
-SPECFLAGS := $(GENFLAGS) --linear-chunk $(LINEAR_CHUNK) --fuse-kernels $(FUSE_KERNELS) --fuse-stages $(FUSE_STAGES) --specialize-rates $(SPECIALIZE_RATES) --linear $(LINEAR_MODE)
+SPECFLAGS := $(GENFLAGS) --linear-chunk $(LINEAR_CHUNK) --fuse-kernels $(FUSE_KERNELS) --fuse-stages $(FUSE_STAGES) --specialize-rates $(SPECIALIZE_RATES) --linear $(LINEAR_MODE) --linear-loop $(LINEAR_LOOP) --vector-error $(VECTOR_ERROR) --cell-stride $(SPECIALIZED_STRIDE) --initialize-kernels $(INITIALIZE_KERNELS) --solver-tile $(SOLVER_TILE)
 LDLIBS := $(OMPLIBS) -lm
 BUILD := build/$(notdir $(CC))
 SOURCES := $(filter-out src/bench.c src/scenario.c,$(wildcard src/*.c))
@@ -50,14 +55,19 @@ GENERATED_OBJECTS := $(BUILD)/ts1.o $(BUILD)/example_no_user.o $(BUILD)/example_
 SPEC_NAMES := ts1 example_no_user example_user example_robertson validation edges ts1_variant
 SPECIALIZED_OBJECTS := $(addprefix $(BUILD)/,$(addsuffix _specialized.o,$(SPEC_NAMES)))
 
-.PHONY: all env cpu test-cpu test-specialized bench micm-ref clean
+.PHONY: all env cpu test-cpu test-specialized bench kernel-bench micm-ref micm-scenario clean
 .SECONDARY: $(addprefix generated/,$(addsuffix _specialized.c,$(SPEC_NAMES)))
 all: cpu
 env: .conda/conda-meta/history
 	mkdir -p $(TMPDIR)
 .conda/conda-meta/history: environment.yml
 	mkdir -p $(TMPDIR)
-	CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes >&2
+	if test -f $@; then \
+	  CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env update --prefix $(CURDIR)/.conda --file environment.yml >&2; \
+	else \
+	  CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(CURDIR)/.conda --file environment.yml --yes >&2; \
+	fi
+	@touch $@
 cpu: bin/libchem.a bin/libchem.$(SHARED_EXT) bin/ts1_bench_cpu bin/tutorials
 bench: cpu bin/ts1_bench_specialized bin/ts1_scenario_specialized
 kernel-bench: bin/kernel_bench
@@ -70,7 +80,7 @@ test-specialized: bench bin/libspecialized.$(SHARED_EXT)
 	$(PYTHON) tests/specialized.py
 $(SPECIALIZED_OBJECTS): $(BUILD)/%_specialized.o: generated/%_specialized.c include/chem.h $(BUILD)/flags
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $< -o $@
-$(addprefix generated/,$(addsuffix _specialized.c,$(SPEC_NAMES))): generated/%_specialized.c: generated/%.c tools/specialize.py tools/configure.py tools/rosenbrock3.c.in generated/specialized-flags | env
+$(addprefix generated/,$(addsuffix _specialized.c,$(SPEC_NAMES))): generated/%_specialized.c: generated/%.c tools/specialize.py tools/configure.py tools/rosenbrock3.c.in tools/rosenbrock3_blocked.c.in generated/specialized-flags | env
 	$(PYTHON) tools/specialize.py $(CONFIG_$*) $@ --name $*_specialized $(SPECFLAGS)
 CONFIG_ts1 := configs/ts1.json
 CONFIG_example_no_user := configs/examples/rate_constants_no_user_defined/config.yaml
@@ -164,6 +174,10 @@ bin/ts1_bench_cpu: $(BUILD)/ts1_bench_cpu force
 	@mkdir -p bin
 	cp $< $@
 micm-ref: bin/micm_ts1_ref
+micm-scenario: bin/micm_scenario
+bin/micm_scenario: $(ROOT)/scenarios/micm_scenario.cpp build/reference-flags
+	@mkdir -p bin
+	clang++ -std=c++20 $(OPTFLAGS) -I$(ROOT)/micm/include -I$(ROOT)/micm/test/benchmark $< -o $@
 bin/micm_ts1_ref: $(ROOT)/reference/micm_ts1_ref.cpp build/reference-flags
 	@mkdir -p bin
 	clang++ -std=c++20 $(OPTFLAGS) -I$(ROOT)/micm/include -I$(ROOT)/micm/test/benchmark $< -o $@

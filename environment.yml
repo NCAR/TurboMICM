@@ -1,4 +1,6 @@
 name: chemistry-tools
+# Build-time configuration parsing, solver generation, and validation only.
+# Tier 2 needs no additional dependencies; versions stay pinned across platforms.
 channels:
   - conda-forge
 dependencies:

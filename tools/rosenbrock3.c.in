@@ -22,9 +22,13 @@ ChemStatus chem_solve_@NAME@(double dt, ChemState *state, ChemStats *stats) {
     if (stats->internal_steps > p.max_steps) { status = CHEM_MAX_STEPS; break; }
     if (time+0.1*h == time || h <= fmin(p.roundoff,hmin)) { status = CHEM_SMALL_STEP; break; }
     h = fmin(h,fabs(dt-time));
+    #if !@INITIALIZE@
     memset(f, 0, ny*sizeof(double));
+    #endif
     @NAME@_force(m,nc,stride,y,state->rates,f); ++stats->function_calls;
+    #if !@INITIALIZE@
     memset(state->jacobian, 0, @NNZ@*stride*sizeof(double));
+    #endif
     @NAME@_jacobian(m,nc,stride,y,state->rates,state->jacobian); ++stats->jacobian_updates;
     int accepted = 0;
     while (!accepted) {
@@ -34,7 +38,9 @@ ChemStatus chem_solve_@NAME@(double dt, ChemState *state, ChemStats *stats) {
       chem_linear_@NAME@(m,nc,stride,state->jacobian,k1); ++stats->solves;
       #pragma omp simd
       for (size_t i = 0; i < ny; ++i) yn[i] = y[i] + p.a[0]*k1[i];
+      #if !@INITIALIZE@
       memset(k2,0,ny*sizeof(double));
+      #endif
       @NAME@_force(m,nc,stride,yn,state->rates,k2); ++stats->function_calls;
       double c0 = p.c[0]/h, c1 = p.c[1]/h, c2 = p.c[2]/h;
       #pragma omp simd
@@ -43,22 +49,35 @@ ChemStatus chem_solve_@NAME@(double dt, ChemState *state, ChemStats *stats) {
       #pragma omp simd
       for (size_t i = 0; i < ny; ++i) { k3[i] += c1*k1[i]; k3[i] += c2*k2[i]; }
       chem_linear_@NAME@(m,nc,stride,state->jacobian,k3); ++stats->solves;
+      for (size_t v = 0; v < @N@; ++v) {
       #pragma omp simd
-      for (size_t i = 0; i < ny; ++i) {
+      for (size_t c = 0; c < nc; ++c) {
+        size_t i = v*stride+c;
         double value = y[i];
         value += p.m[0]*k1[i]; value += p.m[1]*k2[i]; value += p.m[2]*k3[i];
         yn[i] = value;
         double error = 0.0;
         error += p.e[0]*k1[i]; error += p.e[1]*k2[i]; error += p.e[2]*k3[i];
+        #if @VECTOR_ERROR@
+        double ymax = fabs(y[i]) > fabs(value) ? fabs(y[i]) : fabs(value);
+        double scaled = error/(state->absolute_tolerance[v]+state->relative_tolerance*ymax);
+        state->error[i] = scaled*scaled;
+        #else
         state->error[i] = error;
+        #endif
+      }
       }
       /* No parallel reduction: species then cells, identical to MICM's norm. */
       double total = 0.0;
       for (size_t v = 0; v < @N@; ++v) for (size_t c = 0; c < nc; ++c) {
         size_t i = v*stride+c;
+        #if @VECTOR_ERROR@
+        total += state->error[i];
+        #else
         double ymax = fabs(y[i]) > fabs(yn[i]) ? fabs(y[i]) : fabs(yn[i]);
         double scaled = state->error[i]/(state->absolute_tolerance[v]+state->relative_tolerance*ymax);
         total += scaled*scaled;
+        #endif
       }
       double error = sqrt(total/ny);
       error = error < 1e-10 ? 1e-10 : error;
@@ -76,7 +95,9 @@ ChemStatus chem_solve_@NAME@(double dt, ChemState *state, ChemStats *stats) {
         if (reject_more) hnew = h*p.rejection_factor;
         reject_more = reject_last; reject_last = 1; h = hnew;
         if (stats->accepted >= 1) ++stats->rejected;
+        #if !@INITIALIZE@
         memset(state->jacobian,0,@NNZ@*stride*sizeof(double));
+        #endif
         @NAME@_jacobian(m,nc,stride,y,state->rates,state->jacobian); ++stats->jacobian_updates;
         if (!(h > 0.0) || time+0.1*h == time) { status = CHEM_SMALL_STEP; goto finished; }
       }

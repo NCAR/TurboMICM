@@ -157,7 +157,8 @@ def mechanism_layout(config):
     return vmap, indices
 
 
-def generate(config, name, kernel_chunk=32, fuse_kernels=False):
+def generate(config, name, kernel_chunk=32, fuse_kernels=False, cell_stride=0,
+             emit_loader=True, dispatch_stride=0, initialize=False):
     if kernel_chunk < 1:
         raise ValueError('kernel chunk must be positive')
     species, reactions, initial = config['species'], config['reactions'], config['initial']
@@ -168,12 +169,22 @@ def generate(config, name, kernel_chunk=32, fuse_kernels=False):
     groups = []
     for family in ('force', 'jacobian'):
         blocks = []
+        written = set()
+
+        def update(index, sign, expression):
+            target = f'out[{index}*s+c]'
+            if initialize and index not in written:
+                statement = f'{target} = 0.0 {sign} {expression};'
+            else:
+                statement = f'{target} {sign}= {expression};'
+            written.add(index)
+            return statement
         if family == 'force':
             for ri, r in enumerate(reactions):
                 rs = [vmap[s] for s in r['reactants'] if s in vmap]
                 body = [f'double rate = k[{ri}*s+c];'] + [f'rate *= y[{v}*s+c];' for v in rs]
-                body += [f'out[{v}*s+c] -= rate;' for v in rs]
-                body += [f'out[{vmap[p["species"]]}*s+c] += {literal(p["yield"],True)}*rate;' for p in r['products'] if p['species'] in vmap]
+                body += [update(v,'-','rate') for v in rs]
+                body += [update(vmap[p['species']],'+',f'{literal(p["yield"],True)}*rate') for p in r['products'] if p['species'] in vmap]
                 blocks.append(body)
         else:
             for col in range(n):
@@ -184,14 +195,18 @@ def generate(config, name, kernel_chunk=32, fuse_kernels=False):
                             continue
                         others = rs[:omitted]+rs[omitted+1:]
                         body = [f'double rate = k[{ri}*s+c];'] + [f'rate *= y[{v}*s+c];' for v in others]
-                        body += [f'out[{indices[v,col]}*s+c] += rate;' for v in others+[col]]
-                        body += [f'out[{indices[vmap[p["species"]],col]}*s+c] -= {literal(p["yield"],True)}*rate;' for p in r['products'] if p['species'] in vmap]
+                        body += [update(indices[v,col],'+','rate') for v in others+[col]]
+                        body += [update(indices[vmap[p['species']],col],'-',f'{literal(p["yield"],True)}*rate') for p in r['products'] if p['species'] in vmap]
                         blocks.append(body)
         funcs = []
         for start in range(0, len(blocks), kernel_chunk):
             fname = f'{name}_{family}_{start//kernel_chunk}'
             funcs.append(fname)
             lines.append(f'static void {fname}(size_t nc, size_t s, const double *restrict y, const double *restrict k, double *restrict out) {{')
+            if cell_stride:
+                lines[-1] = lines[-1].replace('size_t nc, size_t s,', 'size_t unused_nc, size_t unused_s,')
+                lines += [f'  const size_t nc = {cell_stride}, s = {cell_stride};', '  (void)unused_nc; (void)unused_s;']
+            lines += ['  (void)y; (void)k; (void)out;']
             if fuse_kernels:
                 lines += ['  #pragma omp simd', '  for (size_t c = 0; c < nc; ++c) {']
                 for block in blocks[start:start+kernel_chunk]:
@@ -201,9 +216,22 @@ def generate(config, name, kernel_chunk=32, fuse_kernels=False):
                 for block in blocks[start:start+kernel_chunk]:
                     lines += ['  #pragma omp simd', '  for (size_t c = 0; c < nc; ++c) {'] + ['    '+stmt for stmt in block] + ['  }']
             lines.append('}')
-        lines += [f'static void {name}_{family}(const ChemModel *m, size_t nc, size_t s, const double *y, const double *k, double *out) {{', '  (void)m;']
+        lines += [f'static void {name}_{family}(const ChemModel *m, size_t nc, size_t s, const double *y, const double *k, double *out) {{',
+                  '  (void)m; (void)nc; (void)s; (void)y; (void)k; (void)out;']
+        if dispatch_stride:
+            lines += [f'  if (nc == {dispatch_stride} && s == {dispatch_stride}) {{',
+                      f'    {name}_fixed_{family}(m,nc,s,y,k,out); return;', '  }']
+        if initialize:
+            untouched = sorted(set(range(n if family == 'force' else len(indices))) - written)
+            if untouched:
+                lines += [f'  static const size_t zero[] = {{{", ".join(map(str,untouched))}}};',
+                          f'  for (size_t i = 0; i < {len(untouched)}; ++i) {{',
+                          '    double *restrict target = out+zero[i]*s;',
+                          '    #pragma omp simd', '    for (size_t c = 0; c < nc; ++c) target[c] = 0.0;', '  }']
         lines += [f'  {fname}(nc, s, y, k, out);' for fname in funcs] + ['}']
         groups.append(f'{name}_{family}')
+    if not emit_loader:
+        return '\n'.join(lines) + '\n'
     lines += [f'ChemModel *chem_load_{name}(int specialized) {{', '  ChemModel *m = chem_model_create();', '  if (!m) return NULL;']
     for s in species:
         param = s.get('parameterization')
