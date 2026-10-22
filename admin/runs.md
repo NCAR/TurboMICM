@@ -569,7 +569,7 @@ Calibration on this machine
 |---|---|---|---|---|---|---|---|
 | astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive | 2026-10-22 09:58–11:06 | `cf16213` | done, verified, timed |
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | 2026-10-22 12:06–13:20 | `1c9112c` | done, verified, timed |
-| astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | | | set up |
+| astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | 2026-10-22 13:56– | | running |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-high | gpt-6.1-sol | high | `1d944f4` | Codex CLI 0.163.0, interactive | | | set up |
@@ -717,6 +717,21 @@ Calibration on this machine
   3,084.5). Specialization gains 1.51 times over its own generic solver; 5.70
   times MICM's default and 2.11 times its fastest; 1.45 times astra-max's
   specialized solver.
+
+## Tier 2: astra-high
+
+- Session start: 2026-10-22 13:56:22, launched by Claude Code with
+  `admin/launch_codex_run.sh --tier2 astra-high gpt-6-astra high`, once
+  astra-xhigh was collected, archived, verified, and timed; the goal was sent
+  at 13:56:25. The session record shows gpt-6-astra at high, base instructions
+  from gpt-6-astra, Codex 0.163.0, approval `never` and sandbox
+  `danger-full-access`, and no model switch; the process's environment holds no
+  Claude Code variables besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
+- Codex session `01a164c1-c86d-74f1-a385-74d24b64d3a1`; process 58197;
+  `caffeinate -ims -w 58197`. No other Codex session was running; AC power.
+- To watch: astra-high's Tier 1 benchmark recomputes every rate constant before
+  each timed step (`src/ts1_bench.c:154`), which MICM's driver and the other
+  entries do once, before the warm-up.
 
 # Tier 3
 
