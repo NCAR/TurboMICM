@@ -1,7 +1,8 @@
 # Run log
 
-Launch record for the MICM-to-C runs. Times are local (MDT). Tier 1 comes first;
-the Tier 3 runs follow, under [Tier 3](#tier-3).
+Launch record for the MICM-to-C runs. Times are local: MDT for Tier 1 and Tier 3,
+EDT for Tier 2, which runs on another machine. Tier 1 comes first; the Tier 2 runs
+follow, under [Tier 2](#tier-2), and the Tier 3 runs, under [Tier 3](#tier-3).
 
 Each run is an interactive session started in its run directory,
 `benchmarks/<run>/`, and launched with one instruction:
@@ -424,6 +425,157 @@ Token counts are as Codex reports them: total = uncached input + output.
   One group per thread, with MICM's default solver work at ten threads.
 - Not yet timed: at 18:33 the SSE deferred the timing session, all nine entries
   with MICM's three programs, to a follow-on session.
+
+# Tier 2
+
+Launch record for the Tier 2 runs (specialization for a frozen mechanism; see
+`tier2/README.md`). Times are EDT, the clock of the machine Tier 2 runs on.
+
+Each run works in `benchmarks/tier2/<run>/`, a copy of its own Tier 1 repository
+at the Tier 1 run's final commit, made by `tier2/admin/setup_runs.py` from the
+TurboMICM branch `runs/<model>/<effort>`, which holds the Tier 1 repository
+unchanged: branch `main`, the Tier 1 history, no remote, no tags, and PROMPT.md
+holding the Tier 2 prompt. Claude Code launches every run with
+
+    admin/launch_codex_run.sh --tier2 <run> <model> <effort>
+
+which types `codex -m <model> -c model_reasoning_effort=<effort> -c features.memories=false
+-c approval_policy=never -c sandbox_mode=danger-full-access` (no web search, as in
+Tier 1; the last two settings give the full access every contest run has had,
+which this machine's `config.toml` does not) into a detached tmux session (socket
+`turbomicm`, session `tier2-<run>`), and then the goal:
+
+    /goal read PROMPT.md and work until done, commit
+
+Order
+- 2026-10-22, 09:00: the SSE: "orchestrate the Tier 2 experiments. all
+  contestants, in reverse order of capability, that is start with Astra Max,
+  then Astra Extra High, ..., followed by Sol, Luna, ... continuously update the
+  wiki as results come in." So all nine Tier 1 entrants, one run each, one at a
+  time: astra-max, astra-xhigh, astra-high, sol-max, sol-xhigh, sol-high,
+  luna-max, luna-xhigh, luna-high. Each is collected, archived, verified, and
+  timed before the next launches.
+
+The machine
+- Tier 2 runs on a second laptop: an Apple M5 Pro (LALAL0726071122; 6 Super and
+  12 Performance cores, 24 GB; macOS 26.7.1; Command Line Tools 27, no Xcode;
+  Homebrew in `~/homebrew`, installed without administrator rights; user
+  `dfillmor`). Tier 1 and Tier 3 ran on the SSE's other Mac, the Apple M5
+  laptop Gemini.local (4 Super and 6 Efficiency cores, 16 GB, macOS 27.0.1,
+  Homebrew in `/opt/homebrew`, user `fillmore`). The SSE, 2026-10-22: "note the
+  machine change, Tier 1 was run on my other Mac".
+- Setup, 2026-10-22 from 09:00, the machine having restarted at 08:49:
+  - tmux 3.8 (Homebrew bottle) and GCC 15.3.0 (`gcc@15`, built from source,
+    since Homebrew's bottles need the `/opt/homebrew` prefix); libomp 23.1.3,
+    cmake 4.4.4, and conda 26.5.3 were already installed. Codex CLI is 0.163.0,
+    as for every run since astra-xhigh.
+  - MICM e15898ce cloned into `benchmarks/micm` and built with Apple clang
+    (`SDKROOT` set), Release, double precision, OpenMP through Homebrew's libomp
+    (MICM's CMake finds it with `brew --prefix libomp`), and
+    `FETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER`: 67 of 67 ctest tests pass. The
+    case list regenerated from this build is identical to
+    `reference/micm_cases.txt` (680 cases).
+  - MICM's TS1 driver, built here, reproduces
+    `reference/micm_ts1_final_100_seed1.csv` byte for byte, and its 10,000-cell
+    seed-2026 final state has the old machine's SHA-256 (`13329009…6ba7d`).
+  - The five disclosed day-night scenarios, regenerated here, match Tier 3's
+    checksums (`tier3/heldout/SHA256SUMS`, the 10,000-cell versions) byte for
+    byte, and MICM's runs at the gate's settings take the 2026-10-16
+    calibration's internal steps exactly.
+  - Apple clang links here with or without `SDKROOT`.
+- Every Tier 1 Makefile names `/opt/homebrew/opt/libomp`, which does not exist
+  here, so each agent must repoint its Makefile; the prompt says so.
+
+Prompt changes
+- `tier2/prompt.v2` (2026-10-22), from `prompt.v1` (2026-10-16, never used):
+  - MACHINE AND TOOLCHAIN describes this machine, and says that it is not
+    Tier 1's, that Homebrew's paths differ, and that
+    `reference/README.md`'s timings and `SDKROOT` note describe Tier 1's machine;
+  - the honor rule names Tier 1: "do not look at any other agent's solution, to
+    this tier or to Tier 1, on this machine or online" (v1: "other solutions to
+    this task"), since every Tier 1 solution is on this machine and on GitHub,
+    and two of them already generate mechanism-specific code;
+  - `make test-specialized` runs the generator's tests, so the gate's check of
+    them is mechanical, and it joins the targets that must work with both
+    compilers;
+  - the timing and RESULTS.md use this machine's 18 cores (v1: 10).
+
+Undisclosed inputs, fixed before any Tier 2 run, in `~/NSF-NCAR/.tier2-heldout/`
+(a git repository with no remote, outside the run root and this repository)
+- 2026-10-22, 09:30:00 (commit `eb4ae5f`): `make_heldout.sh`, five held-out
+  day-night scenarios. SHA-256
+  `c8dfef98d54b09c52910a764cffd7791836278323f73c7b9f6e325543365750b`. Tier 3's
+  held-out set is public, so Tier 2 has its own; the scenarios vary what the
+  agents' scenarios README announces (seeds, latitudes, seasons, start times,
+  and initial NOx; steps of 5 to 30 minutes; runs of up to 48 hours). Claude
+  Code chose them, under the SSE's instruction to orchestrate Tier 2; the
+  script is published when the last Tier 2 run ends.
+- 2026-10-22, 09:30:31 (commit `e10fd84`): the TS1 ranking input, 10,000 cells
+  from `reference/make_cells_csv.py` with a 63-bit seed from Python's
+  `secrets`. The cells file's SHA-256 is
+  `be7ccfdbc8c74a68c1112122e14bb2407009eba50d84485a784af8597e263772`, and MICM's
+  final state for it `cb7d0cc7014b598515a70805364e3854d5f318ccc1466ebd90e01b1b5bac62ce`.
+
+Launch changes
+- 2026-10-22: `admin/launch_codex_run.sh` gained `--tier2`: the checks of
+  `--tier3` (an untouched copy at the Tier 1 commit the prompt names, no remote,
+  nothing changed but PROMPT.md) plus no tags; no `--search`; tmux session
+  `tier2-<run>`. For this machine it finds tmux in `~/homebrew`, waits for the
+  login shell's prompt before typing (a smart-card PIN prompt from the SSE's
+  `.zshrc`, which ends with `ssh-add -s`, would get Ctrl-C, never a PIN; with
+  the launcher's empty environment `ssh-add` finds no agent and exits at once),
+  and waits up to 15 s for Codex's status line, which can be drawn after the
+  composer.
+- 2026-10-22, 09:21: the Tier 2 mode was tested on a throwaway copy in Claude
+  Code's scratch space, with gpt-6.1-sol at low effort and a one-line task
+  (sessions `01a163c5-b393-7fc3-b6e6-700501dafde1`, which the status-line race
+  stopped before its goal, and `01a163c6-4b55-7673-bcef-dd66501794c6`). The
+  second launched and verified, but ran with approval `on-request` and a
+  `workspace-write` sandbox without network, and stopped to ask leave to `git
+  commit`: this machine's `config.toml` does not grant the full access (approval
+  `never`, sandbox `danger-full-access`) that every Tier 1 and Tier 3 run had,
+  from the old machine's `config.toml`, as their transcripts' turn contexts
+  show. The request was declined and the session closed. Claude Code's
+  auto-mode safety check refused to let Claude Code add those two settings to
+  the launch command, and the SSE decided.
+- 2026-10-22, about 09:40, the SSE: "I have a Codex usage reset available, so
+  now is a good time to run these. go with option 1." (the same conditions as
+  Tiers 1 and 3), and "approved to pass -c approval_policy=never -c
+  sandbox_mode=danger-full-access". The launcher now passes both, for every
+  tier, and its check of the session record requires approval `never` and
+  sandbox `danger-full-access` in every turn context, waiting for the first.
+- 2026-10-22, about 09:41: the SSE had started a Codex session of its own at
+  about 09:34 (`codex --yolo`, pid 15599, in `~/NSF-NCAR/CERES-MIP`), which the
+  launcher's check of other Codex sessions stops at. Asked whether to launch
+  alongside it or wait for it to end, the SSE chose to launch alongside it. The
+  launcher's new `ALLOW_CODEX_PIDS` names the sessions allowed to run alongside,
+  and prints each one's command and directory; each run's record lists them as
+  other load, as luna-max's did.
+- 2026-10-22, 09:41:59: the throwaway test, rerun with both settings (session
+  `01a163d8-e198-7023-b5c8-1baa718aee9a`), verified: gpt-6.1-sol at low,
+  approval `never`, sandbox `danger-full-access`, no model switch, the goal. It
+  committed `hello.txt` and ended with DONE 18 s after the goal; Claude Code
+  quit it.
+
+Calibration on this machine
+- 2026-10-22, 09:43–09:45: MICM's scenario driver built with g++-15 (GCC 15.3.0)
+  and run on the five disclosed scenarios at the gate's settings takes exactly
+  the clang build's internal steps on each and agrees with it to 14.37, 14.28,
+  14.24, 14.07, and 14.35 digits overall (worst species isoprene, 13.47 at the
+  least): the 2026-10-16 calibration's numbers, to the hundredth. The prompt's
+  "14 digits overall and at least 13.4 for every species" stands.
+
+| Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
+|---|---|---|---|---|---|---|---|
+| astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive | | | set up |
+| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | | | set up |
+| astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | | | set up |
+| sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | | | set up |
+| sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | | | set up |
+| sol-high | gpt-6.1-sol | high | `1d944f4` | Codex CLI 0.163.0, interactive | | | set up |
+| luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | | | set up |
+| luna-xhigh | gpt-6-luna | xhigh | `ada55d5` | Codex CLI 0.163.0, interactive | | | set up |
+| luna-high | gpt-6-luna | high | `d3c2480` | Codex CLI 0.163.0, interactive | | | set up |
 
 # Tier 3
 

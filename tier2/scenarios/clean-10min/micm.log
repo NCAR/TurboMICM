@@ -1,0 +1,17 @@
+# clean-10min: 1000 cells (seed 103, NOx x0.1); 144 steps of 600 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+# made 2026-10-22 09:38 on Apple M5 Pro, with micm_scenario
+gate: $ micm_scenario --group-size 32 --atol 1e-15 scenario.txt elapsed_ms=3387.951 internal_steps=84273 accepted=84264 rejected=0 function_calls=168537 jacobian_updates=84273 decompositions=84273 solves=252819 
+default: $ micm_scenario --group-size 32 scenario.txt elapsed_ms=1714.749 internal_steps=41472 accepted=41472 rejected=0 function_calls=82944 jacobian_updates=41472 decompositions=41472 solves=124416 
+tight: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-9 --atol 1e-22 --max-steps 10000000 scenario.txt elapsed_ms=74704.806 internal_steps=174542 accepted=171691 rejected=0 function_calls=1044401 jacobian_updates=174542 decompositions=174542 solves=1047252 
+tighter: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-10 --atol 1e-23 --max-steps 10000000 scenario.txt elapsed_ms=135445.940 internal_steps=325484 accepted=321581 rejected=0 function_calls=1949001 jacobian_updates=325484 decompositions=325484 solves=1952904 
+convergence (tight against tighter): overall 10.20 digits over 611626 values (181 species, 4000 rows); worst species: CLO 9.37, BRO 9.46, HO2NO2 9.49, MDIALO2 9.56, DICARBO2 9.56
+gate run against tighter: overall 4.91 digits over 611626 values (181 species, 4000 rows); worst species: ISOP 3.77, ISOPO2VBS 4.12, ISOPAO2 4.14, ISOPBO2 4.19, ISOPNITA 4.23
+MICM default against tighter: overall 2.96 digits over 611626 values (181 species, 4000 rows); worst species: CLO 2.16, HO2NO2 2.27, BRO 2.28, MALO2 2.33, MDIALO2 2.33
+files:
+  a257152943d540e32971de62a3b5f611412eddbfc66b1fbd26150a92529907cb  cells.csv
+  d32e13f12296baf18774dbd1238b001476c380114c4ef69643636ccf573f6d3f  photolysis.csv
+  c3e4eb925617c1f3dc3fd5851013722e133b294303c8402155ccbfeb3cb6523a  scenario.txt
+  86d5074ac3e6cabdfb8f3c720c9bb4e7206d6fe112681fa1cfb7ec64cb8a093b  micm_final.csv
+  11ae4d4f06748fa79ed6b4b9a5f845d44dd2061c1fee46a760603ae74c5e36d8  micm_snapshots.csv
+  1f499b8e894f3fa3f12d008f6f1a1621cbc031a1223a43939fca123dcddd1226  reference_final.csv
+  21465013a040831375a63edb9c42ec450d53bcdf170210cb501e7a95f3a81581  reference_snapshots.csv

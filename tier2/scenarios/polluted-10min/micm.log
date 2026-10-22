@@ -1,0 +1,17 @@
+# polluted-10min: 1000 cells (seed 102, NOx x10); 144 steps of 600 s; diurnal photolysis, 40 N, day 80, from 6 h local time
+# made 2026-10-22 09:35 on Apple M5 Pro, with micm_scenario
+gate: $ micm_scenario --group-size 32 --atol 1e-15 scenario.txt elapsed_ms=4527.587 internal_steps=106393 accepted=106387 rejected=0 function_calls=212780 jacobian_updates=106393 decompositions=106393 solves=319179 
+default: $ micm_scenario --group-size 32 scenario.txt cells 128-191 failed: step 1: NaNDetected FAILED 
+tight: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-9 --atol 1e-22 --max-steps 10000000 scenario.txt elapsed_ms=118416.436 internal_steps=243704 accepted=240826 rejected=0 function_calls=1459346 jacobian_updates=243704 decompositions=243704 solves=1462224 
+tighter: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-10 --atol 1e-23 --max-steps 10000000 scenario.txt elapsed_ms=186162.603 internal_steps=486853 accepted=482859 rejected=0 function_calls=2917124 jacobian_updates=486853 decompositions=486853 solves=2921118 
+convergence (tight against tighter): overall 10.25 digits over 554061 values (178 species, 4000 rows); worst species: MCO3 9.40, HO2NO2 9.50, NTERPO2 9.57, HO2 9.65, N2O5 9.68
+gate run against tighter: overall 5.40 digits over 554061 values (178 species, 4000 rows); worst species: ISOP 4.26, HYDRALD 4.56, MACR 4.60, ISOPNITA 4.65, ISOPNITB 4.70
+MICM default against tighter: no result (the default run failed)
+files:
+  5b6bb9936e3fffd4d74c57e93495e55b53aef2027fd80407e71735a6917a91fd  cells.csv
+  d32e13f12296baf18774dbd1238b001476c380114c4ef69643636ccf573f6d3f  photolysis.csv
+  963069835b80ac9ec6fde295754cb12f36fa26e1df8f38f7af3c62cd4924d2b2  scenario.txt
+  5ed1fceeb8570187d84f580a8c1d2d39c53d034793dbee9576077cd07427a686  micm_final.csv
+  7feccafd1790d761fbea89f542580bed21e49b593c7aa7a84edb9608895037a8  micm_snapshots.csv
+  ec5afd14fcfa8f6ae66075695898a6ff4a096d9adb00bc27f9b24c56a17c3b2a  reference_final.csv
+  ecd4318ff9a264ec3a8d1802f89b21ac39840d2f0f5df9e901b31d15e5263736  reference_snapshots.csv

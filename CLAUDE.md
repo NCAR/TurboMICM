@@ -16,6 +16,12 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 
 ## Where things live
 
+- **Two machines:** Tiers 1 and 3 ran on the SSE's M5 laptop (Gemini.local, user
+  `fillmore`, Homebrew in `/opt/homebrew`); Tier 2 runs on the SSE's M5 Pro
+  laptop (LALAL0726071122, user `dfillmor`, 6 Super + 12 Performance cores, 24
+  GB, Homebrew in `~/homebrew` without admin rights, EDT clock), with its own run
+  root, MICM build, and work directory (`~/NSF-NCAR/tier2-work`). Never compare
+  times across machines.
 - **Run root, the prompts' ROOT:** `~/NSF-NCAR/ODE/benchmarks`, in the ODE repo on
   branch `micm-c-port-experiment`. It holds:
   - `micm/`: MICM e15898ce, with a Release, double-precision, OpenMP build;
@@ -70,6 +76,15 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   - Tier 3: `admin/launch_codex_run.sh --tier3 <run> <model> <effort>` adds
     `--search`, names the tmux session `tier3-<run>`, and requires an untouched
     clone at the Tier 1 commit the prompt names.
+  - Tier 2: `--tier2`: the Tier 3 checks, no `--search`, tmux session `tier2-<run>`.
+  - Every launch passes `-c approval_policy=never -c sandbox_mode=danger-full-access`
+    (the SSE's approval, 2026-10-22): every contest run has had full access, from
+    the M5's config.toml, which the M5 Pro's lacks. The record check requires it.
+    Any change to the agents' permissions needs the SSE's explicit approval;
+    Claude Code's auto-mode safety check refused this one until the SSE gave it.
+  - The launcher stops if another Codex session runs; `ALLOW_CODEX_PIDS="<pid>"`
+    lets the SSE's own sessions run alongside (the SSE's choice, 2026-10-22),
+    recorded as other load.
 - **Monitor:** follow the session record read-only, in the background:
   `until admin/run_state.py <rollout.jsonl> <codex pid>; do sleep 60; done`.
   - A run is done when its last event is `task_complete` and the record has been
@@ -146,12 +161,20 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - **Isolation is honor-system:** agents run with full access and the SSE's GitHub and
   SSH credentials. Keep solutions and transcripts off `main`'s working tree, and
   never edit a running session's directory.
-- **Clang linking:** Apple clang links only with
+- **Clang linking:** on the M5, Apple clang links only with
   `SDKROOT=$(xcrun --sdk macosx --show-sdk-path)`. The default Command Line Tools 27
-  SDK lists an `arm64e.x1` architecture that Xcode's linker rejects.
+  SDK lists an `arm64e.x1` architecture that Xcode's linker rejects. The M5 Pro
+  (no Xcode) links with or without it.
 - **OpenMP with Apple clang:**
-  `-Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include … -L/opt/homebrew/opt/libomp/lib -lomp`.
+  `-Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include … -L/opt/homebrew/opt/libomp/lib -lomp`,
+  with `~/homebrew` for `/opt/homebrew` on the M5 Pro, where every Tier 1
+  Makefile's path fails (verify Tier 1 commits there with a path override).
   With `-I` instead of `-isystem`, `omp.h` fails `-pedantic`.
+- **The M5 Pro:** Homebrew bottles that need `/opt/homebrew` build from source
+  (`gcc@15`: 29 minutes). The SSE's `.zshrc` ends with `ssh-add -s` for a smart
+  card: never type into its PIN prompt (the launcher's empty environment has no
+  agent, so `ssh-add` exits at once). `ls` is eza only in interactive shells;
+  ugrep is not installed.
 - **MICM build:** cmake needs `-DFETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER`, because
   conda's GTest breaks the tests, plus explicit `OpenMP_*` hints for libomp.
 - **MICM tests:** ctest records absolute paths, so run the test executables from a
@@ -168,12 +191,37 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
 - **Transcripts:** Codex stores reasoning only as encrypted content. The transcripts
   have every message, tool call, and output, but no readable reasoning.
 
-## Tier 2: specialization for a frozen mechanism (adopted 2026-10-16; prompt not yet written)
+## Tier 2: specialization for a frozen mechanism (adopted 2026-10-16; launched 2026-10-22, on the M5 Pro)
 
 How fast can a solver for TS1 alone get? Reference mechanisms like TS1 stay in
 production unchanged for years; prototyping still needs run-time configurability.
-The wiki pages are Tier-2-Design, Tier-2-Prompt (not yet written), and
-Tier-2-Results.
+The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
+
+- **Files:** `tier2/README.md` (plan, tooling, the machine change), `prompt.v2`
+  (the template for the M5 Pro; v1, for the M5, never used), `prompts/`, `admin/`
+  (`setup_runs.py`, `make_scenarios.sh`, `make_scenario_data.sh`), `scenarios/`
+  (the five disclosed day-night scenarios, MICM's results at the gate's
+  settings, references, and the agents' README). It mirrors the committed files
+  of the run root `~/NSF-NCAR/ODE/benchmarks/tier2` (`diff -r`), except README.md.
+- **Arms and order** (the SSE's, 2026-10-22, "in reverse order of capability"):
+  all nine, one at a time: astra-max, astra-xhigh, astra-high, sol-max,
+  sol-xhigh, sol-high, luna-max, luna-xhigh, luna-high. Each is collected
+  (`tier2/<model>/<effort>`), archived (`transcripts/tier2/<run>.jsonl.gz`),
+  verified, and timed before the next, and the wiki is updated as results come in.
+- **Each run** is a copy of its Tier 1 history from TurboMICM's
+  `runs/<model>/<effort>` (branch `main`, no remote, no tags), made by
+  `tier2/admin/setup_runs.py`.
+- **Verify:** `admin/verify_tier2.py RUN tier2/<m>/<e> WORK --ts1-input CELLS MICM_FINAL
+  --scenarios <tier2 scenarios> ~/NSF-NCAR/.tier2-heldout/heldout`; watch a run with
+  `admin/progress.py ROLLOUT RUN_DIR TIER1_COMMIT` (read-only).
+- **Undisclosed inputs,** in `~/NSF-NCAR/.tier2-heldout/` (a private repository,
+  outside the run root): `make_heldout.sh`, five held-out day-night scenarios
+  (SHA-256 `c8dfef98…750b`), and the TS1 ranking input (cells SHA-256
+  `be7ccfdb…3772`, MICM's final state `cb7d0cc7…62ce`). Publish `make_heldout.sh`
+  in `tier2/heldout/` when the last run ends.
+- **The M5 Pro's MICM** (e15898ce, built 2026-10-22) passes its 67 tests, gives
+  the same 680-case list, and reproduces the M5's TS1 results and the day-night
+  calibration exactly.
 
 - Start from each agent's own Tier 1 solution; the generic path and the Tier 1
   gate stay.
@@ -191,8 +239,6 @@ Tier-2-Results.
 - Measure speed against the entry's generic and generated Tier 1 paths and
   MICM, plus generation and compile time and tokens. Optionally a variant with
   rate parameters as data, for ensembles.
-- Arms to be chosen, for example sol-max and astra-xhigh, which already
-  generate kernels, and one entry that does not.
 - Prompt: `tier2/prompt.v1`, its choices settled by the SSE on 2026-10-16: two
   benchmarks (the specialized one ranked, the Tier 1 one timed alongside); run-time
   data versus code as drafted; the linear algebra free (any exact factorization or
@@ -202,12 +248,9 @@ Tier-2-Results.
   day-night gate, agreement with MICM to 10 digits overall and 9 per species at
   rtol 1e-6, atol 1e-15, 32-cell groups, is calibrated in
   `results/2026-10-16-tier2-day-night-calibration` (MICM agrees with itself
-  across compilers to 14 digits).
-- Still to do: settle the draft's choices, choose the arms, give Tier 2 its own
-  `scenarios/` (copies of the disclosed day-night scenarios, plus MICM's results
-  at the gate's settings; not Tier 3's folder, which leaves tolerances to its
-  agents), port `make_prompts.py` and `setup_runs.py` from `tier3/`, and give
-  `admin/launch_codex_run.sh` a Tier 2 mode like its `--tier3`.
+  across compilers to 14 digits). `prompt.v2` (2026-10-22) changes only the
+  machine section, the honor rule (it names Tier 1's solutions), `make
+  test-specialized` for the generator's tests, and 18 threads.
 
 ## Tier 3: algorithm design (approved 2026-10-15 as Tier 2; renumbered 2026-10-16; launched 2026-10-18)
 
