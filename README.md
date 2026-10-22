@@ -117,8 +117,10 @@ controller. `make bench` builds both Tier 1 and specialized benchmarks and the
 specialized scenario driver. Their runtime requires C, libm and OpenMP only.
 
 `make test-specialized` generates TS1, the three Tier 1 configuration-file
-mechanisms and fixtures covering every supported configurable rate and a zero-order mechanism. An additional build tests combined forcing/Jacobian
-emission, row-oriented LU updates, and odd preferred/tile widths together. It compares
+mechanisms and fixtures covering every supported configurable rate and a
+zero-order mechanism. An additional build tests combined forcing/Jacobian
+emission, row-oriented LU updates, and odd preferred/tile widths together.
+It compares
 rates, forcing, Jacobians, factorizations, direct solves, trajectories and solver
 statistics against the generic library, using a relative bound of `1e-10`.
 Widths 1, 3, 32, 37 and 64 exercise full and partial groups; tolerances,

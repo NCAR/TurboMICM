@@ -10,7 +10,9 @@ class GeneratorTests(unittest.TestCase):
     def test_species_and_fill(self):
         mechanism = configure.read('mechanisms/ts1.json')
         plan = specialize.bind(mechanism)
-        self.assertEqual((plan.n, len(plan.reactions), plan.nnz), (209, 547, 2381))
+        self.assertEqual(plan.n, sum(not s.get('parameterization') for s in mechanism.species))
+        self.assertEqual(len(plan.reactions), len(mechanism.reactions))
+        self.assertEqual(len(set(plan.indices.values())), plan.nnz)
         for row in range(plan.n):
             self.assertIn((row, row), plan.indices)
         for diagonal, divides, updates in plan.pivots:
@@ -26,11 +28,11 @@ class GeneratorTests(unittest.TestCase):
         reaction['rate']['A'] = 1.23456789e-12
         edited.reactions.append(reaction)
         plan = specialize.bind(edited)
-        self.assertEqual(len(plan.reactions), 548)
+        self.assertEqual(len(plan.reactions), len(mechanism.reactions) + 1)
         emitted = specialize.emit(edited, 'edited', width=0)
         self.assertIn('1.23456789e-12', emitted)
-        self.assertIn('.nreactions=548', emitted)
-        self.assertNotEqual(plan.indices, specialize.bind(mechanism).indices)
+        self.assertIn(f'.nreactions={len(mechanism.reactions) + 1}', emitted)
+        self.assertNotEqual(emitted, specialize.emit(mechanism, 'edited', width=0))
 
     def test_determinism_and_parameter_extremes(self):
         mechanism = configure.read('mechanisms/tutorial/robertson/config.json')

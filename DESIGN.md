@@ -196,8 +196,9 @@ any other width uses the dynamic version with its actual cell count. A separate
 C translation unit dispatches helper arrays to bound compiler inlining cost.
 Even constant-stride helpers retain runtime loop bounds so the compiler does
 not expand the entire cell group into instructions. Optional tiling changes
-only the independent-cell traversal, while retaining the full group stride. The schedules and arithmetic are generated; helper dispatch has
-no sparsity lookup or chemistry decisions.
+only the independent-cell traversal, while retaining the full group stride.
+The schedules and arithmetic are generated; helper dispatch has no sparsity
+lookup or chemistry decisions.
 
 `src/specialized_solver.h` is included into each generated translation unit.
 It explicitly performs MICM's three stages, copying the shared forcing before
@@ -209,8 +210,8 @@ jobs by reaction. For any matrix entry, its column and the order of contributing
 reactions remain fixed; independent-column interleaving does not change its
 arithmetic. Within each LU pivot, updates target distinct entries and read only
 the completed pivot row/column, so row and column traversal orders perform the
-same arithmetic per entry. The ordered error reduction is shared with the generic solver. The specialized
-API selects the default three-stage coefficients and controller; the full generic
+same arithmetic per entry. The ordered error reduction is shared with the
+generic solver. The specialized API selects the default three-stage coefficients and controller; the full generic
 API continues to support other methods, custom controllers and constraints.
 
 | Build parameter | Default | Meaning |
@@ -230,8 +231,8 @@ Every setting preserves arithmetic dependencies and supports all positive
 runtime group widths. Group width is also selectable with `--group-size` or
 `CK_GROUP_SIZE`; threads and scheduling use the existing OpenMP settings.
 Generator options `--batch`, `--algebra-batch`, `--split`, `--width`, `--tile`,
-`--fuse`, `--joint-batch` and `--lu-order` expose the same controls for standalone generation. Make tracks these values separately
-from compiler flags and regenerates/rebuilds when they change. Configuration
+`--fuse`, `--joint-batch` and `--lu-order` expose the same controls for standalone
+generation. Make tracks these values separately from compiler flags and regenerates/rebuilds when they change. Configuration
 includes are Make dependencies for the bundled mechanisms; a new mechanism's
 rule must likewise list its included files. `make clean` removes every emitted
 source. No compiler optimization flags beyond `OPTFLAGS` are added.
