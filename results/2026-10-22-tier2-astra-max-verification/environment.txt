@@ -1,0 +1,15 @@
+date: 2026-10-22T11:31:40
+host: LALAL0726071122
+platform: macOS-26.7.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,8 | Apple M5 Pro | 6 | 12
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=23658595)	100%; charged; 0:00 remaining present: true
+uptime: 11:31  up  2:42, 4 users, load averages: 1.67 2.04 2.23
+input: ~/NSF-NCAR/.tier2-heldout/ts1/cells.csv
+reference: ~/NSF-NCAR/.tier2-heldout/ts1/micm_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 18; rounds: 5
+program micm: ~/NSF-NCAR/tier2-work/bin/micm_ts1_ref
+program micm-g32: ~/NSF-NCAR/tier2-work/bin/micm_ts1_ref --group-size 32
+program micm-vector8-g32: ~/NSF-NCAR/tier2-work/bin/micm-vector8-in-place-mozart --group-size 32
+program astra-max/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/astra-max/bin/ts1_bench_cpu
+program astra-max/generic: ~/NSF-NCAR/tier2-work/verify/astra-max/clang/astra-max/bin/ts1_bench_cpu
+program astra-max/specialized: ~/NSF-NCAR/tier2-work/verify/astra-max/clang/astra-max/bin/ts1_bench_specialized

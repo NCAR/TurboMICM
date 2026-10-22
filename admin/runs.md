@@ -567,7 +567,7 @@ Calibration on this machine
 
 | Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|---|
-| astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive | 2026-10-22 09:58– | | running |
+| astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive | 2026-10-22 09:58–11:06 | `cf16213` | done, verified, timed |
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | | | set up |
 | astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | | | set up |
@@ -596,6 +596,61 @@ Calibration on this machine
   weekly usage window read 17 % before the launch (resets 2026-10-27 02:33);
   the SSE has a usage reset available.
 - `caffeinate -ims -w 15395` keeps the machine awake while the session lives.
+- Progress, from Claude Code's read-only checks every 20 minutes: at 20
+  minutes, a first generator and specialized build passing the 100-cell MICM
+  check but slower than the generic solver, and a first day-night scenario
+  agreeing with MICM to 14.29 digits; at 40, its first commit (10:26) and a
+  parameter sweep; at 60, full-size timings and both compilers' gates. The
+  compliance scan (`admin/scan_commands.py`) found no command reaching outside
+  the run directory and its three inputs, none naming another run or a
+  private folder, and no install or download.
+- Session end: the one turn ended at 11:06:18 with DONE (1 h 7 min 48 s from
+  the goal), no context compaction, no warning; Codex showed "Goal achieved
+  (1h 7m)". Every turn context shows gpt-6-astra at max, approval `never`,
+  sandbox `danger-full-access`. The record was idle 10 minutes by 11:16; Claude
+  Code quit Codex (`/quit`, 11:16:56) and closed the tmux session.
+- Final commit `cf16213` (11:05), 2 commits after `0dc7f67` (`30c5ebf` at 10:26,
+  "Generate mechanism-specific chemistry, sparse solves, and scenario runner";
+  `cf16213`, "Tune generated kernels and document complete compiler and
+  scenario validation"): 22 files changed, 3,911 lines added and 127 removed,
+  the generic library (`src/`, `include/`) untouched. The working tree is clean.
+  Collected as `tier2/astra/max`.
+- Tokens: 182,784 total; input 106,808 (plus 7,022,592 cached); output 75,976
+  (33,300 reasoning). Codex's weekly usage window went from 17 % to 18 %.
+- Other load during the session: Claude Code's read-only progress checks and
+  its writing of scripts and records. No builds, tests, or timing by the
+  experimenter.
+- Self-reported, not yet verified: both compilers pass the 680 cases, the
+  generator's tests (TS1, MICM's three tutorial mechanisms, every rate family,
+  a mechanism with no reactions), and every disclosed scenario at more than 14
+  digits; on 10,000 cells at 18 threads, 3.063 s specialized against 3.872 s
+  generic and 11.906 s for MICM (1.26 and 3.89 times), and on one thread 37.4,
+  45.1, and 136.2 s.
+- Transcript archived as `transcripts/tier2/astra-max.jsonl.gz` (585 lines,
+  1.8 MB). The credential scan's one match (of the `sk-` pattern) was inside
+  encrypted reasoning.
+- Verified, 11:18–11:22, with `admin/verify_tier2.py`
+  (`results/2026-10-22-tier2-astra-max-verification`): both compilers build
+  without warnings (clean builds 17.8 s with clang, 52.6 s with gcc-15); 680
+  PASS, 0 FAIL, 0 N/A with each, every id once; the Tier 1 TS1 gate passes
+  (2.96e-13 with clang, 2.75e-13 with gcc-15); bin/ts1_bench_specialized passes
+  on the seed-2026 cells (the same) and on the undisclosed input (1.4e-13,
+  1.5e-13), with MICM's 281,700 internal steps; `make test-specialized` passes
+  (TS1 and five other mechanisms); the day-night gate passes on all ten
+  scenarios with both compilers, 14.05 to 14.45 digits overall and at least
+  13.43 per species, with MICM's internal steps exactly; the audit finds
+  nothing outside the rules in 44 C files, generated included. Generated C for
+  TS1: 114,209 lines, 2.86 MB, from a 337-line generator.
+- Timed, 11:31–11:38, provisionally at 18 threads (`admin/time_tier2.sh`, 5
+  rounds, the undisclosed input; idle for 10 minutes first; all 30 runs pass
+  the gate): specialized 3,084.5 ms; its generic bin/ts1_bench_cpu 3,797.3 ms
+  and its Tier 1 commit's 3,803.8 ms (built here with the libomp path on the
+  make command line); MICM 12,003.8 ms by default, 10,603.9 ms with 32-cell
+  groups, 4,426.7 ms in its fastest configuration (vector8, 32-cell groups).
+  Specialization gains 1.23 times over its own generic solver; 3.89 times
+  MICM's default and 1.44 times its fastest. `time_tier2.sh` then failed to
+  write its exit status (`status` is read-only in zsh; fixed), which delayed
+  the next launch by about 25 minutes.
 
 # Tier 3
 
