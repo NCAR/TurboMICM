@@ -567,7 +567,7 @@ Calibration on this machine
 
 | Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|---|
-| astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive | | | set up |
+| astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive | 2026-10-22 09:58– | | running |
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | | | set up |
 | astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | | | set up |
@@ -576,6 +576,26 @@ Calibration on this machine
 | luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | | | set up |
 | luna-xhigh | gpt-6-luna | xhigh | `ada55d5` | Codex CLI 0.163.0, interactive | | | set up |
 | luna-high | gpt-6-luna | high | `d3c2480` | Codex CLI 0.163.0, interactive | | | set up |
+
+## Tier 2: astra-max
+
+- Held-out data first: MICM's results at the gate's settings and the
+  references for the five held-out scenarios were made from 09:40 to 09:57,
+  outside the run root (references converged to 10.10–10.44 digits; MICM at the
+  gate's settings 4.73–5.10 digits from them; MICM's default fails on one and
+  keeps 2.36–3.64 digits on the others), so that nothing heavy ran during the
+  run. The SSE's own Codex session in CERES-MIP had ended by the launch.
+- Session start: 2026-10-22 09:58:25, launched by Claude Code with
+  `admin/launch_codex_run.sh --tier2 astra-max gpt-6-astra max`, in a detached
+  tmux session (socket `turbomicm`, session `tier2-astra-max`); the goal was
+  sent at 09:58:30. The session record shows gpt-6-astra at max, base
+  instructions from gpt-6-astra, Codex 0.163.0, approval `never` and sandbox
+  `danger-full-access`, and no model switch; the process's environment holds no
+  Claude Code variables besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
+- Codex session `01a163e7-f388-7153-baf9-d8a8478cce81`; process 15395. Codex's
+  weekly usage window read 17 % before the launch (resets 2026-10-27 02:33);
+  the SSE has a usage reset available.
+- `caffeinate -ims -w 15395` keeps the machine awake while the session lives.
 
 # Tier 3
 
