@@ -7,3 +7,5 @@ __pycache__/
 ts1_final.csv
 PROMPT.md
 ts1_snapshots.csv
+
+validation/

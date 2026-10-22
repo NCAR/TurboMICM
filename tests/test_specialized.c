@@ -16,6 +16,7 @@ DECLARE(no_user)
 DECLARE(with_user)
 DECLARE(robertson)
 DECLARE(extra)
+DECLARE(mutated)
 typedef struct {
     const char *name;
     ChemStatus (*create)(ChemMechanism **),(*initialize)(ChemState *),(*specialized_create)(ChemMechanism **);
@@ -73,6 +74,20 @@ static void run(const Case *test,size_t cells,int tight)
     REQUIRE(chem_state_copy(a,&b)==CHEM_OK); b->mechanism=generic;
     test->rates(a); chem_update_rates(b);
     compare("rates",a->rates,b->rates,nr*cells);
+    /* Exercise cache hits and each independent invalidation input. */
+    test->rates(a); compare("cached rates",a->rates,b->rates,nr*cells);
+    for (int input=0;input<4;++input) {
+        if (input==0) a->conditions[0].temperature+=.25;
+        else if (input==1) a->conditions[0].pressure*=.99;
+        else if (input==2) a->conditions[0].air_density*=.98;
+        else for (size_t j=0;j<nc;++j) a->custom[j*cells]*=1.01;
+        memcpy(b->conditions,a->conditions,cells*sizeof(ChemConditions));
+        memcpy(b->custom,a->custom,nc*cells*sizeof(double));
+        test->rates(a); chem_update_rates(b);
+        compare("invalidated rates",a->rates,b->rates,nr*cells);
+    }
+    chem_update_rates(a); test->rates(a);
+    compare("generic cache invalidation",a->rates,b->rates,nr*cells);
     /* Test the whole symbolic factor/solve plan independently of chemistry. */
     size_t nnz=chem_sparse_elements(sa->sparse);
     REQUIRE(nnz==chem_sparse_elements(sb->sparse));
@@ -88,8 +103,16 @@ static void run(const Case *test,size_t cells,int tight)
     sa->linear.solve(sa->sparse,cells,sa->matrix,sa->initial,NULL);
     chem_lu_solve(sb->sparse,cells,sb->matrix,sb->initial);
     compare("triangular",sa->initial,sb->initial,nv*cells);
+    if (nv) {
+        size_t diagonal=chem_sparse_index(sa->sparse,0,0)*cells;
+        sa->matrix[diagonal]=0;
+        REQUIRE(sa->linear.factor(sa->sparse,cells,sa->matrix,NULL)==CHEM_SINGULAR);
+        sa->matrix[diagonal]=NAN;
+        REQUIRE(sa->linear.factor(sa->sparse,cells,sa->matrix,NULL)==CHEM_SINGULAR);
+    }
     ChemRosenbrockParameters parameters=chem_rosenbrock_parameters(CHEM_ROS3);
     for (size_t step=0;step<12;++step) {
+        a->relative_tolerance=b->relative_tolerance=1e-6*(1+.01*step);
         for (size_t c=0;c<cells;++c) { a->conditions[c].temperature+=.1; b->conditions[c]=a->conditions[c]; }
         for (size_t j=0;j<nc;++j) if (!strstr(chem_custom_name(m,j),"radius") && !strstr(chem_custom_name(m,j),"concentration"))
             for (size_t c=0;c<cells;++c) { a->custom[j*cells+c]*=.97; b->custom[j*cells+c]=a->custom[j*cells+c]; }
@@ -108,8 +131,8 @@ finish:
 }
 int main(void)
 {
-    const Case cases[]={CASE(ts1),CASE(no_user),CASE(with_user),CASE(robertson),CASE(extra)};
-    const size_t sizes[]={1,7,32,33};
+    const Case cases[]={CASE(ts1),CASE(no_user),CASE(with_user),CASE(robertson),CASE(extra),CASE(mutated)};
+    const size_t sizes[]={1,7,16,32,33};
     for (size_t i=0;i<sizeof(cases)/sizeof(*cases);++i) {
         int before=failures;
         for (size_t j=0;j<sizeof(sizes)/sizeof(*sizes);++j) for (int tight=0;tight<2;++tight) run(cases+i,sizes[j],tight);

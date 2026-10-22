@@ -1,3 +1,5 @@
+# Build-time CAMP parsing, C specialization, and test orchestration only.
+# No Python or third-party package is linked into the C runtime.
 channels:
   - conda-forge
 dependencies:

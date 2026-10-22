@@ -26,9 +26,14 @@ endif
 CFLAGS = -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMPFLAGS) -Iinclude -Isrc
 LDLIBS = $(OMPLIBS) -lm
 .PHONY: env cpu test-cpu bench micm-ref clean
-env: .conda/bin/python
-.conda/bin/python: environment.yml
-	CONDA_PKGS_DIRS=$(CURDIR)/.conda_pkgs $(CONDA) env create --yes --prefix $(CURDIR)/.conda --file environment.yml
+env: .conda/.environment-ready
+.conda/.environment-ready: environment.yml
+	@if [ -x '$(PYTHON)' ]; then \
+	  CONDA_PKGS_DIRS=$(CURDIR)/.conda_pkgs $(CONDA) env update --prefix $(CURDIR)/.conda --file environment.yml; \
+	else \
+	  CONDA_PKGS_DIRS=$(CURDIR)/.conda_pkgs $(CONDA) env create --yes --prefix $(CURDIR)/.conda --file environment.yml; \
+	fi
+	@touch $@
 
 micm-ref: bin/micm_ts1_ref
 bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp
@@ -106,24 +111,26 @@ test-cpu test-config: bin/test_config_extra
 # Mechanism-specialized build products; never checked in or hand edited.
 GROUP_SIZE ?= 32
 GEN_CHUNK ?= 32
+GEN_WIDTH ?= $(GROUP_SIZE)
+GEN_FUSION ?= 1
 GEN_OPTIONS ?=
-SPECIALIZED_NAMES = ts1 no_user with_user robertson extra
+SPECIALIZED_NAMES = ts1 no_user with_user robertson extra mutated
 SPECIALIZED_OBJECTS = $(SPECIALIZED_NAMES:%=build/specialized/%.o)
 build/specialization-settings: FORCE
 	@mkdir -p build
-	@printf '%s\n' '$(GROUP_SIZE)' '$(GEN_CHUNK)' '$(GEN_OPTIONS)' > $@.tmp
+	@printf '%s\n' '$(GROUP_SIZE)' '$(GEN_CHUNK)' '$(GEN_WIDTH)' '$(GEN_FUSION)' '$(GEN_OPTIONS)' > $@.tmp
 	@cmp -s $@.tmp $@ || cp $@.tmp $@
 	@rm $@.tmp
 build/specialized/ts1.c: mechanisms/ts1.json tools/configure.py tools/specialize.py build/specialization-settings | env
-	$(PYTHON) tools/specialize.py $< $@ --symbol ts1 --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+	$(PYTHON) tools/specialize.py $< $@ --depfile $(@:.c=.d) --symbol ts1 --chunk $(GEN_CHUNK) --width $(GEN_WIDTH) --fusion $(GEN_FUSION) $(GEN_OPTIONS)
 build/specialized/no_user.c: mechanisms/tutorial/rate_constants_no_user_defined/config.yaml mechanisms/tutorial/rate_constants_no_user_defined/species.yaml mechanisms/tutorial/rate_constants_no_user_defined/reactions.yaml tools/configure.py tools/specialize.py build/specialization-settings | env
-	$(PYTHON) tools/specialize.py $< $@ --symbol no_user --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+	$(PYTHON) tools/specialize.py $< $@ --depfile $(@:.c=.d) --symbol no_user --chunk $(GEN_CHUNK) --width $(GEN_WIDTH) --fusion $(GEN_FUSION) $(GEN_OPTIONS)
 build/specialized/with_user.c: mechanisms/tutorial/rate_constants_user_defined/config.json mechanisms/tutorial/rate_constants_user_defined/species.json mechanisms/tutorial/rate_constants_user_defined/reactions.json tools/configure.py tools/specialize.py build/specialization-settings | env
-	$(PYTHON) tools/specialize.py $< $@ --symbol with_user --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+	$(PYTHON) tools/specialize.py $< $@ --depfile $(@:.c=.d) --symbol with_user --chunk $(GEN_CHUNK) --width $(GEN_WIDTH) --fusion $(GEN_FUSION) $(GEN_OPTIONS)
 build/specialized/robertson.c: mechanisms/tutorial/robertson/config.json mechanisms/tutorial/robertson/species.json mechanisms/tutorial/robertson/reactions.json tools/configure.py tools/specialize.py build/specialization-settings | env
-	$(PYTHON) tools/specialize.py $< $@ --symbol robertson --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+	$(PYTHON) tools/specialize.py $< $@ --depfile $(@:.c=.d) --symbol robertson --chunk $(GEN_CHUNK) --width $(GEN_WIDTH) --fusion $(GEN_FUSION) $(GEN_OPTIONS)
 build/specialized/extra.c: mechanisms/config_extra.json tools/configure.py tools/specialize.py build/specialization-settings | env
-	$(PYTHON) tools/specialize.py $< $@ --symbol extra --chunk $(GEN_CHUNK) $(GEN_OPTIONS)
+	$(PYTHON) tools/specialize.py $< $@ --depfile $(@:.c=.d) --symbol extra --chunk $(GEN_CHUNK) --width $(GEN_WIDTH) --fusion $(GEN_FUSION) $(GEN_OPTIONS)
 build/specialized/%.o: build/specialized/%.c src/rosenbrock_step.inc src/solver_internal.h src/internal.h include/chem.h include/chem_solver.h build/compiler-settings
 	$(CC) $(CFLAGS) -c $< -o $@
 $(SPECIALIZED_OBJECTS): build/compiler-settings
@@ -142,3 +149,11 @@ bin/test_specialized: tests/test_specialized.c $(SPECIALIZED_OBJECTS) build/libc
 .PHONY: test-specialized
 test-specialized: bin/test_specialized
 	bin/test_specialized
+
+build/mutated.json: mechanisms/config_extra.json tools/specialization_fixture.py | env
+	@mkdir -p build
+	$(PYTHON) tools/specialization_fixture.py $< $@
+build/specialized/mutated.c: build/mutated.json tools/configure.py tools/specialize.py build/specialization-settings | env
+	$(PYTHON) tools/specialize.py $< $@ --depfile $(@:.c=.d) --symbol mutated --chunk $(GEN_CHUNK) --width $(GEN_WIDTH) --fusion $(GEN_FUSION) $(GEN_OPTIONS)
+
+-include $(SPECIALIZED_NAMES:%=build/specialized/%.d)

@@ -6,7 +6,7 @@ void chem_state_free(ChemState *s)
 {
     if (!s) return;
     free(s->conditions); free(s->values); free(s->custom); free(s->rates);
-    free(s->absolute_tolerance); free(s->scratch); free(s);
+    free(s->absolute_tolerance); free(s->scratch); free(s->cached_rate_inputs); free(s);
 }
 ChemStatus chem_state_create(const ChemMechanism *m, size_t cells, ChemState **out)
 {
@@ -81,6 +81,7 @@ ChemStatus chem_state_set_custom(ChemState *s, const char *name, const double *v
 }
 void chem_update_rates(ChemState *s)
 {
+    s->rates_cached=0;
     const ChemMechanism *m = s->mechanism;
     size_t n = s->cells;
     for (size_t i = 0; i < m->reaction_count; ++i) {

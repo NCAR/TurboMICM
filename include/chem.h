@@ -103,6 +103,9 @@ typedef struct {
     double *values, *custom, *rates, *absolute_tolerance;
     double *scratch; /* private cell workspace; one state per concurrent solve */
     double relative_tolerance;
+    /* Optional generated-rate cache; owned by the state, never shared. */
+    double *cached_rate_inputs;
+    int rates_cached;
 } ChemState;
 ChemStatus chem_state_create(const ChemMechanism *, size_t cells, ChemState **out);
 ChemStatus chem_state_copy(const ChemState *, ChemState **out);
