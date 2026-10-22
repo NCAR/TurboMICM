@@ -569,7 +569,7 @@ Calibration on this machine
 |---|---|---|---|---|---|---|---|
 | astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive | 2026-10-22 09:58–11:06 | `cf16213` | done, verified, timed |
 | astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | 2026-10-22 12:06–13:20 | `1c9112c` | done, verified, timed |
-| astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | 2026-10-22 13:56– | | running |
+| astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | 2026-10-22 13:56–15:03 | `f478080` | done, verified, timed |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-high | gpt-6.1-sol | high | `1d944f4` | Codex CLI 0.163.0, interactive | | | set up |
@@ -732,6 +732,62 @@ Calibration on this machine
 - To watch: astra-high's Tier 1 benchmark recomputes every rate constant before
   each timed step (`src/ts1_bench.c:154`), which MICM's driver and the other
   entries do once, before the warm-up.
+- Progress, from Claude Code's read-only checks every 20 minutes: at 20
+  minutes, a first commit (14:05) of generated chemistry, Jacobian, LU, and
+  solve kernels, matching MICM's 100-cell result exactly and diurnal-10min to
+  14.29 digits; at 40, a second commit (14:29) adding fixed 32-cell strides,
+  a fused error-estimate loop, and an exact rate cache, which skips the rate
+  constants only when every condition and custom parameter is byte for byte
+  unchanged (a generator option, `GEN_OPTIONS=--no-cache`); at 66, its
+  documents. The compliance scan found nothing outside the run directory and
+  its inputs (its one apparent hit, markdown text naming `../micm` in
+  backticks, led to a fix of the scanner).
+- Session end: the one turn ended at 15:03:42 with DONE (1 h 7 min 16 s from
+  the goal), no context compaction, no warning; Codex showed "Goal achieved
+  (1h 7m)". Every turn context shows gpt-6-astra at high, approval `never`,
+  sandbox `danger-full-access`. Claude Code quit Codex (`/quit`, 15:14:32) and
+  closed the tmux session.
+- Final commit `f478080` (15:03), 3 commits after `4055d7c` (`e78e3a1`, 14:05,
+  "Generate mechanism-specific chemistry and sparse solver kernels with
+  scenario driver"; `617b634`, 14:29, "Tune generated kernels and add exact
+  rate caching and regeneration validation"; `f478080`, "Document
+  specialization experiments and verify both compiler gates"): 20 files
+  changed, 1,656 lines added and 203 removed, 454 and 193 of them in `src/`
+  and `include/` (the Rosenbrock step moved into a template shared with the
+  generated solver, the benchmark driver into `src/ts1_driver.h`, the cache's
+  fields in the state, and a new day-night driver). The working tree is
+  clean. Collected as `tier2/astra/high`.
+- Tokens: 329,804 total; input 242,781 (plus 9,947,264 cached); output 87,023
+  (45,333 reasoning). Codex's usage window went from 1 % to 2 % (of the
+  window that began with the SSE's reset).
+- Other load during the session: Claude Code's read-only progress checks and
+  record keeping. No builds, tests, or timing by the experimenter.
+- Self-reported, not yet verified: both compilers pass the 680 cases, the
+  specialized tests, and every disclosed scenario; 1.25 times its Tier 1
+  benchmark and 3.53 times MICM at 18 threads.
+- Transcript archived as `transcripts/tier2/astra-high.jsonl.gz` (768 lines,
+  2.3 MB). The credential scan's one match was inside encrypted content.
+- Verified, 15:14–15:18, with `admin/verify_tier2.py`
+  (`results/2026-10-22-tier2-astra-high-verification`): both compilers build
+  without warnings (clean builds 25.0 s with clang, 37.0 s with gcc-15); 680
+  PASS, 0 FAIL, 0 N/A with each; the Tier 1 TS1 gate passes (0 with clang,
+  1.43e-13 with gcc-15); bin/ts1_bench_specialized passes on the seed-2026
+  cells (2.31e-14, 1.43e-13) and the undisclosed input (1.95e-14, 1.52e-13),
+  with MICM's 281,700 internal steps; `make test-specialized` passes (TS1 and
+  five other mechanisms, one a mutated TS1); the day-night gate passes on all
+  ten scenarios with both compilers, 14.08 to 14.46 digits overall and at
+  least 13.42 per species, with MICM's internal steps exactly; the audit finds
+  nothing outside the rules in 75 C files. Generated C for TS1:
+  `build/specialized/ts1.c`, 44,974 lines, 2.05 MB, from a 406-line generator.
+- Timed, 15:27–15:37, provisionally at 18 threads (5 rounds, the undisclosed
+  input, after 10 idle minutes; all 45 runs pass the gate): specialized
+  3,332.7 ms, and 3,407.1 ms without its rate cache (a variant built here with
+  `GEN_OPTIONS=--no-cache`); its generic 4,172.8 ms and its Tier 1 commit's
+  4,183.9 ms; MICM 11,807.4, 10,516.0, and 4,402.3 ms; astra-xhigh's
+  specialized 2,053.4 ms and astra-max's 2,975.6 ms. Specialization gains 1.25
+  times over its own generic solver (1.22 without the cache); 3.54 times MICM's
+  default and 1.32 times its fastest. Every program ran 1.4 to 3.5 % faster
+  than in the two earlier sessions.
 
 # Tier 3
 
