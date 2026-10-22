@@ -568,7 +568,7 @@ Calibration on this machine
 | Run | Model | Effort | Starts from | Harness | Session | Final commit | Status |
 |---|---|---|---|---|---|---|---|
 | astra-max | gpt-6-astra | max | `0dc7f67` | Codex CLI 0.163.0, interactive | 2026-10-22 09:58–11:06 | `cf16213` | done, verified, timed |
-| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | | | set up |
+| astra-xhigh | gpt-6-astra | xhigh | `fbd365c` | Codex CLI 0.163.0, interactive | 2026-10-22 12:06– | | running |
 | astra-high | gpt-6-astra | high | `4055d7c` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | | | set up |
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | | | set up |
@@ -651,6 +651,19 @@ Calibration on this machine
   MICM's default and 1.44 times its fastest. `time_tier2.sh` then failed to
   write its exit status (`status` is read-only in zsh; fixed), which delayed
   the next launch by about 25 minutes.
+
+## Tier 2: astra-xhigh
+
+- Session start: 2026-10-22 12:06:52, launched by Claude Code with
+  `admin/launch_codex_run.sh --tier2 astra-xhigh gpt-6-astra xhigh`, once
+  astra-max was collected, archived, verified, and timed; the goal was sent at
+  12:06:57. The session record shows gpt-6-astra at xhigh, base instructions
+  from gpt-6-astra, Codex 0.163.0, approval `never` and sandbox
+  `danger-full-access`, and no model switch; the process's environment holds no
+  Claude Code variables besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
+- Codex session `01a1645d-8d6b-7ea1-adde-c65151f4d896`; process 40578;
+  `caffeinate -ims -w 40578`. No other Codex session was running; the machine
+  was idle (load averages 1.35, 1.41, 2.12) and on AC power.
 
 # Tier 3
 
