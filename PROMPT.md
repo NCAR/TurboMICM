@@ -1,174 +1,198 @@
 You are part of a controlled experiment comparing LLM coding agents.
 Every agent receives this same prompt. You are Sol.
-This prompt is also in PROMPT.md in your directory. Below, ROOT means /Users/fillmore/NSF-NCAR/ODE/benchmarks.
+This prompt is also in PROMPT.md in your directory. Below, ROOT means /Users/dfillmor/NSF-NCAR/ODE/benchmarks/tier2.
+
+This is Tier 2. In Tier 1 you ported MICM's CPU solver to portable C and made it
+fast while keeping MICM's numerical methods, in a library that works for any
+mechanism. Your directory, ROOT/sol-max/, is a copy of your own Tier 1 repository at
+commit 001fb64, with its history; PROMPT.md now holds this prompt.
+
+Tier 2 asks how fast one mechanism can be solved when the code is specialized to
+it. Reference mechanisms such as TS1 run unchanged in production models for years,
+and for such a frozen mechanism run-time configurability buys little. Keep MICM's
+numerical methods, and specialize everything else for TS1, as far as it will go,
+through a code generator.
 
 RULES
-- Work only in ROOT/sol-max/, your own git repository (if it is not one yet, run
-  `git init` there; never commit to a repository that encloses it). Commit as you
-  go; the last commit is graded. There is no time limit: you decide, on your own
-  judgment, when the work is done. This is not an open-ended quest, though, and if
-  progress is slow the experimenter may stop the run. When the work is complete,
-  end your final message with the word DONE.
+- Work only in ROOT/sol-max/, your own git repository; never commit to a repository
+  that encloses it. Commit as you go; the last commit is graded.
+- There is no time limit: you decide, on your own judgment, when the work is done.
+  This is not an open-ended quest, though, and if progress is slow the
+  experimenter may stop the run. When the work is complete, end your final
+  message with the word DONE.
 - Read-only inputs:
     ROOT/micm
-        MICM source, commit e15898ce (v3.7.0-259)
-    ROOT/micm/build
-        MICM's tests built in double precision with OpenMP (Release); all pass.
-        MICM runs them from the build directory, where some read and write files,
-        so to run them, copy the build directory into your own directory and run
-        the executables from the copy.
+        MICM source, commit e15898ce (v3.7.0-259), with its tests built in ROOT/micm/build
     ROOT/reference
-        test-case list, TS1 tools, inputs, and MICM results; see README.md
-- Apart from these, do not read other directories under ROOT. Do not modify
-  anything outside your directory. Do not install software or download code,
-  except packages installed into your own conda environment (see PYTHON).
+        Tier 1's test-case list, TS1 tools and inputs, and MICM results; see
+        README.md
+    ROOT/scenarios
+        day-night scenarios for TS1, MICM's results for them, and the scoring
+        tool; see README.md
+- Apart from these, do not read other directories under ROOT, and do not look at
+  any other agent's solution, to this tier or to Tier 1, on this machine or
+  online. Do not modify anything outside your directory. Do not install software
+  or download code, except packages installed into your own conda environment
+  (see PYTHON).
 - Do not put your model or vendor name in any file. Reviews are blind.
-- No one will answer questions. When something is unspecified, decide, and record the
-  decision and your reasoning in DECISIONS.md.
+- No one will answer questions. When something is unspecified, decide, and record
+  the decision and your reasoning in DECISIONS.md.
 
 MACHINE AND TOOLCHAIN
-- Apple M5 laptop: 10 CPU cores (4 "Super" + 6 "Efficiency"), 16 GB unified memory,
-  macOS 27.0.1, with Xcode installed.
-- Compilers: Apple clang 21.0.0 (/usr/bin/clang) and GCC 15.2.0
-  (/opt/homebrew/bin/gcc-15). Build: GNU Make 3.81 (/usr/bin/make).
-- On this machine Apple clang links only with
-  SDKROOT=$(xcrun --sdk macosx --show-sdk-path); with the default SDK the linker
-  fails with "unknown architecture arm64e.x1". Set SDKROOT in your Makefile, on
-  macOS only.
-- OpenMP: with Apple clang, use libomp 22.1.8 in /opt/homebrew/opt/libomp: compile
-  with -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include (-isystem
-  keeps omp.h out of -pedantic diagnostics) and link with
-  -L/opt/homebrew/opt/libomp/lib -lomp. With gcc-15, use -fopenmp.
-- Also installed: cmake 4.1.3 (/opt/homebrew/bin/cmake; MICM builds with it, your
-  code builds with make) and conda 26.3.2 (~/miniforge3/bin/conda).
+- Apple M5 Pro laptop: 18 CPU cores (6 "Super" + 12 "Performance"), 24 GB unified
+  memory, macOS 26.7.1, with Apple's Command Line Tools 27 (no Xcode).
+- This is not the machine you used in Tier 1, an Apple M5 with 10 cores. Here
+  Homebrew is in /Users/dfillmor/homebrew, not /opt/homebrew, so paths in your
+  Tier 1 Makefile may need updating (`brew --prefix libomp` prints libomp's).
+  ROOT/reference/README.md was written on Tier 1's machine: its timings and its
+  note on SDKROOT describe that machine.
+- Compilers: Apple clang 21.0.0 (/usr/bin/clang) and GCC 15.3.0
+  (/Users/dfillmor/homebrew/bin/gcc-15). Build: GNU Make 3.81 (/usr/bin/make).
+- Apple clang links here with or without SDKROOT; setting
+  SDKROOT=$(xcrun --sdk macosx --show-sdk-path) on macOS, as in Tier 1, is harmless.
+- OpenMP: with Apple clang, use libomp 23.1.3 in /Users/dfillmor/homebrew/opt/libomp:
+  compile with -Xpreprocessor -fopenmp -isystem
+  /Users/dfillmor/homebrew/opt/libomp/include (-isystem keeps omp.h out of -pedantic
+  diagnostics) and link with -L/Users/dfillmor/homebrew/opt/libomp/lib -lomp. With
+  gcc-15, use -fopenmp.
+- Also installed: cmake 4.4.4 (/Users/dfillmor/homebrew/bin/cmake; MICM builds with
+  it, your code builds with make) and conda 26.5.3 (~/miniforge3/bin/conda).
 
 TASK
-Port MICM's CPU functionality to C and optimize its performance without depending on
-this machine: the same code must work unchanged with other compilers, CPUs, and
-operating systems (see PORTABILITY). The port replaces MICM: apart from
-`make micm-ref` and running MICM's tests for reference, nothing you build or run may
-use MICM or MUSICA code, including the musica Python package. The CUDA and Kokkos
-backends are out of scope.
+Write a code generator, in Python, that reads a mechanism configuration in MICM's
+format, the format your Tier 1 reader takes, and emits C specialized to that
+mechanism. Use it to make TS1 as fast as you can.
 
-Besides building mechanisms in code, as MICM's tests do, your library takes
-mechanisms from MICM configuration files, in YAML or JSON, in the format of the
-examples in ROOT/micm/test/tutorial/configs. Your Python tooling reads them with a
-reader you write and generates what your C library builds from. MICM no longer
-parses this format, so the examples and MICM's rate-constant types define it: test
-that each example gives the same results as the same mechanism built in code (the
-tutorial programs rate_constants_no_user_defined_example_by_hand and
-rate_constants_user_defined_example_by_hand build two of them). TS1 exists only as
-C++, in ROOT/micm/test/benchmark/ts1_mechanism.hpp: translate it into this format
-with a script you keep, extending the format where TS1 needs it (record the
-extensions in DECISIONS.md), and build the benchmark from that configuration.
-
-Correctness is defined by MICM's test suite: the cases in
-ROOT/reference/micm_cases.txt, which are GoogleTest cases and tests that are plain
-programs. Port every case, checking the same quantities with the same or tighter
-tolerances, so that your library gives MICM's answers within numerical roundoff. A
-plain-program case passes when your port of the program runs and prints the same
-results. Where a case tests C++ mechanics, test the equivalent C behavior (for
-example, an error code where MICM throws). A case with no meaningful C equivalent may
-be marked N/A with a one-line reason. `make test-cpu` prints one line per case:
-`<id> PASS|FAIL|N/A <reason>`, with <id> as in the case list.
-
-Keep MICM's numerical methods: the solver formulas and parameter sets, error control,
-tolerances, and LU algorithms. Everything else is your design: data layout, threading,
-how cells are grouped and scheduled (including separate solver state per group of
-cells, as MICM's OpenMP tutorial does), vectorization, memory management, and code
-generation. Two limits:
-- The library stays mechanism-generic. Code specialized to a mechanism is allowed only
-  if your library generates it automatically, for any mechanism, and the tests
-  exercise that path. No hand-written TS1-specific code.
-- The benchmark runs through the same library code the tests exercise.
-Design the solvers so later experiments can replace or modify them.
+- What the generator knows may become code. Species and matrix indices,
+  stoichiometric coefficients and yields, the sparsity pattern and its fill, the
+  species ordering, the steps of the LU factorization and of the triangular
+  solves, the rate-constant formulas with their fixed parameters, and the shape
+  of every loop can all be fixed in the generated C: unrolled, fused, reordered,
+  or laid out however runs fastest.
+- What varies at run time stays data: temperature, pressure, air density, the
+  species concentrations, every rate parameter that a CELLS_CSV or a scenario can
+  set (the photolysis rates and the other user-defined parameters), the step
+  length, and the solver's tolerances.
+- Keep MICM's numerical method: the three-stage Rosenbrock with MICM's
+  parameters, its error estimate, and its step-size control. The linear algebra
+  is yours: any exact factorization or direct solve of the same linear systems,
+  with any ordering, pivoting, elimination order, blocking, or unrolling, chosen
+  at generation time if you like. No approximate Jacobians, no reuse of
+  factorizations beyond what MICM does, no reduced precision, and no change to
+  the chemistry.
+- The generator handles any mechanism in MICM's format, not only TS1. Your tests
+  run it on TS1 and on the configuration-file mechanisms your Tier 1 tests use,
+  and check that each generated solver agrees with your generic library to 1e-10
+  relative. `make test-specialized` runs them, and exits nonzero if any fails.
+- The generator is the code that matters. Generated C is a build product: make
+  regenerates it from the configuration, and nobody edits it by hand. It may be
+  large and need not be readable; the generator must be.
+- Keep what you built in Tier 1. The generic library, bin/ts1_bench_cpu, and
+  `make test-cpu` keep working, and the Tier 1 gate still passes.
 
 PYTHON
-Python runs when you build and test, never when the library or the benchmark runs:
-it reads mechanism configurations and generates C at build time, and it may drive
-the test cases through ctypes and compare results. The library and bin/ts1_bench_cpu
-are C, link no Python, and run without it.
-- Use only a conda environment inside your directory. `make env` creates it as a
-  prefix environment (for example ROOT/sol-max/.conda) from an environment.yml you
-  commit. Pin package versions but not build strings, so the environment can be
-  recreated on Linux. Whenever you run conda, set CONDA_PKGS_DIRS to a directory
-  inside ROOT/sol-max/. Keep the environment and package cache out of git, and never
-  modify conda's base environment or any other environment.
-- Any packages from conda-forge (a YAML parser, for instance), or from pip inside the
-  environment, may be used for this tooling, but not the musica package. Nothing
-  third-party goes into the library or the benchmark.
-- All C, including C that your Python generates, is compiled by your Makefile with
-  $(CC) and $(OPTFLAGS).
+- The generator runs at build time, from the conda environment in your directory,
+  as in Tier 1: `make env` creates it from an environment.yml you commit, with
+  versions pinned but not build strings; CONDA_PKGS_DIRS points inside your
+  directory; conda's base environment is never modified.
+- Python never runs when the library, the benchmarks, or the scenarios run. Any
+  packages may be used in the generator, but nothing third-party goes into the
+  generated C, the library, or the benchmarks.
+- All C, including the generated C, is compiled by your Makefile with $(CC) and
+  $(OPTFLAGS).
 
 PORTABILITY
 - C is ISO C11 and uses only the C standard library, libm, and OpenMP (CPU constructs
   only, no target offload). No Apple frameworks or libraries (Accelerate,
-  libdispatch) and no other operating-system-specific APIs.
+  libdispatch) and no other operating-system-specific APIs. This applies to the
+  generated C as well.
 - No intrinsics, inline assembly, compiler vector extensions (vector_size,
   ext_vector_type), or target-specific attributes, builtins, or pragmas. Get SIMD
   from data layout, restrict, and `#pragma omp simd`.
 - No long double: it is 64 bits here, 80 bits on x86-64 Linux, and 128 bits on ARM
   Linux.
-- Values tuned for speed (cell-group size, vector length, thread count, scheduling)
-  are parameters with defaults, set at build or run time and listed in DESIGN.md.
-  Every value must give correct results.
-- `make cpu`, `make test-cpu`, and `make bench` work unchanged with CC=clang and with
-  CC=gcc-15, choosing OpenMP flags to suit the compiler.
+- Values tuned for speed, in the generator or the C (unrolling, blocking, cell-group
+  size, vector length, thread count, scheduling), are parameters with defaults, set
+  at build or run time and listed in DESIGN.md. Every value must give correct
+  results.
+- `make cpu`, `make test-cpu`, `make bench`, and `make test-specialized` work
+  unchanged with CC=clang and with CC=gcc-15, choosing OpenMP flags to suit the
+  compiler.
 - Do not tune compiler flags. Your Makefile takes the compiler from CC and the
   optimization flags from OPTFLAGS (default -O3 -DNDEBUG), and adds no other
   optimization, target (-march, -mcpu, -mtune), floating-point (-ffast-math or its
   parts), LTO, or profile-guided flags; it may add language, warning, include,
   OpenMP, and link flags. The experimenter builds every entry, and MICM, with the
-  same OPTFLAGS. `make micm-ref` builds ROOT/reference/micm_ts1_ref.cpp with clang++
-  and OPTFLAGS into bin/micm_ts1_ref (ROOT/reference/README.md gives the command), so
-  you can compare with MICM built the same way.
+  same OPTFLAGS.
 
 TS1 BENCHMARK
-TS1 is the mechanism in ROOT/micm/test/benchmark/ts1_mechanism.hpp (210 species, 547
-reactions). `make bench` builds the C program bin/ts1_bench_cpu, with TS1 read by
-your configuration reader from your translation of that file:
+`make bench` builds, besides Tier 1's bin/ts1_bench_cpu, a TS1 benchmark from the
+generator's output:
 
-    bin/ts1_bench_cpu [--threads N] CELLS STEPS DT CELLS_CSV
+    bin/ts1_bench_specialized [--threads N] CELLS STEPS DT CELLS_CSV
 
-- Solver: MICM's three-stage Rosenbrock with its default parameters and tolerances,
-  as in ROOT/micm/test/benchmark/micm_bench.cpp.
-- CELLS_CSV: a header row naming temperature, pressure, and species or rate-parameter
-  labels, then one row per cell; every cell differs. Columns not given take the
-  defaults in TS1's InitState. InitState sets six photolysis rates (jo2_a, jh2o_b,
-  jh2o_c, jch4_a, jch4_b, jhf) to 1 s-1, which is unphysical at its surface
-  conditions; the input files set them to 0.
-- Run one untimed warm-up step, then time STEPS steps of DT seconds. Print
-  `elapsed_ms=<ms>` and the solver statistics summed over the timed steps as
-  `internal_steps= accepted= rejected= function_calls= jacobian_updates=
-  decompositions= solves=`. Write the final state, after the warm-up and the STEPS
-  steps, to ts1_final.csv in the working directory: a header row of temperature,
-  pressure, and species names, then one row per cell. ROOT/reference/micm_ts1_ref.cpp does
-  exactly this with MICM.
-- Use all cores by default; --threads N limits the run to N threads.
+Its arguments, its timed region, and its output are those of bin/ts1_bench_cpu in
+Tier 1: MICM's default tolerances; one untimed warm-up step, then STEPS timed steps
+of DT seconds; `elapsed_ms=` and the solver statistics; the final state in
+ts1_final.csv. ROOT/reference/README.md describes them, and
+ROOT/reference/micm_ts1_ref.cpp does the same with MICM.
+
+DAY-NIGHT SCENARIOS
+ROOT/scenarios/README.md defines the scenario files: TS1 cells from a CELLS_CSV, a
+step length, a number of steps, and a photolysis factor f(t) that sets every
+photolysis rate at the start of each step, through 24 hours of day and night.
+`make bench` also builds:
+
+    bin/ts1_scenario_specialized [--threads N] [--rtol R] [--atol A] SCENARIO
+
+- It runs the specialized TS1 solver through SCENARIO, setting the photolysis rates
+  at each step as README.md describes, and writes ts1_final.csv and
+  ts1_snapshots.csv in the formats it gives.
+- --rtol sets the relative tolerance and --atol the absolute tolerance for every
+  species; by default, MICM's. MICM's default absolute tolerance, 1e-3 mol m-3, is
+  far too loose for a day-night run: with it, MICM itself fails three of the five
+  disclosed day-night scenarios. The day-night tests use a relative tolerance of
+  1e-6 and an absolute tolerance of 1e-15.
+- It times the steps, including setting the photolysis rates, and nothing else, and
+  prints `elapsed_ms=` and the solver statistics as in Tier 1.
+- If your cell-group size is fixed at build time, `make GROUP_SIZE=32 bench` builds
+  it with 32-cell groups; otherwise --group-size 32 selects them.
+
+For each disclosed scenario, ROOT/scenarios/<name>/ holds MICM's three-stage
+Rosenbrock result at those tolerances with 32-cell groups (micm_final.csv and
+micm_snapshots.csv), and a high-accuracy reference solution, for scale.
 
 EVALUATION
-- Gate: built with CC=clang and with CC=gcc-15, every non-N/A case passes, and in
-  every cell and species the TS1 final state y agrees with MICM's double-precision
-  result y_MICM:
-      |y - y_MICM| <= 1e-30 + 1e-10 |y_MICM|   (mol m-3)
-  For scale, MICM's own result moves by about 2e-14 relative under other compiler
-  flags, the other LU algorithm, or another cell grouping.
-  ROOT/reference/compare_final.py applies this check. Breaking a PORTABILITY rule
-  also fails the gate.
-- Primary ranking: wall time (elapsed_ms) of `make cpu`, built with CC=clang, on
-  10,000 cells, 100 steps, DT = 30 s, with a CELLS_CSV made by
-  ROOT/reference/make_cells_csv.py from an undisclosed seed. The experimenter times
-  each entry on an idle machine (median of 5 runs); your own timings are not used.
-  For context, MICM built with -O3 -DNDEBUG takes 137,383 ms for this run on one
-  core of this machine.
-- The experimenter may also build your code with GCC on an x86-64 Linux machine and
-  time it there; those results are reported next to the ranking and do not change it.
-- Secondary ranking: blind review of readability, maintainability, and extensibility.
-  Reviewers will try to add a Rosenbrock parameter set, replace the step-size
-  controller, swap the linear solver, and add a rate-constant type.
+- Gate, with CC=clang and with CC=gcc-15:
+  - the Tier 1 gate still passes;
+  - bin/ts1_bench_specialized's TS1 final state agrees with MICM's to 1e-10
+    relative in every cell and species, as in Tier 1 (ROOT/reference/compare_final.py);
+  - your tests of the generator pass (`make test-specialized`), on TS1 and on the
+    other mechanisms;
+  - on every day-night scenario, disclosed and undisclosed, with 32-cell groups,
+    --rtol 1e-6, and --atol 1e-15, bin/ts1_scenario_specialized runs without a NaN,
+    an infinity, or a value below -1e-20 mol m-3, and agrees with MICM's result at
+    the same settings to at least 10 significant digits overall and 9 for every
+    species, by ROOT/scenarios/score.py with MICM's result as the reference. For
+    scale, MICM built with clang and with gcc-15 agrees with itself on these
+    scenarios to 14 digits overall and at least 13.4 for every species;
+  - the code, generated C included, follows the portability rules.
+- Primary ranking: wall time (elapsed_ms) of bin/ts1_bench_specialized, built with
+  CC=clang, on 10,000 cells, 100 steps, DT = 30 s, with a CELLS_CSV made by
+  ROOT/reference/make_cells_csv.py from an undisclosed seed, on all 18 cores. The
+  experimenter times each entry on this machine, idle (median of 5 runs), alongside
+  your Tier 1 bin/ts1_bench_cpu and MICM; your own timings are not used.
+- Also reported: the 1-thread time, the clean-build time with each compiler, the
+  size of the generated C, and the day-night results.
+- Secondary ranking: blind review of the generator's readability, maintainability,
+  and extensibility. Reviewers will try to add a reaction to TS1 and regenerate,
+  change a rate parameter, and run the generator on another mechanism.
 
 DELIVERABLES
-README.md (build, test, run), DESIGN.md (architecture, how a configuration becomes C,
-the tuning parameters, and how to make the changes the reviewers will try),
-DECISIONS.md, RESULTS.md (test summary for both compilers, and benchmark results
-compared with MICM built with the same flags), and environment.yml.
+- SPECIALIZATION.md: what the generator specializes, what it leaves as data and
+  why, and the measured effect of each specialization you tried, including those
+  you dropped.
+- README.md, DESIGN.md (the generator, its parameters, and how to regenerate),
+  DECISIONS.md, RESULTS.md (the specialized benchmark against your Tier 1 benchmark
+  and MICM at 18 and 1 threads, the build times, and the day-night results against
+  MICM and the reference solutions), and environment.yml, all updated from Tier 1.

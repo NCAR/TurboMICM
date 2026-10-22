@@ -1,0 +1,90 @@
+/* Three-stage specialization of src/rosenbrock.c.
+ * Numerical method: Copyright (C) 2023-2026 University Corporation for Atmospheric Research.
+ * SPDX-License-Identifier: Apache-2.0
+ * Coefficients/control parameters have a single source: chem_rosenbrock_parameters.
+ * Within each scalar expression, retain the generic solver's addition order. */
+ChemStatus chem_solve_@NAME@(double dt, ChemState *state, ChemStats *stats) {
+  if (!state || !stats || !isfinite(dt) || dt < 0.0 ||
+      state->model->nvariables != @N@ || state->model->nnz != @NNZ@ ||
+      state->model->nconstraints || state->stride != state->cells) return CHEM_INVALID;
+  const ChemRosenbrock p = chem_rosenbrock_parameters(3);
+  const ChemModel *m = state->model;
+  const size_t nc = state->cells, stride = state->stride, ny = @N@*stride;
+  double *restrict y = state->variables, *restrict yn = state->new_y;
+  double *restrict k1 = state->stages[0], *restrict k2 = state->stages[1], *restrict k3 = state->stages[2];
+  double *restrict f = state->forcing;
+  double hmin = 1e-15*dt, hmax = dt, hstart = 1e-6*dt;
+  double h = fmin(fmax(hmin, fabs(hstart)), fabs(hmax)), time = 0.0;
+  int reject_last = 0, reject_more = 0;
+  ChemStatus status = CHEM_OK;
+  memset(stats, 0, sizeof *stats);
+  while (time-dt+p.roundoff <= 0.0) {
+    if (stats->internal_steps > p.max_steps) { status = CHEM_MAX_STEPS; break; }
+    if (time+0.1*h == time || h <= fmin(p.roundoff,hmin)) { status = CHEM_SMALL_STEP; break; }
+    h = fmin(h,fabs(dt-time));
+    memset(f, 0, ny*sizeof(double));
+    @NAME@_force(m,nc,stride,y,state->rates,f); ++stats->function_calls;
+    memset(state->jacobian, 0, @NNZ@*stride*sizeof(double));
+    @NAME@_jacobian(m,nc,stride,y,state->rates,state->jacobian); ++stats->jacobian_updates;
+    int accepted = 0;
+    while (!accepted) {
+      @NAME@_shift(state,1.0/(h*p.gamma[0]));
+      chem_factor_@NAME@(m,nc,stride,state->jacobian); ++stats->decompositions;
+      memcpy(k1,f,ny*sizeof(double));
+      chem_linear_@NAME@(m,nc,stride,state->jacobian,k1); ++stats->solves;
+      #pragma omp simd
+      for (size_t i = 0; i < ny; ++i) yn[i] = y[i] + p.a[0]*k1[i];
+      memset(k2,0,ny*sizeof(double));
+      @NAME@_force(m,nc,stride,yn,state->rates,k2); ++stats->function_calls;
+      double c0 = p.c[0]/h, c1 = p.c[1]/h, c2 = p.c[2]/h;
+      #pragma omp simd
+      for (size_t i = 0; i < ny; ++i) { k3[i] = k2[i]; k2[i] += c0*k1[i]; }
+      chem_linear_@NAME@(m,nc,stride,state->jacobian,k2); ++stats->solves;
+      #pragma omp simd
+      for (size_t i = 0; i < ny; ++i) { k3[i] += c1*k1[i]; k3[i] += c2*k2[i]; }
+      chem_linear_@NAME@(m,nc,stride,state->jacobian,k3); ++stats->solves;
+      #pragma omp simd
+      for (size_t i = 0; i < ny; ++i) {
+        double value = y[i];
+        value += p.m[0]*k1[i]; value += p.m[1]*k2[i]; value += p.m[2]*k3[i];
+        yn[i] = value;
+        double error = 0.0;
+        error += p.e[0]*k1[i]; error += p.e[1]*k2[i]; error += p.e[2]*k3[i];
+        state->error[i] = error;
+      }
+      /* No parallel reduction: species then cells, identical to MICM's norm. */
+      double total = 0.0;
+      for (size_t v = 0; v < @N@; ++v) for (size_t c = 0; c < nc; ++c) {
+        size_t i = v*stride+c;
+        double ymax = fabs(y[i]) > fabs(yn[i]) ? fabs(y[i]) : fabs(yn[i]);
+        double scaled = state->error[i]/(state->absolute_tolerance[v]+state->relative_tolerance*ymax);
+        total += scaled*scaled;
+      }
+      double error = sqrt(total/ny);
+      error = error < 1e-10 ? 1e-10 : error;
+      double hnew = h*chem_default_controller(error,&p,NULL);
+      ++stats->internal_steps;
+      if (isnan(error)) { status = CHEM_NAN; goto finished; }
+      if (isinf(error)) { status = CHEM_INF; goto finished; }
+      if (error < 1.0 || h < hmin) {
+        ++stats->accepted; time += h;
+        memcpy(y,yn,ny*sizeof(double));
+        hnew = fmax(hmin,fmin(hnew,hmax));
+        if (reject_last) hnew = fmin(hnew,h);
+        reject_last = reject_more = 0; h = hnew; accepted = 1;
+      } else {
+        if (reject_more) hnew = h*p.rejection_factor;
+        reject_more = reject_last; reject_last = 1; h = hnew;
+        if (stats->accepted >= 1) ++stats->rejected;
+        memset(state->jacobian,0,@NNZ@*stride*sizeof(double));
+        @NAME@_jacobian(m,nc,stride,y,state->rates,state->jacobian); ++stats->jacobian_updates;
+        if (!(h > 0.0) || time+0.1*h == time) { status = CHEM_SMALL_STEP; goto finished; }
+      }
+    }
+  }
+finished:
+  #pragma omp simd
+  for (size_t i = 0; i < ny; ++i) y[i] = y[i] < 0.0 ? 0.0 : y[i];
+  stats->final_time = time;
+  return status;
+}

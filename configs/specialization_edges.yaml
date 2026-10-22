@@ -1,0 +1,27 @@
+concentration units: mol m-3
+camp-data:
+  - {type: CHEM_SPEC, name: A}
+  - {type: CHEM_SPEC, name: B}
+  - {type: CHEM_SPEC, name: C}
+  - {type: CHEM_SPEC, name: inert}
+  - {type: CHEM_SPEC, name: M, parameterization: third body}
+  - type: MECHANISM
+    name: Source, sink, duplicate terms, shared parameters and repeated third bodies
+    reactions:
+      - {type: EMISSION, species: A, MUSICA name: source}
+      - {type: FIRST_ORDER_LOSS, species: C, MUSICA name: sink}
+      - type: ARRHENIUS
+        reactant sequence: [A, B, A, M, M]
+        product sequence: [{species: A, yield: 0.25}, {species: B, yield: 0.5}, {species: B, yield: 0.25}, {species: C}]
+        A: 0.001
+        B: 0.5
+        C: -100
+        D: 290
+        E: 1e-7
+      - {type: USER_DEFINED, reactants: {B: {}}, products: {A: {}}, MUSICA name: shared, scaling factor: 0.5}
+      - {type: USER_DEFINED, reactants: {A: {}}, products: {C: {}}, MUSICA name: shared, scaling factor: 1.5}
+initial state:
+  temperature: 285
+  pressure: 90000
+  concentrations: {A: 0.1, B: 0.2, C: 0.3, inert: 0.4}
+  rate parameters: {source: 0.0001, sink: 0.002, shared: 0.003}
