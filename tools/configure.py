@@ -230,6 +230,8 @@ def emit_c(mech, symbol):
                 for _, p in r['multipliers']])
             array('char *const', f'multiplier_names_{i}', [json.dumps(n) for n, _ in r['multipliers']])
     lines.append('static const ChemReaction reactions[] = {')
+    if not mech['reactions']:
+        lines.append('{0},')
     for i, r in enumerate(mech['reactions']):
         multiplier_fields = ',.multiplier_count=%d,.multipliers=multipliers_%d,.multiplier_names=multiplier_names_%d' % (
             len(r['multipliers']), i, i) if r.get('multipliers') else ''

@@ -112,3 +112,27 @@
   while substantive vectorized integrations are checked in the other case ports.
   Integer labels encode its sparse string values so both storage orderings use
   the existing typed C sparse API and print the same labels.
+
+- Tier 2 reuses the configuration normalizer and the Rosenbrock algorithm. The
+  generator emits numerical kernels rather than maintaining a second adaptive
+  controller. Generation-time symbolic fill is independently checked against
+  every coordinate of the generic library's runtime plan.
+- Fixed rate descriptors are immutable in a specialized solver. Runtime custom
+  parameters, including surface, emission, loss, heterogeneous and photolysis
+  inputs, remain mutable arrays. Changing a fixed coefficient or adding a
+  reaction means editing the configuration and rebuilding.
+- Full groups can have constant strides in generated kernels. Other cell counts
+  use the generic kernels on the same descriptor and CSR representation. This
+  preserves arbitrary group sizes and partial groups without padding the error
+  norm or adding artificial cells.
+- The scenario file format is interpreted as documented: paths are relative to
+  the scenario, interpolation is linear with constant endpoints, comments start
+  at `#`, and absent snapshot intervals request final-state output only. An
+  explicit interval always includes the last step, even when it is not divisible
+  by that interval. Scenario defaults retain 32-cell groups even on small inputs.
+- Snapshot copies and output are outside timed segments. Each segment runs its
+  steps within a static parallel group loop, preserving independent per-group
+  trajectories while timing actual rate updates and solves.
+- Empty reaction sets get a C11 dummy descriptor element with a reaction count of
+  zero. Tests include inert species, high-order repeated reactants, self-products,
+  source/loss rates, condition multipliers, and every supported rate family.

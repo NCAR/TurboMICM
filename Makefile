@@ -2,16 +2,19 @@ ifeq ($(origin CC),default)
 CC = clang
 endif
 .DEFAULT_GOAL := cpu
+.SUFFIXES:
 OPTFLAGS ?= -O3 -DNDEBUG
 PYTHON = $(CURDIR)/.conda/bin/python
 CONDA = $(HOME)/miniforge3/bin/conda
+LIBOMP_PREFIX ?= $(shell brew --prefix libomp 2>/dev/null)
+GROUP_SIZE ?= 32
 UNAME_S := $(shell uname -s)
 COMPILER_VERSION := $(shell $(CC) --version 2>/dev/null)
 ifeq ($(UNAME_S),Darwin)
 export SDKROOT := $(shell xcrun --sdk macosx --show-sdk-path)
 ifneq (,$(findstring clang,$(COMPILER_VERSION)))
-OMPFLAGS = -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include
-OMPLIBS = -L/opt/homebrew/opt/libomp/lib -lomp
+OMPFLAGS = -Xpreprocessor -fopenmp -isystem $(LIBOMP_PREFIX)/include
+OMPLIBS = -L$(LIBOMP_PREFIX)/lib -lomp
 else
 OMPFLAGS = -fopenmp
 OMPLIBS = -fopenmp
@@ -20,7 +23,7 @@ else
 OMPFLAGS = -fopenmp
 OMPLIBS = -fopenmp
 endif
-CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Iinclude $(OMPFLAGS) $(OPTFLAGS)
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Iinclude -Isrc -DCHEM_GROUP_SIZE=$(GROUP_SIZE) $(OMPFLAGS) $(OPTFLAGS)
 LDLIBS = $(OMPLIBS) -lm
 .PHONY: env cpu bench test-cpu micm-ref clean
 env: .conda/.ready
@@ -41,11 +44,11 @@ clean:
 	@for d in build bin; do if [ -d "$$d" ]; then rm -r "$$d"; fi; done
 
 LIBSRC = src/mechanism.c src/state.c src/rates.c src/process.c src/linear.c src/parameters.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/array.c src/sparse.c src/system.c src/jacobian.c src/builder.c
-LIBHEADERS = include/chem.h include/chem_array.h include/chem_sparse.h include/chem_system.h include/chem_jacobian.h include/chem_builder.h src/internal.h
+LIBHEADERS = src/rosenbrock_impl.h include/chem.h include/chem_array.h include/chem_sparse.h include/chem_system.h include/chem_jacobian.h include/chem_builder.h src/internal.h
 build/ts1.c: configs/ts1.json tools/configure.py .conda/.ready
 	@mkdir -p build
 	$(PYTHON) tools/configure.py $< $@ --symbol ts1_data
-bin/ts1_bench_cpu: build/compiler-flags $(LIBSRC) src/bench.c $(LIBHEADERS) build/ts1.c
+bin/ts1_bench_cpu: build/compiler-flags $(LIBSRC) src/bench.c src/bench_io.h $(LIBHEADERS) build/ts1.c
 	@mkdir -p bin
 	$(CC) $(CFLAGS) $(LIBSRC) src/bench.c build/ts1.c -o $@ $(LDLIBS)
 
@@ -90,3 +93,51 @@ bin/cpu_tutorials: build/compiler-flags $(LIBSRC) src/programs.c $(LIBHEADERS)
 	@mkdir -p bin
 	$(CC) $(CFLAGS) $(LIBSRC) src/programs.c -o $@ $(LDLIBS)
 test-cpu: bin/cpu_tutorials
+
+SPECIALIZE_BATCH ?= 1
+SPECIALIZE_WIDTH ?= $(GROUP_SIZE)
+SPECIALIZE_FLAGS ?=
+.PHONY: test-specialized
+bench: bin/ts1_bench_specialized bin/ts1_scenario_specialized
+build/generator-flags: FORCE
+	@mkdir -p build
+	@printf '%s\n' '$(SPECIALIZE_BATCH)' '$(SPECIALIZE_WIDTH)' '$(SPECIALIZE_FLAGS)' > $@.new
+	@cmp -s $@.new $@ || cp $@.new $@
+build/ts1_specialized.c: configs/ts1.json tools/specialize.py tools/configure.py build/generator-flags .conda/.ready
+	$(PYTHON) tools/specialize.py $< $@ --prefix ts1 --batch $(SPECIALIZE_BATCH) --fixed-width $(SPECIALIZE_WIDTH) $(SPECIALIZE_FLAGS)
+build/ts1_specialized.o: build/ts1_specialized.c build/compiler-flags $(LIBHEADERS)
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+bin/ts1_bench_specialized: build/compiler-flags $(LIBSRC) src/bench.c src/bench_io.h include/chem_specialized.h $(LIBHEADERS) build/ts1_specialized.o
+	@mkdir -p bin
+	$(CC) $(CFLAGS) -DCHEM_SPECIALIZED $(LIBSRC) src/bench.c build/ts1_specialized.o -o $@ $(LDLIBS)
+bin/ts1_scenario_specialized: build/compiler-flags $(LIBSRC) src/scenario.c src/bench_io.h include/chem_specialized.h $(LIBHEADERS) build/ts1_specialized.o
+	@mkdir -p bin
+	$(CC) $(CFLAGS) $(LIBSRC) src/scenario.c build/ts1_specialized.o -o $@ $(LDLIBS)
+
+SPECIALIZED_CONFIGS = no_user user robertson parameterized checks inert
+build/no_user_specialized.c: configs/rate_constants_no_user_defined/config.yaml $(wildcard configs/rate_constants_no_user_defined/*) tools/specialize.py tools/configure.py build/generator-flags .conda/.ready
+	$(PYTHON) tools/specialize.py $< $@ --prefix no_user --batch $(SPECIALIZE_BATCH) --fixed-width $(SPECIALIZE_WIDTH) $(SPECIALIZE_FLAGS)
+build/user_specialized.c: configs/rate_constants_user_defined/config.json $(wildcard configs/rate_constants_user_defined/*) tools/specialize.py tools/configure.py build/generator-flags .conda/.ready
+	$(PYTHON) tools/specialize.py $< $@ --prefix user --batch $(SPECIALIZE_BATCH) --fixed-width $(SPECIALIZE_WIDTH) $(SPECIALIZE_FLAGS)
+build/robertson_specialized.c: configs/robertson/config.json $(wildcard configs/robertson/*) tools/specialize.py tools/configure.py build/generator-flags .conda/.ready
+	$(PYTHON) tools/specialize.py $< $@ --prefix robertson --batch $(SPECIALIZE_BATCH) --fixed-width $(SPECIALIZE_WIDTH) $(SPECIALIZE_FLAGS)
+build/parameterized_specialized.c: configs/parameterized/config.json tools/specialize.py tools/configure.py build/generator-flags .conda/.ready
+	$(PYTHON) tools/specialize.py $< $@ --prefix parameterized --batch $(SPECIALIZE_BATCH) --fixed-width $(SPECIALIZE_WIDTH) $(SPECIALIZE_FLAGS)
+build/%_specialized.o: build/%_specialized.c build/compiler-flags $(LIBHEADERS)
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+build/specialized_tests.so: build/compiler-flags $(LIBSRC) $(LIBHEADERS) build/ts1_specialized.o $(addprefix build/,$(addsuffix _specialized.o,$(SPECIALIZED_CONFIGS)))
+	$(CC) $(CFLAGS) $(SHAREDFLAGS) $(LIBSRC) build/ts1_specialized.o $(addprefix build/,$(addsuffix _specialized.o,$(SPECIALIZED_CONFIGS))) -o $@ $(LDLIBS)
+test-specialized: build/specialized_tests.so build/libchem.so bin/ts1_bench_specialized
+	$(PYTHON) tests/test_specialized.py
+
+build/checks_specialized.c: configs/specialization_checks.json tools/specialize.py tools/configure.py build/generator-flags .conda/.ready
+	$(PYTHON) tools/specialize.py $< $@ --prefix checks --batch $(SPECIALIZE_BATCH) --fixed-width $(SPECIALIZE_WIDTH) $(SPECIALIZE_FLAGS)
+
+# Developer timing variants use the same compiler and flags as release builds.
+build/tuning/bench%: build/tuning/batch%_specialized.o $(LIBSRC) $(LIBHEADERS) src/bench.c src/bench_io.h include/chem_specialized.h
+	$(CC) $(CFLAGS) -DCHEM_SPECIALIZED $(LIBSRC) src/bench.c $< -o $@ $(LDLIBS)
+
+build/inert_specialized.c: configs/inert.json tools/specialize.py tools/configure.py build/generator-flags .conda/.ready
+	$(PYTHON) tools/specialize.py $< $@ --prefix inert --batch $(SPECIALIZE_BATCH) --fixed-width $(SPECIALIZE_WIDTH) $(SPECIALIZE_FLAGS)
+
+.SECONDARY: $(addprefix build/,$(addsuffix _specialized.o,$(SPECIALIZED_CONFIGS)))

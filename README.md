@@ -89,3 +89,31 @@ expands branched reactions, converts rate units, and emits immutable C data.
 `--no-reorder` disables Markowitz species ordering. See DECISIONS.md for format
 extensions and units. The committed TS1 JSON is translated data, not a mechanism
 implemented specially in the C solver.
+
+## Specialized build and day-night scenarios
+
+```sh
+make bench CC=clang
+make test-specialized CC=clang
+bin/ts1_bench_specialized --threads 18 10000 100 30 CELLS_CSV
+bin/ts1_scenario_specialized --threads 18 --group-size 32 \
+  --rtol 1e-6 --atol 1e-15 ../scenarios/diurnal-10min/scenario.txt
+```
+
+The specialized benchmark has the generic benchmark's warm-up, timed region,
+statistics, and final CSV format. The scenario runner starts directly from the
+input, applies each step's photolysis factor, and writes `ts1_final.csv` and
+`ts1_snapshots.csv` when a snapshot interval is requested. It accepts arbitrary
+relative scenario paths and nonuniform photolysis tables with constant endpoints.
+Run each executable in a separate output directory when retaining comparisons.
+
+```sh
+.conda/bin/python tools/specialize.py CONFIG OUTPUT.c --prefix mechanism
+```
+
+The output defines `mechanism_data`, `mechanism_update_rates`, and
+`mechanism_solve`. Compile it with the generic library and `-Iinclude -Isrc`, using
+the same C11/OpenMP flags as the Makefile. Create states with `mechanism_data`.
+`make` automatically regenerates TS1 and the configuration-file test mechanisms;
+generated C and objects live under ignored `build/` and are never hand-edited.
+See DESIGN.md for tuning controls and SPECIALIZATION.md for measured alternatives.

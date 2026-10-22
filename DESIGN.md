@@ -153,3 +153,42 @@ registers all model names before calling configure, constructs the sparse plan,
 and then calls finalize once per model. Reusing a builder creates a new mechanism;
 model contexts must keep the callback data for each live mechanism available. Callback constraints
 provide a residual and optional dense gradient with declared dependencies.
+
+## Generated solvers
+
+`tools/specialize.py CONFIG OUTPUT.c --prefix NAME` imports the same normalized
+configuration and stable species ordering as `configure.py`. Its symbolic pass
+constructs the filled CSR matrix and the exact column-major Mozart elimination
+sequence. Chemistry emission preserves reaction, independent-species, repeated
+reactant, and product accumulation order. No stoichiometric cancellation or
+approximate Jacobian is used.
+
+The generated file contains its descriptor (`NAME_data`), forcing and analytic
+Jacobian kernels, alpha shifts, direct LU and triangular solves, explicit rate
+formulas, and the exported `NAME_update_rates` and `NAME_solve` functions. State
+allocation and CSV handling use the generic library. Each generated entry point
+requires a state created with its own descriptor; descriptors and generated
+kernels are an inseparable pair. Fixed coefficients must be changed in the
+configuration and regenerated. All condition values, custom parameters,
+concentrations, tolerances, and step lengths remain runtime data.
+
+`src/rosenbrock_impl.h` is the shared integration algorithm, instantiated with
+compile-time kernel hooks. The generic instance retains all method tables,
+constraints, callbacks, and replaceable linear solvers. The generated instance
+has a fixed species count and no configuration-unsupported external callbacks or
+constraints. The three-stage path can fuse stage-vector passes without changing
+the order of arithmetic within an element; other method tables retain the
+shared stage loop. Error normalization always sums species then cells in strict
+order. Rejected steps rebuild the Jacobian and factorization as before.
+
+Reciprocal-pivot LU stores `1/Uii` on the factor diagonal, uses it to scale lower
+entries, and multiplies by it during back substitution. This changes the factor
+representation, not the linear system. There is no factorization reuse, lowered
+precision, or reciprocal approximation. The ordinary-diagonal alternative is
+available for comparisons.
+
+The scenario driver interpolates the supplied photolysis table with endpoint
+extension. It retains each cell's initial custom values, scales every `j*`
+parameter before each step, refreshes rates, and solves without a warm-up.
+Consecutive groups have independent controllers. Timed segments end at snapshot
+boundaries; copying snapshots and writing both CSV outputs are excluded.
