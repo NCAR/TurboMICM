@@ -14,7 +14,7 @@ The tuning parameters are:
 | Generated kernel chunk | 32 reaction/derivative blocks | `make KERNEL_CHUNK=N` or generator `--kernel-chunk N` | Bounds generated function size and compiler work |
 | SIMD width | compiler chosen | Compiler's ordinary OpenMP implementation | No fixed vector width or architecture assumption |
 
-The complete generator adds these build parameters (the command-line generator uses the corresponding lower-case dashed options):
+The complete generator adds these build parameters. Command-line options use lower-case dashed names, except `SPECIALIZED_STRIDE` maps to `--cell-stride` and `LINEAR_MODE` to `--linear`. The direct CLI independently defaults both cell stride and solver tile to 4; Make derives the stride default from the selected tile/group size as shown below.
 
 | Make parameter | Default | Effect |
 | --- | --- | --- |
