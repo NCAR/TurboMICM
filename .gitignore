@@ -8,4 +8,5 @@
 __pycache__/
 *.pyc
 /ts1_final.csv
+/ts1_snapshots.csv
 /PROMPT.md

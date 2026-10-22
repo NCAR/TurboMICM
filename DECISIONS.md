@@ -1,5 +1,37 @@
 # Decisions
 
+## Mechanism specialization
+
+- The new compiler shares the Tier 1 configuration reader. Its symbolic plan
+  reproduces the generic library's stable Markowitz ordering and packed sparse
+  layout, including repeated reactants, repeated products, and unused species.
+  Generated constructors retain the existing API for setup; the timed numerical
+  kernels contain no symbolic searches or reaction dispatch.
+- Fixed rate coefficients are emitted as binary64 round-trip literals. Conditions,
+  independently supplied air density, all named custom parameters, concentrations,
+  tolerances, and solve intervals remain runtime inputs. Surface properties and
+  branch preparation constants are mechanism data. Neither defaults nor CSV
+  values are baked into numerical trajectories.
+- The specialized integrator uses the existing three-stage Rosenbrock table and
+  ordered error reduction. Stage vector operations are fused without reassociating
+  their sums. Rejected trials regenerate the Jacobian, as in the generic solver.
+- Full groups can use a constant-stride kernel and smaller cell tiles. Other
+  group sizes use the generated runtime-stride kernels. Tiling is entirely
+  internal to a state: it never splits its adaptive error norm or changes its
+  step-size history. All tuning controls are exposed through Makefile variables.
+- The scenario runner uses the same CSV initialization as the benchmark, linearly
+  interpolates the supplied photolysis factors, and retains each cell's original
+  custom parameters. There is no warm-up. Snapshot storage is allocated before
+  timing, copies occur between timed segments, and CSV writing occurs afterward.
+  Each segment includes photolysis assignment, rate updates, solves, and parallel
+  scheduling. With no snapshot interval, both output files contain the final state.
+- Tests compare kernels on identical inputs, then compare independently evolving
+  generic and specialized states. Synthetic TS1 tests disable the six unit-valued
+  photolysis placeholders; supplied benchmark and scenario CSVs supply their own
+  overrides. Small extra mechanisms cover every rate type and an empty mechanism.
+
+The remaining sections record the retained generic library's Tier 1 decisions.
+
 - The public C interface uses owned model and state handles, explicit error codes,
   and callback tables in place of C++ builders, exceptions, and policy templates.
   All numerical storage is double precision. Mechanisms built in C and mechanisms

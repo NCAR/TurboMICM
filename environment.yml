@@ -1,5 +1,7 @@
 channels:
   - conda-forge
+# Build-time configuration/compiler and validation only; native runs use no Python.
+# Versions remain pinned without platform-specific build strings.
 dependencies:
   - python=3.12.12
   - numpy=2.2.6
