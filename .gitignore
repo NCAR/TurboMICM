@@ -4,5 +4,6 @@
 /.conda/
 /.conda-pkgs/
 /ts1_final.csv
+/ts1_snapshots.csv
 /PROMPT.md
 __pycache__/

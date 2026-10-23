@@ -10,7 +10,7 @@ OPENMP_LDFLAGS :=
 ifeq ($(UNAME_S),Darwin)
   SDKROOT ?= $(shell xcrun --sdk macosx --show-sdk-path)
   ifneq (,$(findstring clang,$(CC_BASENAME)))
-    OMP_PREFIX ?= /opt/homebrew/opt/libomp
+    OMP_PREFIX ?= /Users/dfillmor/homebrew/opt/libomp
     OPENMP_CFLAGS := -Xpreprocessor -fopenmp -isystem $(OMP_PREFIX)/include
     OPENMP_LDFLAGS := -L$(OMP_PREFIX)/lib -lomp
   else ifneq (,$(findstring gcc,$(CC_BASENAME)))
@@ -30,9 +30,12 @@ BIN := bin
 LIB := lib
 TS1_JSON := mechanisms/ts1.json
 TS1_MODEL := $(BUILD)/ts1_model.c
-TS1_OBJECTS := $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/constraint.o $(BUILD)/solver.o $(BUILD)/ts1_model.o $(BUILD)/benchmark.o
+TS1_SPECIALIZED_MODEL := $(BUILD)/ts1_model_specialized.c
+CORE_OBJECTS := $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/constraint.o $(BUILD)/solver.o
+TS1_OBJECTS := $(CORE_OBJECTS) $(BUILD)/ts1_model.o $(BUILD)/benchmark.o
+TS1_SPECIALIZED_OBJECTS := $(CORE_OBJECTS) $(BUILD)/ts1_model_specialized.o $(BUILD)/benchmark.o
 
-.PHONY: all cpu bench test-cpu env clean micm-ref mechanism
+.PHONY: all cpu bench bench-ablation test-cpu test-specialized env clean micm-ref mechanism
 all: cpu bench
 
 cpu: $(LIB)/libchem.a $(BIN)/ts1_bench_cpu
@@ -42,6 +45,9 @@ $(BUILD) $(BIN) $(LIB):
 
 $(BUILD)/ts1_model.c: $(TS1_JSON) tools/generate_c.py | $(BUILD)
 	$(PYTHON) tools/generate_c.py $< $@
+
+$(TS1_SPECIALIZED_MODEL): $(TS1_JSON) tools/generate_c.py | $(BUILD)
+	$(PYTHON) tools/generate_c.py $< $@ --specialized
 
 CONFIG ?= $(TS1_JSON)
 MECHANISM_C := $(BUILD)/mechanism_model.c
@@ -91,10 +97,51 @@ $(BUILD)/benchmark.o: src/benchmark.c include/kinetics.h src/solver_internal.h |
 $(LIB)/libchem.a: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/state.o $(BUILD)/species.o $(BUILD)/system.o $(BUILD)/constraint.o $(BUILD)/backward_euler.o $(BUILD)/solver.o | $(LIB)
 	$(AR) rcs $@ $^
 
-bench: $(BIN)/ts1_bench_cpu
+bench: $(BIN)/ts1_bench_cpu $(BIN)/ts1_bench_specialized $(BIN)/ts1_scenario_specialized
 
 $(BIN)/ts1_bench_cpu: $(TS1_OBJECTS) | $(BIN)
 	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BUILD)/ts1_model_specialized.o: $(TS1_SPECIALIZED_MODEL) include/kinetics.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+$(BIN)/ts1_bench_specialized: $(TS1_SPECIALIZED_OBJECTS) | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BUILD)/scenario.o: src/scenario.c include/kinetics.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+$(BIN)/ts1_scenario_specialized: $(CORE_OBJECTS) $(BUILD)/ts1_model_specialized.o $(BUILD)/scenario.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BUILD)/ts1_ablate_rates.c: $(TS1_JSON) tools/generate_c.py | $(BUILD)
+	$(PYTHON) tools/generate_c.py $< $@ --specialized --without-rate-kernel
+
+$(BUILD)/ts1_ablate_chemistry.c: $(TS1_JSON) tools/generate_c.py | $(BUILD)
+	$(PYTHON) tools/generate_c.py $< $@ --specialized --without-chemistry-kernel
+
+$(BUILD)/ts1_ablate_factor.c: $(TS1_JSON) tools/generate_c.py | $(BUILD)
+	$(PYTHON) tools/generate_c.py $< $@ --specialized --without-factor-kernel
+
+$(BUILD)/ts1_ablate_solve.c: $(TS1_JSON) tools/generate_c.py | $(BUILD)
+	$(PYTHON) tools/generate_c.py $< $@ --specialized --without-solve-kernel
+
+$(BUILD)/ts1_ablate_%.o: $(BUILD)/ts1_ablate_%.c include/kinetics.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+$(BIN)/ts1_bench_ablate_rates: $(CORE_OBJECTS) $(BUILD)/benchmark.o $(BUILD)/ts1_ablate_rates.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BIN)/ts1_bench_ablate_chemistry: $(CORE_OBJECTS) $(BUILD)/benchmark.o $(BUILD)/ts1_ablate_chemistry.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BIN)/ts1_bench_ablate_factor: $(CORE_OBJECTS) $(BUILD)/benchmark.o $(BUILD)/ts1_ablate_factor.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BIN)/ts1_bench_ablate_solve: $(CORE_OBJECTS) $(BUILD)/benchmark.o $(BUILD)/ts1_ablate_solve.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+bench-ablation: $(BIN)/ts1_bench_ablate_rates $(BIN)/ts1_bench_ablate_chemistry $(BIN)/ts1_bench_ablate_factor $(BIN)/ts1_bench_ablate_solve
 
 SDKROOT_FLAG := $(if $(filter Darwin,$(UNAME_S)),-isysroot $(SDKROOT),)
 
@@ -103,6 +150,42 @@ env:
 
 test-cpu: $(BIN)/test_cpu $(BIN)/test_programs $(BIN)/ts1_bench_cpu $(BIN)/test_example_no_user $(BIN)/test_example_user $(BUILD)/tutorial_no_user_model.o $(BUILD)/tutorial_user_model.o $(BUILD)/robertson_model.o
 	$(PYTHON) tests/run_cases.py
+
+$(BUILD)/test_specialized.o: tests/test_specialized.c include/kinetics.h | $(BUILD)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+$(BUILD)/specialized_ts1.c: $(TS1_JSON) tools/generate_c.py | $(BUILD)
+	$(PYTHON) tools/generate_c.py $< $@ --specialized
+
+$(BUILD)/specialized_robertson.c: examples/robertson/config.json tools/generate_c.py | $(BUILD)
+	$(PYTHON) tools/generate_c.py $< $@ --specialized
+
+$(BUILD)/specialized_tutorial_user.c: examples/rate_constants_user_defined/config.json tools/generate_c.py | $(BUILD)
+	$(PYTHON) tools/generate_c.py $< $@ --specialized
+
+$(BUILD)/specialized_tutorial_no_user.c: examples/rate_constants_no_user_defined/config.yaml tools/generate_c.py | $(BUILD)
+	$(PYTHON) tools/generate_c.py $< $@ --specialized
+
+$(BUILD)/specialized_%.o: $(BUILD)/specialized_%.c include/kinetics.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+
+$(BIN)/test_specialized_ts1: $(CORE_OBJECTS) $(BUILD)/test_specialized.o $(BUILD)/specialized_ts1.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BIN)/test_specialized_robertson: $(CORE_OBJECTS) $(BUILD)/test_specialized.o $(BUILD)/specialized_robertson.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BIN)/test_specialized_tutorial_user: $(CORE_OBJECTS) $(BUILD)/test_specialized.o $(BUILD)/specialized_tutorial_user.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+$(BIN)/test_specialized_tutorial_no_user: $(CORE_OBJECTS) $(BUILD)/test_specialized.o $(BUILD)/specialized_tutorial_no_user.o | $(BIN)
+	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@
+
+test-specialized: $(BIN)/test_specialized_ts1 $(BIN)/test_specialized_robertson $(BIN)/test_specialized_tutorial_user $(BIN)/test_specialized_tutorial_no_user
+	$(BIN)/test_specialized_ts1
+	$(BIN)/test_specialized_robertson
+	$(BIN)/test_specialized_tutorial_user
+	$(BIN)/test_specialized_tutorial_no_user
 
 $(BIN)/test_cpu: $(BUILD)/kinetics.o $(BUILD)/matrix.o $(BUILD)/state.o $(BUILD)/species.o $(BUILD)/system.o $(BUILD)/constraint.o $(BUILD)/backward_euler.o $(BUILD)/solver.o $(BUILD)/ts1_model.o $(BUILD)/test_cpu.o | $(BIN)
 	$(CC) $(OPTFLAGS) $(SDKROOT_FLAG) $^ $(LDLIBS) -o $@

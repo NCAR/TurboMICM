@@ -90,6 +90,8 @@ typedef struct {
   double default_value;
 } chem_custom_parameter;
 
+struct chem_specialized_kernels;
+
 typedef struct {
   const char *name;
   size_t species_count;
@@ -106,6 +108,7 @@ typedef struct {
   const double *yields;
   const double *coefficients;
   const chem_custom_parameter *custom_parameters;
+  const struct chem_specialized_kernels *kernels;
 } chem_mechanism;
 
 typedef struct {
@@ -169,6 +172,24 @@ typedef struct chem_sparse_pattern {
   double *mass_diagonal;
 } chem_sparse_pattern;
 
+/* Optional build-time generated kernels for a fixed mechanism. */
+typedef struct chem_specialized_kernels {
+  size_t species_count;
+  size_t pattern_nonzeros;
+  void (*rates)(double temperature, double pressure,
+                const double *custom_parameters, double *rate_constants);
+  void (*custom_rates)(double temperature, double pressure,
+                       const double *custom_parameters,
+                       double *rate_constants);
+  int (*evaluate)(const double *concentrations, const double *rate_constants,
+                  double *forcing, double *negative_jacobian,
+                  const chem_sparse_pattern *pattern);
+  int (*factor)(const chem_sparse_pattern *pattern, double alpha,
+                const double *negative_jacobian, double *lu, void *context);
+  void (*solve)(const chem_sparse_pattern *pattern, const double *lu,
+                double *right_hand_side, void *context);
+} chem_specialized_kernels;
+
 typedef double (*chem_step_controller)(double error, double order,
                                        double safety_factor, void *context);
 typedef int (*chem_lu_factor_callback)(const chem_sparse_pattern *pattern,
@@ -230,6 +251,11 @@ void chem_solver_destroy(chem_solver *solver);
 /* Integrate one chemistry interval over the persistent cell-major state. */
 int chem_solver_step(chem_solver *solver, double *concentrations,
                      double time_step, chem_solver_stats *stats);
+/* Refresh CHEM_USER_DEFINED rates; custom_parameters is cell-major [cell][custom]. */
+int chem_solver_update_custom_rates(chem_solver *solver,
+                                   const double *temperature,
+                                   const double *pressure,
+                                   const double *custom_parameters);
 int chem_solver_set_constraints(chem_solver *solver,
                                 const chem_constraint_set *constraints,
                                 const double *equilibrium_constants,

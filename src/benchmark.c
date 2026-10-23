@@ -304,7 +304,8 @@ int main(int argc, char **argv)
 #endif
   temperature = (double *)malloc(cells * sizeof(*temperature));
   pressure = (double *)malloc(cells * sizeof(*pressure));
-  custom = (double *)malloc((cells * chem_model.custom_count ? cells * chem_model.custom_count : 1) * sizeof(*custom));
+  custom = (double *)malloc((cells != 0 && chem_model.custom_count != 0
+                                 ? cells * chem_model.custom_count : 1) * sizeof(*custom));
   y = (double *)malloc(cells * chem_model.species_count * sizeof(*y));
   if (!temperature || !pressure || !custom || !y) {
     fprintf(stderr, "cannot allocate benchmark state for %zu cells\n", cells);

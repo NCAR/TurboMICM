@@ -252,6 +252,10 @@ static int evaluate_rhs(const chem_mechanism *m, const chem_sparse_pattern *patt
                         double temperature, size_t cell)
 {
   size_t i;
+  if (!constraints && m->kernels && m->kernels->evaluate &&
+      m->kernels->species_count == pattern->n &&
+      m->kernels->pattern_nonzeros == pattern->nnz)
+    return m->kernels->evaluate(y, rates, forcing, negative_jacobian, pattern);
   memset(forcing, 0, m->species_count * sizeof(*forcing));
   if (negative_jacobian)
     memset(negative_jacobian, 0, pattern->nnz * sizeof(*negative_jacobian));
@@ -666,6 +670,16 @@ static int solve_group(chem_solver *s, size_t thread,
   if (!p->stages || p->stages > 6 || !(p->gamma[0] != 0.0) ||
       !(p->estimator_order > 0.0))
     return -1;
+  if (m->kernels && m->kernels->factor &&
+      m->kernels->species_count == s->pattern.n &&
+      m->kernels->pattern_nonzeros == s->pattern.nnz &&
+      (!p->factor || p->factor == default_factor_callback))
+    factor_callback = m->kernels->factor;
+  if (m->kernels && m->kernels->solve &&
+      m->kernels->species_count == s->pattern.n &&
+      m->kernels->pattern_nonzeros == s->pattern.nnz &&
+      (!p->solve || p->solve == default_solve_callback))
+    solve_callback = m->kernels->solve;
   for (stage = 0; stage < p->stages; ++stage)
     k_all[stage] = work_vector(s, K_WORK_BASE + stage);
 
@@ -834,8 +848,8 @@ chem_solver *chem_solver_create(const chem_mechanism *m, size_t cells,
     chem_solver_destroy(s);
     return NULL;
   }
-  s->rates = (double *)malloc((cells * s->nr ? cells * s->nr : 1) * sizeof(*s->rates));
-  s->work = (double *)malloc((WORK_COUNT * cells * s->n ? WORK_COUNT * cells * s->n : 1) * sizeof(*s->work));
+  s->rates = (double *)malloc((cells != 0 && s->nr != 0 ? cells * s->nr : 1) * sizeof(*s->rates));
+  s->work = (double *)malloc((cells != 0 && s->n != 0 ? WORK_COUNT * cells * s->n : 1) * sizeof(*s->work));
   s->factor_work = (double *)malloc((size_t)s->thread_count * 2 * s->pattern.nnz * sizeof(*s->factor_work));
   if (!s->rates || !s->work || !s->factor_work) {
     chem_solver_destroy(s);
@@ -845,10 +859,14 @@ chem_solver *chem_solver_create(const chem_mechanism *m, size_t cells,
     const double t = temperature ? temperature[cell] : m->default_temperature;
     const double p = pressure ? pressure[cell] : m->default_pressure;
     const double *custom = custom_parameters ? custom_parameters + cell * m->custom_count : NULL;
-    for (reaction = 0; reaction < s->nr; ++reaction) {
-      const chem_reaction *r = &m->reactions[reaction];
-      s->rates[cell * s->nr + reaction] =
-          chem_effective_rate_constant(m, r, t, p, custom);
+    if (m->kernels && m->kernels->rates) {
+      m->kernels->rates(t, p, custom, s->rates + cell * s->nr);
+    } else {
+      for (reaction = 0; reaction < s->nr; ++reaction) {
+        const chem_reaction *r = &m->reactions[reaction];
+        s->rates[cell * s->nr + reaction] =
+            chem_effective_rate_constant(m, r, t, p, custom);
+      }
     }
   }
   return s;
@@ -1025,5 +1043,32 @@ int chem_solver_step(chem_solver *s, double *concentrations, double dt,
   }
   free(group_stats);
   free(group_status);
+  return 0;
+}
+
+int chem_solver_update_custom_rates(chem_solver *s,
+                                   const double *temperature,
+                                   const double *pressure,
+                                   const double *custom_parameters)
+{
+  size_t cell, reaction;
+  if (!s || (s->ncustom && s->cells && !custom_parameters))
+    return -1;
+  for (cell = 0; cell < s->cells; ++cell) {
+    const double t = temperature ? temperature[cell] : s->mechanism->default_temperature;
+    const double p = pressure ? pressure[cell] : s->mechanism->default_pressure;
+    const double *custom = custom_parameters
+                               ? custom_parameters + cell * s->ncustom : NULL;
+    double *rates = s->rates + cell * s->nr;
+    if (s->mechanism->kernels && s->mechanism->kernels->custom_rates) {
+      s->mechanism->kernels->custom_rates(t, p, custom, rates);
+    } else {
+      for (reaction = 0; reaction < s->nr; ++reaction) {
+        const chem_reaction *r = &s->mechanism->reactions[reaction];
+        if (r->kind == CHEM_USER_DEFINED)
+          rates[reaction] = chem_effective_rate_constant(s->mechanism, r, t, p, custom);
+      }
+    }
+  }
   return 0;
 }

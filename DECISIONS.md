@@ -43,3 +43,26 @@
   finite-difference probing.
 - **Python environment:** create a prefix environment at `.conda` and keep the
   conda package cache in `.conda-pkgs`; both paths are excluded from Git.
+- **Generated solver interface:** keep the generic solver as the numerical
+  controller and expose generated rate, RHS/Jacobian, factor, and solve
+  functions through an optional mechanism kernel table. This shares the MICM
+  Rosenbrock implementation and lets configurations without generated kernels
+  use the Tier 1 path unchanged.
+- **Generated LU order:** generate direct factorization and triangular-solve
+  statements in the same traversal order as the generic no-pivot sparse LU.
+  The generated kernel records its species and nonzero counts; the solver
+  falls back to generic linear algebra if runtime constraints change the
+  pattern.
+- **Runtime custom-rate updates:** scenarios scale all user-defined rate
+  parameters whose names begin with `j` by the interpolated photolysis factor.
+  `chem_solver_update_custom_rates` refreshes only `CHEM_USER_DEFINED` rates,
+  since the scenario's temperature, pressure, and other custom parameters stay
+  fixed.
+- **Scenario grouping and tolerances:** retain run-time grouping rather than a
+  build-time cell-group constant. The scenario command accepts explicit group
+  size, relative tolerance, and absolute tolerance so it can use the MICM gate
+  settings (32 cells, `1e-6`, and `1e-15`).
+- **Specialization ablations:** keep `--without-*-kernel` generator options and
+  `make bench-ablation` to measure the effect of each generated hot-path
+  kernel. These options affect build-time code selection only and do not change
+  the production default, which emits all four.

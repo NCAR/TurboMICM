@@ -1,91 +1,96 @@
-# C chemistry solver
+# Generated mechanism solver
 
-This repository contains a portable C11 CPU library, a build-time mechanism
-reader/generator, and the TS1 benchmark. The executable and library link only
-the C standard library, `libm`, and OpenMP. Python is used only to read YAML or
-JSON mechanism files and emit C tables, or to drive the test cases.
+This repository contains a portable C11 chemistry library, a generic mechanism
+reader, and generated TS1 solvers. The library and executables use only the C
+standard library, `libm`, and CPU OpenMP. Python runs during generation and
+testing; generated programs do not need Python.
 
 ## Build
 
-Create the pinned Python environment once, then build the library and TS1
-benchmark:
+Create the pinned local Python environment, then build the Tier 1 library and
+both TS1 benchmark programs:
 
 ```sh
 make env
 make cpu
+make bench
 ```
 
-`make cpu` produces `lib/libchem.a` and `bin/ts1_bench_cpu`. `make bench` builds
-the benchmark. The Makefile defaults to `CC=clang` and `OPTFLAGS=-O3 -DNDEBUG`.
-To rebuild with another compiler, clean first so no objects from the prior
-compiler are reused:
+`make cpu` builds `lib/libchem.a` and `bin/ts1_bench_cpu`. `make bench` also
+builds `bin/ts1_bench_specialized` and `bin/ts1_scenario_specialized`. The
+default compiler is Apple Clang; `OPTFLAGS` defaults to `-O3 -DNDEBUG`. Clean
+between compiler changes so objects from different compilers are not reused:
 
 ```sh
 make clean
-make CC=clang cpu
+make CC=clang bench
 make clean
-make CC=gcc-15 cpu
+make CC=gcc-15 bench
 ```
 
-`OPTFLAGS` is passed through as given. On macOS, the Makefile sets the Xcode SDK
-for linking and selects the OpenMP flags for Apple Clang or Homebrew GCC.
+`make test-cpu` runs the Tier 1 MICM case list and tutorial checks.
+`make test-specialized` generates and compares TS1 and all three Tier 1 example
+mechanisms against the generic solver at `1e-10` relative tolerance.
 
-## Mechanisms
+## Mechanism generation
 
-`tools/generate_c.py` reads JSON directly or follows `camp-files` entries in a
-MICM YAML or JSON configuration. It turns the species, reactions, rate
-parameters, and defaults into C tables. The runtime does not parse files and
-does not depend on Python. Build a mechanism archive from any supported
-configuration with:
+`tools/generate_c.py` reads a normalized JSON mechanism or a MICM YAML/JSON
+configuration with `camp-files`. The ordinary build emits immutable mechanism
+tables for the generic library. The `--specialized` mode also emits fixed rate
+formulas, reaction and Jacobian updates, sparse LU operations, and triangular
+solves. All generated C is a build product. For example:
 
 ```sh
 make mechanism CONFIG=examples/robertson/config.json
+make test-specialized
 ```
 
-The archive includes the generic solver and the generated `chem_model` table.
-The committed tutorial inputs under `examples/` cover YAML and JSON, built-in
-and user-defined rates, and the Robertson mechanism.
+The committed tutorial inputs cover YAML and JSON, built-in and user-defined
+rates, and Robertson chemistry. `tools/translate_ts1.py` converts MICM's
+read-only TS1 reaction table and initial state to `mechanisms/ts1.json`.
 
-`tools/translate_ts1.py` translates the read-only TS1 reaction table and
-initial-state values into `mechanisms/ts1.json`. The generated C model is built
-as part of `make cpu`.
+The public C API also supports linear, mass-action equilibrium, and
+callback-defined DAE constraints. Generated kernels are used when their fixed
+sparse pattern matches the solver. A mechanism with runtime constraints uses
+the generic constraint-aware path.
 
-The C API also supports linear, mass-action equilibrium, and callback-defined
-DAE constraints. A callback constraint names its algebraic species and every
-species its residual depends on, and supplies both a residual function and a
-full Jacobian row.
+## TS1 benchmark
 
-## Test
-
-```sh
-make test-cpu
-```
-
-This prints one `PASS`, `FAIL`, or `N/A` line for each of the 680 case IDs in
-`../reference/micm_cases.txt`. It compiles the three example configurations,
-compares both tutorial mechanisms and ten interval states with hand-built C
-mechanisms, and runs the 100-cell TS1 reference comparison. `N/A` is reserved
-for compile-time C++ type traits and CUDA-only behavior with no portable CPU C
-equivalent.
-
-## Run TS1
-
-The command accepts a CSV with a header row and one row per cell. Unknown values
-use TS1's initial state. Temperature, pressure, species, and custom rate
-parameter columns are matched by name.
+Both benchmark commands accept a CELLS_CSV with a header and one row per cell.
+Unknown cells use TS1's initial state. Temperature, pressure, species, and
+custom rate parameter columns are matched by name.
 
 ```sh
 bin/ts1_bench_cpu [--threads N] [--group-size G] CELLS STEPS DT CELLS_CSV
+bin/ts1_bench_specialized [--threads N] [--group-size G] CELLS STEPS DT CELLS_CSV
 ```
 
-The benchmark performs one untimed warm-up interval, then times `STEPS`
-intervals of `DT` seconds. It prints elapsed time and summed solver statistics,
-then writes the final concentrations to `ts1_final.csv`. By default it uses
-OpenMP's maximum thread count and one contiguous cell group per thread.
+Each runs one untimed warm-up step, followed by `STEPS` timed intervals of
+`DT` seconds with MICM's default tolerances. The programs print elapsed time and
+summed solver statistics, then write `ts1_final.csv`. By default, OpenMP uses
+its maximum thread count and creates one contiguous cell group per thread. A
+fixed run-time group size is selected with `--group-size`.
 
 For example, using the committed 100-cell reference input:
 
 ```sh
-bin/ts1_bench_cpu --threads 1 100 100 30 ../reference/ts1_cells_100_seed1.csv
-python ../reference/compare_final.py ts1_final.csv ../reference/micm_ts1_final_100_seed1.csv
+bin/ts1_bench_specialized --threads 1 100 100 30 ../reference/ts1_cells_100_seed1.csv
+python3 ../reference/compare_final.py ts1_final.csv ../reference/micm_ts1_final_100_seed1.csv
 ```
+
+## Day-night scenarios
+
+`bin/ts1_scenario_specialized` reads the scenario format described in
+`../scenarios/README.md`:
+
+```sh
+bin/ts1_scenario_specialized --threads 18 --group-size 32 \
+  --rtol 1e-6 --atol 1e-15 ../scenarios/diurnal-10min/scenario.txt
+```
+
+It updates every `j*` rate from the cell's noon value and the interpolated
+photolysis factor at each step. It writes `ts1_final.csv` and
+`ts1_snapshots.csv`, and times the photolysis update and integration work.
+Scenario snapshots include every `snapshot_every` interval and the final
+interval. See `RESULTS.md` for the measured benchmark, scenario scores, and
+reference comparisons.
