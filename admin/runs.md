@@ -575,7 +575,7 @@ Calibration on this machine
 | sol-high | gpt-6.1-sol | high | `1d944f4` | Codex CLI 0.163.0, interactive | 2026-10-22 19:20–20:34 | `07848a8` | done, verified, timed |
 | luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | 2026-10-22 21:11–21:40 | `3562d5a` | done, verified, timed |
 | luna-xhigh | gpt-6-luna | xhigh | `ada55d5` | Codex CLI 0.163.0, interactive | 2026-10-22 22:20–22:55 | `1ad13ab` | done, verified, timed |
-| luna-high | gpt-6-luna | high | `d3c2480` | Codex CLI 0.163.0, interactive | | | set up |
+| luna-high | gpt-6-luna | high | `d3c2480` | Codex CLI 0.163.0, interactive | 2026-10-22 23:39– | | running |
 
 ## Tier 2: astra-max
 
@@ -1124,6 +1124,21 @@ Calibration on this machine
   specialized solvers 2,018.7 to 5,395.8 ms. Specialization gains 1.07 times
   over its own generic solver, the least; 1.16 times MICM's default, 0.43 times
   its fastest.
+
+## Tier 2: luna-high
+
+- Session start: 2026-10-22 23:39:06, launched by Claude Code with
+  `admin/launch_codex_run.sh --tier2 luna-high gpt-6-luna high`, once luna-xhigh
+  was collected, archived, verified, and timed; the goal was sent at 23:39:10.
+  The session record shows gpt-6-luna at high, base instructions from
+  gpt-6-luna, Codex 0.163.0, approval `never` and sandbox `danger-full-access`,
+  and no model switch; the process's environment holds no Claude Code variables
+  besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
+- Codex session `01a166d7-4ede-7b73-aff3-adb459fa7c00`; process 51542;
+  `caffeinate -ims -w 51542`. No other Codex session was running; AC power.
+- The last of the nine. luna-high's Tier 1 entry already emits a generated TS1
+  source (`generated/ts1.c`), and its case report prints PASS lines from a fixed
+  list once its one test program passes (Tier 1 Results).
 
 # Tier 3
 
