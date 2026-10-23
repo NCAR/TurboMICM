@@ -118,3 +118,23 @@
 - Implement matrix logical OR/AND reductions with caller-supplied predicates and
   a strict reduction that visits each logical entry once. Strided views expose
   no padded entries, so strict traversal is the ordinary bounded row/column loop.
+
+- Keep the Tier 1 generic executable unchanged as a runtime path and compile the
+  generated schedule only when `CHEM_SPECIALIZED` is defined. This lets the same
+  generated translation unit supply mechanism metadata to both implementations
+  while preserving the generic benchmark as a comparison baseline.
+- Specialize forcing, negative-Jacobian accumulation, natural-order sparse LU,
+  and triangular solves. Keep cached rate-constant evaluation, the Rosenbrock
+  controller, and all runtime chemistry inputs generic because their values
+  vary per cell or scenario step.
+- Generate the sparse factorization schedule from the same reaction-derived
+  pattern and fill procedure as the generic solver. Keep the existing ordering
+  and arithmetic sequence so generated solves remain numerically aligned with
+  the generic path.
+- Use a runtime scenario group size, defaulting to one group per worker. The
+  evaluator can select 32 cells per group without rebuilding the C program.
+- Keep scenario output in the current working directory, matching the benchmark
+  drivers. Pause elapsed-time accounting only while writing requested snapshots;
+  photolysis updates remain inside the timed interval.
+- Add no generator dependencies. The Tier 1 Python and PyYAML pins suffice; the
+  generator itself uses the standard library.

@@ -1,5 +1,42 @@
 # Design
 
+## Tier 2 mechanism specialization
+
+`tools/generate_c.py` is the authoritative code generator. It orders reactions
+and species at generation time and emits the same immutable mechanism tables
+used by Tier 1. With `CHEM_SPECIALIZED` enabled, that source also provides fixed
+TS1 operations:
+
+- forcing is emitted as straight-line per-reaction expressions with fixed
+  species indexes, reactant powers, yields, and coefficients;
+- negative-Jacobian updates are emitted in species-column, reaction, and
+  reactant-term order, preserving accumulation order and the generic library's
+  diagonal coefficient handling;
+- the generator constructs the same symbolic fill pattern as `make_pattern`,
+  then emits natural-order LU multipliers, updates, and forward/backward solve
+  terms with constant indexes.
+
+The Rosenbrock controller, stage coefficients, error estimate, tolerances,
+step-size adaptation, rate-constant evaluation, and rate-constant cache remain
+the Tier 1 implementation. Temperature, pressure, air density, concentrations,
+custom rate parameters, duration, and tolerances remain runtime data. The
+specialized callbacks consume cached constants from the generic evaluator and
+do not alter rate formulas. A generic mechanism has a null specialization table
+and follows the table-driven operations.
+
+The generated LU uses the same no-pivot natural ordering and symbolic fill as
+the generic factorization. It checks every pivot for zero and non-finite values
+and returns the same solver status. The generated triangular solve visits lower
+and upper entries in the same ascending column order as the generic solve.
+Callbacks are guarded by `CHEM_SPECIALIZED`, so the generic binary does not
+compile the expanded schedules.
+
+`make bench` builds the generic Tier 1 benchmark, the TS1 specialized benchmark,
+and the specialized scenario runner. Scenario runs use explicit cell groups,
+with one adaptive controller per group. `--group-size` and `--threads` are
+runtime parameters; when omitted, one group is assigned to each worker.
+Compiler optimization flags remain controlled by `OPTFLAGS`.
+
 ## Mechanisms
 
 Python readers accept normalized JSON and CAMP configurations. The CAMP reader
@@ -99,9 +136,10 @@ from generated defaults, runs the untimed warm-up and timed steps, and writes
 `--threads N` creates N contiguous cell groups. Each group
 shares one adaptive step controller and error norm, matching MICM's benchmark
 grouping. The current C implementation still factors each cell's matrix
-sequentially inside the group. Jacobian zeroing and matrix copying visit only
-the symbolic sparse pattern, while the factor and solve loops reuse that same
-pattern.
+sequentially inside the group. The generic path's Jacobian zeroing, matrix
+copying, factorization, and solve use its symbolic sparse pattern. The
+specialized path keeps the same per-cell execution model but replaces the
+factor and solve loops with generated constant-index schedules.
 
 ## Extension points
 
@@ -117,8 +155,9 @@ generated path, not a handwritten mechanism-specific path.
 
 ## Tuning and portability
 
-The current runtime setting is thread count, defaulting to available OpenMP
-workers; it also sets the number of cell groups. Integration tolerances and
-step limits are solver defaults. The C
+Runtime settings are thread count (default: available OpenMP workers), scenario
+group size (default: one group per worker), and solver tolerances (MICM defaults
+unless passed to the scenario runner). `OPTFLAGS` defaults to `-O3 -DNDEBUG`.
+The C
 sources use ISO C11, libm, and CPU OpenMP only. The Makefile selects OpenMP flags
 for the chosen compiler and takes optimization flags solely from `OPTFLAGS`.

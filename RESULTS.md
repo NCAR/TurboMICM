@@ -1,126 +1,63 @@
 # Results
 
-## Build and configuration checks
+## Tier 1 regression and specialized checks
 
-- `make cpu CC=clang`: passed on the provided macOS machine.
-- `make cpu CC=gcc-15`: passed on the provided macOS machine.
-- `tests/test_core.c`: passed with Clang and GCC 15, including rate formula
-  checks across Arrhenius, branched, lambda, reversible, surface, Taylor, Troe,
-  ternary activation, tunneling, and user-defined rates; also forcing and small
-  analytic integration checks, C reaction construction and value-copy checks,
-  density-parameterized reaction multipliers, indexed lambda rates, version
-  getters, state setter behavior, and process rate constants, forcing, and
-  Jacobians across scalar and grouped cells.
-- `tests/test_codegen.py`: passed with both compilers through `make test-cpu`,
-  checking rate-type ordering, parameter defaults and indexes, derived branched
-  parameters, surface parameters, density multipliers, and reaction counts in
-  generated C.
-- The C core test ports the README tutorial's Foo/Bar/Baz mechanism and checks
-  all ten printed states at the tutorial's three-significant-digit precision.
-- The C core test ports `test_solver_results` with three grouped cells and
-  checks the printed solver state and counters. Its 18 accepted steps, 36
-  function calls, 18 Jacobian updates/decompositions, and 54 solves match MICM.
-- The C core test also runs the grouped chemistry for ten 200-second intervals
-  and checks all 90 printed concentrations from `test_multiple_grid_cells` at
-  the tutorial's three-significant-digit precision.
-- The C core test ports `test_openmp` with three worker-owned states and solver
-  workspaces, checking each thread's final concentrations against MICM output.
-- The C core test reproduces the first ten one-second FlowTube regression states
-  for both the two-stage Rosenbrock solver and backward Euler, matching the
-  checked-in MICM CSV values within the reference tolerance.
-- Stub aerosol coverage uses generic C reactions with the same qualified state
-  names. It checks single and multi-cell state updates, forcing, Jacobians, and
-  single and three-cell Rosenbrock integrations against the analytical
-  partitioning results. Backward Euler tests check single and three-cell solves
-  with one aerosol process at 2e-4 tolerance and both processes at 1e-1, matching
-  the reference case tolerances.
-- The C constrained solver integrates simple equilibrium DAE cases with a
-  temperature dependent equilibrium constant, a reordered species array, two
-  coupled algebraic species, and non-unit stoichiometry. It checks the
-  equilibrium residual after every 0.001 second solve interval.
-- A four-stage DAE Rosenbrock run combines the constrained Robertson system
-  with the unconstrained chlorine terminator system over twelve decade-spaced
-  intervals, checking mass conservation, chlorine conservation, nonnegative
-  concentrations, and final-state evolution.
-- The C core test ports the vectorized-matrix tutorial's two cell layouts and
-  both sparse element orders. The tutorial's solve loop is skipped by its own
-  initial converged-state condition, so the layout checks cover its output.
-- The C solver accepts configurable Rosenbrock coefficient sets. The core test
-  checks all 50 printed concentration rows and accumulated work counters for
-  MICM's two-, three-, four-, four-stage DAE-, and six-stage DAE methods.
-- The no-user and user-defined rate tutorials now check all ten printed states
-  against MICM. YAML/JSON reader tests confirm that the two configurations share
-  the same seven base reactions and convert Troe/ternary parameters to the
-  values used by the hand-built mechanisms.
-- Scalar and grouped solves clamp ordinary state rows to nonnegative values
-  after each solver call, matching MICM's `PostSolveClamp` behavior.
-- Repeated-reactant Jacobians now match for both separate unit terms (`B + B`)
-  and one stoichiometric term (`2 B`), covering a coefficient case that the
-  previous negative-Jacobian implementation mishandled.
-- Solver workspaces precompute the mechanism-generic Jacobian reactant
-  dependencies per species column. The schedule retains reaction accumulation
-  order and avoids scanning unrelated reactions on every step; Rosenbrock
-  Jacobian clearing and matrix copying also visit only the symbolic sparse
-  pattern.
-- Linear conservation and equilibrium constraint utilities validate
-  caller-owned indexed records, construct algebraic masks and Jacobian patterns,
-  and add residual and negative-Jacobian contributions for scalar and grouped
-  cells. The checks include finite-difference derivatives and invalid records;
-  the constrained Rosenbrock entry point projects linear and equilibrium
-  algebraic variables from inconsistent initial data and leaves consistent data
-  unchanged, reports initial projection iterations, and restores the caller's
-  state when projection fails. Row-scaled constraints and repeated solve calls
-  also preserve the corrected manifold. Initial-condition projection follows
-  the configured tolerance, while accepted constrained steps solve algebraic
-  rows to a strict residual tolerance. Constrained Rosenbrock stages include
-  constraint forcing and Jacobians and use a zero mass-matrix diagonal for
-  algebraic rows; the embedded step-change error estimate includes those rows.
-  Cascade-equilibrium regressions confirm that tightening the algebraic balance
-  tolerance increases accepted steps and prevents deep negative overshoot in
-  the super-stiff case. A grouped constrained call projects all cells and
-  aggregates statistics while using an independent scalar controller per cell.
-- Masked reaction forcing and negative-Jacobian accumulation preserve selected
-  algebraic rows while updating differential rows across multiple cells.
-- The dense matrix view test covers strided indexing, conversion to and from a
-  flat vector or individual rows and columns, AXPY, fill, min/max/sum reductions,
-  and invalid dimensions. AXPY rejects row and column shape mismatches. Read-only
-  views support indexed reads and row conversion. Callback traversal works for
-  both nonempty and empty mutable views, can be reused for different row counts,
-  and can use vector data through its callback context. Multi-matrix row
-  callbacks handle different column counts and reject mismatched row counts.
-- The grouped vector-matrix view test checks lane-packed storage, grouped sizes,
-  row and column strides, mutable and read-only indexing, vector conversion,
-  AXPY, fill, reductions, callbacks, and loops across widths one, two, and four.
-  Callback reuse across widths and row counts, including captured vector data,
-  is also checked. Row and column vector copies enforce exact dimensions and
-  accept empty views with empty vectors. Grouped views also support logical
-  matrix copying and multi-matrix row callbacks across lane widths.
-- Phase and system metadata checks cover optional diffusion coefficients,
-  parameterized-species state-size filtering, and phase-qualified or plain names.
-- Species property tests cover temperature/density parameterization and typed
-  double, integer, boolean, and string values, including missing-name and
-  type-mismatch status codes.
-- JSON and YAML tutorial mechanisms normalize to 7 species; the input reactions
-  expand to 10 and 7 generated reactions, respectively (JSON and YAML).
-- TS1 import contains 210 phase species, 547 reactions, and the expected initial
-  defaults. The generated mechanism compiles with both compilers.
-- `make test-cpu CC=clang` and `make test-cpu CC=gcc-15`: both emit all 680 case
-  statuses. 662 cases pass and 18 C++-only cases are marked N/A; neither target
-  reports a failed case. Both compiler runs were forced full rebuilds.
+On this M5 Pro, `make test-cpu` passes with Clang 21 and GCC 15. Each run
+reports the full 680-case inventory: 662 pass and 18 C++-only cases are marked
+N/A. The Tier 1 generic benchmark continues to build with both compilers.
 
-## TS1 final-state comparison
+`make test-specialized` passes with both compilers. It checks the TS1 solver
+against the generic solver over 100 cells and 100 steps, and checks generated
+forcing, negative Jacobians, and complete short solver runs against the generic
+path for the rate-constant YAML and user-defined-rate JSON tutorial mechanisms.
+The TS1 specialized final state also passes the MICM final-state comparator for
+the 100-cell seed-1 case; the largest relative difference was `1.32e-14`.
 
-Seed-1 and seed-2026 final states passed the supplied MICM comparison utility.
-The 10,000-cell run exercised the full required scale with both compilers:
+## TS1 benchmark
 
-| Run | Compiler | C elapsed time | MICM elapsed time | Accepted steps | Largest relative difference |
-| --- | --- | ---: | ---: | ---: | ---: |
-| First cell, seed 1 | Clang | 38.237 ms | 8.722 ms | 900 | `0` |
-| 100 cells, seed 1, 4 threads | Clang | 787.578 ms | 374.132 ms | 3,600 | `1.32e-14` |
-| 10,000 cells, seed 2026, 10 threads | Clang | 48,528.301 ms | 27,298.520 ms | 9,000 | `5.34e-14` |
-| 10,000 cells, seed 2026, 10 threads | GCC 15 | 55,820.845 ms | 27,298.520 ms | 9,000 | `1.43e-13` |
+Clang 21, `-O3 -DNDEBUG`, 10,000 cells, 100 steps, `DT=30 s`, seed 2026. These
+are local single-run measurements, not the experimenter's median-of-five
+ranking measurements. `elapsed_ms` is the program's timed region; wall time
+includes process startup and output.
 
-Both full runs passed all 2,110,000 values (Clang's largest relative difference
-was for BCARYO2VBS in cell 9034; GCC's was for BCARYO2VBS in cell 4054). The
-Clang implementation is 1.8 times slower than MICM on the 10,000-cell run. The
-final inventory has 662 passing cases and eighteen C++-only cases marked N/A.
+| Threads | Generic Tier 1 | Specialized | MICM |
+| ---: | ---: | ---: | ---: |
+| 18 | 21,337 ms | 7,762 ms | 12,736 ms |
+| 1 | 305,344 ms | 90,423 ms | 134,178 ms |
+
+All three programs reported the same work: 900 internal steps, 900 accepted,
+zero rejected, 1,800 function calls, 900 Jacobian updates and decompositions,
+and 2,700 solves on one thread. At 18 threads the corresponding totals were
+16,200, 16,200, zero, 32,400, 16,200, 16,200, and 48,600. The generated C file
+is 1,124,511 bytes. The final clean `make bench` build took 11.84 s with Clang.
+
+The clean `make bench` build took 30.83 s with GCC 15. A clean GCC verification
+sequence passed both `make test-cpu` and `make test-specialized`.
+
+## Day and night scenarios
+
+The table reports the final Clang 21 specialized runner with 32-cell groups,
+`--rtol 1e-6 --atol 1e-15`. Each row passed `score.py --level 10` against the
+provided MICM snapshots, with no NaN, infinity, or value below `-1e-20`. GCC 15
+also passed all five disclosed scenarios with the same settings.
+
+| Scenario | MICM agreement, overall digits | Worst species digits | Reference agreement, overall digits |
+| --- | ---: | ---: | ---: |
+| diurnal-30min | 14.37 | 13.82 | 4.748 |
+| diurnal-10min | 14.29 | 13.69 | 5.052 |
+| diurnal-5min | 14.24 | 13.69 | 5.214 |
+| polluted-10min | 14.08 | 13.46 | 5.398 |
+| clean-10min | 14.34 | 13.80 | 4.907 |
+
+Reference scores are for scale, because the supplied high-accuracy solution is
+not the gate reference. The final generated LU schedule was used for all
+reported Clang scores. No undisclosed scenarios were available for local
+verification.
+
+## Build and portability
+
+The generated source is recreated from `mechanisms/ts1.json` by `make`; no
+generated C is hand-edited. C targets use `$(CC)` and `$(OPTFLAGS)`, ISO C11,
+libm, and CPU OpenMP. The compiler-specific OpenMP include and link flags are
+selected by the Makefile. Clang and GCC builds both pass the generic and
+specialized test targets.

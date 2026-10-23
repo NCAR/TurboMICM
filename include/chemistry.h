@@ -35,6 +35,17 @@ int chem_version_minor(void);
 int chem_version_patch(void);
 int chem_version_tweak(void);
 
+typedef struct chem_mechanism chem_mechanism;
+typedef struct {
+  int (*forcing_with_constants)(const chem_mechanism *, const double *,
+                                const double *, double, double *);
+  int (*negative_jacobian_with_pattern)(
+      const chem_mechanism *, const double *, const double *,
+      const size_t *, const size_t *, double *);
+  int (*factor)(const chem_mechanism *, double *);
+  void (*solve_factored)(const chem_mechanism *, const double *, double *);
+} chem_specialized_ops;
+
 typedef struct {
   size_t species;
   double coefficient;
@@ -179,7 +190,7 @@ int chem_state_set_custom_parameter_matrix(chem_state_view *state,
                                            size_t row_count,
                                            size_t column_count);
 
-typedef struct {
+struct chem_mechanism {
   const chem_species *species;
   size_t species_count;
   const chem_reaction *reactions;
@@ -189,7 +200,8 @@ typedef struct {
   size_t custom_parameter_count;
   double initial_temperature;
   double initial_pressure;
-} chem_mechanism;
+  const chem_specialized_ops *specialized_ops;
+};
 /* Fills MICM-compatible per-species solver tolerances: 1e-3 by default,
    overridden by a positive numeric "absolute tolerance" species property. */
 int chem_mechanism_absolute_tolerances(const chem_mechanism *mechanism,
@@ -591,7 +603,6 @@ int chem_jacobian_with_constants(const chem_mechanism *mechanism,
 int chem_negative_jacobian_with_constants(
     const chem_mechanism *mechanism, const double *concentration,
     const double *rate_constants, double *negative_jacobian);
-
 typedef struct {
   size_t internal_steps;
   size_t accepted;

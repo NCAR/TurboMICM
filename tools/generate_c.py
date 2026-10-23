@@ -97,6 +97,13 @@ def main():
     args = ap.parse_args()
     data = json.loads(args.input.read_text())
     reactions = sorted(data["reactions"], key=lambda r: TYPE_ORDER[r["type"]])
+    for reaction in reactions:
+        for key, field in (("reactants", "qty"), ("products", "yield")):
+            terms = reaction.get(key, [])
+            if isinstance(terms, dict):
+                reaction[key] = [{"name": name,
+                                  "coefficient": float(value.get(field, 1))}
+                                 for name, value in terms.items()]
     species = markowitz_order(data["species"], reactions)
     defaults = data.get("defaults", {})
     names = {s["name"]: i for i, s in enumerate(species)}
@@ -116,7 +123,7 @@ def main():
                     custom_labels.append(item)
     label_index = {label: i for i, label in enumerate(custom_labels)}
 
-    out = ['#include "chemistry.h"', '']
+    out = ['#include "chemistry.h"', '#include <math.h>', '#include <string.h>', '']
     for ri, reaction in enumerate(reactions):
         for key, label in (("reactants", "r"), ("products", "p")):
             terms = reaction.get(key, [])
@@ -199,10 +206,6 @@ def main():
         name = params.get("label", params.get("MUSICA name", ""))
         reactants = rxn.get("reactants", [])
         products = rxn.get("products", [])
-        if reactants and isinstance(reactants, dict):
-            reactants = [{"name": n, "coefficient": float(v.get("qty", 1))} for n, v in reactants.items()]
-        if products and isinstance(products, dict):
-            products = [{"name": n, "coefficient": float(v.get("yield", 1))} for n, v in products.items()]
         rptr = f"rxn_{i}_r" if reactants else "NULL"
         pptr = f"rxn_{i}_p" if products else "NULL"
         surface_name = rxn.get("surface_species")
@@ -217,13 +220,158 @@ def main():
     out.extend(["};", "static const double default_custom_parameters[] = {"])
     out.extend(f"  {float(defaults.get('rate_parameters', {}).get(label, 0.0)):.17g},"
                for label in custom_labels)
-    out.extend(["};", "", "const chem_mechanism chem_generated_mechanism = {",
+    out.extend(["};", ""])
+    # The generated schedules keep the solver's hot evaluations free of runtime
+    # reaction, stoichiometry, and species-type dispatch loops.
+    out.extend([
+        "#ifdef CHEM_SPECIALIZED",
+        "static double generated_power(double value, double exponent) {",
+        "  if (exponent == 0.0) return 1.0;",
+        "  if (exponent == 1.0) return value;",
+        "  if (exponent == 2.0) return value * value;",
+        "  return pow(value, exponent);", "}", "",
+        "static int generated_forcing(const chem_mechanism *m, const double *y,",
+        "                             const double *rates, double density, double *f) {",
+        "  (void)density;",
+        "  if (!m || !y || !rates || !f) return 1;",
+        f"  memset(f, 0, {len(species)} * sizeof(*f));"])
+    for ri, reaction in enumerate(reactions):
+        rterms = reaction.get("reactants", [])
+        pterms = reaction.get("products", [])
+        out.append(f"  double rate_{ri} = rates[{ri}];")
+        for term in rterms:
+            si = names[term["name"]]
+            if not (species[si].get("third_body", False) or
+                    species[si].get("density_parameterized", False)):
+                out.append(f"  rate_{ri} *= generated_power(y[{si}], {float(term.get('coefficient', 1.0)):.17g});")
+        for term in rterms:
+            si = names[term["name"]]
+            if not species[si].get("third_body", False):
+                out.append(f"  f[{si}] -= {float(term.get('coefficient', 1.0)):.17g} * rate_{ri};")
+        for term in pterms:
+            si = names[term["name"]]
+            if not species[si].get("third_body", False):
+                out.append(f"  f[{si}] += {float(term.get('coefficient', 1.0)):.17g} * rate_{ri};")
+    out.extend(["  return 0;", "}", "",
+        "static int generated_negative_jacobian(const chem_mechanism *m,",
+        "    const double *y, const double *rates, const size_t *row_counts,",
+        "    const size_t *row_cols, double *j) {",
+        "  if (!m || !y || !rates || !j || ((row_counts == NULL) != (row_cols == NULL))) return 1;"])
+    if len(species):
+        out.append(f"  const size_t n = {len(species)};")
+    out.extend(["  if (row_counts) {", "    for (size_t row = 0; row < n; ++row)",
+                "      for (size_t q = 0; q < row_counts[row]; ++q)",
+                "        j[row*n + row_cols[row*n + q]] = 0.0;",
+                "  } else { memset(j, 0, n*n*sizeof(*j)); }"])
+    for col, sp in enumerate(species):
+        if sp.get("third_body", False) or sp.get("density_parameterized", False):
+            continue
+        for ri, reaction in enumerate(reactions):
+            rterms = reaction.get("reactants", [])
+            for qi, variable in enumerate(rterms):
+                if names[variable["name"]] != col:
+                    continue
+                coeff = float(variable.get("coefficient", 1.0))
+                out.append(f"  {{ double derivative = rates[{ri}];")
+                for ti, term in enumerate(rterms):
+                    if ti == qi:
+                        continue
+                    si = names[term["name"]]
+                    if not (species[si].get("third_body", False) or
+                            species[si].get("density_parameterized", False)):
+                        out.append(f"    derivative *= generated_power(y[{si}], {float(term.get('coefficient', 1.0)):.17g});")
+                out.append(f"    derivative *= {coeff:.17g};")
+                if coeff != 1.0:
+                    out.append(f"    derivative *= generated_power(y[{col}], {coeff - 1.0:.17g});")
+                for ti, term in enumerate(rterms):
+                    if ti == qi:
+                        continue
+                    si = names[term["name"]]
+                    if not species[si].get("third_body", False):
+                        out.append(f"    j[{si}*n + {col}] += {float(term.get('coefficient', 1.0)):.17g} * derivative;")
+                # Match the generic library's diagonal accumulation for each
+                # reactant term, including its second coefficient factor.
+                out.append(f"    j[{col}*n + {col}] += {coeff:.17g} * derivative;")
+                for term in reaction.get("products", []):
+                    si = names[term["name"]]
+                    if not species[si].get("third_body", False):
+                        out.append(f"    j[{si}*n + {col}] -= {float(term.get('coefficient', 1.0)):.17g} * derivative;")
+                out.append("  }")
+    out.extend(["  return 0;", "}", "",
+                "static int generated_factor(const chem_mechanism *m, double *a) {",
+                "  if (!m || !a) return CHEM_SOLVER_STATUS_BAD_ARGUMENT;"])
+    dimension = len(species)
+    pattern = [[False] * dimension for _ in range(dimension)]
+    for i in range(dimension):
+        pattern[i][i] = True
+    for reaction in reactions:
+        rterms = reaction.get("reactants", [])
+        pterms = reaction.get("products", [])
+        for reactant in rterms:
+            col = names[reactant["name"]]
+            if species[col].get("third_body", False) or species[col].get("density_parameterized", False):
+                continue
+            for term in rterms:
+                row = names[term["name"]]
+                if not species[row].get("third_body", False):
+                    pattern[row][col] = True
+            for term in pterms:
+                row = names[term["name"]]
+                if not species[row].get("third_body", False):
+                    pattern[row][col] = True
+    for k in range(dimension):
+        for i in range(k + 1, dimension):
+            if pattern[i][k]:
+                for j in range(k + 1, dimension):
+                    if pattern[k][j]:
+                        pattern[i][j] = True
+    out.append(f"  const size_t n = {dimension};")
+    for k in range(dimension):
+        out.extend([f"  {{ const double diagonal = a[{k}*n + {k}];",
+                    "    if (diagonal == 0.0 || !isfinite(diagonal)) return CHEM_SOLVER_STATUS_SINGULAR;"])
+        if any(pattern[i][k] for i in range(k + 1, dimension)):
+            out.append("    const double inverse = 1.0 / diagonal;")
+        for i in range(k + 1, dimension):
+            if pattern[i][k]:
+                out.append(f"    a[{i}*n + {k}] *= inverse;")
+        for i in range(k + 1, dimension):
+            if not pattern[i][k]:
+                continue
+            update_columns = [j for j in range(k + 1, dimension) if pattern[k][j]]
+            if update_columns:
+                out.append(f"    {{ const double aik = a[{i}*n + {k}];")
+                for j in update_columns:
+                    out.append(f"      a[{i}*n + {j}] -= aik * a[{k}*n + {j}];")
+                out.append("    }")
+        out.append("  }")
+    out.extend(["  return CHEM_SOLVER_STATUS_OK;", "}", "",
+                "static void generated_solve_factored(const chem_mechanism *m,",
+                "    const double *a, double *b) {", "  (void)m;"])
+    out.append(f"  const size_t n = {dimension};")
+    for i in range(dimension):
+        for j in range(i):
+            if pattern[i][j]:
+                out.append(f"  b[{i}] -= a[{i}*n + {j}] * b[{j}];")
+    for i in range(dimension - 1, -1, -1):
+        for j in range(i + 1, dimension):
+            if pattern[i][j]:
+                out.append(f"  b[{i}] -= a[{i}*n + {j}] * b[{j}];")
+        out.append(f"  b[{i}] /= a[{i}*n + {i}];")
+    out.extend(["}", "",
+                "const chem_specialized_ops generated_ops = {",
+                "  generated_forcing, generated_negative_jacobian,",
+                "  generated_factor, generated_solve_factored", "};",
+                "#endif", "",
+                "const chem_mechanism chem_generated_mechanism = {"])
+    out.extend([
                 "  species, sizeof(species) / sizeof(species[0]),",
                 "  reactions, sizeof(reactions) / sizeof(reactions[0]),",
                 "  custom_labels, default_custom_parameters,",
                 "  sizeof(custom_labels) / sizeof(custom_labels[0]),",
                 f"  {float(defaults.get('temperature', 298.15)):.17g},",
-                f"  {float(defaults.get('pressure', 101325.0)):.17g}", "};", ""])
+                f"  {float(defaults.get('pressure', 101325.0)):.17g},",
+                "#ifdef CHEM_SPECIALIZED", "  &generated_ops", "#else",
+                "  NULL", "#endif", "};", ""])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text("\n".join(out))
 

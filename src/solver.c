@@ -46,6 +46,25 @@ static int make_pattern(const chem_mechanism *m, unsigned char *pattern,
                         size_t *row_counts, size_t *col_counts,
                         size_t *row_cols, size_t *col_rows);
 
+static int solver_forcing(const chem_mechanism *m, const double *y,
+                          const double *rates, double density, double *f) {
+  if (m->specialized_ops && m->specialized_ops->forcing_with_constants)
+    return m->specialized_ops->forcing_with_constants(m, y, rates, density, f);
+  return chem_forcing_with_constants(m, y, rates, density, f);
+}
+
+static int solver_negative_jacobian(
+    const chem_mechanism *m, const double *y, const double *rates,
+    const chem_jacobian_plan *plan, const size_t *row_counts,
+    const size_t *row_cols, double *j) {
+  if (m->specialized_ops &&
+      m->specialized_ops->negative_jacobian_with_pattern)
+    return m->specialized_ops->negative_jacobian_with_pattern(
+        m, y, rates, row_counts, row_cols, j);
+  return chem_negative_jacobian_with_plan_pattern(
+      m, y, rates, plan, row_counts, row_cols, j);
+}
+
 static void free_workspace_data(solver_workspace_data *w) {
   if (!w) return;
   free(w->jac); free(w->a); free(w->forcing); free(w->stage); free(w->ynew);
@@ -343,6 +362,24 @@ static void solve_factored(const double *a, size_t n, const size_t *row_counts,
   }
 }
 
+static int solver_factor(const chem_mechanism *m, double *a, size_t n,
+                        const size_t *row_counts, const size_t *col_counts,
+                        const size_t *row_cols, const size_t *col_rows) {
+  if (m->specialized_ops && m->specialized_ops->factor)
+    return m->specialized_ops->factor(m, a);
+  return factor(a, n, row_counts, col_counts, row_cols, col_rows);
+}
+
+static void solver_triangular_solve(const chem_mechanism *m, const double *a,
+                                    size_t n, const size_t *row_counts,
+                                    const size_t *row_cols, double *b) {
+  if (m->specialized_ops && m->specialized_ops->solve_factored) {
+    m->specialized_ops->solve_factored(m, a, b);
+    return;
+  }
+  solve_factored(a, n, row_counts, row_cols, b);
+}
+
 static int row_is_algebraic(const chem_constraint_set *constraints, size_t row) {
   if (constraints == NULL) return 0;
   for (size_t i = 0; i < constraints->constraint_count; ++i)
@@ -560,7 +597,7 @@ static int rosenbrock_solve_impl(
     if (time + 0.1*h == time || h <= fmin(eps, hmin)) { status = SOLVER_STEP_FAILURE; break; }
     if (h > duration-time) h = duration-time;
     memset(forcing, 0, n*sizeof(*forcing));
-    status = chem_forcing_with_constants(m, y, w->rate_constants,
+    status = solver_forcing(m, y, w->rate_constants,
                                          air_density, forcing);
     if (status) { status = SOLVER_BAD_ARGUMENT; break; }
     if (constraints && chem_constraint_set_add_forcing(
@@ -568,7 +605,7 @@ static int rosenbrock_solve_impl(
       status = SOLVER_BAD_ARGUMENT; break;
     }
     ++local_stats.function_calls;
-    status = chem_negative_jacobian_with_plan_pattern(
+    status = solver_negative_jacobian(
         m, y, w->rate_constants, &w->jacobian_plan, row_counts, row_cols,
         jac);
     if (status) { status = SOLVER_BAD_ARGUMENT; break; }
@@ -588,7 +625,7 @@ static int rosenbrock_solve_impl(
         }
       for (size_t i = 0; i < n; ++i)
         if (!row_is_algebraic(constraints, i)) a[i*n + i] += alpha;
-      status = factor(a, n, row_counts, col_counts, row_cols, col_rows);
+      status = solver_factor(m, a, n, row_counts, col_counts, row_cols, col_rows);
       ++local_stats.decompositions;
       if (status) break;
       for (size_t i = 0; i < n; ++i) stage[i] = forcing[i];
@@ -602,7 +639,7 @@ static int rosenbrock_solve_impl(
               stage_y[i] += p->a[coefficient_offset+j]*stage[j*n+i];
           }
           memset(ks, 0, n*sizeof(*ks));
-          status = chem_forcing_with_constants(m, stage_y, w->rate_constants,
+          status = solver_forcing(m, stage_y, w->rate_constants,
                                                air_density, ks);
           ++local_stats.function_calls;
           if (status) { status = SOLVER_BAD_ARGUMENT; break; }
@@ -621,7 +658,7 @@ static int rosenbrock_solve_impl(
             if (!row_is_algebraic(constraints, i))
               ks[i] += scale*stage[j*n + i];
         }
-        solve_factored(a, n, row_counts, row_cols, ks);
+        solver_triangular_solve(m, a, n, row_counts, row_cols, ks);
         ++local_stats.solves;
       }
       if (status) break;
@@ -837,10 +874,10 @@ int chem_rosenbrock3_solve_group_with_workspace(
         const double *y = states + c*n;
         double *ynew = w->group_ynew + c*n;
         double *yerror = w->group_yerror + c*n;
-        status = chem_forcing_with_constants(m, y, rates, air_densities[c],
+        status = solver_forcing(m, y, rates, air_densities[c],
                                              w->forcing);
         if (status) { status = SOLVER_BAD_ARGUMENT; break; }
-        status = chem_negative_jacobian_with_plan_pattern(
+        status = solver_negative_jacobian(
             m, y, rates, &w->jacobian_plan, w->row_counts, w->row_cols,
             w->jac);
         if (status) { status = SOLVER_BAD_ARGUMENT; break; }
@@ -851,8 +888,8 @@ int chem_rosenbrock3_solve_group_with_workspace(
             w->a[row*n + column] = w->jac[row*n + column];
           }
         for (size_t i = 0; i < n; ++i) w->a[i*n + i] += alpha;
-        status = factor(w->a, n, w->row_counts, w->col_counts,
-                        w->row_cols, w->col_rows);
+        status = solver_factor(m, w->a, n, w->row_counts, w->col_counts,
+                               w->row_cols, w->col_rows);
         if (status) break;
         double *stage = w->stage;
         memcpy(stage, w->forcing, n*sizeof(double));
@@ -860,7 +897,7 @@ int chem_rosenbrock3_solve_group_with_workspace(
           if (s == 1) {
             for (size_t i = 0; i < n; ++i)
               w->stage_y[i] = y[i] + aa[0]*stage[i];
-            status = chem_forcing_with_constants(m, w->stage_y, rates,
+            status = solver_forcing(m, w->stage_y, rates,
                                                  air_densities[c], stage+n);
             if (status) { status = SOLVER_BAD_ARGUMENT; break; }
             memcpy(w->reused_forcing, stage+n, n*sizeof(double));
@@ -874,7 +911,8 @@ int chem_rosenbrock3_solve_group_with_workspace(
             for (size_t i = 0; i < n; ++i)
               ks[i] += scale*stage[j*n + i];
           }
-          solve_factored(w->a, n, w->row_counts, w->row_cols, ks);
+          solver_triangular_solve(m, w->a, n, w->row_counts,
+                                  w->row_cols, ks);
         }
         if (status) break;
         for (size_t i = 0; i < n; ++i) {
@@ -1023,7 +1061,7 @@ int chem_backward_euler_solve_with_workspace(
     memcpy(next,old,n*sizeof(*next));
     int converged = 0;
     for (size_t iteration = 0; iteration < o->max_iterations; ++iteration) {
-      status = chem_forcing_with_constants(m,next,w->rate_constants,
+      status = solver_forcing(m,next,w->rate_constants,
                                            air_density,delta);
       if (status) { status = SOLVER_BAD_ARGUMENT; break; }
       ++local.function_calls;

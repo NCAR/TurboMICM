@@ -1,4 +1,4 @@
-name: chemistry-cpu
+name: chemistry-specialized
 channels:
   - conda-forge
 dependencies:

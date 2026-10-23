@@ -7,13 +7,14 @@ UNAME_S := $(shell uname -s)
 CPPFLAGS += -Iinclude
 CFLAGS += -std=c11 -Wall -Wextra -Wpedantic
 LDFLAGS += -lm
+LIBSRC = src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c
 
 ifeq ($(UNAME_S),Darwin)
   SDKROOT ?= $(shell xcrun --sdk macosx --show-sdk-path)
   export SDKROOT
   ifneq (,$(findstring clang,$(shell $(CC) --version 2>/dev/null | head -1)))
-    OMPFLAGS = -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include
-    OMPLIBS = -L/opt/homebrew/opt/libomp/lib -lomp
+    OMPFLAGS = -Xpreprocessor -fopenmp -isystem /Users/dfillmor/homebrew/opt/libomp/include
+    OMPLIBS = -L/Users/dfillmor/homebrew/opt/libomp/lib -lomp
   else ifneq (,$(findstring gcc,$(shell $(CC) --version 2>/dev/null | head -1)))
     OMPFLAGS = -fopenmp
     OMPLIBS = -fopenmp
@@ -23,10 +24,10 @@ else
   OMPLIBS = -fopenmp
 endif
 
-.PHONY: all cpu test-cpu bench micm-ref clean env
+.PHONY: all cpu test-cpu test-specialized bench micm-ref clean env
 all: cpu
 cpu: bin/ts1_bench_cpu
-bench: bin/ts1_bench_cpu
+bench: bin/ts1_bench_cpu bin/ts1_bench_specialized bin/ts1_scenario_specialized
 micm-ref: bin/micm_ts1_ref
 
 bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mechanism.hpp
@@ -36,9 +37,17 @@ bin/micm_ts1_ref: ../reference/micm_ts1_ref.cpp ../micm/test/benchmark/ts1_mecha
 generated/ts1.c: mechanisms/ts1.json tools/generate_c.py
 	$(PYTHON) tools/generate_c.py $< $@
 
-bin/ts1_bench_cpu: src/main.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c generated/ts1.c include/chemistry.h src/mechanism_internal.h
+bin/ts1_bench_cpu: src/main.c $(LIBSRC) generated/ts1.c include/chemistry.h src/mechanism_internal.h
 	@mkdir -p bin
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) $(OMPFLAGS) src/main.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c generated/ts1.c -o $@ $(LDFLAGS) $(OMPLIBS)
+
+bin/ts1_bench_specialized: src/main.c $(LIBSRC) generated/ts1.c include/chemistry.h src/mechanism_internal.h
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) $(OMPFLAGS) -DCHEM_SPECIALIZED src/main.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c generated/ts1.c -o $@ $(LDFLAGS) $(OMPLIBS)
+
+bin/ts1_scenario_specialized: src/main.c $(LIBSRC) generated/ts1.c include/chemistry.h src/mechanism_internal.h
+	@mkdir -p bin
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OPTFLAGS) $(OMPFLAGS) -DCHEM_SPECIALIZED src/main.c $(LIBSRC) generated/ts1.c -o $@ $(LDFLAGS) $(OMPLIBS)
 
 
 bin/test_core: tests/test_core.c src/mechanism.c src/solver.c src/state.c src/constraints.c src/matrix.c src/sparse.c src/lu.c src/linear.c src/system.c src/version.c include/chemistry.h src/mechanism_internal.h
@@ -50,8 +59,11 @@ test-cpu: cpu bin/test_core
 	$(PYTHON) tests/test_codegen.py
 	$(PYTHON) tools/test_cases.py
 
+test-specialized: bin/ts1_bench_cpu bin/ts1_bench_specialized
+	CC="$(CC)" OPTFLAGS="$(OPTFLAGS)" OMPFLAGS="$(OMPFLAGS)" OMPLIBS="$(OMPLIBS)" $(PYTHON) tests/test_specialized.py
+
 env:
 	CONDA_PKGS_DIRS="$(CURDIR)/.conda-pkgs" conda env create --prefix "$(CURDIR)/.conda" --file environment.yml
 
 clean:
-	rm -rf bin build generated ts1_final.csv
+	rm -rf bin build generated ts1_final.csv ts1_snapshots.csv
