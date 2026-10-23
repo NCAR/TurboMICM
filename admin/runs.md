@@ -573,7 +573,7 @@ Calibration on this machine
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | 2026-10-22 15:39–17:21 | `ca0119e` | done, verified, timed |
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | 2026-10-22 17:58–18:33 | `7af0738` | done, verified, timed |
 | sol-high | gpt-6.1-sol | high | `1d944f4` | Codex CLI 0.163.0, interactive | 2026-10-22 19:20–20:34 | `07848a8` | done, verified, timed |
-| luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | 2026-10-22 21:11– | | running |
+| luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | 2026-10-22 21:11–21:40 | `3562d5a` | done, verified, timed |
 | luna-xhigh | gpt-6-luna | xhigh | `ada55d5` | Codex CLI 0.163.0, interactive | | | set up |
 | luna-high | gpt-6-luna | high | `d3c2480` | Codex CLI 0.163.0, interactive | | | set up |
 
@@ -1004,6 +1004,58 @@ Calibration on this machine
   `caffeinate -ims -w 22711`. No other Codex session was running; AC power.
 - luna-max's Tier 1 entry keeps MICM's default grouping (one group per thread)
   and was slower than MICM's default (0.90 times at ten threads on the M5).
+- Progress, from Claude Code's read-only checks every 20 minutes: at 20
+  minutes, no commit yet, but its specialized solver agreeing with its generic
+  one on TS1 and three tutorial mechanisms, the 100-cell TS1 run within 3.1e-14
+  of MICM, all five disclosed scenarios at 14.04–14.37 digits, and its own
+  18-thread time 5.4 s against 15.6 s for its Tier 1 solver. The turn ended
+  before the 40-minute check. The compliance scan found nothing outside the
+  run directory and its inputs.
+- Session end: the one turn ended at 21:40:51 with DONE (29 min 26 s from the
+  goal, the shortest Tier 2 run), with one context compaction (21:39:49) and no
+  warning; Codex showed "Goal achieved (29m)". Every turn context shows
+  gpt-6-luna at max, approval `never`, sandbox `danger-full-access`. Claude
+  Code quit Codex (21:51:19) and collected and archived it with
+  `admin/collect_tier2.sh`.
+- Final commit `3562d5a` (21:40), 1 commit after `da2d722`, "Generate
+  specialized TS1 solver kernels": 13 files changed, 1,544 lines added and 175
+  removed: the generator extends its Tier 1 table generator
+  (`tools/generate_c.py`, 306 lines added), the generic solver takes optional
+  generated kernels (`src/solver.c`, `include/kinetics.h`), and a new day-night
+  driver (`src/scenario.c`, 654 lines). Its benchmark keeps MICM's default
+  grouping, one group per thread. The working tree is clean. Collected as
+  `tier2/luna/max`.
+- Tokens: 466,476 total; input 342,190 (plus 48,393,344 cached); output 124,286
+  (71,994 reasoning). Codex's usage window stayed at 4 %.
+- Other load during the session: Claude Code's read-only progress checks and
+  reading of the finished entries' documentation. No builds, tests, or timing
+  by the experimenter.
+- Self-reported, not yet verified: both compilers pass the 671 cases (9 N/A,
+  as in Tier 1), its generator tests, and every disclosed scenario; 5,307 ms at
+  18 threads against 15,063 ms for its Tier 1 solver and 12,479 ms for MICM, and
+  52.2 against 183.9 and 134.9 s on one.
+- Transcript archived as `transcripts/tier2/luna-max.jsonl.gz` (2,043 lines,
+  4.3 MB). The credential scan's three matches were inside encrypted content.
+- Verified, 21:51–21:55, with `admin/verify_tier2.py`
+  (`results/2026-10-22-tier2-luna-max-verification`): both compilers build
+  without warnings (clean builds 5.5 s with clang, 13.2 s with gcc-15, the
+  quickest); 671 PASS, 0 FAIL, 9 N/A with each (as in Tier 1); the Tier 1 TS1
+  gate passes (2.78e-13, 2.2e-13); bin/ts1_bench_specialized passes on the
+  seed-2026 cells (2.78e-13, 2.2e-13) and the undisclosed input (1.74e-13,
+  1.78e-13), with MICM's default grouping's 16,200 internal steps;
+  `make test-specialized` passes (TS1 and MICM's three tutorial mechanisms);
+  the day-night gate passes on all ten scenarios with both compilers (32-cell
+  groups through `--group-size 32`), 14.04 to 14.45 digits overall and at least
+  13.41 per species, with MICM's internal steps exactly; the audit finds
+  nothing outside the rules in 29 C files. Generated C for TS1:
+  `build/ts1_model_specialized.c`, 28,434 lines, 1.45 MB.
+- Timed, 22:04–22:19, provisionally at 18 threads (5 rounds, the undisclosed
+  input, after 10 idle minutes; all 60 runs pass the gate): specialized
+  5,404.0 ms; its generic 15,333.7 ms and its Tier 1 commit's 14,761.3 ms
+  (built with `OMP_PREFIX` on the make command line); MICM 11,720.5, 10,509.4,
+  and 4,271.9 ms; the six earlier entries' specialized solvers 2,011.0 to
+  3,179.0 ms. Specialization gains 2.84 times over its own generic solver, the
+  largest gain; 2.17 times MICM's default, 0.79 times its fastest.
 
 # Tier 3
 

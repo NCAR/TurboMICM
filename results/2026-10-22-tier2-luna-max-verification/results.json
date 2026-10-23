@@ -1,0 +1,363 @@
+{
+ "commit": "3562d5a Generate specialized TS1 solver kernels",
+ "build": {
+  "clang": {
+   "env_exit": 0,
+   "cpu_exit": 0,
+   "bench_exit": 0,
+   "clean_build_s": 5.5,
+   "warnings": 0,
+   "generated_files": [
+    "build/ts1_model.c",
+    "build/ts1_model_specialized.c"
+   ],
+   "generated_lines": 29385,
+   "generated_bytes": 1665169
+  },
+  "gcc-15": {
+   "env_exit": 0,
+   "cpu_exit": 0,
+   "bench_exit": 0,
+   "clean_build_s": 13.2,
+   "warnings": 0,
+   "generated_files": [
+    "build/ts1_model.c",
+    "build/ts1_model_specialized.c"
+   ],
+   "generated_lines": 29385,
+   "generated_bytes": 1665169
+  }
+ },
+ "tests": {
+  "clang": {
+   "exit": 0,
+   "PASS": 671,
+   "FAIL": 0,
+   "N/A": 9,
+   "missing": 0,
+   "repeated": 0,
+   "unknown": 0
+  },
+  "gcc-15": {
+   "exit": 0,
+   "PASS": 671,
+   "FAIL": 0,
+   "N/A": 9,
+   "missing": 0,
+   "repeated": 0,
+   "unknown": 0
+  }
+ },
+ "ts1": {
+  "clang": {
+   "exit": 0,
+   "elapsed_ms": "14274.321",
+   "gate": "PASS",
+   "largest": "2.78e-13"
+  },
+  "gcc-15": {
+   "exit": 0,
+   "elapsed_ms": "15509.089",
+   "gate": "PASS",
+   "largest": "2.2e-13"
+  }
+ },
+ "specialized": {
+  "clang": {
+   "seed 2026": {
+    "exit": 0,
+    "elapsed_ms": "5393.324",
+    "internal_steps": "16200",
+    "gate": "PASS",
+    "largest": "2.78e-13"
+   },
+   "input 1": {
+    "exit": 0,
+    "elapsed_ms": "5447.704",
+    "internal_steps": "16200",
+    "gate": "PASS",
+    "largest": "1.74e-13"
+   }
+  },
+  "gcc-15": {
+   "seed 2026": {
+    "exit": 0,
+    "elapsed_ms": "6078.039",
+    "internal_steps": "16200",
+    "gate": "PASS",
+    "largest": "2.2e-13"
+   },
+   "input 1": {
+    "exit": 0,
+    "elapsed_ms": "6104.566",
+    "internal_steps": "16200",
+    "gate": "PASS",
+    "largest": "1.78e-13"
+   }
+  }
+ },
+ "generator": {
+  "clang": {
+   "exit": 0,
+   "seconds": 3.3,
+   "pass_lines": 4,
+   "fail_lines": 0
+  },
+  "gcc-15": {
+   "exit": 0,
+   "seconds": 10.5,
+   "pass_lines": 4,
+   "fail_lines": 0
+  }
+ },
+ "daynight": {
+  "clang": {
+   "arctic-summer-10min": {
+    "exit": 0,
+    "elapsed_ms": "2200.309",
+    "internal_steps": "103211",
+    "micm_internal_steps": "103211",
+    "agreement": 14.288,
+    "worst": "ISOP 13.807",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.045,
+    "micm_accuracy": "5.04"
+   },
+   "night-start-5min": {
+    "exit": 0,
+    "elapsed_ms": "2878.731",
+    "internal_steps": "132855",
+    "micm_internal_steps": "132855",
+    "agreement": 14.454,
+    "worst": "ISOP 14.002",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.729,
+    "micm_accuracy": "4.73"
+   },
+   "south-48h-30min": {
+    "exit": 0,
+    "elapsed_ms": "1965.450",
+    "internal_steps": "95163",
+    "micm_internal_steps": "95163",
+    "agreement": 14.334,
+    "worst": "ISOP 13.841",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.966,
+    "micm_accuracy": "4.97"
+   },
+   "spring45-20min": {
+    "exit": 0,
+    "elapsed_ms": "1265.228",
+    "internal_steps": "60435",
+    "micm_internal_steps": "60435",
+    "agreement": 14.344,
+    "worst": "ISOP 13.792",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.842,
+    "micm_accuracy": "4.84"
+   },
+   "tropics-polluted-15min": {
+    "exit": 0,
+    "elapsed_ms": "1586.414",
+    "internal_steps": "75293",
+    "micm_internal_steps": "75293",
+    "agreement": 14.323,
+    "worst": "ISOP 13.681",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.1,
+    "micm_accuracy": "5.10"
+   },
+   "clean-10min": {
+    "exit": 0,
+    "elapsed_ms": "1808.889",
+    "internal_steps": "84273",
+    "micm_internal_steps": "84273",
+    "agreement": 14.347,
+    "worst": "ISOP 13.812",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.907,
+    "micm_accuracy": "4.91"
+   },
+   "diurnal-10min": {
+    "exit": 0,
+    "elapsed_ms": "1956.949",
+    "internal_steps": "90980",
+    "micm_internal_steps": "90980",
+    "agreement": 14.291,
+    "worst": "ISOP 13.688",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.052,
+    "micm_accuracy": "5.05"
+   },
+   "diurnal-30min": {
+    "exit": 0,
+    "elapsed_ms": "1016.829",
+    "internal_steps": "48619",
+    "micm_internal_steps": "48619",
+    "agreement": 14.369,
+    "worst": "ISOP 13.799",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.748,
+    "micm_accuracy": "4.75"
+   },
+   "diurnal-5min": {
+    "exit": 0,
+    "elapsed_ms": "3186.686",
+    "internal_steps": "145891",
+    "micm_internal_steps": "145891",
+    "agreement": 14.234,
+    "worst": "ISOP 13.677",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.214,
+    "micm_accuracy": "5.21"
+   },
+   "polluted-10min": {
+    "exit": 0,
+    "elapsed_ms": "2282.821",
+    "internal_steps": "106393",
+    "micm_internal_steps": "106393",
+    "agreement": 14.044,
+    "worst": "ISOP 13.417",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.398,
+    "micm_accuracy": "5.40"
+   }
+  },
+  "gcc-15": {
+   "arctic-summer-10min": {
+    "exit": 0,
+    "elapsed_ms": "2583.766",
+    "internal_steps": "103211",
+    "micm_internal_steps": "103211",
+    "agreement": 14.29,
+    "worst": "ISOP 13.799",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.045,
+    "micm_accuracy": "5.04"
+   },
+   "night-start-5min": {
+    "exit": 0,
+    "elapsed_ms": "3410.644",
+    "internal_steps": "132855",
+    "micm_internal_steps": "132855",
+    "agreement": 14.452,
+    "worst": "ISOP 13.998",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.729,
+    "micm_accuracy": "4.73"
+   },
+   "south-48h-30min": {
+    "exit": 0,
+    "elapsed_ms": "2326.867",
+    "internal_steps": "95163",
+    "micm_internal_steps": "95163",
+    "agreement": 14.333,
+    "worst": "ISOPAO2 13.726",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.966,
+    "micm_accuracy": "4.97"
+   },
+   "spring45-20min": {
+    "exit": 0,
+    "elapsed_ms": "1492.616",
+    "internal_steps": "60435",
+    "micm_internal_steps": "60435",
+    "agreement": 14.337,
+    "worst": "ISOP 13.767",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.842,
+    "micm_accuracy": "4.84"
+   },
+   "tropics-polluted-15min": {
+    "exit": 0,
+    "elapsed_ms": "1855.784",
+    "internal_steps": "75293",
+    "micm_internal_steps": "75293",
+    "agreement": 14.336,
+    "worst": "ISOP 13.641",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.1,
+    "micm_accuracy": "5.10"
+   },
+   "clean-10min": {
+    "exit": 0,
+    "elapsed_ms": "2127.656",
+    "internal_steps": "84273",
+    "micm_internal_steps": "84273",
+    "agreement": 14.354,
+    "worst": "ISOP 13.835",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.907,
+    "micm_accuracy": "4.91"
+   },
+   "diurnal-10min": {
+    "exit": 0,
+    "elapsed_ms": "2285.437",
+    "internal_steps": "90980",
+    "micm_internal_steps": "90980",
+    "agreement": 14.296,
+    "worst": "ISOP 13.704",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.052,
+    "micm_accuracy": "5.05"
+   },
+   "diurnal-30min": {
+    "exit": 0,
+    "elapsed_ms": "1181.397",
+    "internal_steps": "48619",
+    "micm_internal_steps": "48619",
+    "agreement": 14.372,
+    "worst": "ISOP 13.803",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.748,
+    "micm_accuracy": "4.75"
+   },
+   "diurnal-5min": {
+    "exit": 0,
+    "elapsed_ms": "3715.548",
+    "internal_steps": "145891",
+    "micm_internal_steps": "145891",
+    "agreement": 14.228,
+    "worst": "ISOPNO3 13.544",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.214,
+    "micm_accuracy": "5.21"
+   },
+   "polluted-10min": {
+    "exit": 0,
+    "elapsed_ms": "2642.185",
+    "internal_steps": "106393",
+    "micm_internal_steps": "106393",
+    "agreement": 14.038,
+    "worst": "ISOP 13.414",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.398,
+    "micm_accuracy": "5.40"
+   }
+  }
+ },
+ "audit": {
+  "flags_outside_rules": [],
+  "banned_matches": 0
+ }
+}

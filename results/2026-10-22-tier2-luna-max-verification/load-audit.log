@@ -1,0 +1,90 @@
+== 2026-10-22 22:04:35 { 1.43 1.80 2.60 } Now drawing from 'AC Power'
+ 11.0 claude
+  4.3 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  4.1 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  3.2 /usr/libexec/trustd
+  2.4 /Library/Application Support/JAMF/Jamf.app/Contents/MacOS/JamfDaemon.app/Contents/MacOS/JamfDaemon
+== 2026-10-22 22:05:35 { 10.93 4.46 3.55 } Now drawing from 'AC Power'
+1683.1 ~/NSF-NCAR/tier2-work/tier1-builds/luna-max/bin/ts1_bench_cpu
+  5.4 claude
+  2.1 /usr/libexec/trustd
+  1.7 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  1.6 splunkd
+== 2026-10-22 22:06:36 { 11.55 5.81 4.11 } Now drawing from 'AC Power'
+1777.5 ~/NSF-NCAR/tier2-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_specialized
+  3.3 claude
+  2.5 /usr/libexec/trustd
+  1.8 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  1.5 splunkd
+== 2026-10-22 22:07:36 { 7.68 5.67 4.17 } Now drawing from 'AC Power'
+  6.4 claude
+  3.4 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  3.3 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  2.3 com.apple.weather.menu
+  2.2 splunkd
+== 2026-10-22 22:08:36 { 9.53 6.76 4.68 } Now drawing from 'AC Power'
+  6.3 claude
+  3.4 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  3.4 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  1.9 splunkd
+  0.7 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+== 2026-10-22 22:09:36 { 10.60 7.50 5.09 } Now drawing from 'AC Power'
+ 84.7 /Library/Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python
+  5.4 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  3.4 claude
+  3.0 /usr/libexec/trustd
+  2.6 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+== 2026-10-22 22:10:36 { 12.93 8.56 5.64 } Now drawing from 'AC Power'
+ 66.0 /Library/Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python
+ 16.6 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  2.9 /usr/libexec/trustd
+  2.6 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds
+  2.1 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+== 2026-10-22 22:11:36 { 7.27 7.84 5.57 } Now drawing from 'AC Power'
+  5.8 claude
+  3.3 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  2.9 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  1.6 /usr/libexec/locationd
+  1.2 /Applications/Druva inSync.app/Contents/MacOS/inSync
+== 2026-10-22 22:12:36 { 10.78 8.60 6.00 } Now drawing from 'AC Power'
+  7.0 claude
+  4.2 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  3.8 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  3.4 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.9 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+== 2026-10-22 22:13:36 { 10.76 9.13 6.38 } Now drawing from 'AC Power'
+ 88.5 /Library/Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python
+  2.3 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.1 claude
+  0.9 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  0.6 /usr/libexec/trustd
+== 2026-10-22 22:14:36 { 10.49 9.08 6.53 } Now drawing from 'AC Power'
+ 99.1 /Library/Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python
+  7.2 /usr/libexec/airportd
+  4.3 /usr/libexec/locationd
+  2.7 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  2.5 claude
+== 2026-10-22 22:15:36 { 10.55 9.35 6.80 } Now drawing from 'AC Power'
+  6.4 claude
+  3.5 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  2.9 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  1.6 /System/Library/DriverExtensions/AppleCentauriAlpha.dext/AppleCentauriAlpha
+  1.4 /usr/libexec/locationd
+== 2026-10-22 22:16:36 { 8.03 8.99 6.85 } Now drawing from 'AC Power'
+1764.9 ~/NSF-NCAR/tier2-work/bin/micm_ts1_ref
+  4.8 claude
+  3.1 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  2.5 /System/Library/PrivateFrameworks/BackgroundTaskManagement.framework/Resources/backgroundtaskmanagementd
+  1.5 /usr/libexec/trustd
+== 2026-10-22 22:17:36 { 12.71 10.27 7.48 } Now drawing from 'AC Power'
+1698.6 ~/NSF-NCAR/tier2-work/tier1-builds/luna-max/bin/ts1_bench_cpu
+  3.2 claude
+  1.9 /usr/libexec/trustd
+  1.6 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  1.2 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+== 2026-10-22 22:18:37 { 10.92 10.25 7.67 } Now drawing from 'AC Power'
+  9.7 claude
+  4.6 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  3.4 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  2.8 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.0 /usr/libexec/trustd
