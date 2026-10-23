@@ -2,22 +2,24 @@
 
 Tier 2's primary ranking, by the rules on Tier-2-Design. Each of the nine
 entries' specialized TS1 benchmark, built with clang, was timed on the Apple M5
-Pro beside its own generic solver, its Tier 1 commit, and three MICM programs.
-All ran in one session on the undisclosed ranking input: 10,000 cells from
-`reference/make_cells_csv.py` with the seed in
-[`tier2/heldout/SEED`](../../tier2/heldout/SEED), 100 steps of 30 s. Each time
-is the median of 5 runs, on an idle machine.
+Pro beside its own generic solver and three MICM programs (and, at 18
+threads, its Tier 1 commit). Each session timed them all together, on the
+undisclosed ranking input: 10,000 cells from `reference/make_cells_csv.py`
+with the seed in [`tier2/heldout/SEED`](../../tier2/heldout/SEED), 100 steps
+of 30 s. Each time is the median of 5 runs, on an idle machine. The 18-thread
+session is the ranking; the one-thread session is reported beside it.
 
 | Folder | Session |
 |---|---|
 | `18-threads/` | 18 threads, all cores, from 00:34:39 to 01:11:50: the ranking |
-| `1-thread/` | 1 thread: to follow, after the blind review and the exercises |
+| `1-thread/` | 1 thread, from 02:11:16 to 04:30, after the exercises; `run-ranking-1.sh` is its launcher |
 
 Each folder holds:
 - `timings.csv`: every run;
 - `summary.md`: each program's median and range;
-- `ranking.md`: the table below, from `admin/rank_tier2.py`;
-- `programs.txt`: the programs, as given to `admin/time_tier2.sh`;
+- `ranking.md`: the session's table below, from `admin/rank_tier2.py`;
+- `programs.txt` (18 threads) or `run-ranking-1.sh` (1 thread): the
+  programs, as given to `admin/time_tier2.sh`;
 - `environment.txt`: the machine and the input;
 - `load-audit.log`: the busiest processes, once a minute;
 - `wait.log`: the idle checks before the session.
@@ -66,7 +68,7 @@ The spread is the range of the five runs over their median. The gain from
 specialization is the generic median over the specialized one. The last three
 columns divide MICM's medians by the entry's.
 
-## How firm the places are
+## How firm the places are, at 18 threads
 
 - **Every adjacent pair but one is consistent across all five rounds:** the
   higher-placed entry's specialized benchmark was the faster in each round.
@@ -81,7 +83,7 @@ columns divide MICM's medians by the entry's.
   swapped. The ratio is the median, over the rounds, of MICM's default over the
   entry; it cancels a round that ran slow for both.
 
-## Spread
+## Spread, at 18 threads
 
 - **The entries' 27 programs varied a median 3.7 % across the rounds.** Their
   specialized benchmarks ranged from 1.2 % (luna-xhigh) to 8.8 % (astra-max).
@@ -96,7 +98,7 @@ columns divide MICM's medians by the entry's.
 - **The speedups over MICM therefore carry about 10 %;** the order of the
   entries does not depend on them.
 
-## Load audit
+## Load audit, at 18 threads
 
 Once a minute, the audit recorded the timed program and the machine's other
 busy processes, always on AC power.
@@ -115,7 +117,7 @@ During the session, Claude Code wrote `admin/rank_tier2.py`, tried it on an
 earlier session's file, edited CLAUDE.md, and otherwise waited. The exercises
 and the blind reviews started after the session ended.
 
-## Findings
+## Findings, at 18 threads
 
 - **astra-xhigh is first,** 5.95 times faster than MICM's default and 2.30
   times faster than MICM's fastest configuration. Its gain from
@@ -136,3 +138,50 @@ and the blind reviews started after the session ended.
 - **Every generic solver kept its Tier 1 speed.** Each entry's generic path in
   its Tier 2 commit is within 1.6 % of its Tier 1 build, run in the same
   session.
+
+## The session at one thread
+
+The same input and checks, on one thread: 21 programs in 5 rotating rounds,
+105 runs, all passing the gate. It began after 10 idle checks.
+- **The programs:** MICM's three, and each entry's specialized and generic
+  benchmarks. The Tier 1 builds ran only at 18 threads, where they were within
+  1.6 % of the generic ones.
+- **The machine:** the load audit (139 samples) shows the timed program on AC
+  power throughout. Other processes reached at most a quarter of one core,
+  with 17 cores idle.
+
+Medians, ms (MICM: default 133,042.2; 32-cell groups 124,364.8; fastest
+configuration 48,693.8):
+
+| Rank | Entry | Specialized (ms) | Spread | Generic, Tier 2 (ms) | Gain from specialization | Over MICM's default | Over MICM, 32-cell groups | Over MICM's fastest |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | astra-xhigh | 26,471.8 | 1.8 % | 36,972.7 | 1.40 | 5.03 | 4.70 | 1.84 |
+| 2 | sol-max | 30,457.8 | 0.7 % | 36,731.0 | 1.21 | 4.37 | 4.08 | 1.60 |
+| 3 | sol-high | 34,725.6 | 0.3 % | 45,898.3 | 1.32 | 3.83 | 3.58 | 1.40 |
+| 4 | sol-xhigh | 35,336.8 | 0.2 % | 43,327.2 | 1.23 | 3.76 | 3.52 | 1.38 |
+| 5 | astra-max | 36,498.4 | 1.3 % | 43,890.1 | 1.20 | 3.65 | 3.41 | 1.33 |
+| 6 | astra-high | 41,029.9 | 1.1 % | 48,404.9 | 1.18 | 3.24 | 3.03 | 1.19 |
+| 7 | luna-xhigh | 47,118.1 | 0.2 % | 58,042.6 | 1.23 | 2.82 | 2.64 | 1.03 |
+| 8 | luna-max | 52,228.7 | 2.5 % | 180,759.8 | 3.46 | 2.55 | 2.38 | 0.93 |
+| 9 | luna-high | 89,760.2 | 0.5 % | 290,063.8 | 3.23 | 1.48 | 1.39 | 0.54 |
+
+- **Every adjacent pair kept its order in all five rounds.** The closest are
+  sol-high and sol-xhigh, 1.8 % apart, and the spreads are small: a median
+  of 0.75 % for the entries, at most 2.5 % (MICM's default).
+- **The order differs from 18 threads in three places:**
+  - sol-high and sol-xhigh swap places three and four.
+  - astra-max is clearly ahead of astra-high (12.4 %); at 18 threads they
+    were tied.
+  - luna-xhigh, last at 18 threads, is seventh here, ahead of luna-max and
+    luna-high.
+- **Seven entries beat MICM's fastest configuration on one thread,**
+  luna-xhigh among them, by 3 %. At 18 threads six do.
+- **Scaling from 1 to 18 threads** compares two sessions an hour and a half
+  apart, so it is approximate.
+  - MICM's programs speed up 10.4 to 10.9 times; the Astra and Sol
+    specialized solvers 11.3 to 13.1 times; luna-high's and luna-max's 11.9
+    and 9.7 times.
+  - luna-xhigh's speeds up 4.7 times, as its Tier 1 entry scaled worst on the
+    M5. Its timed call per group still does the group's setup.
+  - luna-xhigh's gain from specialization is 1.23 on one thread but 1.07 at
+    18 threads, where the unspecialized part dominates.
