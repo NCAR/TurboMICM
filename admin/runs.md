@@ -1311,6 +1311,12 @@ Calibration on this machine
 - 04:31: Fable was still at its limit. Tier 2 is complete apart from its
   review, a third report, which waits for the limit to lift or for the SSE to
   allow usage credits.
+- 04:33: a watcher started in tmux `tier2-review-fable`
+  (`~/NSF-NCAR/tier2-work/blind-review/fable-when-available.sh`). It probes
+  Fable every 15 minutes, logging to `fable-probe.log`; a refused probe costs
+  nothing. When Fable answers, it runs `tier2/review/run-review.sh fable` on
+  the same folder, prompt, and tools, reading the entries I to A. The failed
+  01:12 attempt's files are kept as `report-fable-attempt1.*`.
 
 # Tier 3
 
