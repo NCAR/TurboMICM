@@ -22,9 +22,9 @@
 - CAMP tutorial falloff parameters are normalized from their documented
   concentration units into the internal SI rate units. The tutorial YAML and
   JSON descriptors are checked against equivalent hand-built C mechanisms.
-- Each benchmark thread receives one balanced contiguous group, capped at one
-  group per cell. This keeps adaptive solver histories independent per thread;
-  group size is not independently configurable yet.
+- The Tier 1 benchmark gives each thread one balanced contiguous group, capped
+  at one group per cell. This keeps adaptive solver histories independent per
+  thread; that generic benchmark does not expose group size separately.
 - The sparse LU uses MICM's in-place Mozart factor/solve approach. A symbolic
   Markowitz permutation is applied to reduce fill while preserving the original
   mechanism order in the public state layout.
@@ -61,3 +61,23 @@
   only when their magnitude is within the configured absolute tolerance. This
   addresses roundoff undershoots that otherwise propagate through fast
   reactions; the solver's integration error control remains unchanged.
+- Tier 2 keeps the generic Tier 1 API and adds a generated solver entry point.
+  The generator emits formulas and reaction/Jacobian/factorization operations
+  from the normalized mechanism so another configuration uses the same code
+  path without a hand-maintained TS1 implementation.
+- The generated TS1 ordering repeatedly chooses the remaining column with the
+  least actual symbolic fill. Equal-fill choices use a Markowitz score and then
+  the original species index for deterministic output. This costs only build
+  time and lets the generated fixed elimination sequence use less fill.
+- Generated state and work arrays use species-major blocks across cells within
+  each group. Scenario groups default to 32 cells to match the gate; callers can
+  select a different group size at runtime. The ordinary TS1 benchmark keeps
+  one balanced group per active thread, preserving its Tier 1 interface.
+- Mechanism constants and formula structure become generated C. Temperature,
+  pressure, air density, concentrations, cell-defined rate parameters,
+  tolerances, and interval lengths stay runtime data because benchmark inputs
+  and scenarios vary them.
+- Each generated LU pivot is emitted as fixed direct operations. This removes
+  the generic sparse-index dispatch from the pivot loop while keeping the exact
+  no-pivot Mozart update order. Its generated source is larger, so source size
+  and clean-build cost are reported with runtime results.

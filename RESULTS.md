@@ -1,62 +1,63 @@
 # Results
 
-## MICM case list
+All runs used `-O3 -DNDEBUG` with the local Apple M5 Pro, clang 21.0.0 or GCC
+15.3.0, and the repository's OpenMP setup. The generated TS1 source was
+2,404,083 bytes. The clean `make bench` build took 62.03 seconds with clang and
+62.32 seconds with GCC; this includes Python generation and compilation of the
+generic library, generic benchmark, specialized benchmark, and scenario runner.
 
-`make test-cpu` prints one line for each of the 680 IDs in
-`../reference/micm_cases.txt`, followed by aggregate and TS1 reference-check
-lines. The clean results for the current source are:
+## Regression gates
 
-| Compiler | PASS | FAIL | N/A | TS1 serial / parallel |
-| --- | ---: | ---: | ---: | --- |
-| Apple clang 21, macOS arm64 | 662 | 0 | 18 | PASS / PASS |
-| GCC 15.2, macOS arm64 | 662 | 0 | 18 | PASS / PASS |
+| Compiler | Tier 1 cases | TS1 serial / parallel | Specialized checks |
+| --- | --- | --- | --- |
+| clang 21 | 662 PASS, 0 FAIL, 18 N/A of 680 | PASS / PASS | TS1, no-user-rate config, user-rate config PASS |
+| GCC 15.3 | 662 PASS, 0 FAIL, 18 N/A of 680 | PASS / PASS | TS1, no-user-rate config, user-rate config PASS |
 
-The 662 passing cases cover implemented rate-constant formulas and parameter
-references, configuration examples, tutorials, state and object operations,
-process and constraint construction and Jacobians, dense and sparse matrices,
-grouped views, solver utilities, LU operations, analytical integrations,
-FlowTube and Chapman regressions, DAE behavior, and OpenMP. Eighteen aerosol
-cases now run against C mechanism equivalents for state layout and updates,
-forcing, Jacobians, and single-cell and multi-cell solves with backward Euler
-and Rosenbrock. Sixteen external-model constraint cases have focused C
-regressions for algebraic metadata, process-only and constraint-only behavior,
-DAE conservation, algebraic-row forcing/Jacobians, combined constraints,
-multi-cell solves, equilibrium and conservation behavior, temperature-dependent
-parameters, and finite-difference Jacobians.
+The 18 N/A cases are C++-specific API or type behavior with no C equivalent,
+as listed by `tools/test_cases.py`. The generated comparisons use three cells
+and check every state value against the generic library at `1e-10` relative
+tolerance with a `1e-30` absolute floor. TS1 has 209 integrated species and 547
+reactions; the two configuration mechanisms have 7 species and 7 or 10
+reactions.
 
-The 18 N/A cases describe C++-specific behavior with no meaningful C counterpart:
-one rate-store lambda callback entry; four compile-time view-category checks and
-one grouped-view category-tag check; five version metadata checks; three
-solver-builder type/matrix-policy checks; two sparse algebraic-row pattern
-checks (the C DAE solver uses dense Jacobian storage and has no sparse callback
-element-access path); one reusable solver-builder lifetime check (C passes
-mechanism and constraint descriptors directly); and one external-model
-insertion-order check (C has no model registry or order-dependent mask). Every
-other case in the supplied list passes.
+## TS1 benchmark
 
-## TS1 comparisons
+The ranking-shaped comparison used clang 21 for specialized C and Tier 1, and
+clang++ for MICM, all with `-O3 -DNDEBUG`. It used 10,000 cells from
+`make_cells_csv.py 10000 2026`, 100 timed intervals of 30 seconds, one untimed
+warm-up interval, and the compiler's default 18-thread OpenMP team. Each solver
+reported 16,200 internal steps, 16,200 accepted steps, and no rejected steps.
+One-thread runs reported 900 internal and accepted steps. The single-run timings
+were:
 
-All results below use `-O3 -DNDEBUG`, double precision, and the same TS1 input
-and 10-thread setting on the provided Apple arm64 machine. For the 10,000-cell
-seed 2026 comparison, C used **21,199.606 ms** and MICM used **28,453.001 ms**
-in an earlier local run. A fresh comparison used **21,397.132 ms** for C and
-**27,850.738 ms** for MICM. Both runs reported 9,000 internal steps, with matching
-accepted/rejected counts, function calls, Jacobian updates, decompositions,
-and solves. All 2,110,000 final cell/species values passed
-`../reference/compare_final.py`; maximum relative error was `1.77e-13`
-(BCARY, cell 6848). The task's hidden seed and five-run median were not measured
-here, so these timings are indicative local comparisons, not the ranked result.
+| Threads | Specialized C | Tier 1 generic C | MICM | Specialized speedup vs Tier 1 |
+| ---: | ---: | ---: | ---: | ---: |
+| 18 | 9,975.272 ms | 10,721.189 ms | 12,673.117 ms | 7.0% |
+| 1 | 47,993.195 ms | 58,589.504 ms | 137,279.541 ms | 18.1% |
 
-The fixed 100-cell, 100-step, 30-second seed 1 input passes for one and four
-threads. A 1,000-cell seed 2026 run passed all 211,000 values with maximum
-relative error `7.74e-14`. Earlier exploratory 100-cell seed 1 comparison had
-maximum relative error `9.7e-13`.
+`compare_final.py` passed all 2,110,000 cell/species values against MICM at
+both thread counts. The largest relative difference was `2.15e-13` for the
+specialized result (BCARY, cell 4179) and `1.77e-13` for Tier 1 (BCARY, cell
+6848). These are local single-run measurements; the experiment's hidden seed
+and five-run median were not measured here.
 
-## Build verification
+## Day-night scenarios
 
-Clean `make test-cpu` builds completed with Apple clang 21 and GCC 15.2. Both
-reported 662 PASS, 0 FAIL, and 18 N/A, and passed the serial and four-thread
-TS1 checks. `make cpu` and `make bench` also built the benchmark with both
-compilers. The linked benchmark depends on the C runtime, libm, and OpenMP only;
-it has no Python linkage. All cases in the supplied list are accounted for as
-PASS or an API-specific N/A.
+Each scenario ran with 32-cell groups, `rtol=1e-6`, and `atol=1e-15`. Both
+compilers passed `score.py --level 10` against MICM, with zero NaN or infinite
+values and zero values below `-1e-20`. The reference column is the agreement
+with the high-accuracy reference snapshots. Scenario elapsed times are local
+single runs and include photolysis updates.
+
+| Scenario | MICM steps | clang vs MICM: overall (worst species) | GCC vs MICM: overall (worst species) | Reference agreement | clang / GCC elapsed |
+| --- | ---: | --- | --- | ---: | ---: |
+| diurnal-30min | 48,619 | 14.26 (ISOP 13.69) | 14.26 (ISOP 13.67) | 4.75 digits | 631.525 / 737.229 ms |
+| diurnal-10min | 90,980 | 14.18 (ISOP 13.64) | 14.18 (ISOP 13.62) | 5.05 digits | 1,200.017 / 1,427.346 ms |
+| diurnal-5min | 145,891 | 14.15 (ISOP 13.59) | 14.15 (ISOP 13.60) | 5.21 digits | 1,954.433 / 2,360.184 ms |
+| polluted-10min | 106,393 | 14.01 (ISOP 13.42) | 13.99 (ISOPNO3 13.31) | 5.40 digits | 1,388.764 / 1,647.069 ms |
+| clean-10min | 84,273 | 14.19 (ISOP 13.60) | 14.20 (ISOP 13.62) | 4.91 digits | 1,114.975 / 1,346.685 ms |
+
+The reference scores show the distance from MICM's gate-tolerance three-stage
+solution to the supplied high-accuracy reference. The specialized runs retain
+at least 13.31 digits for every species against MICM, above the gate requirement
+of 9.

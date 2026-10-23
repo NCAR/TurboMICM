@@ -1,6 +1,7 @@
 name: chemistry-port
 channels:
   - conda-forge
+# Build-time only: runtime C targets use no Python packages.
 dependencies:
   - python=3.12.8
   - pyyaml=6.0.2

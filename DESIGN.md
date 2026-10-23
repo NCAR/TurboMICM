@@ -3,9 +3,10 @@
 ## Build path
 
 `tools/generate.py` reads YAML or JSON with PyYAML, normalizes the configuration,
-and emits a C source file with immutable species, reaction, stoichiometry, and
-parameter arrays. Make rules compile every generated C file with the selected
-`$(CC)` and `$(OPTFLAGS)`. There is no parser or Python dependency at runtime.
+and emits both the immutable mechanism descriptor used by the generic library
+and a solver specialized to that mechanism. Make rules compile every generated
+C file with the selected `$(CC)` and `$(OPTFLAGS)`. There is no parser or Python
+dependency at runtime.
 The checked-in `config/ts1.json` comes from `tools/translate_ts1.py`, whose sole
 mechanism input is the provided TS1 builder header.
 
@@ -117,17 +118,44 @@ The default integrator uses MICM's three-stage Rosenbrock coefficients, error
 estimate, step-size controller, and mechanism tolerances. Callers may pass
 another `chem_rosenbrock_parameters` set through the same integration API.
 Independent groups
-run concurrently with a static OpenMP schedule. The benchmark creates
+run concurrently with a static OpenMP schedule. The Tier 1 benchmark creates
 `min(threads, cells)` contiguous balanced groups, so each active thread owns one
 adaptive solver history. The default thread count is OpenMP's maximum; use
-`--threads N` to choose another value. There is no independently tunable group
-size or fixed SIMD width in this implementation. Allocation and symbolic
-construction are per group call, while arrays within the call are group-local.
+`--threads N` to choose another value. The generic benchmark has no independently
+tunable group size or fixed SIMD width. Allocation and symbolic construction
+are per group call, while arrays within the call are group-local.
 
 At each interval boundary, the implementation clips negative values that are
 within the species' configured absolute tolerance to zero. This prevents tiny
 accepted roundoff undershoots from becoming artificial sources in very fast
 reactions at the next interval. Larger negative values are retained.
+
+## Tier 2 generated solver
+
+The generator specializes the rate equations, reaction forcing, Jacobian
+entries, sparse pattern, species order, and exact Mozart factorization and
+triangular solves. Rate formulas and fixed mechanism parameters become C
+expressions. Temperature, pressure, air density, species concentrations, and
+all per-cell rate parameters remain runtime values. The generated solver uses
+the same three-stage Rosenbrock coefficients, error estimate, tolerances, and
+step-size controller as the generic TS1 path.
+
+`tools/generate.py` chooses a deterministic species permutation by repeatedly
+selecting the remaining Jacobian column with minimum actual fill; ties use the
+Markowitz score and then the original species index. It simulates symbolic
+elimination in that order, then emits fixed pivot operations and triangular
+solve rows. State and work arrays are laid out as species-major blocks within a
+cell group, so each vector loop walks adjacent cells. The external benchmark
+state stays cell-major and is converted at the group boundary.
+
+Run `make test-specialized` to generate and compare TS1 and both configuration
+test mechanisms against the generic solver. The scenario runner uses groups of
+32 cells by default, with `--group-size` available at runtime. The specialized
+TS1 benchmark uses one balanced group per active thread, matching the Tier 1
+benchmark interface. `--threads` selects the OpenMP team size. The scenario
+runner also accepts `--rtol` and `--atol`; these affect solver data only and do
+not change generated code. `make bench` regenerates the source whenever the
+configuration, generator, or specialized interface changes.
 
 ## Extension points
 
@@ -141,14 +169,16 @@ reactions at the next interval. Larger negative values are retained.
   `CHEM_LU_MOZART_IN_PLACE` in `chem_rosenbrock_parameters`; a new method can be
   added at the factor/solve boundary while reusing the cell-batched storage.
 - **Add a rate type:** extend `chem_rate_kind`, normalization and descriptor
-  generation in `tools/generate.py`, then implement the formula in
-  `chem_rate_value` and add direct formula and generated-configuration checks.
+  generation in `tools/generate.py`, then implement its formula in both
+  `chem_rate_value` and the generator's `_rate_code`. Add direct formula and
+  generated-configuration checks.
 
 ## Tuning and portability
 
-The supported run-time performance parameter is thread count (`--threads`),
-which defaults to the OpenMP runtime maximum. Group count follows thread count
-and is capped by the cell count. OpenMP uses static scheduling; SIMD width is
-chosen by the compiler. No architecture-specific flags, intrinsics, libraries,
-or APIs are used. The Makefile adds only language, warning, include, OpenMP,
-and link flags around `OPTFLAGS`.
+The generic benchmark's run-time performance parameter is thread count
+(`--threads`), which defaults to the OpenMP runtime maximum; group count follows
+thread count and is capped by the cell count. The specialized scenario runner
+also accepts `--group-size`, defaulting to 32 cells. OpenMP uses static
+scheduling; SIMD width is chosen by the compiler. No architecture-specific
+flags, intrinsics, libraries, or APIs are used. The Makefile adds only language,
+warning, include, OpenMP, and link flags around `OPTFLAGS`.
