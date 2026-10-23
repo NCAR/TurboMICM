@@ -1,0 +1,9 @@
+A astra-max
+B sol-xhigh
+C astra-xhigh
+D astra-high
+E sol-high
+F luna-max
+G sol-max
+H luna-xhigh
+I luna-high

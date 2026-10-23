@@ -182,5 +182,13 @@ in 0.03 to 0.13 s.
   - The others reused an environment that the same entry's `make env` had
     built for verification, from the same `environment.yml`, or used the
     Makefile's fallback to the system `python3`.
+- **What this exercise does not test:** the shared problem was resolved
+  before any entry saw it (units, Ea, the third body, label namespaces) and
+  then written in each entry's own format. It tests the generators, not the
+  entries' readers of MUSICA's files. The blind reviewers read those readers
+  and found gaps in all nine: none recognizes the THIRD_BODY tracer type or
+  Ea, and none keeps photolysis and emission labels apart as MICM does. The
+  Luna readers do not convert Arrhenius A from molecule cm-3
+  ([`2026-10-23-tier2-blind-review`](../2026-10-23-tier2-blind-review/README.md)).
 - **Times:** the build and generator times above come from nine agents
   working at once. They show scale, not a ranking.
