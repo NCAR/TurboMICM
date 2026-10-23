@@ -92,7 +92,10 @@ for stamp, text, cwd in commands(args.record):
             here = str((Path(here) / target).resolve()) if not target.startswith(("/", "~")) else \
                 str(Path(target.replace("~", home, 1)).resolve())
             continue
-        # Codex's own check for instruction files in the parent folders names them, and nothing else
+        # Codex's own check for instruction files in the parent folders names them, and nothing else;
+        # a search for them by name (rg --files -g AGENTS.md, find -name AGENTS.md) reads no file
+        if re.search(r"\b(rg|find|ls|test)\b.*(AGENTS|CLAUDE)\.md", segment):
+            continue
         away += [t for t in outside(segment, here) if not re.search(r"(AGENTS|CLAUDE)\.md$", t)]
     if away:
         findings["paths outside the run directory and its inputs"].append((stamp, text, away))

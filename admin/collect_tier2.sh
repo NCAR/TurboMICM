@@ -34,7 +34,8 @@ if $tmux_bin -L turbomicm has-session -t tier2-$run 2>/dev/null; then
   echo "quit: $(date '+%H:%M:%S')"
   $tmux_bin -L turbomicm kill-session -t tier2-$run
 fi
-dirty=$(git -C $dir --no-optional-locks status --porcelain)
+# PROMPT.md is tracked in some Tier 1 repositories, where it shows the Tier 2 prompt as a change
+dirty=$(git -C $dir --no-optional-locks status --porcelain | command grep -v -x -E ' M PROMPT.md' || true)
 [[ -z $dirty ]] || { echo "STOP: $run's working tree is not clean:"; echo $dirty; exit 1; }
 git -C $repo fetch -q $dir main:tier2/$model/$effort
 echo "collected: tier2/$model/$effort at $(git -C $repo log --oneline -1 tier2/$model/$effort)"

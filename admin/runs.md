@@ -574,7 +574,7 @@ Calibration on this machine
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | 2026-10-22 17:58–18:33 | `7af0738` | done, verified, timed |
 | sol-high | gpt-6.1-sol | high | `1d944f4` | Codex CLI 0.163.0, interactive | 2026-10-22 19:20–20:34 | `07848a8` | done, verified, timed |
 | luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | 2026-10-22 21:11–21:40 | `3562d5a` | done, verified, timed |
-| luna-xhigh | gpt-6-luna | xhigh | `ada55d5` | Codex CLI 0.163.0, interactive | 2026-10-22 22:20– | | running |
+| luna-xhigh | gpt-6-luna | xhigh | `ada55d5` | Codex CLI 0.163.0, interactive | 2026-10-22 22:20–22:55 | `1ad13ab` | done, verified, timed |
 | luna-high | gpt-6-luna | high | `d3c2480` | Codex CLI 0.163.0, interactive | | | set up |
 
 ## Tier 2: astra-max
@@ -1071,6 +1071,59 @@ Calibration on this machine
 - luna-xhigh's Tier 1 benchmark times each group's setup inside its timer (its
   symbolic build, allocations, and rate constants, once per group), which the
   analysis pass of Tier 1 is to measure.
+- Progress, from Claude Code's read-only checks every 20 minutes: at 20
+  minutes, no commit yet, one context compaction (22:39:19), and the five
+  disclosed scenarios passing at 14.01–14.25 digits; the turn ended before the
+  40-minute check. At its start it looked for instruction files with
+  `rg --files -g 'AGENTS.md' .. ../.. ../../..`, which walks the parent folders,
+  other runs' directories included, but lists only files of that name: it
+  found none, printed nothing, and read no other file outside its directory
+  (the compliance scan now recognizes such searches). Otherwise the scan found
+  nothing outside the run directory and its inputs.
+- Session end: the one turn ended at 22:55:57 with DONE (35 min 44 s from the
+  goal), with one context compaction and no warning; Codex showed "Goal
+  achieved (35m)". Every turn context shows gpt-6-luna at xhigh, approval
+  `never`, sandbox `danger-full-access`. Claude Code quit Codex (23:06:20) and
+  collected and archived it with `admin/collect_tier2.sh` (which now allows the
+  tracked PROMPT.md's change, the Tier 2 prompt, which the agent left
+  uncommitted, as it said).
+- Final commit `1ad13ab` (22:55), 1 commit after `ada55d5`, "Add
+  mechanism-specialized Tier 2 solver": 11 files changed, 1,215 lines added and
+  136 removed (its generator `tools/generate.py`, 524 lines added; the
+  benchmark and scenario drivers in `src/ts1_bench.c`, 310). Collected as
+  `tier2/luna/xhigh`.
+- Tokens: 571,245 total; input 433,774 (plus 37,521,792 cached); output 137,471
+  (74,114 reasoning). Codex's usage window stayed at 4 %.
+- Other load during the session: Claude Code's read-only progress checks and
+  writing of the exercise script. No builds, tests, or timing by the
+  experimenter.
+- Self-reported, not yet verified: both compilers pass the 662 cases (18 N/A,
+  as in Tier 1), its generator tests, and every disclosed scenario; 9,975 ms at
+  18 threads against 10,721 ms for its Tier 1 solver and 12,673 ms for MICM, and
+  47,993 against 58,590 and 137,280 ms on one; clean builds of 62 s.
+- Transcript archived as `transcripts/tier2/luna-xhigh.jsonl.gz` (2,247 lines,
+  5.0 MB). The credential scan's one match was inside encrypted content.
+- Verified, 23:06–23:12, with `admin/verify_tier2.py`
+  (`results/2026-10-22-tier2-luna-xhigh-verification`): both compilers build
+  without warnings (clean builds 67.7 s with clang, 63.3 s with gcc-15, most of
+  it compiling the generated TS1 source); 662 PASS, 0 FAIL, 18 N/A with each
+  (as in Tier 1); the Tier 1 TS1 gate passes (1.77e-13, 2.33e-13);
+  bin/ts1_bench_specialized passes on the seed-2026 cells (2.15e-13, 2.42e-13)
+  and the undisclosed input (1.61e-13, 1.91e-13), with MICM's default
+  grouping's 16,200 internal steps; `make test-specialized` passes (3 checks);
+  the day-night gate passes on all ten scenarios with both compilers, 13.99 to
+  14.31 digits overall and at least 13.31 per species, with MICM's internal
+  steps exactly; the audit's three matches are a test variable named
+  `vector_size`, as in Tier 1. Generated C for TS1: `build/generated/ts1.c`,
+  48,068 lines, 2.40 MB.
+- Timed, 23:22–23:37, provisionally at 18 threads (5 rounds, the undisclosed
+  input, after 10 idle minutes; all 65 runs pass the gate): specialized
+  10,040.4 ms; its generic 10,734.3 ms and its Tier 1 commit's 10,750.0 ms
+  (built with `OPENMP_CFLAGS` and `OPENMP_LDFLAGS` on the make command line);
+  MICM 11,627.6, 10,407.3, and 4,340.3 ms; the seven earlier entries'
+  specialized solvers 2,018.7 to 5,395.8 ms. Specialization gains 1.07 times
+  over its own generic solver, the least; 1.16 times MICM's default, 0.43 times
+  its fastest.
 
 # Tier 3
 
