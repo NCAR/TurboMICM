@@ -32,6 +32,7 @@ below.
 | `transcripts/tier2/sol-high.jsonl.gz` | Tier 2 sol-high | Codex CLI 0.163.0 | `01a165ea-3043-75a0-876c-f74b06d91fbf` | 3.6 MB |
 | `transcripts/tier2/luna-max.jsonl.gz` | Tier 2 luna-max | Codex CLI 0.163.0 | `01a16650-05af-7cf2-b421-d5800f93e165` | 4.3 MB |
 | `transcripts/tier2/luna-xhigh.jsonl.gz` | Tier 2 luna-xhigh | Codex CLI 0.163.0 | `01a1668f-0595-78a2-bb16-308108077787` | 5.0 MB |
+| `transcripts/tier2/luna-high.jsonl.gz` | Tier 2 luna-high | Codex CLI 0.163.0 | `01a166d7-4ede-7b73-aff3-adb459fa7c00` | 2.8 MB |
 
 ## Tier 3 runs
 
