@@ -11,10 +11,13 @@ same day (`prompt.v1`). On 2026-10-22 the SSE chose the arms, all nine Tier 1
 entrants, and their order, and the runs moved to a second machine (below);
 `prompt.v2` is the template for that machine. All nine runs ended between
 2026-10-22 09:58 and 2026-10-23 00:09, and every entry passes the whole gate
-with both compilers. The ranking at 18 threads, the measured exercises, and
-the blind review were done on 2026-10-23 (see Results, below); the session at
-one thread follows. The run log is `admin/runs.md`, under "Tier 2"; the wiki
-has Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
+with both compilers. The ranking at 18 threads and at one thread, the
+measured exercises, and the blind review were done on 2026-10-23 (see
+Results, below). Tier 2 is complete, apart from Fable's review: the design
+names Opus and Fable, Fable was at its usage limit, and two Opus sessions
+reviewed instead. Fable's would be a third report. The run log is
+`admin/runs.md`, under "Tier 2"; the wiki has Tier-2-Design, Tier-2-Prompt,
+and Tier-2-Results.
 
 This directory mirrors the committed files of the Tier 2 run root,
 `ODE/benchmarks/tier2`; keep the two identical (`diff -r`), except for this
@@ -105,6 +108,6 @@ Both fixed on 2026-10-22, before any Tier 2 run, in `~/NSF-NCAR/.tier2-heldout/`
 | Folder | Contents |
 |---|---|
 | `results/2026-10-22-tier2-<run>-verification`, `results/2026-10-23-tier2-luna-high-verification` | each entry's verification, with a provisional timing session for the first eight |
-| `results/2026-10-23-tier2-ranking` | the ranking: all nine entries, MICM's three programs, and each entry's generic solver and Tier 1 build, in one session at 18 threads (and at one thread, to follow) |
+| `results/2026-10-23-tier2-ranking` | the ranking: all nine entries, MICM's three programs, and each entry's generic solver (and Tier 1 build), in one session at 18 threads and one at one thread |
 | `results/2026-10-23-tier2-exercises` | the review's three exercises, measured on every entry |
 | `results/2026-10-23-tier2-blind-review` | the blind review: procedure, key, the two reports, scores, and ranks |

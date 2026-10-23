@@ -1287,6 +1287,31 @@ Calibration on this machine
     still at its limit at 02:09; its report waits for the limit, or for the
     SSE's word on usage credits.
 
+## Tier 2: the session at one thread
+
+- 02:11:16 to 04:30:13 (`results/2026-10-23-tier2-ranking/1-thread`): 21
+  programs (MICM's three; each entry's specialized and generic benchmarks), 5
+  rotating rounds, 105 runs on the undisclosed ranking input, all passing the
+  gate. The load audit's 139 samples show AC power throughout and no other
+  process above a quarter of a core.
+- Medians of the specialized benchmarks, ms: astra-xhigh 26,471.8; sol-max
+  30,457.8; sol-high 34,725.6; sol-xhigh 35,336.8; astra-max 36,498.4;
+  astra-high 41,029.9; luna-xhigh 47,118.1; luna-max 52,228.7; luna-high
+  89,760.2. MICM: 133,042.2 by default, 124,364.8 with 32-cell groups, and
+  48,693.8 with vector8 and 32-cell groups.
+- Every adjacent pair kept its order in all five rounds; the entries' spreads
+  have a median of 0.75 %.
+- Against 18 threads: sol-high passes sol-xhigh (1.8 %), astra-max leads
+  astra-high by 12 % (tied at 18 threads), and luna-xhigh rises from ninth to
+  seventh. Its specialized solver scales only 4.7 times from 1 to 18 threads;
+  the Astra and Sol solvers scale 11.3 to 13.1 times, and MICM 10.4 to 10.9
+  times.
+- Other load: Claude Code wrote documents and the wiki and made commits. No
+  builds, tests, or agents ran.
+- 04:31: Fable was still at its limit. Tier 2 is complete apart from its
+  review, a third report, which waits for the limit to lift or for the SSE to
+  allow usage credits.
+
 # Tier 3
 
 Launch record for the Tier 3 runs (algorithm design; see `tier3/README.md`).

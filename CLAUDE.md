@@ -222,23 +222,24 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
 - **The M5 Pro's MICM** (e15898ce, built 2026-10-22) passes its 67 tests, gives
   the same 680-case list, and reproduces the M5's TS1 results and the day-night
   calibration exactly.
-- **Status (2026-10-23, 02:20):** all nine runs done (2026-10-22 09:58 to
-  2026-10-23 00:09), collected, archived, verified (every entry passes the
-  whole gate with both compilers), and ranked at 18 threads
-  (`results/2026-10-23-tier2-ranking/18-threads`): astra-xhigh 2,049 ms (5.95
-  times MICM's default, 2.30 times its vector8-g32), then sol-max, sol-xhigh,
-  sol-high, astra-high and astra-max (tied), luna-max, luna-high, luna-xhigh.
-  Exercises measured (`results/2026-10-23-tier2-exercises`): all nine pass (a)
-  and (b), and (c), Chapman and CB5 within 3.4e-14 of MICM. Blind review
-  (`results/2026-10-23-tier2-blind-review`): two fresh Opus sessions (Fable at
-  its usage limit; a deviation), both rank sol-xhigh first; totals of 60:
-  sol-xhigh 47, astra-high 46, sol-max and astra-max 44, astra-xhigh 41,
-  sol-high 39, luna-max 31, luna-xhigh and luna-high 24. Running: the 1-thread
-  session from 02:11 (tmux `tier2-timing-1`, out
-  `~/NSF-NCAR/tier2-work/timing/ranking-1`, about 2.2 h). Still to do: copy it
-  to `results/2026-10-23-tier2-ranking/1-thread` and publish it; Fable's
-  review as a third report when its limit allows (`tier2/review/run-review.sh
-  fable "I H G F E D C B A" REVIEW OUT fable`).
+- **Status: complete (2026-10-23, 04:40).** All nine runs done (2026-10-22 09:58
+  to 2026-10-23 00:09), collected, archived, verified (every entry passes the
+  whole gate with both compilers), and ranked (`results/2026-10-23-tier2-ranking`):
+  - At 18 threads: astra-xhigh 2,049 ms (5.95 times MICM's default, 2.30 times
+    its vector8-g32), then sol-max, sol-xhigh, sol-high, astra-high and
+    astra-max (tied), luna-max, luna-high, luna-xhigh.
+  - At 1 thread: astra-xhigh 26.5 s (5.03 times), sol-max, sol-high,
+    sol-xhigh, astra-max, astra-high, luna-xhigh, luna-max, luna-high.
+  - Exercises measured (`results/2026-10-23-tier2-exercises`): all nine pass
+    (a), (b), and (c), Chapman and CB5 within 3.4e-14 of MICM.
+  - Blind review (`results/2026-10-23-tier2-blind-review`): two fresh Opus
+    sessions, a deviation since Fable was at its usage limit. Both rank
+    sol-xhigh first. Totals of 60: sol-xhigh 47, astra-high 46, sol-max and
+    astra-max 44, astra-xhigh 41, sol-high 39, luna-max 31, luna-xhigh and
+    luna-high 24.
+  - Open: Fable's review, a third report, when its limit lifts or the SSE
+    allows usage credits:
+    `tier2/review/run-review.sh fable "I H G F E D C B A" ~/NSF-NCAR/tier2-work/blind-review/REVIEW ~/NSF-NCAR/tier2-work/blind-review fable`.
 - **Findings so far:** astra-high's and sol-xhigh's outputs are byte-identical
   (convergence, checked: independent generators, no cross-reading); luna-high's
   scenario statistics count only the last step (a reporting defect); the
