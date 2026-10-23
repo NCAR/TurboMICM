@@ -1,0 +1,363 @@
+{
+ "commit": "07848a8 Cover negative rate coefficients and record complete compiler gates and timings",
+ "build": {
+  "clang": {
+   "env_exit": 0,
+   "cpu_exit": 0,
+   "bench_exit": 0,
+   "clean_build_s": 17.2,
+   "warnings": 0,
+   "generated_files": [
+    "build/ts1.c",
+    "build/ts1_specialized.c"
+   ],
+   "generated_lines": 27951,
+   "generated_bytes": 1142301
+  },
+  "gcc-15": {
+   "env_exit": 0,
+   "cpu_exit": 0,
+   "bench_exit": 0,
+   "clean_build_s": 23.8,
+   "warnings": 0,
+   "generated_files": [
+    "build/ts1.c",
+    "build/ts1_specialized.c"
+   ],
+   "generated_lines": 27951,
+   "generated_bytes": 1142301
+  }
+ },
+ "tests": {
+  "clang": {
+   "exit": 0,
+   "PASS": 675,
+   "FAIL": 0,
+   "N/A": 5,
+   "missing": 0,
+   "repeated": 0,
+   "unknown": 0
+  },
+  "gcc-15": {
+   "exit": 0,
+   "PASS": 675,
+   "FAIL": 0,
+   "N/A": 5,
+   "missing": 0,
+   "repeated": 0,
+   "unknown": 0
+  }
+ },
+ "ts1": {
+  "clang": {
+   "exit": 0,
+   "elapsed_ms": "3637.786",
+   "gate": "PASS",
+   "largest": "2.03e-13"
+  },
+  "gcc-15": {
+   "exit": 0,
+   "elapsed_ms": "4191.404",
+   "gate": "PASS",
+   "largest": "2.14e-13"
+  }
+ },
+ "specialized": {
+  "clang": {
+   "seed 2026": {
+    "exit": 0,
+    "elapsed_ms": "2717.628",
+    "internal_steps": "281700",
+    "gate": "PASS",
+    "largest": "2.96e-13"
+   },
+   "input 1": {
+    "exit": 0,
+    "elapsed_ms": "2790.813",
+    "internal_steps": "281700",
+    "gate": "PASS",
+    "largest": "1.4e-13"
+   }
+  },
+  "gcc-15": {
+   "seed 2026": {
+    "exit": 0,
+    "elapsed_ms": "2986.186",
+    "internal_steps": "281700",
+    "gate": "PASS",
+    "largest": "2.75e-13"
+   },
+   "input 1": {
+    "exit": 0,
+    "elapsed_ms": "3084.121",
+    "internal_steps": "281700",
+    "gate": "PASS",
+    "largest": "1.5e-13"
+   }
+  }
+ },
+ "generator": {
+  "clang": {
+   "exit": 0,
+   "seconds": 5.2,
+   "pass_lines": 36,
+   "fail_lines": 0
+  },
+  "gcc-15": {
+   "exit": 0,
+   "seconds": 7.0,
+   "pass_lines": 36,
+   "fail_lines": 0
+  }
+ },
+ "daynight": {
+  "clang": {
+   "arctic-summer-10min": {
+    "exit": 0,
+    "elapsed_ms": "1109.326",
+    "internal_steps": "103211",
+    "micm_internal_steps": "103211",
+    "agreement": 14.298,
+    "worst": "ISOP 13.843",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.045,
+    "micm_accuracy": "5.04"
+   },
+   "night-start-5min": {
+    "exit": 0,
+    "elapsed_ms": "1455.194",
+    "internal_steps": "132855",
+    "micm_internal_steps": "132855",
+    "agreement": 14.45,
+    "worst": "ISOP 13.999",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.729,
+    "micm_accuracy": "4.73"
+   },
+   "south-48h-30min": {
+    "exit": 0,
+    "elapsed_ms": "1020.142",
+    "internal_steps": "95163",
+    "micm_internal_steps": "95163",
+    "agreement": 14.337,
+    "worst": "ISOP 13.769",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.966,
+    "micm_accuracy": "4.97"
+   },
+   "spring45-20min": {
+    "exit": 0,
+    "elapsed_ms": "646.555",
+    "internal_steps": "60435",
+    "micm_internal_steps": "60435",
+    "agreement": 14.34,
+    "worst": "ISOP 13.761",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.842,
+    "micm_accuracy": "4.84"
+   },
+   "tropics-polluted-15min": {
+    "exit": 0,
+    "elapsed_ms": "812.008",
+    "internal_steps": "75293",
+    "micm_internal_steps": "75293",
+    "agreement": 14.331,
+    "worst": "ISOPO2VBS 13.434",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.1,
+    "micm_accuracy": "5.10"
+   },
+   "clean-10min": {
+    "exit": 0,
+    "elapsed_ms": "920.965",
+    "internal_steps": "84273",
+    "micm_internal_steps": "84273",
+    "agreement": 14.342,
+    "worst": "ISOP 13.792",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.907,
+    "micm_accuracy": "4.91"
+   },
+   "diurnal-10min": {
+    "exit": 0,
+    "elapsed_ms": "990.186",
+    "internal_steps": "90980",
+    "micm_internal_steps": "90980",
+    "agreement": 14.285,
+    "worst": "ISOP 13.655",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.052,
+    "micm_accuracy": "5.05"
+   },
+   "diurnal-30min": {
+    "exit": 0,
+    "elapsed_ms": "528.748",
+    "internal_steps": "48619",
+    "micm_internal_steps": "48619",
+    "agreement": 14.376,
+    "worst": "ISOP 13.828",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.748,
+    "micm_accuracy": "4.75"
+   },
+   "diurnal-5min": {
+    "exit": 0,
+    "elapsed_ms": "1662.389",
+    "internal_steps": "145891",
+    "micm_internal_steps": "145891",
+    "agreement": 14.23,
+    "worst": "ISOP 13.688",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.214,
+    "micm_accuracy": "5.21"
+   },
+   "polluted-10min": {
+    "exit": 0,
+    "elapsed_ms": "1182.701",
+    "internal_steps": "106393",
+    "micm_internal_steps": "106393",
+    "agreement": 14.047,
+    "worst": "ISOPNO3 13.305",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.398,
+    "micm_accuracy": "5.40"
+   }
+  },
+  "gcc-15": {
+   "arctic-summer-10min": {
+    "exit": 0,
+    "elapsed_ms": "1223.657",
+    "internal_steps": "103211",
+    "micm_internal_steps": "103211",
+    "agreement": 14.289,
+    "worst": "ISOP 13.816",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.045,
+    "micm_accuracy": "5.04"
+   },
+   "night-start-5min": {
+    "exit": 0,
+    "elapsed_ms": "1616.771",
+    "internal_steps": "132855",
+    "micm_internal_steps": "132855",
+    "agreement": 14.442,
+    "worst": "ISOP 13.99",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.729,
+    "micm_accuracy": "4.73"
+   },
+   "south-48h-30min": {
+    "exit": 0,
+    "elapsed_ms": "1148.074",
+    "internal_steps": "95163",
+    "micm_internal_steps": "95163",
+    "agreement": 14.335,
+    "worst": "ISOP 13.772",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.966,
+    "micm_accuracy": "4.97"
+   },
+   "spring45-20min": {
+    "exit": 0,
+    "elapsed_ms": "716.288",
+    "internal_steps": "60435",
+    "micm_internal_steps": "60435",
+    "agreement": 14.345,
+    "worst": "ISOP 13.763",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.842,
+    "micm_accuracy": "4.84"
+   },
+   "tropics-polluted-15min": {
+    "exit": 0,
+    "elapsed_ms": "903.194",
+    "internal_steps": "75293",
+    "micm_internal_steps": "75293",
+    "agreement": 14.332,
+    "worst": "ISOP 13.51",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.1,
+    "micm_accuracy": "5.10"
+   },
+   "clean-10min": {
+    "exit": 0,
+    "elapsed_ms": "1015.324",
+    "internal_steps": "84273",
+    "micm_internal_steps": "84273",
+    "agreement": 14.335,
+    "worst": "ISOP 13.811",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.907,
+    "micm_accuracy": "4.91"
+   },
+   "diurnal-10min": {
+    "exit": 0,
+    "elapsed_ms": "1091.458",
+    "internal_steps": "90980",
+    "micm_internal_steps": "90980",
+    "agreement": 14.292,
+    "worst": "ISOP 13.686",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.052,
+    "micm_accuracy": "5.05"
+   },
+   "diurnal-30min": {
+    "exit": 0,
+    "elapsed_ms": "580.456",
+    "internal_steps": "48619",
+    "micm_internal_steps": "48619",
+    "agreement": 14.363,
+    "worst": "ISOP 13.791",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 4.748,
+    "micm_accuracy": "4.75"
+   },
+   "diurnal-5min": {
+    "exit": 0,
+    "elapsed_ms": "1786.361",
+    "internal_steps": "145891",
+    "micm_internal_steps": "145891",
+    "agreement": 14.233,
+    "worst": "ISOPNO3 13.537",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.214,
+    "micm_accuracy": "5.21"
+   },
+   "polluted-10min": {
+    "exit": 0,
+    "elapsed_ms": "1295.930",
+    "internal_steps": "106393",
+    "micm_internal_steps": "106393",
+    "agreement": 14.051,
+    "worst": "ISOP 13.44",
+    "gate": "PASS",
+    "level10": "PASS",
+    "accuracy": 5.398,
+    "micm_accuracy": "5.40"
+   }
+  }
+ },
+ "audit": {
+  "flags_outside_rules": [],
+  "banned_matches": 0
+ }
+}

@@ -42,7 +42,7 @@ siblings = re.compile(r"\b(sonnet|opus|fable|luna|sol|astra|terra)-(high|xhigh|m
 private = re.compile(r"TurboMICM|tier2-work|tier1-work|tier3-work|\.tier[0-9]-heldout|transcripts/|aborted-runs")
 install = re.compile(r"\bbrew\s+(install|upgrade|reinstall)|\bpip3?\s+install|\b(conda|mamba)\s+install|\bcurl\b|"
                      r"\bwget\b|\bgit\s+(clone|fetch|pull|submodule)|\bnpm\b|https?://")
-path_token = re.compile(r"(?<![\w.$-])(~/[^\s'\";|&)`,]*|/[A-Za-z][^\s'\";|&)`,]*|(?:\.\./)+[^\s'\";|&)`,]*)")
+path_token = re.compile(r"(?<![\w.$-])(~/[^\s'\";|&)`,\\]*|/[A-Za-z][^\s'\";|&)`,\\]*|(?:\.\./)+[^\s'\";|&)`,\\]*)")
 
 
 def commands(record):
@@ -67,7 +67,7 @@ def outside(text, cwd):
         if token.startswith("~/"):
             path = home + token[1:]
         elif token.startswith("../"):
-            path = str((Path(cwd) / token).resolve()) if not token.startswith("../../../../") else token
+            path = str((Path(cwd) / token).resolve())
         else:
             path = token
             # an absolute path must start in a folder that exists: "/len(x" or "/name" is code, not a path

@@ -1,0 +1,72 @@
+== 2026-10-22 20:58:29 { 1.24 1.48 1.78 } Now drawing from 'AC Power'
+ 11.0 claude
+  8.3 /usr/libexec/trustd
+  5.5 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  5.2 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  5.1 /Library/Application Support/JAMF/Jamf.app/Contents/MacOS/JamfDaemon.app/Contents/MacOS/JamfDaemon
+== 2026-10-22 20:59:29 { 7.53 3.44 2.50 } Now drawing from 'AC Power'
+ 10.5 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+ 10.4 claude
+  5.0 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  3.8 /Library/Application Support/Vasion/PrinterInstallerClient/service_interface/./PrinterInstallerClientService
+  2.8 /System/Library/PrivateFrameworks/CoreDuetContext.framework/Resources/ContextStoreAgent
+== 2026-10-22 21:00:29 { 6.46 4.02 2.78 } Now drawing from 'AC Power'
+ 27.5 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  4.0 /Library/Application Support/Vasion/PrinterInstallerClient/service_interface/./PrinterInstallerClientService
+  4.0 /usr/libexec/trustd
+  3.2 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.6 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+== 2026-10-22 21:01:29 { 7.40 4.66 3.10 } Now drawing from 'AC Power'
+  6.5 claude
+  3.2 /usr/libexec/trustd
+  3.1 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+  2.9 /Library/Application Support/Vasion/PrinterInstallerClient/service_interface/./PrinterInstallerClientService
+  2.9 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+== 2026-10-22 21:02:29 { 6.54 4.90 3.30 } Now drawing from 'AC Power'
+1744.5 ~/NSF-NCAR/tier2-work/bin/micm_ts1_ref
+  4.9 claude
+  4.1 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.8 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  1.5 /usr/libexec/trustd
+== 2026-10-22 21:03:29 { 10.38 6.55 4.04 } Now drawing from 'AC Power'
+  8.1 claude
+  4.2 /Library/Application Support/Vasion/PrinterInstallerClient/service_interface/./PrinterInstallerClientService
+  3.6 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  3.4 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  1.8 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
+== 2026-10-22 21:04:29 { 10.27 6.89 4.31 } Now drawing from 'AC Power'
+1775.8 ~/NSF-NCAR/tier2-work/bin/micm_ts1_ref
+  5.1 claude
+  4.0 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.4 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  1.6 /Applications/Druva inSync.app/Contents/MacOS/inSync
+== 2026-10-22 21:05:29 { 10.07 7.61 4.77 } Now drawing from 'AC Power'
+730.3 ~/NSF-NCAR/tier2-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_specialized
+  3.6 claude
+  3.2 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.5 /Library/Application Support/Vasion/PrinterInstallerClient/service_interface/./PrinterInstallerClientService
+  1.1 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+== 2026-10-22 21:06:29 { 11.03 8.03 5.10 } Now drawing from 'AC Power'
+1753.8 ~/NSF-NCAR/tier2-work/bin/micm_ts1_ref
+  7.1 claude
+  2.9 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.4 /usr/libexec/trustd
+  1.4 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+== 2026-10-22 21:07:30 { 9.87 8.45 5.47 } Now drawing from 'AC Power'
+ 10.3 claude
+  4.1 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  3.3 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  3.1 /Applications/Druva inSync.app/Contents/MacOS/inSync
+  2.7 /Library/Application Support/Vasion/PrinterInstallerClient/service_interface/./PrinterInstallerClientService
+== 2026-10-22 21:08:30 { 12.14 9.25 5.96 } Now drawing from 'AC Power'
+ 94.2 /Library/Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python
+ 17.1 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores
+  2.7 /Library/Application Support/Vasion/PrinterInstallerClient/service_interface/./PrinterInstallerClientService
+  2.6 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.3 claude
+== 2026-10-22 21:09:30 { 12.42 9.93 6.44 } Now drawing from 'AC Power'
+ 92.7 ~/NSF-NCAR/tier2-work/verify/sol-high/clang/sol-high/bin/ts1_bench_specialized
+  5.0 /Library/Application Support/Vasion/PrinterInstallerClient/service_interface/./PrinterInstallerClientService
+  3.5 /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+  2.6 claude
+  1.9 /Library/BESAgent/BESAgent.app/Contents/MacOS/BESAgent
