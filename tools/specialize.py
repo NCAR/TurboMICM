@@ -8,6 +8,8 @@ import argparse
 from pathlib import Path
 
 from configure import normalize, reorder, emit_c, number
+from compact_chemistry import emit as emit_compact_chemistry
+from compact_linear import emit as emit_compact_linear
 
 
 def symbolic(mech):
@@ -29,18 +31,26 @@ def at(array, index):
 
 
 class Emitter:
-    def __init__(self, batch, width=0, tile=4):
+    def __init__(self, batch, width=0, tile=0, tiled_matrix=True):
         self.lines = []
         self.batch = batch
         self.width = width
         self.tile = tile
+        self.tiled_matrix = tiled_matrix
+        self.nnz = 0
+
+    def at(self, array, index):
+        if array == 'a' and self.tile and self.tiled_matrix:
+            return f'a[base * {self.nnz} + {index} * (end - base) + c - base]'
+        return at(array, index)
 
     def add(self, *lines):
         self.lines.extend(lines)
 
-    def state_width(self, fallback):
+    def state_width(self, fallback, returns=False):
         if self.width:
-            self.add(f'    if (s->cells != {self.width}) {{ {fallback}; return; }}',
+            result = f'return {fallback};' if returns else f'{fallback}; return;'
+            self.add(f'    if (s->cells != {self.width}) {{ {result} }}',
                      f'    const size_t nc = {self.width};')
         else:
             self.add('    const size_t nc = s->cells;')
@@ -87,10 +97,10 @@ def chemistry(e, mech, index):
     e.begin_tiles()
     jobs = []
     for ri, r in enumerate(mech['reactions']):
-        job = [f'double v = {at("rates", ri)};']
-        job += [f'v *= {at("y", i)};' for i in r['reactants']]
-        job += [f'{at("f", i)} -= v;' for i in r['reactants']]
-        job += [f'{at("f", i)} += {number(v)} * v;' for i, v in r['products']]
+        job = [f'double v = {e.at("rates", ri)};']
+        job += [f'v *= {e.at("y", i)};' for i in r['reactants']]
+        job += [f'{e.at("f", i)} -= v;' for i in r['reactants']]
+        job += [f'{e.at("f", i)} += {number(v)} * v;' for i, v in r['products']]
         jobs.append(job)
     e.loops(jobs)
     e.end_tiles()
@@ -111,11 +121,11 @@ def chemistry(e, mech, index):
             skip = rr.index(col)
             for _ in range(rr.count(col)):
                 others = [i for j, i in enumerate(rr) if j != skip]
-                job = [f'double v = {at("rates", ri)};']
-                job += [f'v *= {at("y", i)};' for i in others]
-                job += [f'{at("a", index[i, col])} += v;' for i in others]
-                job += [f'{at("a", index[col, col])} += v;']
-                job += [f'{at("a", index[i, col])} -= {number(v)} * v;' for i, v in r['products']]
+                job = [f'double v = {e.at("rates", ri)};']
+                job += [f'v *= {e.at("y", i)};' for i in others]
+                job += [f'{e.at("a", index[i, col])} += v;' for i in others]
+                job += [f'{e.at("a", index[col, col])} += v;']
+                job += [f'{e.at("a", index[i, col])} -= {number(v)} * v;' for i, v in r['products']]
                 jobs.append(job)
     e.loops(jobs)
     e.end_tiles()
@@ -128,26 +138,26 @@ def linear(e, mech, index, reciprocal):
           '{', '    (void)m;')
     e.matrix_width('chem_alpha_minus_jacobian(m, cells, a, alpha)')
     e.begin_tiles()
-    e.loops([[f'{at("a", index[i, i])} += alpha;'] for i in range(n)])
+    e.loops([[f'{e.at("a", index[i, i])} += alpha;'] for i in range(n)])
     e.end_tiles()
     e.add('}', 'static ChemStatus sp_factor(const ChemMechanism *m, size_t cells, double *restrict a)',
           '{', '    (void)m;')
     e.matrix_width('chem_factor(m, cells, a)', returns=True)
     e.begin_tiles()
     for i in range(n):
-        pivot = at('a', index[i, i])
+        pivot = e.at('a', index[i, i])
         e.add(f'    for ({e.cell_range}) if ({pivot} == 0 || !isfinite({pivot})) return CHEM_SINGULAR;')
         if reciprocal:
             e.loops([[f'{pivot} = 1.0 / {pivot};']])
         jobs = []
         for j in range(i + 1, n):
             if (j, i) in index:
-                jobs.append([f'{at("a", index[j, i])} *= ' + (pivot if reciprocal else f'1.0 / {pivot}') + ';'])
+                jobs.append([f'{e.at("a", index[j, i])} *= ' + (pivot if reciprocal else f'1.0 / {pivot}') + ';'])
         for k in range(i + 1, n):
             if (i, k) in index:
                 for j in range(i + 1, n):
                     if (j, i) in index:
-                        jobs.append([f'{at("a", index[j, k])} -= {at("a", index[j, i])} * {at("a", index[i, k])};'])
+                        jobs.append([f'{e.at("a", index[j, k])} -= {e.at("a", index[j, i])} * {e.at("a", index[i, k])};'])
         e.loops(jobs)
     e.end_tiles()
     e.add('    return CHEM_OK;', '}',
@@ -157,13 +167,13 @@ def linear(e, mech, index, reciprocal):
     e.begin_tiles()
     jobs = []
     for i in range(n):
-        terms = [f'v -= {at("a", index[i, j])} * {at("x", j)};' for j in range(i) if (i, j) in index]
+        terms = [f'v -= {e.at("a", index[i, j])} * {e.at("x", j)};' for j in range(i) if (i, j) in index]
         if terms:
-            jobs.append([f'double v = {at("x", i)};', *terms, f'{at("x", i)} = v;'])
+            jobs.append([f'double v = {e.at("x", i)};', *terms, f'{e.at("x", i)} = v;'])
     for i in reversed(range(n)):
-        terms = [f'v -= {at("a", index[i, j])} * {at("x", j)};' for j in range(i + 1, n) if (i, j) in index]
+        terms = [f'v -= {e.at("a", index[i, j])} * {e.at("x", j)};' for j in range(i + 1, n) if (i, j) in index]
         operator = '*' if reciprocal else '/'
-        jobs.append([f'double v = {at("x", i)};', *terms, f'{at("x", i)} = v {operator} {at("a", index[i, i])};'])
+        jobs.append([f'double v = {e.at("x", i)};', *terms, f'{e.at("x", i)} = v {operator} {e.at("a", index[i, i])};'])
     e.loops(jobs)
     e.end_tiles()
     e.add('}')
@@ -225,9 +235,9 @@ def rate_formula(r):
 
 def rates(e, mech, prefix):
     e.add(f'ChemStatus {prefix}_update_rates(ChemState *s)', '{',
-          f'    if (!s || !s->mechanism || s->mechanism->data != &{prefix}_data) return CHEM_INVALID;',
-          *( [f'    if (s->cells != {e.width}) return chem_update_rates(s);', f'    const size_t nc = {e.width};'] if e.width else ['    const size_t nc = s->cells;']),
-          '    const double *restrict custom = s->custom;',
+          f'    if (!s || !s->mechanism || s->mechanism->data != &{prefix}_data) return CHEM_INVALID;')
+    e.state_width('chem_update_rates(s)', returns=True)
+    e.add('    const double *restrict custom = s->custom;',
           '    double *restrict rates = s->rates;', '    (void)custom;',
           '    for (size_t c = 0; c < nc; ++c)',
           '        if (!(s->temperature[c] > 0) || !(s->pressure[c] >= 0)',
@@ -243,13 +253,43 @@ def rates(e, mech, prefix):
           '        if (!isfinite(rates[i])) return CHEM_NONFINITE;', '    return CHEM_OK;', '}')
 
 
-def generate(mech, prefix='specialized', batch=1, width=0, reciprocal=True, fused_stages=True, tile=4):
-    e = Emitter(batch, width, tile)
+def error_norm(e, mech):
+    # Stages are dead after the candidate and estimator have been assembled.
+    # Store normalized errors there, then retain the exact scalar sum of squares.
+    n = len(mech['species'])
+    e.add('static double sp_error(const ChemState *s, const double *restrict old,',
+          '    const double *restrict candidate, const double *restrict error)', '{',
+          '    const size_t nc = s->cells;', '    double *restrict work = s->stages;',
+          f'    for (size_t i = 0; i < {n}; ++i) {{',
+          '        const double atol = s->atol[i], rtol = s->rtol;',
+          '        #pragma omp simd', '        for (size_t c = 0; c < nc; ++c) {',
+          '            size_t j = i * nc + c;',
+          '            double ymax = fmax(fabs(old[j]), fabs(candidate[j]));',
+          '            work[j] = error[j] / (atol + rtol * ymax);', '        }', '    }',
+          '    double sum = 0;', f'    for (size_t j = 0; j < {n} * nc; ++j) sum += work[j] * work[j];',
+          f'    return fmax(sqrt(sum / ({n} * nc)), 1e-10);', '}')
+
+
+def generate(mech, prefix='specialized', *, batch=1, width=0,
+             reciprocal=True, fused_stages=True, tile=0, tiled_matrix=True,
+             compact_linear=True, compact_chemistry=False, elimination_batch=4,
+             vector_error=True, wide_indices=True):
+    e = Emitter(batch, width, tile, tiled_matrix)
     e.add(emit_c(mech, prefix + '_data'), '#include "internal.h"', '#include <math.h>', '#include <string.h>')
     index = symbolic(mech)
-    chemistry(e, mech, index)
-    linear(e, mech, index, reciprocal)
+    e.nnz = len(index)
+    if compact_chemistry:
+        emit_compact_chemistry(e, mech, index)
+    else:
+        chemistry(e, mech, index)
+    if compact_linear:
+        emit_compact_linear(e, mech, index, reciprocal, elimination_batch, wide_indices)
+    else:
+        linear(e, mech, index, reciprocal)
     rates(e, mech, prefix)
+    if vector_error:
+        error_norm(e, mech)
+        e.add('#define CHEM_NORMALIZED_ERROR sp_error')
     if fused_stages:
         e.add('#define CHEM_FUSED_STAGES 1')
     e.add(f'#define CHEM_SOLVE {prefix}_solve', '#define CHEM_FORCING sp_forcing',
@@ -272,10 +312,20 @@ def main():
     p.add_argument('--fixed-width', type=int, default=0, help='constant cell width, with generic kernels for other widths; zero means dynamic')
     p.add_argument('--no-reciprocal-pivots', action='store_true', help='retain ordinary U diagonals instead of their reciprocals')
     p.add_argument('--no-fused-stages', action='store_true', help='use the generic stage vector loops')
-    p.add_argument('--tile', type=int, default=4, help='cells processed through each whole kernel at a time; zero disables tiling')
+    p.add_argument('--tile', type=int, default=0, help='cells processed through each whole kernel at a time; zero disables tiling')
+    p.add_argument('--matrix-layout', choices=['tiled', 'grouped'], default='tiled', help='layout of the generated sparse workspace')
+    p.add_argument('--compact-linear', dest='compact_linear', action='store_true', default=True, help='share short sparse update loops through constant operation tables')
+    p.add_argument('--compact-chemistry', action='store_true', help='share cell kernels between equal reaction shapes')
+    p.add_argument('--elimination-batch', type=int, default=4, help='number of lower rows sharing an upper factor load in compact LU')
+    p.add_argument('--unrolled-linear', dest='compact_linear', action='store_false', help='emit each elimination as a direct C statement')
+    p.add_argument('--scalar-error', action='store_true', help='use the generic scalar normalized-error calculation')
+    p.add_argument('--wide-indices', dest='wide_indices', action='store_true', default=True, help='use size_t instead of the smallest sufficient unsigned plan entries')
+    p.add_argument('--narrow-indices', dest='wide_indices', action='store_false', help='pack plan entries into the smallest sufficient unsigned integer type')
     a = p.parse_args()
     if not a.prefix.isidentifier() or not a.prefix.isascii():
         p.error('prefix must be an ASCII C identifier')
+    if a.elimination_batch < 1:
+        p.error('elimination-batch must be positive')
     if a.tile < 0:
         p.error('tile must be nonnegative')
     if a.fixed_width < 0:
@@ -286,7 +336,14 @@ def main():
     if not a.no_reorder:
         mech = reorder(mech)
     Path(a.output).parent.mkdir(parents=True, exist_ok=True)
-    Path(a.output).write_text(generate(mech, a.prefix, a.batch, a.fixed_width, not a.no_reciprocal_pivots, not a.no_fused_stages, a.tile))
+    source = generate(
+        mech, prefix=a.prefix, batch=a.batch, width=a.fixed_width,
+        reciprocal=not a.no_reciprocal_pivots, fused_stages=not a.no_fused_stages,
+        tile=a.tile, tiled_matrix=a.matrix_layout == 'tiled',
+        compact_linear=a.compact_linear, compact_chemistry=a.compact_chemistry,
+        elimination_batch=a.elimination_batch, vector_error=not a.scalar_error,
+        wide_indices=a.wide_indices)
+    Path(a.output).write_text(source)
 
 
 if __name__ == '__main__':

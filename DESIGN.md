@@ -113,7 +113,7 @@ compressed indices, and numeric storage. Clones own independent allocations.
 | Cells per state/group | 32 | benchmark `--group-size N`, or `CHEM_GROUP_SIZE` at build |
 | Threads | OpenMP maximum, capped by available groups | `--threads N`, OpenMP environment |
 | SIMD length | compiler choice | portable `omp simd`, no prescribed hardware width |
-| Group scheduling | static contiguous group assignment | OpenMP schedule in `bench.c` |
+| Group scheduling | static contiguous group assignment | `OMP_SCHEDULE` at runtime |
 | Species reordering | enabled for generated data | generator `--no-reorder` |
 
 Every positive group size and thread count is intended to preserve correctness;
@@ -192,3 +192,53 @@ extension. It retains each cell's initial custom values, scales every `j*`
 parameter before each step, refreshes rates, and solves without a warm-up.
 Consecutive groups have independent controllers. Timed segments end at snapshot
 boundaries; copying snapshots and writing both CSV outputs are excluded.
+
+| Specialization control | Default | Other settings |
+|---|---|---|
+| `GROUP_SIZE` | 32 | Any positive build-time group size; also runtime `--group-size N` |
+| `SPECIALIZE_WIDTH` | `GROUP_SIZE` | 0 generates kernels with dynamic strides; positive values specialize that width |
+| `SPECIALIZE_BATCH` | 1 | Any positive number of scalar jobs fused per cell loop |
+| Generator `--tile` | 0 | Any positive cell tile; 0 processes the full group at once |
+| Reciprocal pivots | enabled | `SPECIALIZE_FLAGS=--no-reciprocal-pivots` |
+| Three-stage vector fusion | enabled | `SPECIALIZE_FLAGS=--no-fused-stages` |
+| Stable Markowitz ordering | enabled | `SPECIALIZE_FLAGS=--no-reorder` |
+
+`SPECIALIZE_FLAGS` passes additional generator controls, for example
+`make SPECIALIZE_FLAGS='--tile 8 --no-fused-stages' bench`. Compiler, optimization,
+group size, and generator-option stamps prevent stale incremental builds.
+Every nonnegative tile and width, and every positive batch, retain the same
+chemistry and integration method. A tile that does not divide the group gets a
+short final tile. Tiling changes only chemistry and linear-algebra traversal;
+it never divides a group's adaptive error norm or controller.
+
+For performance experiments, emit `build/tuning/batchNAME_specialized.c` with
+`--prefix ts1` and selected options, then run `make build/tuning/benchNAME`.
+This target uses the same `CC` and `OPTFLAGS` as the other C builds.
+
+The default LU emitter uses immutable operation tables with four lower updates
+per shared upper load. It keeps the code small enough to reuse short SIMD loops.
+`--unrolled-linear` instead emits each operation as C. `--compact-chemistry`
+shares forcing/Jacobian kernels by reaction shape; the default emits reactions
+and derivative jobs directly. Both retain source accumulation order.
+
+| Additional generator control | Default | Alternative |
+|---|---|---|
+| LU emission | compact | `--unrolled-linear` |
+| LU lower updates per shared upper load | 4 | `--elimination-batch N`, any positive N |
+| Reaction emission | direct | `--compact-chemistry` |
+| Plan integer representation | `size_t` | `--narrow-indices`, smallest sufficient unsigned type |
+| Sparse workspace layout with nonzero tiles | tiled | `--matrix-layout grouped` |
+| Normalized error components | SIMD, then strict scalar sum of squares | `--scalar-error` |
+
+The SIMD error path stores normalized components in the completed stage
+workspace. It then evaluates `sum += component * component` in the original
+species/cell order, retaining the reference's sum-of-squares expression and
+rounding policy. Stage values are dead at that point and are rebuilt before
+every trial, including retries; the forcing saved for a retry remains intact.
+There is no extra allocation and no parallel reduction.
+
+In tiled sparse storage, each tile contains all sparse entries for its cells,
+while concentrations and stage vectors retain the public species-major layout.
+The final short tile uses its actual width, so the allocation remains exactly
+`nnz * cells`. A width mismatch takes the generic grouped-layout kernels
+consistently for Jacobian, alpha, factorization, and back substitution.

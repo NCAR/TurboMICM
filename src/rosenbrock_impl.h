@@ -5,6 +5,9 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
+#ifndef CHEM_NORMALIZED_ERROR
+#define CHEM_NORMALIZED_ERROR chem_normalized_error
+#endif
 #ifndef CHEM_SOLVE
 #define CHEM_SOLVE chem_solve
 #endif
@@ -152,7 +155,7 @@ static ChemStatus integrate(ChemState *s, const ChemRosenbrock *p, double dt, Ch
                     size_t j = i * nc + c;
                     s->error[j] = s->candidate[j] - s->y[j];
                 }
-            double error = chem_normalized_error(s, s->y, s->candidate, s->error);
+            double error = CHEM_NORMALIZED_ERROR(s, s->y, s->candidate, s->error);
             ++stats->internal_steps;
             /* Inspect the state too: fmax follows C's NaN suppression rules. */
             if (!isfinite(error)) return CHEM_NONFINITE;
@@ -196,6 +199,7 @@ ChemStatus CHEM_SOLVE(ChemState *s, const ChemRosenbrock *p, double dt, ChemStat
     return status;
 }
 
+#undef CHEM_NORMALIZED_ERROR
 #undef CHEM_FUSED_STAGES
 #undef CHEM_SOLVE
 #undef CHEM_FORCING

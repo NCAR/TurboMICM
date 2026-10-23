@@ -56,8 +56,8 @@ static int read_scenario(const char *path, Scenario *s)
         char *value = trim(equal + 1);
         key = trim(key);
         unsigned field = 0;
-        if (!strcmp(key, "cells")) { field = 1; s->cells_path = relative_path(path, value); ok &= s->cells_path != NULL && *value; }
-        else if (!strcmp(key, "photolysis")) { field = 2; s->photo_path = relative_path(path, value); ok &= s->photo_path != NULL && *value; }
+        if (!strcmp(key, "cells")) { field = 1; free(s->cells_path); s->cells_path = relative_path(path, value); ok &= s->cells_path != NULL && *value; }
+        else if (!strcmp(key, "photolysis")) { field = 2; free(s->photo_path); s->photo_path = relative_path(path, value); ok &= s->photo_path != NULL && *value; }
         else if (!strcmp(key, "dt")) { field = 4; ok &= parse_double(value, &s->dt) && s->dt > 0; }
         else if (!strcmp(key, "steps")) { field = 8; ok &= parse_size(value, &s->steps) && s->steps > 0; }
         else if (!strcmp(key, "snapshot_every")) { field = 16; ok &= parse_size(value, &s->snapshot_every); }
@@ -158,7 +158,8 @@ int main(int argc, char **argv)
             if (!strcmp(arg, "--threads")) threads = value; else group_size = value;
         } else if (!strcmp(arg, "--rtol") || !strcmp(arg, "--atol")) {
             double value;
-            if (++i >= argc || !parse_double(argv[i], &value) || !(value > 0)) goto usage;
+            if (++i >= argc || !parse_double(argv[i], &value) || value < 0
+                || (!strcmp(arg, "--atol") && value == 0)) goto usage;
             if (!strcmp(arg, "--rtol")) rtol = value; else atol = value;
         } else if (path || arg[0] == '-') goto usage;
         else path = arg;
@@ -180,6 +181,7 @@ int main(int argc, char **argv)
     ng = cells / group_size + (cells % group_size != 0);
     if (threads > ng) threads = ng;
     omp_set_num_threads((int)threads);
+    if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_static, 0);
     if (chem_mechanism_create(&ts1_data, &m) != CHEM_OK) goto cleanup;
     groups = calloc(ng, sizeof(*groups));
     base = malloc(cells * (np + 1) * sizeof(double));
@@ -207,7 +209,7 @@ int main(int argc, char **argv)
     size_t begin = 0;
     for (size_t k = 0; k < ns; ++k) {
         double start = omp_get_wtime();
-        #pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(runtime)
         for (size_t g = 0; g < ng; ++g) {
             Group *group = &groups[g];
             size_t nc = group->cells;

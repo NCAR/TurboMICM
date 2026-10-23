@@ -21,6 +21,8 @@ CONFIGS = {
     'parameterized': 'parameterized/config.json',
     'checks': 'specialization_checks.json',
     'inert': 'inert.json',
+    'odd': 'specialization_checks.json',
+    'shapes': 'specialization_checks.json',
 }
 owner = C.CDLL(str(ROOT / 'build/specialized_tests.so'))
 
@@ -109,6 +111,19 @@ def check(prefix, config, cells):
                     assert getattr(a, key) == getattr(b, key), (prefix, step, key, getattr(a, key), getattr(b, key))
                 for i in range(data.species_count * cells):
                     close(lib.chem_concentrations(special)[i], lib.chem_concentrations(generic)[i], (prefix, cells, tight, step, i))
+        # The norm scratch reuses stages only after the estimator is complete.
+        # Exercise every method table to verify that stage reuse remains valid.
+        if cells in (7, 32):
+            for method in (2, 4, -4, 6):
+                parameters = lib.chem_rosenbrock_parameters(method)
+                parameters.max_steps = 10000
+                a, b = Stats(), Stats()
+                assert lib.chem_solve(generic, C.byref(parameters), .1, C.byref(a)) == 0
+                assert solve(special, C.byref(parameters), .1, C.byref(b)) == 0
+                for key, _ in Stats._fields_:
+                    assert getattr(a, key) == getattr(b, key), (prefix, method, key)
+                for i in range(data.species_count * cells):
+                    close(lib.chem_concentrations(special)[i], lib.chem_concentrations(generic)[i], (prefix, method, i))
         # Public argument checking must not dereference a missing state.
         assert solve(None, C.byref(params), 1, C.byref(Stats())) == 1
         assert rate(None) == 1

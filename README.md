@@ -117,3 +117,17 @@ the same C11/OpenMP flags as the Makefile. Create states with `mechanism_data`.
 `make` automatically regenerates TS1 and the configuration-file test mechanisms;
 generated C and objects live under ignored `build/` and are never hand-edited.
 See DESIGN.md for tuning controls and SPECIALIZATION.md for measured alternatives.
+
+`make test-scenarios` runs all five disclosed scenarios and scores their snapshots
+against MICM at level 10, then against the high-accuracy references for scale.
+For retained accuracy and timing evidence after building:
+
+```sh
+make micm-ref
+.conda/bin/python tools/evaluate.py --scenarios --benchmarks \
+  --repeats 3 --directory validation/local
+```
+
+This runs the programs sequentially, retains logs and CSVs, checks both benchmark
+outputs against MICM, and records results in `results.json`. Python orchestrates
+separate C executables; it is never involved in a solver or timed region.

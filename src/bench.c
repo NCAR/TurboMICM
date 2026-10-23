@@ -48,6 +48,7 @@ int main(int argc, char **argv)
     size_t ng = cells / group_size + (cells % group_size != 0);
     if (threads > ng) threads = ng;
     omp_set_num_threads((int)threads);
+    if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_static, 0);
     ChemMechanism *m = NULL;
     ChemStatus status = chem_mechanism_create(&ts1_data, &m);
     if (status != CHEM_OK) { fprintf(stderr, "%s\n", chem_status_string(status)); return 1; }
@@ -61,7 +62,7 @@ int main(int argc, char **argv)
     }
     if (!read_cells(positional[3], groups, cells, group_size)) goto cleanup;
     ChemRosenbrock parameters = chem_rosenbrock_parameters(3);
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(runtime)
     for (size_t g = 0; g < ng; ++g) {
         groups[g].status = chem_calculate_air_density(groups[g].state);
         if (groups[g].status == CHEM_OK) groups[g].status = update_rates(groups[g].state);
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
             groups[g].status = solve_step(groups[g].state, &parameters, dt, &warmup);
     }
     double start = omp_get_wtime();
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(runtime)
     for (size_t g = 0; g < ng; ++g) {
         Group *group = &groups[g];
         for (size_t i = 0; i < steps && group->status == CHEM_OK; ++i) {
