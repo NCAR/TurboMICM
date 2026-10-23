@@ -1,0 +1,120 @@
+{
+ "run": "sol-high",
+ "route": "benchmark programs",
+ "config_file": "configs/ts1.json",
+ "converter_lines": 84,
+ "driver_lines": 0,
+ "mechanisms": {
+  "chapman": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.032,
+   "generated_c_lines": 452,
+   "generated_c_bytes": 17090,
+   "build_exit": 0,
+   "build_s": 3.63,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 6.28e-16",
+   "specialized_vs_micm": "PASS 6.28e-16",
+   "notes": "Generator: median of 5 CLI runs of the Makefile's command (tools/specialize.py --prefix ts1 --batch 1 --fixed-width 32), Python start-up included; 0.5 ms in-process. build_s: incremental make bench after the swap (regenerates both C files, rebuilds the three programs); clean build 4.38 s. Generated C compiles alone in 0.23 s. With 4 cells the default build's specialized program runs the generic fallback kernels (generated for a fixed width of 32), hence bit-identical to generic. Supplementary build SPECIALIZE_WIDTH=4 (the Makefile's documented variable) runs the generated kernels: vs generic PASS 0 (bit-identical, same operation order), vs MICM PASS 6.28e-16; 0.109 ms against 0.228 ms generic (single runs). 4-cell protocol runs: generated kernels NOT used (probe at 4 cells: generic fallbacks called forcing=1098 jacobian=549 alpha=549 factor=549 solve=1647 rates=1 (549 = 540 timed + 9 warm-up internal steps); probe output byte-identical to bin/ts1_bench_specialized).",
+   "supplementary_specialize_width_4": {
+    "build_exit": 0,
+    "build_s": 3.38,
+    "generated_c_lines": 452,
+    "generated_c_bytes": 17078,
+    "specialized_vs_generic": "PASS 0",
+    "specialized_vs_micm": "PASS 6.28e-16",
+    "elapsed_ms": {
+     "generic": 0.228,
+     "specialized_default_build": 0.221,
+     "specialized_width_4": 0.109
+    }
+   },
+   "generated_kernels_used": false,
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.46e-15",
+    "specialized_vs_micm": "PASS 2.46e-15",
+    "generated_kernels_used": true,
+    "note": "Default build (make bench, width 32; incremental 3.41 s after the swap), 64 distinct cells = two 32-cell groups. Probe: 0 fallback calls; its output is byte-identical to bin/ts1_bench_specialized. Bit-identical to generic, as in the width-4 build: for this small mechanism the generated kernels keep the generic order of operations. Same result against micm-run64-g32. Single runs: 0.857 ms specialized against 1.211 ms generic."
+   }
+  },
+  "carbon_bond_5": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.041,
+   "generated_c_lines": 9685,
+   "generated_c_bytes": 352001,
+   "build_exit": 0,
+   "build_s": 6.2,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 4.58e-15",
+   "specialized_vs_micm": "PASS 4.58e-15",
+   "notes": "The 14 emissions (USER_DEFINED, empty reactant list) and negative yields (PAR) needed nothing special; the reader and generator accept them. Generator 8.5 ms in-process; clean build 6.94 s; generated C compiles alone in 2.80 s. As for chapman, the default build's specialized run at 4 cells uses the generic fallback kernels (bit-identical). SPECIALIZE_WIDTH=4 build runs the generated kernels: vs generic PASS 4.38e-15, vs MICM PASS 1.77e-15; 3.48 ms against 10.68 ms generic (single runs). 4-cell protocol runs: generated kernels NOT used (probe at 4 cells: generic fallbacks called forcing=1098 jacobian=549 alpha=549 factor=549 solve=1647 rates=1 (549 = 540 timed + 9 warm-up internal steps); probe output byte-identical to bin/ts1_bench_specialized).",
+   "supplementary_specialize_width_4": {
+    "build_exit": 0,
+    "build_s": 5.48,
+    "generated_c_lines": 9685,
+    "generated_c_bytes": 351989,
+    "specialized_vs_generic": "PASS 4.38e-15",
+    "specialized_vs_micm": "PASS 1.77e-15",
+    "elapsed_ms": {
+     "generic": 10.677,
+     "specialized_default_build": 10.62,
+     "specialized_width_4": 3.477
+    }
+   },
+   "generated_kernels_used": false,
+   "cells64": {
+    "specialized_vs_generic": "PASS 2.56e-14",
+    "generic_vs_micm": "PASS 2.29e-14",
+    "specialized_vs_micm": "PASS 1.82e-14",
+    "generated_kernels_used": true,
+    "note": "Default build (incremental 6.29 s), two 32-cell groups. Probe: 0 fallback calls; output byte-identical to the real program. Unlike the 4-cell default run (bit-identical to generic), specialized now differs from generic in the last bits, the reciprocal-pivot LU. Same result against micm-run64-g32. Single runs: 42.5 ms specialized against 56.5 ms generic (1.33 times; the width-4 build was 3.1 times against generic at 4 cells)."
+   }
+  },
+  "carbon_bond_5_no_emissions": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.04,
+   "generated_c_lines": 9419,
+   "generated_c_bytes": 342035,
+   "build_exit": 0,
+   "build_s": 5.72,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 4.12e-15",
+   "specialized_vs_micm": "PASS 4.12e-15",
+   "notes": "Generator 8.4 ms in-process; clean build 6.82 s; generated C compiles alone in 2.48 s. Default build's specialized run at 4 cells uses the generic fallback kernels (bit-identical). SPECIALIZE_WIDTH=4 build: vs generic PASS 3.61e-15, vs MICM PASS 5.66e-15; 3.32 ms against 10.69 ms generic (single runs). 4-cell protocol runs: generated kernels NOT used (probe at 4 cells: generic fallbacks called forcing=1098 jacobian=549 alpha=549 factor=549 solve=1647 rates=1 (549 = 540 timed + 9 warm-up internal steps); probe output byte-identical to bin/ts1_bench_specialized).",
+   "supplementary_specialize_width_4": {
+    "build_exit": 0,
+    "build_s": 5.37,
+    "generated_c_lines": 9419,
+    "generated_c_bytes": 342023,
+    "specialized_vs_generic": "PASS 3.61e-15",
+    "specialized_vs_micm": "PASS 5.66e-15",
+    "elapsed_ms": {
+     "generic": 10.692,
+     "specialized_default_build": 10.193,
+     "specialized_width_4": 3.323
+    }
+   },
+   "generated_kernels_used": false,
+   "cells64": {
+    "specialized_vs_generic": "PASS 2.18e-14",
+    "generic_vs_micm": "PASS 2.28e-14",
+    "specialized_vs_micm": "PASS 2.69e-14",
+    "generated_kernels_used": true,
+    "note": "Default build (incremental 5.89 s), two 32-cell groups. Probe: 0 fallback calls; output byte-identical to the real program. Specialized differs from generic in the last bits (generated path). Same result against micm-run64-g32. Single runs: 42.4 ms specialized against 56.0 ms generic."
+   }
+  }
+ },
+ "entry_changes_needed": "",
+ "difficulties": "None blocking. The benchmark drivers are mechanism-generic (CSV columns and output come from the generated descriptor), so swapping configs/ts1.json was enough; the Makefile has no variable for the configuration path. One caveat for reading the protocol's results: make bench generates kernels for a fixed width of 32 cells (SPECIALIZE_WIDTH defaults to GROUP_SIZE) with generic fallbacks for any other width, so on the 4-cell problem the specialized program ran the generic kernels inside the generated Rosenbrock instantiation, and its specialized_vs_generic is bit-identical by construction. The generated kernels were exercised in a supplementary build with SPECIALIZE_WIDTH=4 (a documented Makefile variable, no entry change): all PASS against generic and MICM. The addendum run on 64 distinct cells (two full 32-cell groups) with the default build does use the generated kernels (probe: zero fallback calls) and passes everywhere. The converter omits per-species molecular weights (absent from canonical.json; the reader needs them only for SURFACE reactions). make env downloaded about 25 MB of conda-forge packages into the worktree's own package cache (the Makefile sets CONDA_PKGS_DIRS to .conda-pkgs), so the setup used the network once.",
+ "generated_kernels_evidence": "Code path: src/bench.c:26 sets group_size = CHEM_GROUP_SIZE (32, from GROUP_SIZE); lines 42-46 cap it at cells/threads unless --group-size is given; line 47 caps it at cells. With --threads 1: 4 cells -> one 4-cell group; 64 cells -> two 32-cell groups. The default build generates with --fixed-width 32, and each of the six generated kernels branches on the group width: sp_forcing \"if (s->cells != 32) { chem_forcing(s, y, f); return; }\", likewise sp_jacobian -> chem_negative_jacobian, sp_alpha -> chem_alpha_minus_jacobian, sp_factor -> chem_factor, sp_backsolve -> chem_linear_solve, ts1_update_rates -> chem_update_rates. Only the generated Rosenbrock loop (fused stages, SIMD error norm) runs in both cases. Runtime check (no debugger: macOS developer mode is off): probe/ compiles the unmodified build/ts1_specialized.c with a forced-include header renaming those six fallback calls to counting wrappers, links it like bin/ts1_bench_specialized, and reproduces its output byte for byte. Counts: at 4 cells every call falls back (forcing 1098, jacobian 549, alpha 549, factor 549, solve 1647, rates 1); at 64 cells none do (all 0), for all three mechanisms."
+}

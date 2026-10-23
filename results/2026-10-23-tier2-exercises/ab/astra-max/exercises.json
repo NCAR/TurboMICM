@@ -1,0 +1,54 @@
+{
+ "run": "astra-max",
+ "branch": "tier2/astra/max",
+ "config": "configs/ts1.json",
+ "baseline": {
+  "env": 0,
+  "build": 0,
+  "build_s": 19.2,
+  "agree": {
+   "pass": true,
+   "largest": "0"
+  }
+ },
+ "edits": {
+  "add": {
+   "edit": "appended a copy of reaction 342 (NO + O3 -> NO2 + O2), a second channel",
+   "make_bench": 0,
+   "build_s": 14.9,
+   "specialized_rebuilt": true,
+   "specialized_vs_generic": {
+    "pass": true,
+    "largest": "0"
+   },
+   "generic_changed": {
+    "pass": false,
+    "largest": "2.83e+11"
+   },
+   "specialized_changed": {
+    "pass": false,
+    "largest": "2.83e+11"
+   },
+   "verdict": "PASS"
+  },
+  "change": {
+   "edit": "multiplied A of reaction 342 (NO + O3 -> NO2 + O2) by 1.5",
+   "make_bench": 0,
+   "build_s": 14.8,
+   "specialized_rebuilt": true,
+   "specialized_vs_generic": {
+    "pass": true,
+    "largest": "0"
+   },
+   "generic_changed": {
+    "pass": false,
+    "largest": "1.62e+07"
+   },
+   "specialized_changed": {
+    "pass": false,
+    "largest": "1.62e+07"
+   },
+   "verdict": "PASS"
+  }
+ }
+}

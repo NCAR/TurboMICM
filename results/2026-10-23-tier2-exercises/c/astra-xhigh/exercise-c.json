@@ -1,0 +1,91 @@
+{
+ "run": "astra-xhigh",
+ "route": "benchmark programs",
+ "config_file": "configs/ts1.json",
+ "converter_lines": 119,
+ "driver_lines": 0,
+ "mechanisms": {
+  "chapman": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.031,
+   "generated_c_lines": 825,
+   "generated_c_bytes": 26439,
+   "build_exit": 0,
+   "build_s": 0.73,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 6.28e-16",
+   "specialized_vs_micm": "PASS 6.28e-16",
+   "generated_kernels_used": true,
+   "notes": "generator_s: tools/specialize.py, median of 5 runs (first run 0.04 s); generated_c_*: generated/ts1_specialized.c. The generic generator tools/generate.py (0.032 s) wrote generated/ts1.c, 185 lines, 6,269 bytes, for ts1_bench_cpu. make bench regenerated both sources, recompiled them and relinked the three TS1 programs; no warnings (-Wall -Wextra -Wpedantic). 540 internal steps, 0 rejected. Specialized output bitwise identical to generic. Rebuilt for the 64-cell runs in 0.72 s with byte-identical generated sources; the 4-cell results reproduced bitwise. Generated kernels used (4 cells): by the code path; the output equals the program's own --generic run bit for bit (same arithmetic order), but that path took 0.263 ms against 0.066 ms.",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.46e-15",
+    "specialized_vs_micm": "PASS 2.46e-15",
+    "generated_kernels_used": true,
+    "note": "1,080 internal steps, 0 rejected. micm-run64 and micm-run64-g32 are identical files. Code path as in generated_kernels_evidence. The specialized output is bitwise identical to the generic program's and to ts1_bench_specialized --generic, so here only time tells the paths apart: 0.637 ms against 2.721 ms (--generic) at 64 cells x 60 steps, and 210-215 ms against 856-885 ms over three alternating runs of 64 cells x 20,000 steps, same binary and input. The tile functions are inlined at this size (no tile_* symbols); specialized_solve and calculate_rates are in the binary's symbol table."
+   }
+  },
+  "carbon_bond_5": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.07,
+   "generated_c_lines": 25494,
+   "generated_c_bytes": 851276,
+   "build_exit": 0,
+   "build_s": 7.5,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 4.38e-15",
+   "generic_vs_micm": "PASS 4.58e-15",
+   "specialized_vs_micm": "PASS 1.77e-15",
+   "generated_kernels_used": true,
+   "notes": "generator_s: tools/specialize.py, median of 5 runs (first run 0.15 s); generated_c_*: generated/ts1_specialized.c. tools/generate.py (0.045 s) wrote generated/ts1.c, 6,026 lines, 201,496 bytes. No warnings. 540 internal steps, 0 rejected. The 14 emissions went through as USER_DEFINED reactions with empty reactant lists; the 9 negative yields, 14 repeated-reactant reactions and M in 5 reactions passed straight through. The emissions act: 244 of 272 values differ from the no-emissions run, for MICM and the entry alike. Rebuilt for the 64-cell runs in 7.68 s, identical sources; 4-cell results reproduced bitwise. Generated kernels used (4 cells): code path; output differs bitwise from the program's own --generic run (largest 4.38e-15), which took 12.34 ms against 2.00 ms.",
+   "cells64": {
+    "specialized_vs_generic": "PASS 2.56e-14",
+    "generic_vs_micm": "PASS 2.29e-14",
+    "specialized_vs_micm": "PASS 1.82e-14",
+    "generated_kernels_used": true,
+    "note": "1,080 internal steps, 0 rejected. micm-run64 and micm-run64-g32 identical. Code path as in generated_kernels_evidence; the output differs bitwise from ts1_bench_specialized --generic (largest 2.56e-14), and took 31.98 ms against 117.42 ms (--generic) and 45.45 ms (ts1_bench_cpu). The binary holds 53 tile_* functions (kernel parts called through volatile pointers)."
+   }
+  },
+  "carbon_bond_5_no_emissions": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.07,
+   "generated_c_lines": 25166,
+   "generated_c_bytes": 841292,
+   "build_exit": 0,
+   "build_s": 7.6,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 3.61e-15",
+   "generic_vs_micm": "PASS 4.12e-15",
+   "specialized_vs_micm": "PASS 5.66e-15",
+   "generated_kernels_used": true,
+   "notes": "generator_s: tools/specialize.py, median of 5 runs (first run 0.07 s); generated_c_*: generated/ts1_specialized.c. tools/generate.py (0.048 s) wrote generated/ts1.c, 5,900 lines, 197,028 bytes. No warnings. 540 internal steps, 0 rejected. Rebuilt for the 64-cell runs in 7.69 s, identical sources; 4-cell results reproduced bitwise. Generated kernels used (4 cells): code path; output differs bitwise from the program's own --generic run (largest 3.61e-15), which took 11.99 ms against 1.94 ms.",
+   "cells64": {
+    "specialized_vs_generic": "PASS 2.18e-14",
+    "generic_vs_micm": "PASS 2.28e-14",
+    "specialized_vs_micm": "PASS 2.69e-14",
+    "generated_kernels_used": true,
+    "note": "1,080 internal steps, 0 rejected. micm-run64 and micm-run64-g32 identical. Code path as in generated_kernels_evidence; the output differs bitwise from ts1_bench_specialized --generic (largest 2.18e-14), and took 31.89 ms against 117.30 ms (--generic) and 46.09 ms (ts1_bench_cpu). 53 tile_* functions in the binary."
+   }
+  }
+ },
+ "entry_changes_needed": "",
+ "generated_kernels_evidence": "src/bench.c, compiled with -DCHEM_SPECIALIZED into bin/ts1_bench_specialized, sets generic=1 only for --generic; otherwise every group, for warm-up and timed steps, calls ts1_specialized.rates(&states[g]) and ts1_specialized.solve(&states[g],dt), with no test of cell or group count. ts1_specialized.solve is the generated specialized_solve (tools/ros3.c.in after tools/tiled.py transform_solver): it pads any cell count to a multiple of the 4-cell tile (padded=(active+3)/4*4; dummy lanes get zero rates and are left out of the error norm), packs y and rates into a private tiled workspace, and calls only generated packed_forcing/jacobian/add_alpha/factor/linear -> tile_* kernels. The generated file contains no call into the generic library (no chem_*() call at all). 4 cells = one group of 4 = one full tile; 64 cells = two groups of 32 = 8 tiles each; no padding in either case.",
+ "ts1_context": {
+  "specialize_s": 0.555,
+  "generate_s": 0.272,
+  "specialized_c_lines": 75172,
+  "specialized_c_bytes": 2607627,
+  "generic_c_lines": 16341,
+  "generic_c_bytes": 562515,
+  "make_bench_s_after_config_change": 69.2,
+  "first_full_build_s": 72.3
+ },
+ "difficulties": "None in the entry: the benchmark programs ran all three mechanisms unchanged. Setup: make env builds .conda from conda-forge with a private package cache, which needs the network (the earlier exercise's env log shows the downloads); to keep to the no-network rule, this entry's own .conda (made by its make env from the identical environment.yml, in tier2-work/verify/astra-xhigh/clang) was copied into the worktree and conda-meta/history touched, so make env did nothing. The Makefile names configs/ts1.json directly (no variable), hence the swap. Converter: the one trap is \"concentration units\": \"mol m-3\" on every reaction, because the reader's default, molecule cm-3, rescales A, k0_A and kinf_A; every \"initial rate parameters\" key must also be a label some reaction uses, or chem_state_create fails. The entry's tools/translate_ts1.py reads only TS1's C++ header (it requires 210 species and 547 reactions), so it cannot convert other mechanisms. A try at call-stack evidence with macOS sample hung (no developer-tools permission) and was abandoned; the job was stopped and the configuration restored."
+}

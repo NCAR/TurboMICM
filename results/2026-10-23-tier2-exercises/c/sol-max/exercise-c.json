@@ -1,0 +1,83 @@
+{
+ "run": "sol-max",
+ "route": "benchmark programs",
+ "config_file": "configs/ts1.json",
+ "converter_lines": 90,
+ "driver_lines": 0,
+ "mechanisms": {
+  "chapman": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.029,
+   "generated_c_lines": 902,
+   "generated_c_bytes": 29827,
+   "build_exit": 0,
+   "build_s": 0.95,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "notes": "generator_s is tools/specialize.py (median of 5); the generic library's loader generator, tools/configure.py, takes 0.029 s and writes generated/ts1.c (250 lines, 7198 bytes); make bench runs both. generated_c_* is generated/ts1_specialized.c, byte-identical to the timed generator output. Timed solve (4 cells, 60 steps): generic 0.148 ms, specialized 0.073 ms, 540 internal steps, 0 rejected, in both. 5 species (4 variables), 7 reactions, 14 LU nonzeros. Bit-identical to MICM in all 24 values; the entry's column order also matches MICM's. Compiling ts1_specialized.c alone takes 0.17 s.",
+   "generated_kernels_used": true,
+   "generated_kernels_note": "4 cells form one group of 4, which is exactly one tile. The group forcing call has nc = s = 4, and the single tile has q.cells = q.stride = 4, so every call takes the fixed 4-cell generated branch. No generic fallback exists in sol-max's specialized program. src/bench.c built with -DCHEM_SPECIALIZED (lines 11-18) maps the loader, chem_calculate_rates, and BENCH_SOLVE to chem_load_ts1_specialized, chem_rates_ts1_specialized, and chem_solve_ts1_specialized. All three are in generated/ts1_specialized.c, which calls none of the library's numerical routines (grep finds no chem_solve, chem_lu_mozart, chem_linear_solve, or chem_calculate_rates). There, every kernel has two variants, both emitted by tools/specialize.py and chosen by 'if (nc == 4 && s == 4)': a literal-stride 4-cell 'fixed' kernel and a runtime-stride 'dynamic' kernel. In carbon_bond_5's file: force at line 6782, Jacobian at 9810, factorization in ts1_specialized_attempt at 22724, triangular solves at 22634. chem_solve_ts1_specialized (from tools/rosenbrock3_blocked.c.in) does two things. Once per internal step it computes the group's forcing with ts1_specialized_force(model, cells, stride). Then it cuts the group into 4-cell tiles (tile = 4, q.stride = 4), and ts1_specialized_attempt runs the Jacobian, factorization, three solves, and stage forcing on each tile. The only non-generated code is the shared step-size controller and Rosenbrock coefficients, state allocation, and CSV input and output. No debugger check was made: macOS developer mode is off, so lldb would raise an authorization dialog. Bit-identical outputs cannot show which code ran, because the generator keeps the generic code's arithmetic order.",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "note": "bin/ts1_bench_cpu and bin/ts1_bench_specialized, --threads 1 64 60 60 cells64.csv, each in its own empty directory. This is the same route and build as the main runs: the generated C is byte-identical, and make bench takes 0.94, 6.93, and 7.13 s. MICM's reference is micm-run64/ts1_final.csv; micm-run64-g32/ts1_final.csv is byte-identical and gives the same results. 1080 internal steps, 0 rejected, in both programs. Generic 0.874 ms, specialized 0.929 ms (Chapman's 4 species leave the program overhead-bound). Kernel path: 64 cells form two 32-cell groups. The once-per-step group forcing (nc = s = 32) takes the dynamic generated branch (ts1_specialized_force_0..N, runtime stride). Each group's eight full 4-cell tiles take the fixed generated branch for the Jacobian, factorization, solves, and stage forcing. No branch leads to the generic library: the generic/generated choice that gives other entries a fallback does not exist in sol-max's specialized program; see generated_kernels_note."
+   }
+  },
+  "carbon_bond_5": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.071,
+   "generated_c_lines": 22867,
+   "generated_c_bytes": 732601,
+   "build_exit": 0,
+   "build_s": 6.94,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 4.38e-15",
+   "specialized_vs_micm": "PASS 4.38e-15",
+   "notes": "generator_s is tools/specialize.py (median of 5); the generic library's loader generator, tools/configure.py, takes 0.044 s and writes generated/ts1.c (7783 lines, 215193 bytes); make bench runs both. generated_c_* is generated/ts1_specialized.c, byte-identical to the timed generator output. Timed solve (4 cells, 60 steps): generic 6.36 ms, specialized 1.643 ms, 540 internal steps, 0 rejected, in both. 67 species (66 variables), 200 reactions (145 ARRHENIUS, 16 TROE, 39 USER_DEFINED, 14 of them emissions with an empty reactant sequence), 742 LU nonzeros. Largest difference from MICM: CLO, cell 0. The emissions matter: compared with MICM's no-emission state, this result fails on 244 of 272 values. Compiling ts1_specialized.c alone takes 4.87 s.",
+   "generated_kernels_used": true,
+   "generated_kernels_note": "4 cells form one group of 4, which is exactly one tile. The group forcing call has nc = s = 4, and the single tile has q.cells = q.stride = 4, so every call takes the fixed 4-cell generated branch. No generic fallback exists in sol-max's specialized program. src/bench.c built with -DCHEM_SPECIALIZED (lines 11-18) maps the loader, chem_calculate_rates, and BENCH_SOLVE to chem_load_ts1_specialized, chem_rates_ts1_specialized, and chem_solve_ts1_specialized. All three are in generated/ts1_specialized.c, which calls none of the library's numerical routines (grep finds no chem_solve, chem_lu_mozart, chem_linear_solve, or chem_calculate_rates). There, every kernel has two variants, both emitted by tools/specialize.py and chosen by 'if (nc == 4 && s == 4)': a literal-stride 4-cell 'fixed' kernel and a runtime-stride 'dynamic' kernel. In carbon_bond_5's file: force at line 6782, Jacobian at 9810, factorization in ts1_specialized_attempt at 22724, triangular solves at 22634. chem_solve_ts1_specialized (from tools/rosenbrock3_blocked.c.in) does two things. Once per internal step it computes the group's forcing with ts1_specialized_force(model, cells, stride). Then it cuts the group into 4-cell tiles (tile = 4, q.stride = 4), and ts1_specialized_attempt runs the Jacobian, factorization, three solves, and stage forcing on each tile. The only non-generated code is the shared step-size controller and Rosenbrock coefficients, state allocation, and CSV input and output. No debugger check was made: macOS developer mode is off, so lldb would raise an authorization dialog. Bit-identical outputs cannot show which code ran, because the generator keeps the generic code's arithmetic order. Supporting timing: 1.643 ms specialized against 6.360 ms for the Tier 1 program.",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 8.46e-15",
+    "specialized_vs_micm": "PASS 8.46e-15",
+    "generated_kernels_used": true,
+    "note": "bin/ts1_bench_cpu and bin/ts1_bench_specialized, --threads 1 64 60 60 cells64.csv, each in its own empty directory. This is the same route and build as the main runs: the generated C is byte-identical, and make bench takes 0.94, 6.93, and 7.13 s. MICM's reference is micm-run64/ts1_final.csv; micm-run64-g32/ts1_final.csv is byte-identical and gives the same results. 1080 internal steps, 0 rejected, in both programs. Largest difference from MICM: XO2N, cell 53. Generic 45.382 ms, specialized 34.368 ms. Kernel path: 64 cells form two 32-cell groups. The once-per-step group forcing (nc = s = 32) takes the dynamic generated branch (ts1_specialized_force_0..N, runtime stride). Each group's eight full 4-cell tiles take the fixed generated branch for the Jacobian, factorization, solves, and stage forcing. No branch leads to the generic library: the generic/generated choice that gives other entries a fallback does not exist in sol-max's specialized program; see generated_kernels_note."
+   }
+  },
+  "carbon_bond_5_no_emissions": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.07,
+   "generated_c_lines": 22488,
+   "generated_c_bytes": 722785,
+   "build_exit": 0,
+   "build_s": 7.46,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 1.4e-15",
+   "specialized_vs_micm": "PASS 1.4e-15",
+   "notes": "generator_s is tools/specialize.py (median of 5); the generic library's loader generator, tools/configure.py, takes 0.044 s and writes generated/ts1.c (7527 lines, 207794 bytes); make bench runs both. generated_c_* is generated/ts1_specialized.c, byte-identical to the timed generator output. Timed solve (4 cells, 60 steps): generic 6.677 ms, specialized 1.666 ms, 540 internal steps, 0 rejected, in both. 67 species, 186 reactions, 742 LU nonzeros. Largest difference from MICM: HONO, cell 0. Compiling ts1_specialized.c alone takes 4.84 s.",
+   "generated_kernels_used": true,
+   "generated_kernels_note": "4 cells form one group of 4, which is exactly one tile. The group forcing call has nc = s = 4, and the single tile has q.cells = q.stride = 4, so every call takes the fixed 4-cell generated branch. No generic fallback exists in sol-max's specialized program. src/bench.c built with -DCHEM_SPECIALIZED (lines 11-18) maps the loader, chem_calculate_rates, and BENCH_SOLVE to chem_load_ts1_specialized, chem_rates_ts1_specialized, and chem_solve_ts1_specialized. All three are in generated/ts1_specialized.c, which calls none of the library's numerical routines (grep finds no chem_solve, chem_lu_mozart, chem_linear_solve, or chem_calculate_rates). There, every kernel has two variants, both emitted by tools/specialize.py and chosen by 'if (nc == 4 && s == 4)': a literal-stride 4-cell 'fixed' kernel and a runtime-stride 'dynamic' kernel. In carbon_bond_5's file: force at line 6782, Jacobian at 9810, factorization in ts1_specialized_attempt at 22724, triangular solves at 22634. chem_solve_ts1_specialized (from tools/rosenbrock3_blocked.c.in) does two things. Once per internal step it computes the group's forcing with ts1_specialized_force(model, cells, stride). Then it cuts the group into 4-cell tiles (tile = 4, q.stride = 4), and ts1_specialized_attempt runs the Jacobian, factorization, three solves, and stage forcing on each tile. The only non-generated code is the shared step-size controller and Rosenbrock coefficients, state allocation, and CSV input and output. No debugger check was made: macOS developer mode is off, so lldb would raise an authorization dialog. Bit-identical outputs cannot show which code ran, because the generator keeps the generic code's arithmetic order. Supporting timing, 5 repeats: 1.66-1.90 ms specialized against 6.42-6.51 ms for the Tier 1 program.",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.85e-14",
+    "specialized_vs_micm": "PASS 2.85e-14",
+    "generated_kernels_used": true,
+    "note": "bin/ts1_bench_cpu and bin/ts1_bench_specialized, --threads 1 64 60 60 cells64.csv, each in its own empty directory. This is the same route and build as the main runs: the generated C is byte-identical, and make bench takes 0.94, 6.93, and 7.13 s. MICM's reference is micm-run64/ts1_final.csv; micm-run64-g32/ts1_final.csv is byte-identical and gives the same results. 1080 internal steps, 0 rejected, in both programs. Largest difference from MICM: ETH, cell 27. Generic 45.171 ms, specialized 33.877 ms; over 5 repeats, 44.9-45.3 against 33.7-34.2 ms. Kernel path: 64 cells form two 32-cell groups. The once-per-step group forcing (nc = s = 32) takes the dynamic generated branch (ts1_specialized_force_0..N, runtime stride). Each group's eight full 4-cell tiles take the fixed generated branch for the Jacobian, factorization, solves, and stage forcing. No branch leads to the generic library: the generic/generated choice that gives other entries a fallback does not exist in sol-max's specialized program; see generated_kernels_note."
+   }
+  }
+ },
+ "entry_changes_needed": "",
+ "difficulties": "None blocking. sol-max reads CAMP-style JSON (tools/configure.py, shared by tools/specialize.py), and configs/ts1.json is in that format. The converter maps each canonical field to the key TS1 uses: CHEM_SPEC records, with M as 'parameterization': 'third body' and kept in reactant and product sequences as TS1 does; 'reactant sequence' and 'product sequence'; the same ARRHENIUS and TROE keys; USER_DEFINED labels as 'MUSICA name' and factors as 'scaling factor'; the top-level 'concentration units': 'mol m-3'; and 'initial state'. A USER_DEFINED reaction's MUSICA name is used verbatim as the custom parameter's name and its CSV column, so the PHOTO_* and EMIS_* labels in cells.csv work unchanged. Emissions (TS1 has none) are USER_DEFINED reactions with an empty reactant sequence, which the reader and the C loader accept. The benchmark programs look up CSV columns by name. The Makefile always builds whatever configs/ts1.json holds under the name ts1, so another mechanism takes TS1's place, one per build. make bench regenerates and recompiles only generated/ts1.c and generated/ts1_specialized.c and relinks: 0.95 to 7.5 s here, against 29.6 s for TS1. Two things could block other mechanisms but did not here: chem_model_finalize rejects any species no reaction uses, and every canonical species, M included, is used. Also, ts1_scenario_specialized, which make bench builds but this exercise does not use, treats as photolysis only the custom parameters whose names begin with 'j' (TS1's naming), so it would scale none of the PHOTO_* labels. configs/ts1.json was restored (SHA-256 9e14c904...48b6, the same as git's blob); git status --porcelain is empty; TS1 was rebuilt and passes the 100-cell gate again (3.48e-14) with both programs."
+}

@@ -1,0 +1,138 @@
+{
+ "run": "astra-high",
+ "route": "benchmark programs",
+ "config_file": "mechanisms/ts1.json",
+ "converter_lines": 76,
+ "driver_lines": 0,
+ "mechanisms": {
+  "chapman": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.0302,
+   "generated_c_lines": 569,
+   "generated_c_bytes": 20202,
+   "build_exit": 0,
+   "build_s": 1.01,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "generated_kernels_used": false,
+   "notes": "4 identical cells, 1 warm-up + 60 x 60 s, ROS3 defaults (rtol 1e-6, atol 1e-3). Bit-identical to MICM (largest relative difference 0). generator_s: tools/specialize.py as make runs it, median of 7 (includes Python start-up); build_s: median of 3 full `make bench` rebuilds after the swap (runs [1.02, 1.01, 0.99]; first main run 1.18 s), on a machine shared with other exercises' compiles (load about 3 on 18 cores). The make-generated C (build/specialized/ts1.c) is byte-identical to a standalone generator run. Generic builder C (build/ts1.c): 97 lines, 4900 bytes. Generated kernels NOT used in this 4-cell run: src/ts1_bench.c:20 caps the group size at the cell count (4), and every generated kernel falls back to the generic library when the group is not 32 cells (see code_path_evidence); an instrumented copy entered 0/5 generated kernel functions and all five generic kernels.",
+   "group_size_4_build": {
+    "specialized_vs_generic": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "elapsed_ms": {
+     "generic": 0.231981,
+     "specialized_default": 0.221968,
+     "specialized_group_size_4": 0.072956
+    },
+    "note": "make bench CC=clang OPTFLAGS='-O3 -DNDEBUG' GROUP_SIZE=4 (a documented Makefile variable, no code change): generated stride 4 = the 4-cell group, so the generated kernels run. Same 4-cell problem; single runs, timings indicative only."
+   },
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "elapsed_ms_median_of_5": {
+     "generic": 1.245022,
+     "specialized": 1.543045,
+     "generic_CHEM_GROUP_SIZE_16": 1.483917,
+     "specialized_CHEM_GROUP_SIZE_16": 1.340151
+    },
+    "note": "64 distinct cells (cells64.csv), same default build as the main runs (generated C identical). Two groups of 32 = the generated stride, so the guards select the generated kernels; the instrumented copy entered 5/5 generated kernel functions and none of chem_update_rates, chem_forcing, chem_solver_negative_jacobian, chem_lu_factor, chem_lu_solve. Bit-identical to micm-run64 (and to micm-run64-g32, the same file). Timing is weak evidence: the specialized integrator and rate cache stay in use when the kernels fall back (CHEM_GROUP_SIZE=16)."
+   }
+  },
+  "carbon_bond_5": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.0503,
+   "generated_c_lines": 15649,
+   "generated_c_bytes": 682538,
+   "build_exit": 0,
+   "build_s": 7.03,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "generated_kernels_used": false,
+   "notes": "4 identical cells, 1 warm-up + 60 x 60 s, ROS3 defaults (rtol 1e-6, atol 1e-3). Bit-identical to MICM (largest relative difference 0). generator_s: tools/specialize.py as make runs it, median of 7 (includes Python start-up); build_s: median of 3 full `make bench` rebuilds after the swap (runs [7.03, 6.98, 7.35]; first main run 7.15 s), on a machine shared with other exercises' compiles (load about 3 on 18 cores). The make-generated C (build/specialized/ts1.c) is byte-identical to a standalone generator run. Generic builder C (build/ts1.c): 2282 lines, 129022 bytes. Generated kernels NOT used in this 4-cell run: src/ts1_bench.c:20 caps the group size at the cell count (4), and every generated kernel falls back to the generic library when the group is not 32 cells (see code_path_evidence); an instrumented copy entered 0/32 generated kernel functions and all five generic kernels.",
+   "group_size_4_build": {
+    "specialized_vs_generic": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "elapsed_ms": {
+     "generic": 10.838985,
+     "specialized_default": 10.609865,
+     "specialized_group_size_4": 2.104998
+    },
+    "note": "make bench CC=clang OPTFLAGS='-O3 -DNDEBUG' GROUP_SIZE=4 (a documented Makefile variable, no code change): generated stride 4 = the 4-cell group, so the generated kernels run. Same 4-cell problem; single runs, timings indicative only."
+   },
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "elapsed_ms_median_of_5": {
+     "generic": 59.033871,
+     "specialized": 48.026085,
+     "generic_CHEM_GROUP_SIZE_16": 68.394899,
+     "specialized_CHEM_GROUP_SIZE_16": 63.58695
+    },
+    "note": "64 distinct cells (cells64.csv), same default build as the main runs (generated C identical). Two groups of 32 = the generated stride, so the guards select the generated kernels; the instrumented copy entered 32/32 generated kernel functions and none of chem_update_rates, chem_forcing, chem_solver_negative_jacobian, chem_lu_factor, chem_lu_solve. Bit-identical to micm-run64 (and to micm-run64-g32, the same file). Timing is weak evidence: the specialized integrator and rate cache stay in use when the kernels fall back (CHEM_GROUP_SIZE=16)."
+   }
+  },
+  "carbon_bond_5_no_emissions": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.0522,
+   "generated_c_lines": 15303,
+   "generated_c_bytes": 669240,
+   "build_exit": 0,
+   "build_s": 5.62,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "generated_kernels_used": false,
+   "notes": "4 identical cells, 1 warm-up + 60 x 60 s, ROS3 defaults (rtol 1e-6, atol 1e-3). Bit-identical to MICM (largest relative difference 0). generator_s: tools/specialize.py as make runs it, median of 7 (includes Python start-up); build_s: median of 3 full `make bench` rebuilds after the swap (runs [6.09, 5.62, 5.41]; first main run 5.66 s), on a machine shared with other exercises' compiles (load about 3 on 18 cores). The make-generated C (build/specialized/ts1.c) is byte-identical to a standalone generator run. Generic builder C (build/ts1.c): 2184 lines, 123376 bytes. Generated kernels NOT used in this 4-cell run: src/ts1_bench.c:20 caps the group size at the cell count (4), and every generated kernel falls back to the generic library when the group is not 32 cells (see code_path_evidence); an instrumented copy entered 0/30 generated kernel functions and all five generic kernels.",
+   "group_size_4_build": {
+    "specialized_vs_generic": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "elapsed_ms": {
+     "generic": 10.596991,
+     "specialized_default": 9.99999,
+     "specialized_group_size_4": 2.153873
+    },
+    "note": "make bench CC=clang OPTFLAGS='-O3 -DNDEBUG' GROUP_SIZE=4 (a documented Makefile variable, no code change): generated stride 4 = the 4-cell group, so the generated kernels run. Same 4-cell problem; single runs, timings indicative only."
+   },
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "elapsed_ms_median_of_5": {
+     "generic": 58.699846,
+     "specialized": 48.000097,
+     "generic_CHEM_GROUP_SIZE_16": 68.285942,
+     "specialized_CHEM_GROUP_SIZE_16": 63.876867
+    },
+    "note": "64 distinct cells (cells64.csv), same default build as the main runs (generated C identical). Two groups of 32 = the generated stride, so the guards select the generated kernels; the instrumented copy entered 30/30 generated kernel functions and none of chem_update_rates, chem_forcing, chem_solver_negative_jacobian, chem_lu_factor, chem_lu_solve. Bit-identical to micm-run64 (and to micm-run64-g32, the same file). Timing is weak evidence: the specialized integrator and rate cache stay in use when the kernels fall back (CHEM_GROUP_SIZE=16)."
+   }
+  }
+ },
+ "entry_changes_needed": "",
+ "difficulties": "None blocking. (1) The Makefile hard-codes mechanisms/ts1.json and --symbol ts1, so the route is the temporary swap; the benchmark drivers resolve CSV columns and output species by name, so they run any mechanism unchanged. (2) The converter must declare 'rate units: mol m-3'; the reader's default is molecule cm-3, which would silently rescale A, k0_A and kinf_A. (3) With 4 cells the single group has 4 cells, not the generated stride of 32, so bin/ts1_bench_specialized ran the generic rate, forcing, Jacobian, LU and triangular-solve kernels (the documented fallback); the generated kernels ran only with 64 cells (two 32-cell groups) or after rebuilding with the Makefile's GROUP_SIZE=4. (4) make env creates a fresh conda environment from conda-forge with a repo-local package cache (network needed); it was run offline (CONDA_OFFLINE=true) after seeding .conda_pkgs from this entry's earlier exercise worktree. (5) /usr/bin/make is GNU Make 3.81 (whole-second mtimes): a swap within the same second as the previous build is not seen as newer; the timed rebuilds therefore pause 1.1 s before each swap and every build log was checked for the full regenerate/compile/link sequence.",
+ "code_path_evidence": "src/ts1_bench.c:16-20 sets group_size = CHEM_GROUP_SIZE (-DCHEM_GROUP_SIZE=32 for the specialized binary) and caps it at the cell count; src/ts1_driver.h:19-20,35 maps chem_update_rates/chem_solve to ts1_update_rates/ts1_solve and calls ts1_specialized_attach, which installs the generated factor/solve as s->linear (called at src/rosenbrock_step.inc:44,63 with s->cells). In each generated file (runs/MECH/specialized.c; CB5 line numbers) ts1_update_rates: 'if (s->cells!=32) chem_update_rates(s); else rates(s);' (4205), forcing: 'if (s->cells!=32) { chem_forcing(s,y,f); return; }' (6859), Jacobian: '#define chem_solver_negative_jacobian(s,state,y) ((s)->cells==32 ? jacobian(...) : chem_solver_negative_jacobian(...))' (15641), factor: 'if (n!=32) return chem_lu_factor(...)' (13939), solve: 'if (n!=32) { chem_lu_solve(...); return; }' (15361). 4 cells: one 4-cell group, so generic kernels; 64 cells: two 32-cell groups, so generated kernels. Confirmed at run time with clang profile counters in an instrumented copy built in coverage/ from the same sources and generated C (results identical to the real runs).",
+ "ts1_reference": {
+  "generator_s": 0.6596,
+  "generated_c_lines": 44974,
+  "generated_c_bytes": 2048850,
+  "build_s": 23.4
+ }
+}

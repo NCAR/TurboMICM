@@ -1,0 +1,80 @@
+{
+ "run": "sol-xhigh",
+ "route": "benchmark programs",
+ "config_file": "mechanisms/ts1.json",
+ "converter_lines": 118,
+ "driver_lines": 0,
+ "mechanisms": {
+  "chapman": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.049,
+   "generated_c_lines": 670,
+   "generated_c_bytes": 22471,
+   "build_exit": 0,
+   "build_s": 0.65,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "notes": "5 species (M parameterized on air density, 4 integrated), 7 reactions. All 24 values bitwise equal to MICM's; output columns in MICM's order. Both paths: 540 internal steps, 0 rejected. generator_s: median of 3 runs of tools/specialize.py with the Makefile's arguments (0.151, 0.047, 0.049 s; Python start-up included); its output is byte-identical to the build's generated/sp_ts1.c and deterministic. Generated C counted is generated/sp_ts1.c (the specialized kernels, with the descriptors embedded); the generic path's generated/ts1.c is a further 34 lines / 4,832 B (configure.py, 0.046 s). build_s: incremental make bench after the swap (regenerate and compile both generated files, link 3 programs; libchem.a is not rebuilt), 0 warnings. 4-cell run: generated kernels, runtime-stride versions. --threads 1 with 4 cells shrinks the default 32-cell group to ceil(4/1) = 4 (src/bench.c:41-52), so the group has 4 cells (summed stats: 540 internal steps = 1 group x 540). The specialized driver calls only ts1_specialized.update_rates and ts1_specialized.solve (src/bench_common.h:7-8, CK_SPECIALIZED), and the generated solve (src/specialized_solver.h, included by generated/sp_ts1.c) calls the generated forcing, jacobian, factor and linear functions. Each dispatches on `if (s->cells == 32)` (or `cells == 32`) to its *_fixed helpers and otherwise to its *_dynamic helpers, both generated for this mechanism; the 4-cell group takes the *_dynamic branch. The specialized program has no path back to the generic ck_solve/ck_update_rates.",
+   "generated_kernels_used": true,
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells (cells64.csv), --threads 1 64 60 60, entry rebuilt as in the main run (full regeneration; generated C byte-identical to the main run's; make bench exit 0, 0.63 s). 256/256 values bitwise equal to MICM's (micm-run64, and the identical micm-run64-g32); both paths 1080 internal steps, 0 rejected. Generated kernels, fixed-stride versions: the default width 32 stays 32 for 64 cells on 1 thread (src/bench.c:41-52), giving 2 groups of 32 (summed stats 1080 = 2 x 540), so every generated kernel takes its `if (s->cells == 32)` branch to the *_fixed helpers (stride 32 as a constant)."
+   }
+  },
+  "carbon_bond_5": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.075,
+   "generated_c_lines": 36218,
+   "generated_c_bytes": 1105036,
+   "build_exit": 0,
+   "build_s": 4.65,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "notes": "67 species (66 integrated), 200 reactions: 145 ARRHENIUS (5 with M among the reactants), 16 TROE, 39 USER_DEFINED (25 photolysis, 2 with scaling factors 9 and 0.0036, and 14 emissions with no reactants, written as USER_DEFINED with an empty reactant list, which the reader and generator accept as zero-order). Negative yields and species that are both reactant and product pass through. All 272 values bitwise equal to MICM's. Emissions matter: NO 6.62e-10 against 2.94e-13 without them. 540 internal steps, 0 rejected, in both paths. Generator runs 0.161, 0.071, 0.075 s; output identical to the build's and deterministic. generated/ts1.c: 661 lines / 119,135 B. 0 warnings. 4-cell run: generated kernels, runtime-stride versions. --threads 1 with 4 cells shrinks the default 32-cell group to ceil(4/1) = 4 (src/bench.c:41-52), so the group has 4 cells (summed stats: 540 internal steps = 1 group x 540). The specialized driver calls only ts1_specialized.update_rates and ts1_specialized.solve (src/bench_common.h:7-8, CK_SPECIALIZED), and the generated solve (src/specialized_solver.h, included by generated/sp_ts1.c) calls the generated forcing, jacobian, factor and linear functions. Each dispatches on `if (s->cells == 32)` (or `cells == 32`) to its *_fixed helpers and otherwise to its *_dynamic helpers, both generated for this mechanism; the 4-cell group takes the *_dynamic branch. The specialized program has no path back to the generic ck_solve/ck_update_rates.",
+   "generated_kernels_used": true,
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells (cells64.csv), --threads 1 64 60 60, entry rebuilt as in the main run (full regeneration; generated C byte-identical to the main run's; make bench exit 0, 4.07 s). 4224/4224 values bitwise equal to MICM's (micm-run64, and the identical micm-run64-g32); both paths 1080 internal steps, 0 rejected. Generated kernels, fixed-stride versions: the default width 32 stays 32 for 64 cells on 1 thread (src/bench.c:41-52), giving 2 groups of 32 (summed stats 1080 = 2 x 540), so every generated kernel takes its `if (s->cells == 32)` branch to the *_fixed helpers (stride 32 as a constant)."
+   }
+  },
+  "carbon_bond_5_no_emissions": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.068,
+   "generated_c_lines": 35944,
+   "generated_c_bytes": 1091562,
+   "build_exit": 0,
+   "build_s": 4.84,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "notes": "186 reactions (carbon_bond_5 without the 14 emissions); not needed as a fallback, since the emissions were no obstacle. All 272 values bitwise equal to MICM's; 540 internal steps, 0 rejected, in both paths. Generator runs 0.068, 0.066, 0.072 s; output identical to the build's and deterministic. generated/ts1.c: 633 lines / 112,130 B. 0 warnings. 4-cell run: generated kernels, runtime-stride versions. --threads 1 with 4 cells shrinks the default 32-cell group to ceil(4/1) = 4 (src/bench.c:41-52), so the group has 4 cells (summed stats: 540 internal steps = 1 group x 540). The specialized driver calls only ts1_specialized.update_rates and ts1_specialized.solve (src/bench_common.h:7-8, CK_SPECIALIZED), and the generated solve (src/specialized_solver.h, included by generated/sp_ts1.c) calls the generated forcing, jacobian, factor and linear functions. Each dispatches on `if (s->cells == 32)` (or `cells == 32`) to its *_fixed helpers and otherwise to its *_dynamic helpers, both generated for this mechanism; the 4-cell group takes the *_dynamic branch. The specialized program has no path back to the generic ck_solve/ck_update_rates.",
+   "generated_kernels_used": true,
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells (cells64.csv), --threads 1 64 60 60, entry rebuilt as in the main run (full regeneration; generated C byte-identical to the main run's; make bench exit 0, 4.16 s). 4224/4224 values bitwise equal to MICM's (micm-run64, and the identical micm-run64-g32); both paths 1080 internal steps, 0 rejected. Generated kernels, fixed-stride versions: the default width 32 stays 32 for 64 cells on 1 thread (src/bench.c:41-52), giving 2 groups of 32 (summed stats 1080 = 2 x 540), so every generated kernel takes its `if (s->cells == 32)` branch to the *_fixed helpers (stride 32 as a constant). Interleaved timing with this build (min of 3 rounds, 300 steps, timed region): generic 255.2 ms, specialized 183.8 ms (1.39x) at 64 cells in 32-cell groups; 301.5 vs 227.1 ms (1.33x, *_dynamic) with --group-size 16; 47.5 vs 15.9 ms (3.0x, *_dynamic) at 4 cells."
+   }
+  }
+ },
+ "entry_changes_needed": "",
+ "difficulties": "None in the entry. Its TS1 configuration is a CAMP JSON file read by the same tools/configure.py for the generic descriptors and tools/specialize.py for the generator, and the two benchmark programs read any mechanism's cells.csv by column name (temperature, pressure, species, rate-parameter labels). So the swap of mechanisms/ts1.json was enough. The converter maps third_body to \"parameterization\": \"air-density\" (M stays in reactant and product lists, as in ts1.json), label to \"MUSICA name\", [name, yield] to {\"species\", \"yield\"}, and initial values to \"initial state\" (concentrations, custom). Units pass through (\"mol m-3\"). One setup obstacle: this entry's make env creates .conda by downloading its pinned packages from conda-forge (about 70 MB; the verification and A/B logs show the download), which the no-network rule forbids. make env was satisfied without network by a 4-line wrapper at the worktree's git-ignored .conda/bin/python that runs the existing environment made by make env from the same environment.yml during this entry's Tier 2 verification (Python 3.12.12, PyYAML 6.0.3; the tools need nothing else). Observation outside the measured runs: the specialized scenario driver (src/scenario.c:301) scales the rate parameters whose labels begin with 'j', as the disclosed scenarios' README defines photolysis parameters (TS1's naming). A day-night scenario for these mechanisms, whose photolysis labels are PHOTO_*, would need labels renamed or that convention generalized; this is the scenario format's convention, not a defect of the entry. Addendum (64 cells): (1) a hazard in my harness, not the entry: macOS's GNU Make 3.81 compares whole-second modification times, and my first 64-cell pass copied each configuration in within the second of the previous build's outputs. make then kept the previous mechanism's products: carbon_bond_5's specialized program was still chapman's ('Unknown CSV column: AACD'), and no_emissions' generic program was still carbon_bond_5's, emissions included (FAIL against MICM). Fixed by waiting for the next second before each copy and checking that every mechanism-dependent product was rebuilt; the first pass is kept in attempt1-make-timestamps/. The main runs were not affected: their make logs show full regeneration, and their generated C matched the standalone generator's. (2) No runtime profile: developer mode is off, lldb could prompt for authorization and was not used, and /usr/bin/sample hung (killed after about 2 minutes). The evidence for the kernel path is the code path, the group count in the summed statistics, and the timing contrast."
+}

@@ -1,0 +1,81 @@
+{
+ "run": "luna-high",
+ "route": "benchmark programs",
+ "config_file": "mechanisms/ts1.json",
+ "converter_lines": 102,
+ "driver_lines": 0,
+ "mechanisms": {
+  "chapman": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.027,
+   "generated_c_lines": 301,
+   "generated_c_bytes": 8993,
+   "build_exit": 0,
+   "build_s": 2.94,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "notes": "5 species (M third body), 4 Arrhenius and 3 photolysis (user_defined). Generic and specialized ts1_final.csv byte-identical; every value text-identical to MICM's. Solver counters identical on both paths and every mechanism: 540 internal steps (one 4-cell group, 60 timed steps), 0 rejected. Timed region, 1 thread: generic 0.535 ms, specialized 0.209 ms.",
+   "generated_kernels_used": true,
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 0",
+    "specialized_vs_micm": "PASS 0",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells from cells64.csv. Every value matches MICM exactly (micm-run64 and micm-run64-g32 are identical files); generic and specialized ts1_final.csv byte-identical. Counters on both paths: 540 internal steps, 0 rejected. Timed region: generic 8.52 ms, specialized 3.12 ms. make bench 3.04 s."
+   }
+  },
+  "carbon_bond_5": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.033,
+   "generated_c_lines": 10610,
+   "generated_c_bytes": 362820,
+   "build_exit": 0,
+   "build_s": 5.19,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "notes": "67 species (M third body), 200 reactions: 145 Arrhenius, 16 Troe, 25 photolysis and 14 emissions (user_defined; emissions written with an empty reactant list, which the generator emits as a NULL reactant table and a constant source term). Negative yields (PAR -0.66 etc.) and repeated reactants pass through unchanged. 61 of 66 state species change over the run; every value text-identical to MICM's; generic and specialized files byte-identical. Solver counters identical on both paths and every mechanism: 540 internal steps (one 4-cell group, 60 timed steps), 0 rejected. Timed region, 1 thread: generic 20.06 ms, specialized 4.52 ms.",
+   "generated_kernels_used": true,
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.33e-14",
+    "specialized_vs_micm": "PASS 2.33e-14",
+    "generated_kernels_used": true,
+    "note": "Largest difference from MICM 2.33e-14 (CLO, cell 58), the same on both paths, against micm-run64 and micm-run64-g32 alike; generic and specialized files byte-identical. Counters on both paths: 540 internal steps, 0 rejected. Timed region: generic 330.35 ms, specialized 69.07 ms. make bench 5.20 s."
+   }
+  },
+  "carbon_bond_5_no_emissions": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.032,
+   "generated_c_lines": 10498,
+   "generated_c_bytes": 358647,
+   "build_exit": 0,
+   "build_s": 5.1,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 0",
+   "specialized_vs_micm": "PASS 0",
+   "notes": "186 reactions (the 14 emissions dropped). Same outcome: bit-identical to MICM and between paths. Its final state differs from carbon_bond_5's (O3 1.71e-6 against 2.10e-7 mol m-3), so the emissions are active there. Solver counters identical on both paths and every mechanism: 540 internal steps (one 4-cell group, 60 timed steps), 0 rejected. Timed region, 1 thread: generic 20.29 ms, specialized 4.25 ms.",
+   "generated_kernels_used": true,
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.06e-16",
+    "specialized_vs_micm": "PASS 2.06e-16",
+    "generated_kernels_used": true,
+    "note": "Largest difference from MICM 2.06e-16 (SULF, cell 41), the same on both paths; generic and specialized files byte-identical. Counters on both paths: 540 internal steps, 0 rejected. Timed region: generic 314.36 ms, specialized 68.30 ms. make bench 4.91 s."
+   }
+  }
+ },
+ "entry_changes_needed": "",
+ "difficulties": "None blocking; no entry change needed. (1) make env was not run to completion: it creates a conda env from conda-forge with a fresh package cache in .conda-pkgs, so it needs network downloads; an offline attempt (CONDA_OFFLINE=true make env) failed with PackagesNotFoundError: python=3.12.11. The generator uses only the Python standard library and the Makefile falls back to python3 (3.13.1 here) when .conda/bin/python is absent, so make bench worked unchanged (tests/test_specialized.py, which calls .conda/bin/python directly, was not needed). (2) The Makefile hard-codes mechanisms/ts1.json (no variable), so the file was swapped and then restored; it matches HEAD and git status --porcelain is empty. (3) generator_s is the median of 5 runs including Python startup (about 0.015 s); generated_c_lines is wc -l (the generator writes no final newline). build_s is the wall time of make bench: generation plus three sequential clang compiles (generic bench, specialized bench, specialized scenario runner); TS1 takes 13.2 to 13.5 s. (4) Side check beyond the three mechanisms: a mechanism with no user-defined rates generates empty arrays (4 -Wpedantic warnings: C23 empty initializer, zero-length array), and src/main.c's size check divides by the zero custom-parameter count (undefined behavior); the clang -O3 build still ran and matched the exact solution. (5) Addendum, 64 distinct cells: no difficulty. The same build route and settings were used; TS1 was restored and rebuilt afterwards, and git status --porcelain is clean again.",
+ "generated_kernels_evidence": "Same code path for 4 and 64 cells, with no cell-count or group-size condition anywhere. src/main.c (shared by both programs) solves the warm-up (line 584) and every timed step (line 605) with chem_rosenbrock3_solve_group_with_workspace on one group of all cells (--threads 1: group_capacity = cells). That function (src/solver.c 804-983) works cell by cell and calls solver_forcing (877, 900), solver_negative_jacobian (880), solver_factor (891) and solver_triangular_solve (914). Each wrapper (src/solver.c 49-66, 365-381) calls m->specialized_ops->... whenever the pointer is non-NULL and otherwise the generic routine; that pointer is the only switch. generated/ts1.c sets chem_generated_mechanism.specialized_ops = &generated_ops under #ifdef CHEM_SPECIALIZED (NULL otherwise), and the Makefile passes -DCHEM_SPECIALIZED only to ts1_bench_specialized and ts1_scenario_specialized. Binary check of each mechanism's build ($WORK/check_ops.py: nm plus dyld_info -fixups, no execution): in ts1_bench_specialized, _chem_generated_mechanism+0x48 rebases to _generated_ops, whose four slots rebase to _generated_forcing, _generated_negative_jacobian, _generated_factor and _generated_solve_factored; ts1_bench_cpu has no _generated_* symbols and no fixup there (NULL). Timing agrees: specialized 4.4x (4 cells) and 4.8x (64 cells) faster on carbon_bond_5, with identical solver counters. Rate constants use the shared generic evaluator in both programs, by design (DESIGN.md). The benchmark has no 32-cell grouping: with --threads 1 the 64 cells form one group with one step controller, as MICM's default run does; only the scenario runner takes --group-size."
+}

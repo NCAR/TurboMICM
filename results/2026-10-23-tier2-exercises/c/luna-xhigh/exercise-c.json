@@ -1,0 +1,81 @@
+{
+ "run": "luna-xhigh",
+ "route": "benchmark programs",
+ "config_file": "config/ts1.json",
+ "converter_lines": 109,
+ "driver_lines": 0,
+ "mechanisms": {
+  "chapman": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.04,
+   "generated_c_lines": 602,
+   "generated_c_bytes": 27391,
+   "build_exit": 0,
+   "build_s": 0.41,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 6.28e-16",
+   "specialized_vs_micm": "PASS 6.28e-16",
+   "notes": "Generated from the converted file with no errors or warnings. Reactant M became a factor of air density (O1D + M); product M dropped, as in TS1. Specialized and generic final states are bit-identical. generator_s: median of 5 runs [0.123, 0.04, 0.038, 0.04, 0.038]. build_s is `make bench` after deleting build/generated/ts1.c: generate, compile the generated C, link 3 programs; the library and driver objects are already built. 0 warnings. A clean `make cpu bench` takes 1.92 s (TS1: 64.5 and 68.8 s). Both programs: internal_steps=540 accepted=540 rejected=0 function_calls=1080 jacobian_updates=540 decompositions=540 solves=1620; timed 60 steps on 4 cells: generic 0.243 ms, specialized 0.128 ms.",
+   "generated_kernels_used": true,
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.46e-15",
+    "specialized_vs_micm": "PASS 2.46e-15",
+    "generated_kernels_used": true,
+    "note": "Same binaries as the main runs (bin/<mech>/, built with make bench CONFIG=...), run as --threads 1 64 60 60 cells64.csv, each in its own empty directory (runs64/<mech>/{generic,specialized}); compared with micm-run64/ts1_final.csv, which is identical to micm-run64-g32/. Both programs exit 0 with 540 internal steps, 0 rejected (one adaptive step sequence for the group); timed loop: generic 1.259 ms, specialized 0.843 ms. The generated kernels ran in the 4-cell and the 64-cell runs alike. src/ts1_bench.c integrate_group() (lines 262-276): compiled with -DCHEM_USE_SPECIALIZED (the Makefile's build/ts1_specialized.o rule), it unconditionally returns chem_generated_integrate_group_steps(cells, ...): no cell-count or group-size test and no fallback branch. main() makes min(threads, cells) groups, so --threads 1 gives one group of 4 or 64 cells. The generated function only checks validity and overflow, and calls only its own static generated_rates/forcing/jacobian/factor/solve/error. nm: bin/<mech>/ts1_bench_specialized does not contain _chem_integrate_group or _chem_integrate_group_steps (the generic integrators), while ts1_bench_cpu does, so the specialized program cannot reach the generic solver."
+   }
+  },
+  "carbon_bond_5": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.132,
+   "generated_c_lines": 16456,
+   "generated_c_bytes": 815192,
+   "build_exit": 0,
+   "build_s": 7.13,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 1.51e-15",
+   "generic_vs_micm": "PASS 4.18e-15",
+   "specialized_vs_micm": "PASS 4.33e-15",
+   "notes": "The 14 emissions (USER_DEFINED, no reactants) went through unchanged: each one only adds to its product's forcing and contributes no Jacobian entries. Their CSV rates are nonzero and matter (SO2 3e-8 -> 3.9e-6 mol m-3); the entry matches MICM. generator_s: median of 5 runs [0.132, 0.132, 0.131, 0.132, 0.133]. build_s is `make bench` after deleting build/generated/ts1.c: generate, compile the generated C, link 3 programs; the library and driver objects are already built. 0 warnings. A clean `make cpu bench` takes 8.28 s (TS1: 64.5 and 68.8 s). Both programs: internal_steps=540 accepted=540 rejected=0 function_calls=1080 jacobian_updates=540 decompositions=540 solves=1620; timed 60 steps on 4 cells: generic 10.338 ms, specialized 7.579 ms.",
+   "generated_kernels_used": true,
+   "cells64": {
+    "specialized_vs_generic": "PASS 2.7e-14",
+    "generic_vs_micm": "PASS 1.55e-14",
+    "specialized_vs_micm": "PASS 1.57e-14",
+    "generated_kernels_used": true,
+    "note": "Same binaries as the main runs (bin/<mech>/, built with make bench CONFIG=...), run as --threads 1 64 60 60 cells64.csv, each in its own empty directory (runs64/<mech>/{generic,specialized}); compared with micm-run64/ts1_final.csv, which is identical to micm-run64-g32/. Both programs exit 0 with 540 internal steps, 0 rejected (one adaptive step sequence for the group); timed loop: generic 59.991 ms, specialized 46.214 ms. The generated kernels ran in the 4-cell and the 64-cell runs alike. src/ts1_bench.c integrate_group() (lines 262-276): compiled with -DCHEM_USE_SPECIALIZED (the Makefile's build/ts1_specialized.o rule), it unconditionally returns chem_generated_integrate_group_steps(cells, ...): no cell-count or group-size test and no fallback branch. main() makes min(threads, cells) groups, so --threads 1 gives one group of 4 or 64 cells. The generated function only checks validity and overflow, and calls only its own static generated_rates/forcing/jacobian/factor/solve/error. nm: bin/<mech>/ts1_bench_specialized does not contain _chem_integrate_group or _chem_integrate_group_steps (the generic integrators), while ts1_bench_cpu does, so the specialized program cannot reach the generic solver."
+   }
+  },
+  "carbon_bond_5_no_emissions": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.13,
+   "generated_c_lines": 16190,
+   "generated_c_bytes": 801680,
+   "build_exit": 0,
+   "build_s": 6.97,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 3.9e-15",
+   "generic_vs_micm": "PASS 4.81e-15",
+   "specialized_vs_micm": "PASS 4.98e-15",
+   "notes": "Same as carbon_bond_5 without the 14 emissions; no obstacle in either. generator_s: median of 5 runs [0.222, 0.129, 0.14, 0.127, 0.13]. build_s is `make bench` after deleting build/generated/ts1.c: generate, compile the generated C, link 3 programs; the library and driver objects are already built. 0 warnings. A clean `make cpu bench` takes 8.01 s (TS1: 64.5 and 68.8 s). Both programs: internal_steps=540 accepted=540 rejected=0 function_calls=1080 jacobian_updates=540 decompositions=540 solves=1620; timed 60 steps on 4 cells: generic 10.085 ms, specialized 7.714 ms.",
+   "generated_kernels_used": true,
+   "cells64": {
+    "specialized_vs_generic": "PASS 2.24e-14",
+    "generic_vs_micm": "PASS 2.31e-14",
+    "specialized_vs_micm": "PASS 3.44e-14",
+    "generated_kernels_used": true,
+    "note": "Same binaries as the main runs (bin/<mech>/, built with make bench CONFIG=...), run as --threads 1 64 60 60 cells64.csv, each in its own empty directory (runs64/<mech>/{generic,specialized}); compared with micm-run64/ts1_final.csv, which is identical to micm-run64-g32/. Both programs exit 0 with 540 internal steps, 0 rejected (one adaptive step sequence for the group); timed loop: generic 60.120 ms, specialized 45.351 ms. The generated kernels ran in the 4-cell and the 64-cell runs alike. src/ts1_bench.c integrate_group() (lines 262-276): compiled with -DCHEM_USE_SPECIALIZED (the Makefile's build/ts1_specialized.o rule), it unconditionally returns chem_generated_integrate_group_steps(cells, ...): no cell-count or group-size test and no fallback branch. main() makes min(threads, cells) groups, so --threads 1 gives one group of 4 or 64 cells. The generated function only checks validity and overflow, and calls only its own static generated_rates/forcing/jacobian/factor/solve/error. nm: bin/<mech>/ts1_bench_specialized does not contain _chem_integrate_group or _chem_integrate_group_steps (the generic integrators), while ts1_bench_cpu does, so the specialized program cannot reach the generic solver."
+   }
+  }
+ },
+ "entry_changes_needed": "",
+ "difficulties": "None in the entry. Its own descriptor JSON (the config/ts1.json schema, written by tools/translate_ts1.py) maps one-to-one onto the canonical form: the same MICM parameter names and mol m-3 units; M as a species with third_body true, named in reactant and product lists; user-defined rates by label with scaling_factor; initial values in each species' 'initial', the top-level 'parameters' dict, and top-level temperature and pressure. The canonical files give no molecular weights or diffusion coefficients (used only by surface reactions), so the converter writes 0.0 and null. The generator also reads MICM/CAMP-format configs, but on that path it multiplies Troe k0_A and kinf_A by molecule-cm3 factors, so the converter targets the descriptor schema, which takes mol m-3 values as they are, as TS1 does. The build reads config/ts1.json through the Makefile variable CONFIG (CONFIG := config/ts1.json), so each mechanism was passed as CONFIG=<converted json> on the make command line. The tracked file was never swapped, so it needed no backup or restore. make decides by mtime and always writes build/generated/ts1.c, so I deleted that file before each build to force regeneration. There is no C configuration reader: the generic Tier 1 library reads a chem_mechanism descriptor that the same generator writes into the same C file, so the generic program is regenerated and rebuilt per mechanism along with the specialized one. Setup deviation: I did not run make env. In this entry it runs `conda env create` into the worktree with a fresh package cache (CONDA_PKGS_DIRS=.conda_pkgs), which downloads Python and PyYAML from conda-forge, and the rules forbid network access and installs. Instead I passed the Makefile's PYTHON variable (PYTHON ?= ./.conda/bin/python) the run root's own pinned environment, ODE/benchmarks/tier2/luna-xhigh/.conda (Python 3.12.8, PyYAML 6.0.2, environment.yml's pins), with PYTHONDONTWRITEBYTECODE=1. Nothing was written under ODE. TS1 was restored with a clean `make cpu bench` without CONFIG (and again with `make bench` after deleting build/generated/ts1.c, 66.4 s): the regenerated ts1.c is byte-identical to the original, and the sanity runs' ts1_final.csv files are byte-identical before and after. git status --porcelain is empty.",
+ "generated_kernels_evidence": "src/ts1_bench.c integrate_group() (lines 262-276): compiled with -DCHEM_USE_SPECIALIZED (the Makefile's build/ts1_specialized.o rule), it unconditionally returns chem_generated_integrate_group_steps(cells, ...): no cell-count or group-size test and no fallback branch. main() makes min(threads, cells) groups, so --threads 1 gives one group of 4 or 64 cells. The generated function only checks validity and overflow, and calls only its own static generated_rates/forcing/jacobian/factor/solve/error. nm: bin/<mech>/ts1_bench_specialized does not contain _chem_integrate_group or _chem_integrate_group_steps (the generic integrators), while ts1_bench_cpu does, so the specialized program cannot reach the generic solver."
+}

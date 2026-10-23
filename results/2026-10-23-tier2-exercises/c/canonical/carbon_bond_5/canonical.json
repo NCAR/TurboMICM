@@ -1,0 +1,5194 @@
+{
+ "name": "carbon_bond_5",
+ "source": "MUSICA configs/v0/carbon_bond_5, resolved by admin/v0_to_canonical.py",
+ "species": [
+  {
+   "name": "AACD",
+   "third_body": false
+  },
+  {
+   "name": "ALD2",
+   "third_body": false
+  },
+  {
+   "name": "ALDX",
+   "third_body": false
+  },
+  {
+   "name": "BENZENE",
+   "third_body": false
+  },
+  {
+   "name": "BENZRO2",
+   "third_body": false
+  },
+  {
+   "name": "C2O3",
+   "third_body": false
+  },
+  {
+   "name": "CH4",
+   "third_body": false
+  },
+  {
+   "name": "CL",
+   "third_body": false
+  },
+  {
+   "name": "CL2",
+   "third_body": false
+  },
+  {
+   "name": "CLO",
+   "third_body": false
+  },
+  {
+   "name": "CO",
+   "third_body": false
+  },
+  {
+   "name": "CRES",
+   "third_body": false
+  },
+  {
+   "name": "CRO",
+   "third_body": false
+  },
+  {
+   "name": "CXO3",
+   "third_body": false
+  },
+  {
+   "name": "ETH",
+   "third_body": false
+  },
+  {
+   "name": "ETHA",
+   "third_body": false
+  },
+  {
+   "name": "ETOH",
+   "third_body": false
+  },
+  {
+   "name": "FACD",
+   "third_body": false
+  },
+  {
+   "name": "FMCL",
+   "third_body": false
+  },
+  {
+   "name": "FORM",
+   "third_body": false
+  },
+  {
+   "name": "H2",
+   "third_body": false
+  },
+  {
+   "name": "H2O",
+   "third_body": false
+  },
+  {
+   "name": "H2O2",
+   "third_body": false
+  },
+  {
+   "name": "HCL",
+   "third_body": false
+  },
+  {
+   "name": "HCO3",
+   "third_body": false
+  },
+  {
+   "name": "HNO3",
+   "third_body": false
+  },
+  {
+   "name": "HO2",
+   "third_body": false
+  },
+  {
+   "name": "HOCL",
+   "third_body": false
+  },
+  {
+   "name": "HONO",
+   "third_body": false
+  },
+  {
+   "name": "IOLE",
+   "third_body": false
+  },
+  {
+   "name": "ISOP",
+   "third_body": false
+  },
+  {
+   "name": "ISPD",
+   "third_body": false
+  },
+  {
+   "name": "M",
+   "third_body": true
+  },
+  {
+   "name": "MEO2",
+   "third_body": false
+  },
+  {
+   "name": "MEOH",
+   "third_body": false
+  },
+  {
+   "name": "MEPX",
+   "third_body": false
+  },
+  {
+   "name": "MGLY",
+   "third_body": false
+  },
+  {
+   "name": "N2O5",
+   "third_body": false
+  },
+  {
+   "name": "NO",
+   "third_body": false
+  },
+  {
+   "name": "NO2",
+   "third_body": false
+  },
+  {
+   "name": "NO3",
+   "third_body": false
+  },
+  {
+   "name": "NTR",
+   "third_body": false
+  },
+  {
+   "name": "O",
+   "third_body": false
+  },
+  {
+   "name": "O1D",
+   "third_body": false
+  },
+  {
+   "name": "O3",
+   "third_body": false
+  },
+  {
+   "name": "OH",
+   "third_body": false
+  },
+  {
+   "name": "O2",
+   "third_body": false
+  },
+  {
+   "name": "OLE",
+   "third_body": false
+  },
+  {
+   "name": "OPEN",
+   "third_body": false
+  },
+  {
+   "name": "PACD",
+   "third_body": false
+  },
+  {
+   "name": "PAN",
+   "third_body": false
+  },
+  {
+   "name": "PANX",
+   "third_body": false
+  },
+  {
+   "name": "PAR",
+   "third_body": false
+  },
+  {
+   "name": "PNA",
+   "third_body": false
+  },
+  {
+   "name": "ROOH",
+   "third_body": false
+  },
+  {
+   "name": "ROR",
+   "third_body": false
+  },
+  {
+   "name": "SESQ",
+   "third_body": false
+  },
+  {
+   "name": "SO2",
+   "third_body": false
+  },
+  {
+   "name": "SULF",
+   "third_body": false
+  },
+  {
+   "name": "TERP",
+   "third_body": false
+  },
+  {
+   "name": "TO2",
+   "third_body": false
+  },
+  {
+   "name": "TOL",
+   "third_body": false
+  },
+  {
+   "name": "TOLRO2",
+   "third_body": false
+  },
+  {
+   "name": "XO2",
+   "third_body": false
+  },
+  {
+   "name": "XO2N",
+   "third_body": false
+  },
+  {
+   "name": "XYL",
+   "third_body": false
+  },
+  {
+   "name": "XYLRO2",
+   "third_body": false
+  }
+ ],
+ "reactions": [
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "NO2"
+   ],
+   "products": [
+    [
+     "NO",
+     1.0
+    ],
+    [
+     "O",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_NO2",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O",
+    "O2",
+    "M"
+   ],
+   "products": [
+    [
+     "O3",
+     1.0
+    ],
+    [
+     "M",
+     1.0
+    ]
+   ],
+   "A": 217.59707599952029,
+   "B": -2.4,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O3",
+    "NO"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 1806642.2280000001,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O",
+    "NO2"
+   ],
+   "products": [
+    [
+     "NO",
+     1.0
+    ]
+   ],
+   "A": 3372398.8256,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "O",
+    "NO2"
+   ],
+   "products": [
+    [
+     "NO3",
+     1.0
+    ]
+   ],
+   "k0_A": 90665.44833313345,
+   "k0_B": -1.8,
+   "k0_C": 0.0,
+   "kinf_A": 13248709.672,
+   "kinf_B": -0.7,
+   "kinf_C": 0.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "O",
+    "NO"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "k0_A": 32639.56139992804,
+   "k0_B": -1.5,
+   "k0_C": 0.0,
+   "kinf_A": 18066422.28,
+   "kinf_B": 0.0,
+   "kinf_C": 0.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO2",
+    "O3"
+   ],
+   "products": [
+    [
+     "NO3",
+     1.0
+    ]
+   ],
+   "A": 72265.68912,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "O3"
+   ],
+   "products": [
+    [
+     "O",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_O3_to_O3P",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "O3"
+   ],
+   "products": [
+    [
+     "O1D",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_O3_to_O1D",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O1D",
+    "M"
+   ],
+   "products": [
+    [
+     "O",
+     1.0
+    ],
+    [
+     "M",
+     1.0
+    ]
+   ],
+   "A": 12646495.595999999,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O1D",
+    "H2O"
+   ],
+   "products": [
+    [
+     "OH",
+     2.0
+    ]
+   ],
+   "A": 132487096.72,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O3",
+    "OH"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 1023763.9292,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O3",
+    "HO2"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ]
+   ],
+   "A": 6022.14076,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "NO3"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ],
+    [
+     "O",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_NO3_to_NO2",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "NO3"
+   ],
+   "products": [
+    [
+     "NO",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_NO3_to_NO",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "NO"
+   ],
+   "products": [
+    [
+     "NO2",
+     2.0
+    ]
+   ],
+   "A": 9033211.14,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "NO2"
+   ],
+   "products": [
+    [
+     "NO",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 27099.63342,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "NO3",
+    "NO2"
+   ],
+   "products": [
+    [
+     "N2O5",
+     1.0
+    ]
+   ],
+   "k0_A": 725323.5866650676,
+   "k0_B": -4.4,
+   "k0_C": 0.0,
+   "kinf_A": 843099.7064,
+   "kinf_B": -0.7,
+   "kinf_C": 0.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "N2O5",
+    "H2O"
+   ],
+   "products": [
+    [
+     "HNO3",
+     2.0
+    ]
+   ],
+   "A": 0.00015055351899999998,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "N2O5",
+    "H2O",
+    "H2O"
+   ],
+   "products": [
+    [
+     "HNO3",
+     2.0
+    ]
+   ],
+   "A": 0.0006527912279985608,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "N2O5"
+   ],
+   "products": [
+    [
+     "NO3",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "k0_A": 602214076000000.0,
+   "k0_B": -3.5,
+   "k0_C": -11000.0,
+   "kinf_A": 970000000000000.0,
+   "kinf_B": 0.1,
+   "kinf_C": -11080.0,
+   "Fc": 0.45,
+   "N": 1.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO",
+    "NO",
+    "O2"
+   ],
+   "products": [
+    [
+     "NO2",
+     2.0
+    ]
+   ],
+   "A": 0.0011967839179973614,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO",
+    "NO2",
+    "H2O"
+   ],
+   "products": [
+    [
+     "HONO",
+     2.0
+    ]
+   ],
+   "A": 0.00018133089666626687,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "NO",
+    "OH"
+   ],
+   "products": [
+    [
+     "HONO",
+     1.0
+    ]
+   ],
+   "k0_A": 253863.25533277364,
+   "k0_B": -2.6,
+   "k0_C": 0.0,
+   "kinf_A": 21679706.735999998,
+   "kinf_B": -0.1,
+   "kinf_C": 0.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "HONO"
+   ],
+   "products": [
+    [
+     "NO",
+     1.0
+    ],
+    [
+     "OH",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_HONO",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "HONO"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 10839853.367999999,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HONO",
+    "HONO"
+   ],
+   "products": [
+    [
+     "NO",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 0.00602214076,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "NO2",
+    "OH"
+   ],
+   "products": [
+    [
+     "HNO3",
+     1.0
+    ]
+   ],
+   "k0_A": 725323.5866650676,
+   "k0_B": -3.0,
+   "k0_C": 0.0,
+   "kinf_A": 15055351.9,
+   "kinf_B": 0.0,
+   "kinf_C": 0.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "HNO3"
+   ],
+   "products": [
+    [
+     "NO3",
+     1.0
+    ]
+   ],
+   "A": 14453.137824,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "OH",
+    "HNO3"
+   ],
+   "products": [
+    [
+     "NO3",
+     1.0
+    ]
+   ],
+   "k0_A": 235.73016566614695,
+   "k0_B": 0.0,
+   "k0_C": 1335.0,
+   "kinf_A": 16.259780052,
+   "kinf_B": 0.0,
+   "kinf_C": 2199.0,
+   "Fc": 1.0,
+   "N": 1.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HO2",
+    "NO"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 2107749.266,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "HO2",
+    "NO2"
+   ],
+   "products": [
+    [
+     "PNA",
+     1.0
+    ]
+   ],
+   "k0_A": 65279.12279985608,
+   "k0_B": -3.2,
+   "k0_C": 0.0,
+   "kinf_A": 2830406.1572,
+   "kinf_B": 0.0,
+   "kinf_C": 0.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "PNA"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "k0_A": 24690777116000.0,
+   "k0_B": 0.0,
+   "k0_C": -10650.0,
+   "kinf_A": 4800000000000000.0,
+   "kinf_B": 0.0,
+   "kinf_C": -11170.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "PNA"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 782878.2988,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HO2",
+    "HO2"
+   ],
+   "products": [
+    [
+     "H2O2",
+     1.0
+    ]
+   ],
+   "A": 138509.23747999998,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HO2",
+    "HO2",
+    "M"
+   ],
+   "products": [
+    [
+     "H2O2",
+     1.0
+    ]
+   ],
+   "A": 616.5250486653074,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HO2",
+    "HO2",
+    "H2O"
+   ],
+   "products": [
+    [
+     "H2O2",
+     1.0
+    ]
+   ],
+   "A": 116.77709745307588,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HO2",
+    "HO2",
+    "H2O",
+    "M"
+   ],
+   "products": [
+    [
+     "H2O2",
+     1.0
+    ]
+   ],
+   "A": 0.5197920875179664,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "H2O2"
+   ],
+   "products": [
+    [
+     "OH",
+     2.0
+    ]
+   ],
+   "label": "PHOTO_H2O2",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "H2O2"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 1746420.8204,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O1D",
+    "H2"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 66243548.36,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "H2"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 3312177.418,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "O"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 13248709.672,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "OH"
+   ],
+   "products": [
+    [
+     "O",
+     1.0
+    ]
+   ],
+   "A": 2529299.1192,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "OH",
+    "OH"
+   ],
+   "products": [
+    [
+     "H2O2",
+     1.0
+    ]
+   ],
+   "k0_A": 250236.63739944831,
+   "k0_B": -1.0,
+   "k0_C": 0.0,
+   "kinf_A": 15657565.976,
+   "kinf_B": 0.0,
+   "kinf_C": 0.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HO2",
+    "O"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ]
+   ],
+   "A": 18066422.28,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "H2O2",
+    "O"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 843099.7064,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "O"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 6022140.76,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "OH"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 13248709.672,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "HO2"
+   ],
+   "products": [
+    [
+     "HNO3",
+     1.0
+    ]
+   ],
+   "A": 2107749.266,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "O3"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 6.02214076,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "NO3"
+   ],
+   "products": [
+    [
+     "NO2",
+     2.0
+    ]
+   ],
+   "A": 511881.9646,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "PNA"
+   ],
+   "products": [
+    [
+     "HO2",
+     0.61
+    ],
+    [
+     "NO2",
+     0.61
+    ],
+    [
+     "OH",
+     0.39
+    ],
+    [
+     "NO3",
+     0.39
+    ]
+   ],
+   "label": "PHOTO_PNA",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "HNO3"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_HNO3",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "N2O5"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ],
+    [
+     "NO3",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_N2O5",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "XO2",
+    "NO"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 1565756.5976,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "XO2N",
+    "NO"
+   ],
+   "products": [
+    [
+     "NTR",
+     1.0
+    ]
+   ],
+   "A": 1565756.5976,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "XO2",
+    "HO2"
+   ],
+   "products": [
+    [
+     "ROOH",
+     1.0
+    ]
+   ],
+   "A": 451660.55700000003,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "XO2N",
+    "HO2"
+   ],
+   "products": [
+    [
+     "ROOH",
+     1.0
+    ]
+   ],
+   "A": 451660.55700000003,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NTR",
+    "OH"
+   ],
+   "products": [
+    [
+     "HNO3",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "FORM",
+     0.33
+    ],
+    [
+     "ALD2",
+     0.33
+    ],
+    [
+     "ALDX",
+     0.33
+    ],
+    [
+     "PAR",
+     -0.66
+    ]
+   ],
+   "A": 355306.30484,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "NTR"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "FORM",
+     0.33
+    ],
+    [
+     "ALD2",
+     0.33
+    ],
+    [
+     "ALDX",
+     0.33
+    ],
+    [
+     "PAR",
+     -0.66
+    ]
+   ],
+   "label": "PHOTO_NTR",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ROOH",
+    "OH"
+   ],
+   "products": [
+    [
+     "XO2",
+     1.0
+    ],
+    [
+     "ALD2",
+     0.5
+    ],
+    [
+     "ALDX",
+     0.5
+    ]
+   ],
+   "A": 1812664.36876,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "ROOH"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "ALD2",
+     0.5
+    ],
+    [
+     "ALDX",
+     0.5
+    ]
+   ],
+   "label": "PHOTO_ROOH",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "CO"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 86718.826944,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "CO",
+    "M"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 1243.9299511305908,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "CH4"
+   ],
+   "products": [
+    [
+     "MEO2",
+     1.0
+    ]
+   ],
+   "A": 1475424.4862,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "MEO2",
+    "NO"
+   ],
+   "products": [
+    [
+     "FORM",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 1686199.4128,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "MEO2",
+    "HO2"
+   ],
+   "products": [
+    [
+     "MEPX",
+     1.0
+    ]
+   ],
+   "A": 246907.77116,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "MEO2",
+    "MEO2"
+   ],
+   "products": [
+    [
+     "FORM",
+     1.37
+    ],
+    [
+     "HO2",
+     0.74
+    ],
+    [
+     "MEOH",
+     0.63
+    ]
+   ],
+   "A": 57210.33722,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "MEPX",
+    "OH"
+   ],
+   "products": [
+    [
+     "MEO2",
+     0.7
+    ],
+    [
+     "XO2",
+     0.3
+    ],
+    [
+     "HO2",
+     0.3
+    ]
+   ],
+   "A": 2288413.4888,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "MEPX"
+   ],
+   "products": [
+    [
+     "FORM",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "OH",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_MEPX",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "MEOH",
+    "OH"
+   ],
+   "products": [
+    [
+     "FORM",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 4396162.7548,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "FORM",
+    "OH"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "A": 5419926.683999999,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "FORM"
+   ],
+   "products": [
+    [
+     "HO2",
+     2.0
+    ],
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_FORM_to_HO2",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "FORM"
+   ],
+   "products": [
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_FORM_to_CO",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "FORM",
+    "O"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "A": 20475278.584,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "FORM",
+    "NO3"
+   ],
+   "products": [
+    [
+     "HNO3",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "A": 349.28416408,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "FORM",
+    "HO2"
+   ],
+   "products": [
+    [
+     "HCO3",
+     1.0
+    ]
+   ],
+   "A": 5841.4765372,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HCO3"
+   ],
+   "products": [
+    [
+     "FORM",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 2400000000000.0,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HCO3",
+    "NO"
+   ],
+   "products": [
+    [
+     "FACD",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 3372398.8256,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HCO3",
+    "HO2"
+   ],
+   "products": [
+    [
+     "MEPX",
+     1.0
+    ]
+   ],
+   "A": 3372.3988256000002,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "FACD",
+    "OH"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 240885.6304,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ALD2",
+    "O"
+   ],
+   "products": [
+    [
+     "C2O3",
+     1.0
+    ],
+    [
+     "OH",
+     1.0
+    ]
+   ],
+   "A": 10839853.367999999,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ALD2",
+    "OH"
+   ],
+   "products": [
+    [
+     "C2O3",
+     1.0
+    ]
+   ],
+   "A": 3372398.8256,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ALD2",
+    "NO3"
+   ],
+   "products": [
+    [
+     "C2O3",
+     1.0
+    ],
+    [
+     "HNO3",
+     1.0
+    ]
+   ],
+   "A": 843099.7064,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "ALD2"
+   ],
+   "products": [
+    [
+     "MEO2",
+     1.0
+    ],
+    [
+     "CO",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_ALD2",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "C2O3",
+    "NO"
+   ],
+   "products": [
+    [
+     "MEO2",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 4877934.0156,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "C2O3",
+    "NO2"
+   ],
+   "products": [
+    [
+     "PAN",
+     1.0
+    ]
+   ],
+   "k0_A": 97918684.19978411,
+   "k0_B": -7.1,
+   "k0_C": 0.0,
+   "kinf_A": 7226568.9120000005,
+   "kinf_B": -0.9,
+   "kinf_C": 0.0,
+   "Fc": 0.3,
+   "N": 1.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "PAN"
+   ],
+   "products": [
+    [
+     "C2O3",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "k0_A": 2950848972400000.0,
+   "k0_B": 0.0,
+   "k0_C": -12100.0,
+   "kinf_A": 5.4e+16,
+   "kinf_B": 0.0,
+   "kinf_C": -13830.0,
+   "Fc": 0.3,
+   "N": 1.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "PAN"
+   ],
+   "products": [
+    [
+     "C2O3",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_PAN",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "C2O3",
+    "HO2"
+   ],
+   "products": [
+    [
+     "PACD",
+     0.8
+    ],
+    [
+     "AACD",
+     0.2
+    ],
+    [
+     "O3",
+     0.2
+    ]
+   ],
+   "A": 258952.05268,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "C2O3",
+    "MEO2"
+   ],
+   "products": [
+    [
+     "MEO2",
+     0.9
+    ],
+    [
+     "HO2",
+     0.9
+    ],
+    [
+     "FORM",
+     1.0
+    ],
+    [
+     "AACD",
+     0.1
+    ]
+   ],
+   "A": 1204428.152,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "C2O3",
+    "XO2"
+   ],
+   "products": [
+    [
+     "MEO2",
+     0.9
+    ],
+    [
+     "AACD",
+     0.1
+    ]
+   ],
+   "A": 264974.19344,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "C2O3",
+    "C2O3"
+   ],
+   "products": [
+    [
+     "MEO2",
+     2.0
+    ]
+   ],
+   "A": 1746420.8204,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "PACD",
+    "OH"
+   ],
+   "products": [
+    [
+     "C2O3",
+     1.0
+    ]
+   ],
+   "A": 240885.6304,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "PACD"
+   ],
+   "products": [
+    [
+     "MEO2",
+     1.0
+    ],
+    [
+     "OH",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_PACD",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "AACD",
+    "OH"
+   ],
+   "products": [
+    [
+     "MEO2",
+     1.0
+    ]
+   ],
+   "A": 240885.6304,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ALDX",
+    "O"
+   ],
+   "products": [
+    [
+     "CXO3",
+     1.0
+    ],
+    [
+     "OH",
+     1.0
+    ]
+   ],
+   "A": 7828782.988,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ALDX",
+    "OH"
+   ],
+   "products": [
+    [
+     "CXO3",
+     1.0
+    ]
+   ],
+   "A": 3071291.7876,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ALDX",
+    "NO3"
+   ],
+   "products": [
+    [
+     "CXO3",
+     1.0
+    ],
+    [
+     "HNO3",
+     1.0
+    ]
+   ],
+   "A": 3914.391494,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "ALDX"
+   ],
+   "products": [
+    [
+     "MEO2",
+     1.0
+    ],
+    [
+     "CO",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_ALDX",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CXO3",
+    "NO"
+   ],
+   "products": [
+    [
+     "ALD2",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "XO2",
+     1.0
+    ]
+   ],
+   "A": 4034834.3092,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "CXO3",
+    "NO2"
+   ],
+   "products": [
+    [
+     "PANX",
+     1.0
+    ]
+   ],
+   "k0_A": 97918684.19978411,
+   "k0_B": -7.1,
+   "k0_C": 0.0,
+   "kinf_A": 7226568.9120000005,
+   "kinf_B": -0.9,
+   "kinf_C": 0.0,
+   "Fc": 0.3,
+   "N": 1.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "PANX"
+   ],
+   "products": [
+    [
+     "CXO3",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "k0_A": 2950848972400000.0,
+   "k0_B": 0.0,
+   "k0_C": -12100.0,
+   "kinf_A": 5.4e+16,
+   "kinf_B": 0.0,
+   "kinf_C": -13830.0,
+   "Fc": 0.3,
+   "N": 1.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "PANX"
+   ],
+   "products": [
+    [
+     "CXO3",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_PANX",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "PANX",
+    "OH"
+   ],
+   "products": [
+    [
+     "ALD2",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 180664.2228,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CXO3",
+    "HO2"
+   ],
+   "products": [
+    [
+     "PACD",
+     0.8
+    ],
+    [
+     "AACD",
+     0.2
+    ],
+    [
+     "O3",
+     0.2
+    ]
+   ],
+   "A": 258952.05268,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CXO3",
+    "MEO2"
+   ],
+   "products": [
+    [
+     "ALD2",
+     0.9
+    ],
+    [
+     "XO2",
+     0.9
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "AACD",
+     0.1
+    ],
+    [
+     "FORM",
+     0.1
+    ]
+   ],
+   "A": 1204428.152,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CXO3",
+    "XO2"
+   ],
+   "products": [
+    [
+     "ALD2",
+     0.9
+    ],
+    [
+     "AACD",
+     0.1
+    ]
+   ],
+   "A": 264974.19344,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CXO3",
+    "CXO3"
+   ],
+   "products": [
+    [
+     "ALD2",
+     2.0
+    ],
+    [
+     "XO2",
+     2.0
+    ],
+    [
+     "HO2",
+     2.0
+    ]
+   ],
+   "A": 1746420.8204,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CXO3",
+    "C2O3"
+   ],
+   "products": [
+    [
+     "MEO2",
+     1.0
+    ],
+    [
+     "XO2",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "ALD2",
+     1.0
+    ]
+   ],
+   "A": 1746420.8204,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "PAR",
+    "OH"
+   ],
+   "products": [
+    [
+     "XO2",
+     0.87
+    ],
+    [
+     "XO2N",
+     0.13
+    ],
+    [
+     "HO2",
+     0.11
+    ],
+    [
+     "ALD2",
+     0.06
+    ],
+    [
+     "PAR",
+     -0.11
+    ],
+    [
+     "ROR",
+     0.76
+    ],
+    [
+     "ALDX",
+     0.05
+    ]
+   ],
+   "A": 487793.40155999997,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ROR"
+   ],
+   "products": [
+    [
+     "XO2",
+     0.96
+    ],
+    [
+     "ALD2",
+     0.6
+    ],
+    [
+     "HO2",
+     0.94
+    ],
+    [
+     "PAR",
+     -2.1
+    ],
+    [
+     "XO2N",
+     0.04
+    ],
+    [
+     "ROR",
+     0.02
+    ],
+    [
+     "ALDX",
+     0.5
+    ]
+   ],
+   "A": 1000000000000000.0,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ROR"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 1600.0,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "ROR",
+    "NO2"
+   ],
+   "products": [
+    [
+     "NTR",
+     1.0
+    ]
+   ],
+   "A": 9033211.14,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O",
+    "OLE"
+   ],
+   "products": [
+    [
+     "ALD2",
+     0.2
+    ],
+    [
+     "ALDX",
+     0.3
+    ],
+    [
+     "HO2",
+     0.3
+    ],
+    [
+     "XO2",
+     0.2
+    ],
+    [
+     "CO",
+     0.2
+    ],
+    [
+     "FORM",
+     0.2
+    ],
+    [
+     "XO2N",
+     0.01
+    ],
+    [
+     "PAR",
+     0.2
+    ],
+    [
+     "OH",
+     0.1
+    ]
+   ],
+   "A": 6022140.76,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "OLE"
+   ],
+   "products": [
+    [
+     "FORM",
+     0.8
+    ],
+    [
+     "ALD2",
+     0.33
+    ],
+    [
+     "ALDX",
+     0.62
+    ],
+    [
+     "XO2",
+     0.8
+    ],
+    [
+     "HO2",
+     0.95
+    ],
+    [
+     "PAR",
+     -0.7
+    ]
+   ],
+   "A": 19270850.432,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O3",
+    "OLE"
+   ],
+   "products": [
+    [
+     "ALD2",
+     0.18
+    ],
+    [
+     "FORM",
+     0.74
+    ],
+    [
+     "ALDX",
+     0.32
+    ],
+    [
+     "XO2",
+     0.22
+    ],
+    [
+     "OH",
+     0.1
+    ],
+    [
+     "CO",
+     0.33
+    ],
+    [
+     "HO2",
+     0.44
+    ],
+    [
+     "PAR",
+     -1.0
+    ]
+   ],
+   "A": 3914.391494,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "OLE"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ],
+    [
+     "FORM",
+     1.0
+    ],
+    [
+     "XO2",
+     0.91
+    ],
+    [
+     "XO2N",
+     0.09
+    ],
+    [
+     "ALDX",
+     0.56
+    ],
+    [
+     "ALD2",
+     0.35
+    ],
+    [
+     "PAR",
+     -1.0
+    ]
+   ],
+   "A": 421549.8532,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O",
+    "ETH"
+   ],
+   "products": [
+    [
+     "FORM",
+     1.0
+    ],
+    [
+     "HO2",
+     1.7
+    ],
+    [
+     "CO",
+     1.0
+    ],
+    [
+     "XO2",
+     0.7
+    ],
+    [
+     "OH",
+     0.3
+    ]
+   ],
+   "A": 6263026.3904,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "OH",
+    "ETH"
+   ],
+   "products": [
+    [
+     "XO2",
+     1.0
+    ],
+    [
+     "FORM",
+     1.56
+    ],
+    [
+     "ALDX",
+     0.22
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "k0_A": 36266179.333253376,
+   "k0_B": -0.8,
+   "k0_C": 0.0,
+   "kinf_A": 5299483.868799999,
+   "kinf_B": 0.0,
+   "kinf_C": 0.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O3",
+    "ETH"
+   ],
+   "products": [
+    [
+     "FORM",
+     1.0
+    ],
+    [
+     "CO",
+     0.63
+    ],
+    [
+     "HO2",
+     0.13
+    ],
+    [
+     "OH",
+     0.13
+    ],
+    [
+     "FACD",
+     0.37
+    ]
+   ],
+   "A": 7226.568912,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "ETH"
+   ],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ],
+    [
+     "XO2",
+     1.0
+    ],
+    [
+     "FORM",
+     2.0
+    ]
+   ],
+   "A": 1987306.4508,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "IOLE",
+    "O"
+   ],
+   "products": [
+    [
+     "ALD2",
+     1.24
+    ],
+    [
+     "ALDX",
+     0.66
+    ],
+    [
+     "HO2",
+     0.1
+    ],
+    [
+     "XO2",
+     0.1
+    ],
+    [
+     "CO",
+     0.1
+    ],
+    [
+     "PAR",
+     0.1
+    ]
+   ],
+   "A": 13850923.748000002,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "IOLE",
+    "OH"
+   ],
+   "products": [
+    [
+     "ALD2",
+     1.3
+    ],
+    [
+     "ALDX",
+     0.7
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "XO2",
+     1.0
+    ]
+   ],
+   "A": 6022140.76,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "IOLE",
+    "O3"
+   ],
+   "products": [
+    [
+     "ALD2",
+     0.65
+    ],
+    [
+     "ALDX",
+     0.35
+    ],
+    [
+     "FORM",
+     0.25
+    ],
+    [
+     "CO",
+     0.25
+    ],
+    [
+     "O",
+     0.5
+    ],
+    [
+     "OH",
+     0.5
+    ],
+    [
+     "HO2",
+     0.5
+    ]
+   ],
+   "A": 5058.5982384,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "IOLE",
+    "NO3"
+   ],
+   "products": [
+    [
+     "ALD2",
+     1.18
+    ],
+    [
+     "ALDX",
+     0.64
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 578125.51296,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "TOL",
+    "OH"
+   ],
+   "products": [
+    [
+     "HO2",
+     0.44
+    ],
+    [
+     "XO2",
+     0.08
+    ],
+    [
+     "CRES",
+     0.36
+    ],
+    [
+     "TO2",
+     0.56
+    ],
+    [
+     "TOLRO2",
+     0.765
+    ]
+   ],
+   "A": 1083985.3368,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "TO2",
+    "NO"
+   ],
+   "products": [
+    [
+     "NO2",
+     0.9
+    ],
+    [
+     "HO2",
+     0.9
+    ],
+    [
+     "OPEN",
+     0.9
+    ],
+    [
+     "NTR",
+     0.1
+    ]
+   ],
+   "A": 4877934.0156,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "TO2"
+   ],
+   "products": [
+    [
+     "CRES",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 4.2,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "CRES"
+   ],
+   "products": [
+    [
+     "CRO",
+     0.4
+    ],
+    [
+     "XO2",
+     0.6
+    ],
+    [
+     "HO2",
+     0.6
+    ],
+    [
+     "OPEN",
+     0.3
+    ]
+   ],
+   "A": 24690777.116,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CRES",
+    "NO3"
+   ],
+   "products": [
+    [
+     "CRO",
+     1.0
+    ],
+    [
+     "HNO3",
+     1.0
+    ]
+   ],
+   "A": 13248709.672,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CRO",
+    "NO2"
+   ],
+   "products": [
+    [
+     "NTR",
+     1.0
+    ]
+   ],
+   "A": 8430997.064,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CRO",
+    "HO2"
+   ],
+   "products": [
+    [
+     "CRES",
+     1.0
+    ]
+   ],
+   "A": 3312177.418,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "OPEN"
+   ],
+   "products": [
+    [
+     "C2O3",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_OPEN",
+   "scaling_factor": 9.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OPEN",
+    "OH"
+   ],
+   "products": [
+    [
+     "XO2",
+     1.0
+    ],
+    [
+     "CO",
+     2.0
+    ],
+    [
+     "HO2",
+     2.0
+    ],
+    [
+     "C2O3",
+     1.0
+    ],
+    [
+     "FORM",
+     1.0
+    ]
+   ],
+   "A": 18066422.28,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OPEN",
+    "O3"
+   ],
+   "products": [
+    [
+     "ALDX",
+     0.03
+    ],
+    [
+     "C2O3",
+     0.62
+    ],
+    [
+     "FORM",
+     0.7
+    ],
+    [
+     "XO2",
+     0.03
+    ],
+    [
+     "CO",
+     0.69
+    ],
+    [
+     "OH",
+     0.08
+    ],
+    [
+     "HO2",
+     0.76
+    ],
+    [
+     "MGLY",
+     0.2
+    ]
+   ],
+   "A": 32.519560104,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "XYL"
+   ],
+   "products": [
+    [
+     "HO2",
+     0.7
+    ],
+    [
+     "XO2",
+     0.5
+    ],
+    [
+     "CRES",
+     0.2
+    ],
+    [
+     "MGLY",
+     0.8
+    ],
+    [
+     "PAR",
+     1.1
+    ],
+    [
+     "TO2",
+     0.3
+    ],
+    [
+     "XYLRO2",
+     0.804
+    ]
+   ],
+   "A": 10237639.292,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "MGLY"
+   ],
+   "products": [
+    [
+     "XO2",
+     1.0
+    ],
+    [
+     "C2O3",
+     1.0
+    ]
+   ],
+   "A": 10839853.367999999,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "MGLY"
+   ],
+   "products": [
+    [
+     "C2O3",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_MGLY",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O",
+    "ISOP"
+   ],
+   "products": [
+    [
+     "ISPD",
+     0.75
+    ],
+    [
+     "FORM",
+     0.5
+    ],
+    [
+     "XO2",
+     0.25
+    ],
+    [
+     "HO2",
+     0.25
+    ],
+    [
+     "CXO3",
+     0.25
+    ],
+    [
+     "PAR",
+     0.25
+    ]
+   ],
+   "A": 21679706.735999998,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "ISOP"
+   ],
+   "products": [
+    [
+     "ISPD",
+     0.912
+    ],
+    [
+     "FORM",
+     0.629
+    ],
+    [
+     "XO2",
+     0.991
+    ],
+    [
+     "HO2",
+     0.912
+    ],
+    [
+     "XO2N",
+     0.088
+    ]
+   ],
+   "A": 15296237.5304,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O3",
+    "ISOP"
+   ],
+   "products": [
+    [
+     "ISPD",
+     0.65
+    ],
+    [
+     "FORM",
+     0.6
+    ],
+    [
+     "XO2",
+     0.2
+    ],
+    [
+     "HO2",
+     0.066
+    ],
+    [
+     "OH",
+     0.266
+    ],
+    [
+     "CXO3",
+     0.2
+    ],
+    [
+     "ALDX",
+     0.15
+    ],
+    [
+     "PAR",
+     0.35
+    ],
+    [
+     "CO",
+     0.066
+    ]
+   ],
+   "A": 4733.402637360001,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "ISOP"
+   ],
+   "products": [
+    [
+     "ISPD",
+     0.2
+    ],
+    [
+     "NTR",
+     0.8
+    ],
+    [
+     "XO2",
+     1.0
+    ],
+    [
+     "HO2",
+     0.8
+    ],
+    [
+     "NO2",
+     0.2
+    ],
+    [
+     "ALDX",
+     0.8
+    ],
+    [
+     "PAR",
+     2.4
+    ]
+   ],
+   "A": 1824708.65028,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "ISPD"
+   ],
+   "products": [
+    [
+     "PAR",
+     1.565
+    ],
+    [
+     "FORM",
+     0.167
+    ],
+    [
+     "XO2",
+     0.713
+    ],
+    [
+     "HO2",
+     0.503
+    ],
+    [
+     "CO",
+     0.334
+    ],
+    [
+     "MGLY",
+     0.168
+    ],
+    [
+     "ALD2",
+     0.252
+    ],
+    [
+     "C2O3",
+     0.21
+    ],
+    [
+     "CXO3",
+     0.25
+    ],
+    [
+     "ALDX",
+     0.12
+    ]
+   ],
+   "A": 20234392.9536,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O3",
+    "ISPD"
+   ],
+   "products": [
+    [
+     "C2O3",
+     0.114
+    ],
+    [
+     "FORM",
+     0.15
+    ],
+    [
+     "MGLY",
+     0.85
+    ],
+    [
+     "HO2",
+     0.154
+    ],
+    [
+     "OH",
+     0.268
+    ],
+    [
+     "XO2",
+     0.064
+    ],
+    [
+     "ALD2",
+     0.02
+    ],
+    [
+     "PAR",
+     0.36
+    ],
+    [
+     "CO",
+     0.225
+    ]
+   ],
+   "A": 4.2757199396,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO3",
+    "ISPD"
+   ],
+   "products": [
+    [
+     "ALDX",
+     0.357
+    ],
+    [
+     "FORM",
+     0.282
+    ],
+    [
+     "PAR",
+     1.282
+    ],
+    [
+     "HO2",
+     0.925
+    ],
+    [
+     "CO",
+     0.643
+    ],
+    [
+     "NTR",
+     0.85
+    ],
+    [
+     "CXO3",
+     0.075
+    ],
+    [
+     "XO2",
+     0.075
+    ],
+    [
+     "HNO3",
+     0.15
+    ]
+   ],
+   "A": 602.2140760000001,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "ISPD"
+   ],
+   "products": [
+    [
+     "CO",
+     0.333
+    ],
+    [
+     "ALD2",
+     0.067
+    ],
+    [
+     "FORM",
+     0.9
+    ],
+    [
+     "PAR",
+     0.832
+    ],
+    [
+     "HO2",
+     1.033
+    ],
+    [
+     "XO2",
+     0.7
+    ],
+    [
+     "C2O3",
+     0.967
+    ]
+   ],
+   "label": "PHOTO_ISPD",
+   "scaling_factor": 0.0036,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "TERP",
+    "O"
+   ],
+   "products": [
+    [
+     "ALDX",
+     0.15
+    ],
+    [
+     "PAR",
+     5.12
+    ]
+   ],
+   "A": 21679706.735999998,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "TERP",
+    "OH"
+   ],
+   "products": [
+    [
+     "HO2",
+     0.75
+    ],
+    [
+     "XO2",
+     1.25
+    ],
+    [
+     "XO2N",
+     0.25
+    ],
+    [
+     "FORM",
+     0.28
+    ],
+    [
+     "PAR",
+     1.66
+    ],
+    [
+     "ALDX",
+     0.47
+    ]
+   ],
+   "A": 9033211.14,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "TERP",
+    "O3"
+   ],
+   "products": [
+    [
+     "OH",
+     0.57
+    ],
+    [
+     "HO2",
+     0.07
+    ],
+    [
+     "XO2",
+     0.76
+    ],
+    [
+     "XO2N",
+     0.18
+    ],
+    [
+     "FORM",
+     0.24
+    ],
+    [
+     "CO",
+     0.001
+    ],
+    [
+     "PAR",
+     7.0
+    ],
+    [
+     "ALDX",
+     0.21
+    ],
+    [
+     "CXO3",
+     0.39
+    ]
+   ],
+   "A": 722.6568912,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "TERP",
+    "NO3"
+   ],
+   "products": [
+    [
+     "NO2",
+     0.47
+    ],
+    [
+     "HO2",
+     0.28
+    ],
+    [
+     "XO2",
+     1.03
+    ],
+    [
+     "XO2N",
+     0.25
+    ],
+    [
+     "ALDX",
+     0.47
+    ],
+    [
+     "NTR",
+     0.53
+    ]
+   ],
+   "A": 2228192.0812,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "TROE",
+   "reactants": [
+    "SO2",
+    "OH"
+   ],
+   "products": [
+    [
+     "SULF",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "k0_A": 108798.53799976013,
+   "k0_B": -3.3,
+   "k0_C": 0.0,
+   "kinf_A": 903321.1140000001,
+   "kinf_B": 0.0,
+   "kinf_C": 0.0,
+   "Fc": 0.6,
+   "N": 1.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "ETOH"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "ALD2",
+     0.9
+    ],
+    [
+     "ALDX",
+     0.05
+    ],
+    [
+     "FORM",
+     0.1
+    ],
+    [
+     "XO2",
+     0.1
+    ]
+   ],
+   "A": 4155277.1244,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "ETHA"
+   ],
+   "products": [
+    [
+     "ALD2",
+     0.991
+    ],
+    [
+     "XO2",
+     0.991
+    ],
+    [
+     "XO2N",
+     0.009
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 5239262.4612,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "NO2",
+    "ISOP"
+   ],
+   "products": [
+    [
+     "ISPD",
+     0.2
+    ],
+    [
+     "NTR",
+     0.8
+    ],
+    [
+     "XO2",
+     1.0
+    ],
+    [
+     "HO2",
+     0.8
+    ],
+    [
+     "NO",
+     0.2
+    ],
+    [
+     "ALDX",
+     0.8
+    ],
+    [
+     "PAR",
+     2.4
+    ]
+   ],
+   "A": 0.0903321114,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "CL2"
+   ],
+   "products": [
+    [
+     "CL",
+     2.0
+    ]
+   ],
+   "label": "PHOTO_CL2",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "O3"
+   ],
+   "products": [
+    [
+     "CLO",
+     1.0
+    ]
+   ],
+   "A": 13850923.748000002,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CLO",
+    "CLO"
+   ],
+   "products": [
+    [
+     "CL2",
+     0.3
+    ],
+    [
+     "CL",
+     1.4
+    ]
+   ],
+   "A": 9816.0894388,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CLO",
+    "NO"
+   ],
+   "products": [
+    [
+     "CL",
+     1.0
+    ],
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "A": 3854170.0864,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CLO",
+    "HO2"
+   ],
+   "products": [
+    [
+     "HOCL",
+     1.0
+    ]
+   ],
+   "A": 1625978.0051999998,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "OH",
+    "FMCL"
+   ],
+   "products": [
+    [
+     "CL",
+     1.0
+    ],
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "A": 301107.038,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "CH4"
+   ],
+   "products": [
+    [
+     "HCL",
+     1.0
+    ],
+    [
+     "MEO2",
+     1.0
+    ]
+   ],
+   "A": 3974612.9016,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "PAR"
+   ],
+   "products": [
+    [
+     "HCL",
+     1.0
+    ],
+    [
+     "XO2",
+     0.87
+    ],
+    [
+     "XO2N",
+     0.13
+    ],
+    [
+     "HO2",
+     0.11
+    ],
+    [
+     "ALD2",
+     0.06
+    ],
+    [
+     "PAR",
+     -0.11
+    ],
+    [
+     "ROR",
+     0.76
+    ],
+    [
+     "ALDX",
+     0.05
+    ]
+   ],
+   "A": 30110703.8,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "ETHA"
+   ],
+   "products": [
+    [
+     "HCL",
+     1.0
+    ],
+    [
+     "ALD2",
+     0.991
+    ],
+    [
+     "XO2",
+     0.991
+    ],
+    [
+     "XO2N",
+     0.009
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 49983768.308,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "ETH"
+   ],
+   "products": [
+    [
+     "FMCL",
+     1.0
+    ],
+    [
+     "XO2",
+     2.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "FORM",
+     1.0
+    ]
+   ],
+   "A": 64436906.13200001,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "OLE"
+   ],
+   "products": [
+    [
+     "FMCL",
+     1.0
+    ],
+    [
+     "ALD2",
+     0.33
+    ],
+    [
+     "ALDX",
+     0.67
+    ],
+    [
+     "XO2",
+     2.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "PAR",
+     -1.0
+    ]
+   ],
+   "A": 150553519.0,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "IOLE"
+   ],
+   "products": [
+    [
+     "HCL",
+     0.3
+    ],
+    [
+     "FMCL",
+     0.7
+    ],
+    [
+     "ALD2",
+     0.45
+    ],
+    [
+     "ALDX",
+     0.55
+    ],
+    [
+     "OLE",
+     0.3
+    ],
+    [
+     "PAR",
+     0.3
+    ],
+    [
+     "XO2",
+     1.7
+    ],
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 210774926.6,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "ISOP"
+   ],
+   "products": [
+    [
+     "HCL",
+     0.15
+    ],
+    [
+     "XO2",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "FMCL",
+     0.85
+    ],
+    [
+     "ISPD",
+     1.0
+    ]
+   ],
+   "A": 258952052.68,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "FORM"
+   ],
+   "products": [
+    [
+     "HCL",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "A": 49381554.232,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "ALD2"
+   ],
+   "products": [
+    [
+     "HCL",
+     1.0
+    ],
+    [
+     "C2O3",
+     1.0
+    ]
+   ],
+   "A": 47574912.004,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "ALDX"
+   ],
+   "products": [
+    [
+     "HCL",
+     1.0
+    ],
+    [
+     "CXO3",
+     1.0
+    ]
+   ],
+   "A": 78287829.88,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "MEOH"
+   ],
+   "products": [
+    [
+     "HCL",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "FORM",
+     1.0
+    ]
+   ],
+   "A": 33121774.18,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "CL",
+    "ETOH"
+   ],
+   "products": [
+    [
+     "HCL",
+     1.0
+    ],
+    [
+     "HO2",
+     1.0
+    ],
+    [
+     "ALD2",
+     1.0
+    ]
+   ],
+   "A": 49381554.232,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "HCL",
+    "OH"
+   ],
+   "products": [
+    [
+     "CL",
+     1.0
+    ]
+   ],
+   "A": 396256.862008,
+   "B": 1.16,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "TOLRO2",
+    "NO"
+   ],
+   "products": [
+    [
+     "NO",
+     1.0
+    ]
+   ],
+   "A": 1625978.0051999998,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "TOLRO2",
+    "HO2"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 114420.67444,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "XYLRO2",
+    "NO"
+   ],
+   "products": [
+    [
+     "NO",
+     1.0
+    ]
+   ],
+   "A": 1625978.0051999998,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "XYLRO2",
+    "HO2"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 114420.67444,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "BENZENE",
+    "OH"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ],
+    [
+     "BENZRO2",
+     0.764
+    ]
+   ],
+   "A": 1487468.7677200001,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "BENZRO2",
+    "NO"
+   ],
+   "products": [
+    [
+     "NO",
+     1.0
+    ]
+   ],
+   "A": 1625978.0051999998,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "BENZRO2",
+    "HO2"
+   ],
+   "products": [
+    [
+     "HO2",
+     1.0
+    ]
+   ],
+   "A": 114420.67444,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "SESQ",
+    "O3"
+   ],
+   "products": [
+    [
+     "O3",
+     1.0
+    ]
+   ],
+   "A": 6985.683281600001,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "SESQ",
+    "OH"
+   ],
+   "products": [
+    [
+     "OH",
+     1.0
+    ]
+   ],
+   "A": 118636172.97199999,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "SESQ",
+    "NO3"
+   ],
+   "products": [
+    [
+     "NO3",
+     1.0
+    ]
+   ],
+   "A": 11442067.444,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "O2"
+   ],
+   "products": [
+    [
+     "O",
+     2.0
+    ]
+   ],
+   "label": "PHOTO_O2",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "NO",
+     1.0
+    ]
+   ],
+   "label": "EMIS_NO",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "NO2",
+     1.0
+    ]
+   ],
+   "label": "EMIS_NO2",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "CO",
+     1.0
+    ]
+   ],
+   "label": "EMIS_CO",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "SO2",
+     1.0
+    ]
+   ],
+   "label": "EMIS_SO2",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "FORM",
+     1.0
+    ]
+   ],
+   "label": "EMIS_FORM",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "MEOH",
+     1.0
+    ]
+   ],
+   "label": "EMIS_MEOH",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "ALD2",
+     1.0
+    ]
+   ],
+   "label": "EMIS_ALD2",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "PAR",
+     1.0
+    ]
+   ],
+   "label": "EMIS_PAR",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "ETH",
+     1.0
+    ]
+   ],
+   "label": "EMIS_ETH",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "OLE",
+     1.0
+    ]
+   ],
+   "label": "EMIS_OLE",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "IOLE",
+     1.0
+    ]
+   ],
+   "label": "EMIS_IOLE",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "TOL",
+     1.0
+    ]
+   ],
+   "label": "EMIS_TOL",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "XYL",
+     1.0
+    ]
+   ],
+   "label": "EMIS_XYL",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [],
+   "products": [
+    [
+     "ISOP",
+     1.0
+    ]
+   ],
+   "label": "EMIS_ISOP",
+   "scaling_factor": 1.0,
+   "source": "EMISSION"
+  }
+ ],
+ "parameters": [
+  "PHOTO_NO2",
+  "PHOTO_O3_to_O3P",
+  "PHOTO_O3_to_O1D",
+  "PHOTO_NO3_to_NO2",
+  "PHOTO_NO3_to_NO",
+  "PHOTO_HONO",
+  "PHOTO_H2O2",
+  "PHOTO_PNA",
+  "PHOTO_HNO3",
+  "PHOTO_N2O5",
+  "PHOTO_NTR",
+  "PHOTO_ROOH",
+  "PHOTO_MEPX",
+  "PHOTO_FORM_to_HO2",
+  "PHOTO_FORM_to_CO",
+  "PHOTO_ALD2",
+  "PHOTO_PAN",
+  "PHOTO_PACD",
+  "PHOTO_ALDX",
+  "PHOTO_PANX",
+  "PHOTO_OPEN",
+  "PHOTO_MGLY",
+  "PHOTO_ISPD",
+  "PHOTO_CL2",
+  "PHOTO_O2",
+  "EMIS_NO",
+  "EMIS_NO2",
+  "EMIS_CO",
+  "EMIS_SO2",
+  "EMIS_FORM",
+  "EMIS_MEOH",
+  "EMIS_ALD2",
+  "EMIS_PAR",
+  "EMIS_ETH",
+  "EMIS_OLE",
+  "EMIS_IOLE",
+  "EMIS_TOL",
+  "EMIS_XYL",
+  "EMIS_ISOP"
+ ],
+ "initial": {
+  "temperature": 287.45,
+  "pressure": 101319.9,
+  "concentrations": {
+   "NO": 1e-09,
+   "NO2": 1e-08,
+   "HNO3": 1e-08,
+   "O3": 2e-06,
+   "H2O2": 5e-08,
+   "CO": 6e-06,
+   "SO2": 3e-08,
+   "HCL": 9e-08,
+   "CH4": 9e-05,
+   "ETHA": 1e-08,
+   "FORM": 9e-08,
+   "MEOH": 9e-09,
+   "MEPX": 2e-08,
+   "ALD2": 1e-08,
+   "PAR": 2e-08,
+   "ETH": 2e-09,
+   "OLE": 4e-10,
+   "IOLE": 3e-11,
+   "TOL": 1e-09,
+   "XYL": 1e-09,
+   "NTR": 1e-09,
+   "PAN": 3e-08,
+   "AACD": 2e-09,
+   "ROOH": 1e-09,
+   "ISOP": 2e-07,
+   "O2": 56.0,
+   "H2": 3e-05,
+   "H2O": 128.0
+  },
+  "parameters": {
+   "EMIS_NO": 1.44e-10,
+   "EMIS_NO2": 7.56e-12,
+   "EMIS_CO": 1.96e-09,
+   "EMIS_SO2": 1.06e-09,
+   "EMIS_FORM": 1.02e-11,
+   "EMIS_MEOH": 5.92e-13,
+   "EMIS_ALD2": 4.25e-12,
+   "EMIS_PAR": 4.27e-10,
+   "EMIS_ETH": 4.62e-11,
+   "EMIS_OLE": 1.49e-11,
+   "EMIS_IOLE": 1.49e-11,
+   "EMIS_TOL": 1.53e-11,
+   "EMIS_XYL": 1.4e-11,
+   "EMIS_ISOP": 6.03e-12,
+   "PHOTO_NO2": 0.00477,
+   "PHOTO_O3_to_O1D": 2.26e-06,
+   "PHOTO_O3_to_O3P": 0.000252999999999999,
+   "PHOTO_NO3_to_NO2": 0.116999999999999,
+   "PHOTO_NO3_to_NO": 0.0144,
+   "PHOTO_HONO": 0.000918,
+   "PHOTO_H2O2": 2.59e-06,
+   "PHOTO_PNA": 1.89e-06,
+   "PHOTO_HNO3": 8.61e-08,
+   "PHOTO_NTR": 4.77e-07,
+   "PHOTO_ROOH": 1.81e-06,
+   "PHOTO_MEPX": 1.81e-06,
+   "PHOTO_FORM_to_HO2": 7.93e-06,
+   "PHOTO_FORM_to_CO": 2.2e-05,
+   "PHOTO_ALD2": 2.2e-06,
+   "PHOTO_PACD": 1.81e-06,
+   "PHOTO_ALDX": 2.2e-06,
+   "PHOTO_OPEN": 0.000645,
+   "PHOTO_MGLY": 7.64e-05,
+   "PHOTO_ISPD": 1.98e-09,
+   "PHOTO_CL2": 0.0,
+   "PHOTO_N2O5": 0.0,
+   "PHOTO_O2": 0.0,
+   "PHOTO_PAN": 0.0,
+   "PHOTO_PANX": 0.0
+  },
+  "environment": {
+   "air_density": 42.3934005,
+   "time_step": 60.0
+  }
+ },
+ "parameters_without_initial_value": [
+  "PHOTO_CL2",
+  "PHOTO_N2O5",
+  "PHOTO_O2",
+  "PHOTO_PAN",
+  "PHOTO_PANX"
+ ],
+ "dropped": {},
+ "summary": {
+  "species": 67,
+  "reactions": 200,
+  "by_source": {
+   "PHOTOLYSIS": 25,
+   "ARRHENIUS": 145,
+   "TROE": 16,
+   "EMISSION": 14
+  }
+ }
+}

@@ -1250,6 +1250,28 @@ Calibration on this machine
   a converter into the entry's own format, builds, and compares its generic
   and specialized programs with each other and with MICM, without changing
   the entry.
+- 01:50: sol-high's agent found that its specialized program runs its
+  generated kernels only on full 32-cell groups, so the 4 identical cells
+  tested its generic path. `admin/vary_cells.py` made 64 distinct cells per
+  mechanism. MICM gives identical results on them with its default grouping
+  and with 32-cell groups. Every agent was asked to run them too and to show
+  whether its generated kernels ran.
+- 02:01: all nine done (`results/2026-10-23-tier2-exercises`, section "Exercise
+  (c)"). Every generator took Chapman and Carbon Bond 5, emissions included,
+  through the entry's own benchmark programs, with no change to the entry and
+  no driver, only a converter of 76 to 124 lines. Every result agrees with
+  MICM within 3.4e-14 at 4 and at 64 cells, and astra-high and sol-xhigh
+  reproduce it bit for bit. At 64 cells all nine ran their generated kernels;
+  at 4 cells, astra-high and sol-high fell back to generic kernels.
+  - Claude Code reran `compare_final.py` on every final state the agents
+    wrote: all protocol runs pass.
+  - Every worktree ended with no tracked change.
+  - Traps found: unit defaults that silently rescale (astra-xhigh,
+    astra-high), checks on unused species or parameters (sol-max,
+    astra-xhigh), an undocumented override (luna-max), and a divide by zero
+    for a mechanism without user-defined rates (luna-high).
+- 02:02: the 1-thread session's idle wait started (tmux `tier2-timing-1`,
+  `~/NSF-NCAR/tier2-work/timing/run-ranking-1.sh`).
 
 # Tier 3
 

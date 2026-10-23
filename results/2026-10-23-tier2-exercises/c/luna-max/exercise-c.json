@@ -1,0 +1,84 @@
+{
+ "run": "luna-max",
+ "route": "benchmark programs",
+ "config_file": "mechanisms/ts1.json (Makefile variable TS1_JSON; passed as TS1_JSON=<converted file> on the make command line, so the tracked file was never swapped)",
+ "converter_lines": 124,
+ "driver_lines": 0,
+ "mechanisms": {
+  "chapman": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.025,
+   "generated_c_lines": 304,
+   "generated_c_bytes": 12126,
+   "build_exit": 0,
+   "build_s": 0.89,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 6.28e-16",
+   "specialized_vs_micm": "PASS 6.28e-16",
+   "notes": "5 species (M as third body, so 4 state species), 7 reactions (4 ARRHENIUS, one with M as reactant and product; 3 USER_DEFINED photolysis). Generator: median of 5 runs, specialized mode 0.025 s, generic-table mode 0.025 s (make bench runs both, with python3 3.13.1). Generated C: specialized 304 lines / 12126 bytes (build/ts1_model_specialized.c); generic tables 41 lines / 3395 bytes (build/ts1_model.c). make bench from make clean: median of 3 = 0.89 s (0.93, 0.89, 0.88); first run 1.05 s; TS1 for comparison 3.11 s. clang -O3 compile of the generated files alone: specialized 0.058 s, generic 0.046 s. Both programs: 540 internal steps (9 per 60 s interval), 0 rejected; one-thread elapsed for the 60 timed steps 0.341 ms generic, 0.21 ms specialized (single runs, not a benchmark).",
+   "generated_kernels_used": true,
+   "generated_kernels_note": "4-cell run: generated kernels ran. Code path (src/solver.c): the tests that select the generated kernels involve neither the cell count nor the group size. chem_solver_create (lines 862-863) computes each cell's rate constants with kernels->rates whenever the model has a kernel table. evaluate_rhs (255-258) calls kernels->evaluate when there are no constraints and kernels->species_count == pattern.n and kernels->pattern_nonzeros == pattern.nnz. solve_group (673-682) installs kernels->factor and kernels->solve under the same size test when the factor and solve callbacks are the defaults, which chem_rosenbrock_default sets and benchmark.c never changes. Cell groups only split cells across threads and share one step size; every cell goes through the same per-cell calls (line 700), so this entry has no full-group or vector-width path to fall back from. ts1_bench_specialized links .kernels=&chem_generated_kernels (pattern_nonzeros 14 for chapman, 743 for both CB5 variants). Dynamic check: lldb and sample could not attach (developer mode is off; both waited for authorization and were killed), so a diagnostic driver (kernel_check/kernel_check.c, 132 lines, public kinetics.h API only) linked the same solver sources and generated model. It copies chem_model with the generated kernel table, keeping its sizes but wrapping each function with a counter, and runs the same problem (same CSV and cell count, group size 0, 1 thread, warm-up plus 60 steps of 60 s). 4 cells: rates 4, evaluate 4,392, factor 2,196, solve 6,588 generated-kernel calls. These equal the solver's totals (function_calls 1,098, decompositions 549, solves 1,647 including the warm-up) times 4, so every call was generated. The driver's final state is byte-identical to ts1_bench_specialized's.",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.46e-15",
+    "specialized_vs_micm": "PASS 2.46e-15",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells from cells64.csv, one group of 64 (default grouping, 1 thread), the same binaries as the main runs (rebuilt by the same route, byte-identical). The MICM comparisons are against micm-run64; micm-run64-g32 gives the same results. Both programs: exit 0, 540 internal steps, 0 rejected. Elapsed for the 60 timed steps: 5.131 ms generic, 3.074 ms specialized (single runs). Generated kernels ran: same code path as the 4-cell run (see generated_kernels_note). 64 cells: rates 64, evaluate 70,272, factor 35,136, solve 105,408 generated-kernel calls. These equal the solver's totals (function_calls 1,098, decompositions 549, solves 1,647 including the warm-up) times 64, so every call was generated. The driver's final state is byte-identical to ts1_bench_specialized's."
+   }
+  },
+  "carbon_bond_5": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.034,
+   "generated_c_lines": 9682,
+   "generated_c_bytes": 478951,
+   "build_exit": 0,
+   "build_s": 1.38,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 3.46e-15",
+   "specialized_vs_micm": "PASS 3.46e-15",
+   "notes": "67 species (M as third body, 66 state species), 200 reactions (145 ARRHENIUS, 16 TROE, 25 photolysis and 14 emissions as USER_DEFINED). The 14 emissions (no reactants) needed nothing special: the converter writes an empty reactant list, the generator emits flux = k with no Jacobian terms, and they take effect (NO 6.62e-10 with emissions against 2.94e-13 without, matching MICM). PHOTO_CL2, PHOTO_N2O5, PHOTO_O2, PHOTO_PAN and PHOTO_PANX have no initial value and are written as 0.0, as cells.csv and MICM's InitState set them. Generator: median of 5 runs, specialized mode 0.034 s, generic-table mode 0.033 s (make bench runs both, with python3 3.13.1). Generated C: specialized 9682 lines / 478951 bytes (build/ts1_model_specialized.c); generic tables 332 lines / 73748 bytes (build/ts1_model.c). make bench from make clean: median of 3 = 1.38 s (1.37, 1.39, 1.38); first run 1.35 s; TS1 for comparison 3.11 s. clang -O3 compile of the generated files alone: specialized 0.527 s, generic 0.048 s. Both programs: 540 internal steps (9 per 60 s interval), 0 rejected; one-thread elapsed for the 60 timed steps 13.737 ms generic, 3.71 ms specialized (single runs, not a benchmark).",
+   "generated_kernels_used": true,
+   "generated_kernels_note": "4-cell run: generated kernels ran. Code path (src/solver.c): the tests that select the generated kernels involve neither the cell count nor the group size. chem_solver_create (lines 862-863) computes each cell's rate constants with kernels->rates whenever the model has a kernel table. evaluate_rhs (255-258) calls kernels->evaluate when there are no constraints and kernels->species_count == pattern.n and kernels->pattern_nonzeros == pattern.nnz. solve_group (673-682) installs kernels->factor and kernels->solve under the same size test when the factor and solve callbacks are the defaults, which chem_rosenbrock_default sets and benchmark.c never changes. Cell groups only split cells across threads and share one step size; every cell goes through the same per-cell calls (line 700), so this entry has no full-group or vector-width path to fall back from. ts1_bench_specialized links .kernels=&chem_generated_kernels (pattern_nonzeros 14 for chapman, 743 for both CB5 variants). Dynamic check: lldb and sample could not attach (developer mode is off; both waited for authorization and were killed), so a diagnostic driver (kernel_check/kernel_check.c, 132 lines, public kinetics.h API only) linked the same solver sources and generated model. It copies chem_model with the generated kernel table, keeping its sizes but wrapping each function with a counter, and runs the same problem (same CSV and cell count, group size 0, 1 thread, warm-up plus 60 steps of 60 s). 4 cells: rates 4, evaluate 4,392, factor 2,196, solve 6,588 generated-kernel calls. These equal the solver's totals (function_calls 1,098, decompositions 549, solves 1,647 including the warm-up) times 4, so every call was generated. The driver's final state is byte-identical to ts1_bench_specialized's.",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.97e-14",
+    "specialized_vs_micm": "PASS 2.97e-14",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells from cells64.csv, one group of 64 (default grouping, 1 thread), the same binaries as the main runs (rebuilt by the same route, byte-identical). The MICM comparisons are against micm-run64; micm-run64-g32 gives the same results. Both programs: exit 0, 540 internal steps, 0 rejected. Elapsed for the 60 timed steps: 219.924 ms generic, 62.397 ms specialized (single runs). Generated kernels ran: same code path as the 4-cell run (see generated_kernels_note). 64 cells: rates 64, evaluate 70,272, factor 35,136, solve 105,408 generated-kernel calls. These equal the solver's totals (function_calls 1,098, decompositions 549, solves 1,647 including the warm-up) times 64, so every call was generated. The driver's final state is byte-identical to ts1_bench_specialized's."
+   }
+  },
+  "carbon_bond_5_no_emissions": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.034,
+   "generated_c_lines": 9542,
+   "generated_c_bytes": 471952,
+   "build_exit": 0,
+   "build_s": 1.41,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 4.46e-15",
+   "specialized_vs_micm": "PASS 4.46e-15",
+   "notes": "67 species, 186 reactions (145 ARRHENIUS, 16 TROE, 25 photolysis). Run although the emissions were no obstacle. Generator: median of 5 runs, specialized mode 0.034 s, generic-table mode 0.032 s (make bench runs both, with python3 3.13.1). Generated C: specialized 9542 lines / 471952 bytes (build/ts1_model_specialized.c); generic tables 304 lines / 69407 bytes (build/ts1_model.c). make bench from make clean: median of 3 = 1.41 s (1.41, 1.39, 1.41); first run 1.33 s; TS1 for comparison 3.11 s. clang -O3 compile of the generated files alone: specialized 0.514 s, generic 0.05 s. Both programs: 540 internal steps (9 per 60 s interval), 0 rejected; one-thread elapsed for the 60 timed steps 13.419 ms generic, 3.709 ms specialized (single runs, not a benchmark).",
+   "generated_kernels_used": true,
+   "generated_kernels_note": "4-cell run: generated kernels ran. Code path (src/solver.c): the tests that select the generated kernels involve neither the cell count nor the group size. chem_solver_create (lines 862-863) computes each cell's rate constants with kernels->rates whenever the model has a kernel table. evaluate_rhs (255-258) calls kernels->evaluate when there are no constraints and kernels->species_count == pattern.n and kernels->pattern_nonzeros == pattern.nnz. solve_group (673-682) installs kernels->factor and kernels->solve under the same size test when the factor and solve callbacks are the defaults, which chem_rosenbrock_default sets and benchmark.c never changes. Cell groups only split cells across threads and share one step size; every cell goes through the same per-cell calls (line 700), so this entry has no full-group or vector-width path to fall back from. ts1_bench_specialized links .kernels=&chem_generated_kernels (pattern_nonzeros 14 for chapman, 743 for both CB5 variants). Dynamic check: lldb and sample could not attach (developer mode is off; both waited for authorization and were killed), so a diagnostic driver (kernel_check/kernel_check.c, 132 lines, public kinetics.h API only) linked the same solver sources and generated model. It copies chem_model with the generated kernel table, keeping its sizes but wrapping each function with a counter, and runs the same problem (same CSV and cell count, group size 0, 1 thread, warm-up plus 60 steps of 60 s). 4 cells: rates 4, evaluate 4,392, factor 2,196, solve 6,588 generated-kernel calls. These equal the solver's totals (function_calls 1,098, decompositions 549, solves 1,647 including the warm-up) times 4, so every call was generated. The driver's final state is byte-identical to ts1_bench_specialized's.",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.28e-14",
+    "specialized_vs_micm": "PASS 2.28e-14",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells from cells64.csv, one group of 64 (default grouping, 1 thread), the same binaries as the main runs (rebuilt by the same route, byte-identical). The MICM comparisons are against micm-run64; micm-run64-g32 gives the same results. Both programs: exit 0, 540 internal steps, 0 rejected. Elapsed for the 60 timed steps: 219.215 ms generic, 60.512 ms specialized (single runs). Generated kernels ran: same code path as the 4-cell run (see generated_kernels_note). 64 cells: rates 64, evaluate 70,272, factor 35,136, solve 105,408 generated-kernel calls. These equal the solver's totals (function_calls 1,098, decompositions 549, solves 1,647 including the warm-up) times 64, so every call was generated. The driver's final state is byte-identical to ts1_bench_specialized's."
+   }
+  }
+ },
+ "entry_changes_needed": "",
+ "difficulties": "None in the entry itself: the benchmark programs (src/benchmark.c) are generic over the generated chem_model, and the generator (tools/generate_c.py) accepted all three converted files unchanged; no warnings in any build. The entry's mechanism JSON is close to the canonical one: the converter only nests rate parameters under 'parameters', turns [name, yield] product pairs into {name, yield} objects, moves the initial temperature, pressure, concentrations (species 'initial') and rate-parameter values ('custom_parameters') to where ts1.json keeps them, and writes molecular_weight 0.0 and diffusion_coefficient null (not in the canonical input; only SURFACE reactions read them). M stays in reactant and product lists with third_body true, as in TS1's O2 + M + O -> O3 + M. One deviation from the setup: 'make env' does not use an existing environment here; it creates a fresh conda env (python 3.12.11, pyyaml 6.0.2) from conda-forge with a package cache inside the worktree, which needs the network. Run with CONDA_OFFLINE=true it failed (PackagesNotFoundError: python=3.12.11), so it was not run online; the Makefile then falls back to python3 (3.13.1), which suffices because the generator needs PyYAML only for YAML configs. TS1_JSON is defined with := and is not documented as an override (the README documents 'make mechanism CONFIG=...', which builds only a generic library), but GNU make's command-line override works. Addendum (64 cells): lldb and sample both hung waiting for debugger authorization (developer mode is off) and were killed. The generated-kernel use was therefore shown with a 132-line diagnostic driver that wraps the public kernel table with counters; it plays no part in the reported comparisons, which come from the benchmark programs.",
+ "kernel_check_driver_lines": 132
+}

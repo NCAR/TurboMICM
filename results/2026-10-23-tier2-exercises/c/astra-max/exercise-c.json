@@ -1,0 +1,81 @@
+{
+ "run": "astra-max",
+ "route": "benchmark programs",
+ "config_file": "configs/ts1.json",
+ "converter_lines": 124,
+ "driver_lines": 0,
+ "mechanisms": {
+  "chapman": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.035,
+   "generated_c_lines": 863,
+   "generated_c_bytes": 25381,
+   "build_exit": 0,
+   "build_s": 1.118,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 6.28e-16",
+   "specialized_vs_micm": "PASS 6.28e-16",
+   "generated_kernels_used": true,
+   "notes": "4 identical cells, 1 thread, 1 warm-up + 60 x 60 s: one 4-cell group, so the specialized program ran the generated runtime-stride kernels (n = 4 is not 32). Elapsed 0.224 ms generic, 0.091 ms specialized (single runs). make bench (incremental: mechanism-dependent targets only) 1.118, 1.159, 0.918 s; generator time is the median of 5 runs including Python start-up. Generated C is tools/specialize.py's .c + _kernels.c + .h; the generic constructor build/generated/ts1.c from tools/configure.py adds 39 lines. Entry's own generator test: PASS ts1_specialized.h: rates, forcing, Jacobian, LU, solve and adaptive trajectories (1e-10)",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.46e-15",
+    "specialized_vs_micm": "PASS 2.46e-15",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells (cells64.csv) against micm-run64 (identical to micm-run64-g32): two full 32-cell groups, so the generated fixed-width (*_fixed, stride 32) kernels ran. Elapsed 1.125 ms generic, 0.593 ms specialized (single runs)."
+   }
+  },
+  "carbon_bond_5": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.048,
+   "generated_c_lines": 36844,
+   "generated_c_bytes": 915508,
+   "build_exit": 0,
+   "build_s": 5.155,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 1.77e-15",
+   "specialized_vs_micm": "PASS 1.77e-15",
+   "generated_kernels_used": true,
+   "notes": "4 identical cells, 1 thread, 1 warm-up + 60 x 60 s: one 4-cell group, so the specialized program ran the generated runtime-stride kernels (n = 4 is not 32). Elapsed 10.606 ms generic, 3.140 ms specialized (single runs). make bench (incremental: mechanism-dependent targets only) 5.213, 5.155, 4.998 s; generator time is the median of 5 runs including Python start-up. Generated C is tools/specialize.py's .c + _kernels.c + .h; the generic constructor build/generated/ts1.c from tools/configure.py adds 392 lines. Entry's own generator test: solve: Convergence exceeded maximum steps / Convergence exceeded maximum steps; steps 1002/1002 rejects 227/227 | FAIL ts1_specialized.h cells=3 tight=0",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 1.82e-14",
+    "specialized_vs_micm": "PASS 1.82e-14",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells (cells64.csv) against micm-run64 (identical to micm-run64-g32): two full 32-cell groups, so the generated fixed-width (*_fixed, stride 32) kernels ran. Elapsed 55.028 ms generic, 40.814 ms specialized (single runs)."
+   }
+  },
+  "carbon_bond_5_no_emissions": {
+   "converted": true,
+   "generator_ran": true,
+   "generator_s": 0.048,
+   "generated_c_lines": 36454,
+   "generated_c_bytes": 900047,
+   "build_exit": 0,
+   "build_s": 5.151,
+   "generic_ran": true,
+   "specialized_ran": true,
+   "specialized_vs_generic": "PASS 0",
+   "generic_vs_micm": "PASS 5.66e-15",
+   "specialized_vs_micm": "PASS 5.66e-15",
+   "generated_kernels_used": true,
+   "notes": "4 identical cells, 1 thread, 1 warm-up + 60 x 60 s: one 4-cell group, so the specialized program ran the generated runtime-stride kernels (n = 4 is not 32). Elapsed 9.987 ms generic, 3.187 ms specialized (single runs). make bench (incremental: mechanism-dependent targets only) 5.263, 5.151, 5.091 s; generator time is the median of 5 runs including Python start-up. Generated C is tools/specialize.py's .c + _kernels.c + .h; the generic constructor build/generated/ts1.c from tools/configure.py adds 350 lines. Entry's own generator test: solve: Convergence exceeded maximum steps / Convergence exceeded maximum steps; steps 1001/1001 rejects 194/194 | FAIL ts1_specialized.h cells=1 tight=0",
+   "cells64": {
+    "specialized_vs_generic": "PASS 0",
+    "generic_vs_micm": "PASS 2.69e-14",
+    "specialized_vs_micm": "PASS 2.69e-14",
+    "generated_kernels_used": true,
+    "note": "64 distinct cells (cells64.csv) against micm-run64 (identical to micm-run64-g32): two full 32-cell groups, so the generated fixed-width (*_fixed, stride 32) kernels ran. Elapsed 54.257 ms generic, 40.662 ms specialized (single runs)."
+   }
+  }
+ },
+ "entry_changes_needed": "",
+ "difficulties": "None blocking. The entry reads MICM's own camp-data JSON, so the converter is a near one-to-one rename (products [name, yield] -> {\"species\",\"yield\"}, label -> \"MUSICA name\", scaling_factor -> \"scaling factor\", M -> \"parameterization\": \"air density\", \"rate units\": \"mol m-3\", initial state without the canonical \"environment\"); emissions are USER_DEFINED reactions with \"reactants\": [], which the reader and generator accept. The Makefile hard-codes configs/ts1.json (no variable), so the file was swapped and restored (SHA-256 checked). Pitfall: macOS make 3.81 compares mtimes to the second, so a swap within the same second as the previous build is silently treated as up to date (seen twice in extra checks: one test build skipped, one timing build that relinked the generic program for the new mechanism but left the specialized program on the previous one). The scripts pause 2 s before each swap; every reported result comes from a build whose log shows all 8 mechanism-dependent targets rebuilt. make env downloaded the pinned packages from conda-forge (the prescribed setup). The entry's own generator test (tests/specialized.c, built for the TS1 slot by make bin/test_specialized_ts1) passes on chapman; on both CB5 variants its synthetic perturbed inputs make the generic and generated solvers both exceed 1000 steps with identical step and rejection counts (a test-input limitation, not a discrepancy). The retained tools/translate_ts1.py is TS1-only (asserts 210 species and 547 reactions), and the scenario driver treats only parameters whose names start with \"j\" as photolysis (TS1 naming; not used here).",
+ "generated_kernels_evidence": "bin/ts1_bench_specialized is built with -DCH_SPECIALIZED, so tools/ts1_io.h:12-18 maps ch_update_rates and ch_solve to the generated ch_rates_ts1_specialized and ch_solve_ts1_specialized (tools/specialized_solver.h, included by the generated ts1_specialized.c with CH_FORCE/CH_JACOBIAN/CH_FACTOR/CH_LINEAR bound to generated functions). Each of the six generated dispatchers (rates, force, Jacobian, shift, factor, linear) tests \"if (n == CH_DEFAULT_GROUP_SIZE && n % CH_KERNEL_WIDTH == 0)\" (n = the group's cell count; the Makefile passes -DCH_DEFAULT_GROUP_SIZE=32 -DCH_KERNEL_WIDTH=32) and calls the generated *_fixed blocks (constant stride 32) or, otherwise, the generated runtime-stride blocks ts1_specialized_<kind>_kernel_<k>(n,...); there is no branch to the generic library's kernels. tools/ts1_bench.c:23 shrinks the group to the cell count when cells < 32. In the built binaries (otool -tV) each dispatcher is \"cmp x22, #0x20; b.ne\" to the runtime-stride blocks, and _ch_solve_ts1_specialized calls only the generated dispatchers/kernels plus the library's ch_normalized_error and ch_post_solve (and the step controller by pointer), never ch_force, ch_jacobian or ch_solve. No runtime trace: lldb needs developer mode, which is disabled on this machine."
+}

@@ -1,0 +1,54 @@
+{
+ "run": "sol-xhigh",
+ "branch": "tier2/sol/xhigh",
+ "config": "mechanisms/ts1.json",
+ "baseline": {
+  "env": 0,
+  "build": 0,
+  "build_s": 20.8,
+  "agree": {
+   "pass": true,
+   "largest": "0"
+  }
+ },
+ "edits": {
+  "add": {
+   "edit": "appended a copy of reaction 342 (NO + O3 -> NO2 + O2), a second channel",
+   "make_bench": 0,
+   "build_s": 17.8,
+   "specialized_rebuilt": true,
+   "specialized_vs_generic": {
+    "pass": true,
+    "largest": "0"
+   },
+   "generic_changed": {
+    "pass": false,
+    "largest": "2.83e+11"
+   },
+   "specialized_changed": {
+    "pass": false,
+    "largest": "2.83e+11"
+   },
+   "verdict": "PASS"
+  },
+  "change": {
+   "edit": "multiplied A of reaction 342 (NO + O3 -> NO2 + O2) by 1.5",
+   "make_bench": 0,
+   "build_s": 17.6,
+   "specialized_rebuilt": true,
+   "specialized_vs_generic": {
+    "pass": true,
+    "largest": "0"
+   },
+   "generic_changed": {
+    "pass": false,
+    "largest": "1.62e+07"
+   },
+   "specialized_changed": {
+    "pass": false,
+    "largest": "1.62e+07"
+   },
+   "verdict": "PASS"
+  }
+ }
+}

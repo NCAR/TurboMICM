@@ -1,0 +1,189 @@
+{
+ "name": "chapman",
+ "source": "MUSICA configs/v0/chapman, resolved by admin/v0_to_canonical.py",
+ "species": [
+  {
+   "name": "M",
+   "third_body": true
+  },
+  {
+   "name": "O2",
+   "third_body": false
+  },
+  {
+   "name": "O",
+   "third_body": false
+  },
+  {
+   "name": "O1D",
+   "third_body": false
+  },
+  {
+   "name": "O3",
+   "third_body": false
+  }
+ ],
+ "reactions": [
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "O2"
+   ],
+   "products": [
+    [
+     "O",
+     2.0
+    ]
+   ],
+   "label": "PHOTO_jO2",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O",
+    "O2"
+   ],
+   "products": [
+    [
+     "O3",
+     1.0
+    ]
+   ],
+   "A": 48.28552461368,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "O3"
+   ],
+   "products": [
+    [
+     "O",
+     1.0
+    ],
+    [
+     "O2",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_jO3_to_O",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O",
+    "O3"
+   ],
+   "products": [
+    [
+     "O2",
+     2.0
+    ]
+   ],
+   "A": 949.089383776,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "USER_DEFINED",
+   "reactants": [
+    "O3"
+   ],
+   "products": [
+    [
+     "O1D",
+     1.0
+    ],
+    [
+     "O2",
+     1.0
+    ]
+   ],
+   "label": "PHOTO_jO3_to_O1D",
+   "scaling_factor": 1.0,
+   "source": "PHOTOLYSIS"
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O1D",
+    "M"
+   ],
+   "products": [
+    [
+     "O",
+     1.0
+    ],
+    [
+     "M",
+     1.0
+    ]
+   ],
+   "A": 42817420.803600006,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  },
+  {
+   "type": "ARRHENIUS",
+   "reactants": [
+    "O1D",
+    "O3"
+   ],
+   "products": [
+    [
+     "O2",
+     2.0
+    ]
+   ],
+   "A": 72265689.12,
+   "B": 0.0,
+   "C": 0.0,
+   "D": 300.0,
+   "E": 0.0
+  }
+ ],
+ "parameters": [
+  "PHOTO_jO2",
+  "PHOTO_jO3_to_O",
+  "PHOTO_jO3_to_O1D"
+ ],
+ "initial": {
+  "temperature": 206.6374207,
+  "pressure": 6152.049805,
+  "concentrations": {
+   "O2": 0.75,
+   "O3": 8.1e-06
+  },
+  "parameters": {
+   "PHOTO_jO2": 2.42e-17,
+   "PHOTO_jO3_to_O": 1.15e-05,
+   "PHOTO_jO3_to_O1D": 6.61e-09
+  },
+  "environment": {
+   "air_density": 3.580772136,
+   "time_step": 60.0
+  }
+ },
+ "parameters_without_initial_value": [],
+ "dropped": {},
+ "summary": {
+  "species": 5,
+  "reactions": 7,
+  "by_source": {
+   "PHOTOLYSIS": 3,
+   "ARRHENIUS": 4
+  }
+ }
+}
