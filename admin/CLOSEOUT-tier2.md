@@ -1,6 +1,6 @@
 # Tier 2 closeout
 
-**State on 2026-10-23 at 07:30.** Tier 2 is done except one item: Fable's
+**State on 2026-10-23 at 07:25.** Tier 2 is done except one item: Fable's
 blind review, which waits for Fable's usage reset at 22:00 (the SSE's word).
 Everything else is verified, written up, committed, and pushed.
 - **This repository:** `main`; the nine branches `tier2/<model>/<effort>`; the

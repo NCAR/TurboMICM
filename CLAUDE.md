@@ -222,7 +222,7 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
 - **The M5 Pro's MICM** (e15898ce, built 2026-10-22) passes its 67 tests, gives
   the same 680-case list, and reproduces the M5's TS1 results and the day-night
   calibration exactly.
-- **Status: complete but for Fable's review (2026-10-23, 07:30; closeout in
+- **Status: complete but for Fable's review (2026-10-23, 07:25; closeout in
   `admin/CLOSEOUT-tier2.md`).** All nine runs done (2026-10-22 09:58
   to 2026-10-23 00:09), collected, archived, verified (every entry passes the
   whole gate with both compilers), and ranked (`results/2026-10-23-tier2-ranking`):
