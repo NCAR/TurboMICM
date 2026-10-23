@@ -1222,7 +1222,34 @@ Calibration on this machine
     429, `model_requires_usage_credits`). Usage credits are not spent without
     the SSE's permission.
 - 01:12:57: exercises (a) and (b) started, with `admin/tier2_exercises.py` on
-  all nine entries, three at a time.
+  all nine entries, three at a time. Five finished at 01:20; the script did
+  not know the TS1 formats of sol-max (`reactant sequence`) and the three Luna
+  entries (a top-level `reactions` list, and luna-xhigh's `config/ts1.json`).
+  Taught them, it reran those four from fresh worktrees, 01:23 to 01:28. All
+  nine pass both exercises: after each edit, `make bench` regenerated and
+  rebuilt the specialized benchmark, both benchmarks changed from the
+  baseline, and the specialized result agreed with the generic one within
+  1e-10 (0 to 4.7e-14).
+- 01:37:15: the first Opus review ended (25 min, 187 turns, $16.09 of API
+  cost at list prices, a 33,668-character report). A probe at 01:39 found
+  Fable still at its limit. So that the review would not wait on an unknown
+  reset, a second fresh Opus session started at 01:40:53, reading the entries
+  in the order I to A (`run-review.sh` now takes an output label; this one is
+  `opus-2`). This departs from the design, which names Opus and Fable; Fable
+  will review when its limit allows, as a third report. The key stays
+  unread until the two reports are in.
+- 01:42: exercise (c), another mechanism, started. `admin/v0_to_canonical.py`
+  resolves MUSICA's v0 Chapman (5 species, 7 reactions) and Carbon Bond 5 (67
+  species, 200 reactions, 14 of them emissions), and a variant of Carbon
+  Bond 5 without emissions, into one canonical form. It follows MICM's former
+  v0 parser: unit conversion, Ea to C, and photolysis and emissions as
+  user-defined rates; M is a third body. `admin/micm_header.py` writes a MICM
+  mechanism header for each, against which `reference/micm_ts1_ref.cpp`
+  builds unchanged; MICM's results on 4 identical cells, one warm-up step and
+  60 steps of 60 s, are the reference. One Claude Code agent per entry writes
+  a converter into the entry's own format, builds, and compares its generic
+  and specialized programs with each other and with MICM, without changing
+  the entry.
 
 # Tier 3
 
