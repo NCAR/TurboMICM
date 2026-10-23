@@ -1,0 +1,39 @@
+date: 2026-10-23T00:34:39
+host: LALAL0726071122
+platform: macOS-26.7.1-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,8 | Apple M5 Pro | 6 | 12
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=23658595)	100%; charged; 0:00 remaining present: true
+uptime: 0:34  up 15:45, 3 users, load averages: 1.00 2.16 3.11
+input: ~/NSF-NCAR/.tier2-heldout/ts1/cells.csv
+reference: ~/NSF-NCAR/.tier2-heldout/ts1/micm_final.csv
+cells, steps, dt: 10000, 100, 30; threads: 18; rounds: 5
+program micm: ~/NSF-NCAR/tier2-work/bin/micm_ts1_ref
+program micm-g32: ~/NSF-NCAR/tier2-work/bin/micm_ts1_ref --group-size 32
+program micm-vector8-g32: ~/NSF-NCAR/tier2-work/bin/micm-vector8-in-place-mozart --group-size 32
+program astra-max/specialized: ~/NSF-NCAR/tier2-work/verify/astra-max/clang/astra-max/bin/ts1_bench_specialized
+program astra-max/generic: ~/NSF-NCAR/tier2-work/verify/astra-max/clang/astra-max/bin/ts1_bench_cpu
+program astra-max/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/astra-max/bin/ts1_bench_cpu
+program astra-xhigh/specialized: ~/NSF-NCAR/tier2-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_bench_specialized
+program astra-xhigh/generic: ~/NSF-NCAR/tier2-work/verify/astra-xhigh/clang/astra-xhigh/bin/ts1_bench_cpu
+program astra-xhigh/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/astra-xhigh/bin/ts1_bench_cpu
+program astra-high/specialized: ~/NSF-NCAR/tier2-work/verify/astra-high/clang/astra-high/bin/ts1_bench_specialized
+program astra-high/generic: ~/NSF-NCAR/tier2-work/verify/astra-high/clang/astra-high/bin/ts1_bench_cpu
+program astra-high/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/astra-high/bin/ts1_bench_cpu
+program sol-max/specialized: ~/NSF-NCAR/tier2-work/verify/sol-max/clang/sol-max/bin/ts1_bench_specialized
+program sol-max/generic: ~/NSF-NCAR/tier2-work/verify/sol-max/clang/sol-max/bin/ts1_bench_cpu
+program sol-max/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/sol-max/bin/ts1_bench_cpu
+program sol-xhigh/specialized: ~/NSF-NCAR/tier2-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_specialized
+program sol-xhigh/generic: ~/NSF-NCAR/tier2-work/verify/sol-xhigh/clang/sol-xhigh/bin/ts1_bench_cpu
+program sol-xhigh/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/sol-xhigh/bin/ts1_bench_cpu
+program sol-high/specialized: ~/NSF-NCAR/tier2-work/verify/sol-high/clang/sol-high/bin/ts1_bench_specialized
+program sol-high/generic: ~/NSF-NCAR/tier2-work/verify/sol-high/clang/sol-high/bin/ts1_bench_cpu
+program sol-high/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/sol-high/bin/ts1_bench_cpu
+program luna-max/specialized: ~/NSF-NCAR/tier2-work/verify/luna-max/clang/luna-max/bin/ts1_bench_specialized
+program luna-max/generic: ~/NSF-NCAR/tier2-work/verify/luna-max/clang/luna-max/bin/ts1_bench_cpu
+program luna-max/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/luna-max/bin/ts1_bench_cpu
+program luna-xhigh/specialized: ~/NSF-NCAR/tier2-work/verify/luna-xhigh/clang/luna-xhigh/bin/ts1_bench_specialized
+program luna-xhigh/generic: ~/NSF-NCAR/tier2-work/verify/luna-xhigh/clang/luna-xhigh/bin/ts1_bench_cpu
+program luna-xhigh/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/luna-xhigh/bin/ts1_bench_cpu
+program luna-high/specialized: ~/NSF-NCAR/tier2-work/verify/luna-high/clang/luna-high/bin/ts1_bench_specialized
+program luna-high/generic: ~/NSF-NCAR/tier2-work/verify/luna-high/clang/luna-high/bin/ts1_bench_cpu
+program luna-high/tier1: ~/NSF-NCAR/tier2-work/tier1-builds/luna-high/bin/ts1_bench_cpu

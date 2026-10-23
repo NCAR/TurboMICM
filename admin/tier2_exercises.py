@@ -86,30 +86,42 @@ def find_config():
             for word in target.group(3).split():
                 if re.search(r"ts1\S*\.(json|ya?ml)$", word):
                     return word
-    for candidate in ("configs/ts1.json", "mechanisms/ts1.json"):
+    for candidate in ("configs/ts1.json", "mechanisms/ts1.json", "config/ts1.json"):
         if (tree / candidate).exists():
             return candidate
     sys.exit("cannot find the TS1 configuration; give --config")
 
 
 def reactions_of(document):
-    """The list of reactions in a CAMP configuration document (camp-data MECHANISM records)."""
+    """The list of reactions: a CAMP document's MECHANISM record, or a top-level "reactions" list (the
+    entries' own formats)."""
+    if isinstance(document, dict) and isinstance(document.get("reactions"), list):
+        return document["reactions"]
     data = document.get("camp-data", document) if isinstance(document, dict) else document
     for record in data:
         if isinstance(record, dict) and record.get("type") == "MECHANISM":
             return record["reactions"]
-    raise SystemExit("no MECHANISM record in the TS1 configuration")
+    raise SystemExit("no MECHANISM record or reactions list in the TS1 configuration")
 
 
 def names(side):
     if isinstance(side, dict):
         return set(side)
-    return {item["species"] if isinstance(item, dict) else item for item in side}
+    return {(item.get("species") or item.get("name")) if isinstance(item, dict) else item for item in side}
+
+
+def reactants(reaction):
+    return reaction.get("reactants", reaction.get("reactant sequence", []))
+
+
+def parameters(reaction):
+    """The dictionary that holds the Arrhenius parameters: the reaction, or its "parameters"."""
+    return reaction["parameters"] if isinstance(reaction.get("parameters"), dict) else reaction
 
 
 def no_o3(reactions):
     for index, reaction in enumerate(reactions):
-        if reaction.get("type") == "ARRHENIUS" and names(reaction.get("reactants", [])) == {"NO", "O3"}:
+        if "arrhenius" in str(reaction.get("type", "")).lower() and names(reactants(reaction)) == {"NO", "O3"}:
             return index
     raise SystemExit("no NO + O3 Arrhenius reaction in the TS1 configuration")
 
@@ -153,7 +165,7 @@ for label in ("add", "change"):
         reactions.append(json.loads(json.dumps(reactions[index])))
         description = f"appended a copy of reaction {index} (NO + O3 -> NO2 + O2), a second channel"
     else:
-        reactions[index]["A"] = reactions[index]["A"] * 1.5
+        parameters(reactions[index])["A"] = parameters(reactions[index])["A"] * 1.5
         description = f"multiplied A of reaction {index} (NO + O3 -> NO2 + O2) by 1.5"
     config_path.write_text(json.dumps(document, indent=1) + "\n")
     before = digest(tree / "bin/ts1_bench_specialized")
@@ -186,7 +198,7 @@ for edit in edits.values():
     edit["verdict"] = verdict(edit)
 (work / "exercises.json").write_text(json.dumps(summary, indent=1, default=str) + "\n")
 lines = [f"# TS1 exercises: {args.run} ({args.branch})\n", f"TS1 configuration: `{config}`\n",
-         f"Baseline: make env exit {status_env}; make cpu bench exit {status_build} ({seconds:.0f} s); "
+         f"Baseline: make env exit {status_env}; make cpu bench exit {status_build} ({summary['baseline']['build_s']:.0f} s); "
          f"specialized against generic: {summary['baseline']['agree']}\n",
          "| Exercise | Edit | make bench | Rebuilt | Specialized vs generic (1e-10) | Generic changed | Specialized changed | Verdict |",
          "|---|---|---|---|---|---|---|---|"]

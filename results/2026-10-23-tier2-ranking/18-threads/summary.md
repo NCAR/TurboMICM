@@ -1,0 +1,32 @@
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) |
+|---|---:|---:|---:|---:|---:|
+| micm | 18 | 5 of 5 | 12,192.1 | 11,431.8–13,820.0 | 13.2 |
+| micm-g32 | 18 | 5 of 5 | 11,492.9 | 9,752.7–11,804.1 | 12.5 |
+| micm-vector8-g32 | 18 | 5 of 5 | 4,705.3 | 4,197.7–4,767.0 | 5.7 |
+| astra-max/specialized | 18 | 5 of 5 | 3,216.4 | 2,952.7–3,234.8 | 4.8 |
+| astra-max/generic | 18 | 5 of 5 | 3,929.2 | 3,586.5–3,966.6 | 5.4 |
+| astra-max/tier1 | 18 | 5 of 5 | 3,906.6 | 3,575.5–3,911.1 | 5.4 |
+| astra-xhigh/specialized | 18 | 5 of 5 | 2,048.9 | 1,977.5–2,141.0 | 3.8 |
+| astra-xhigh/generic | 18 | 5 of 5 | 2,991.7 | 2,947.6–3,099.1 | 4.8 |
+| astra-xhigh/tier1 | 18 | 5 of 5 | 2,972.7 | 2,964.7–3,074.3 | 4.7 |
+| astra-high/specialized | 18 | 5 of 5 | 3,156.8 | 3,120.9–3,173.4 | 4.8 |
+| astra-high/generic | 18 | 5 of 5 | 4,028.9 | 3,988.2–4,100.7 | 5.7 |
+| astra-high/tier1 | 18 | 5 of 5 | 4,047.7 | 4,038.0–4,175.8 | 5.7 |
+| sol-max/specialized | 18 | 5 of 5 | 2,403.4 | 2,384.2–2,437.0 | 3.9 |
+| sol-max/generic | 18 | 5 of 5 | 2,979.7 | 2,955.5–3,082.6 | 4.5 |
+| sol-max/tier1 | 18 | 5 of 5 | 2,993.6 | 2,954.3–3,091.2 | 4.5 |
+| sol-xhigh/specialized | 18 | 5 of 5 | 2,706.9 | 2,649.0–2,783.1 | 4.3 |
+| sol-xhigh/generic | 18 | 5 of 5 | 3,544.9 | 3,500.7–3,616.3 | 5.1 |
+| sol-xhigh/tier1 | 18 | 5 of 5 | 3,581.9 | 3,508.0–3,708.2 | 5.1 |
+| sol-high/specialized | 18 | 5 of 5 | 2,796.9 | 2,739.8–2,866.1 | 4.4 |
+| sol-high/generic | 18 | 5 of 5 | 3,780.5 | 3,752.0–3,883.0 | 5.3 |
+| sol-high/tier1 | 18 | 5 of 5 | 3,838.7 | 3,765.5–3,907.4 | 5.4 |
+| luna-max/specialized | 18 | 5 of 5 | 5,381.0 | 5,323.9–5,749.8 | 6.2 |
+| luna-max/generic | 18 | 5 of 5 | 15,110.5 | 14,856.9–15,423.6 | 16.1 |
+| luna-max/tier1 | 18 | 5 of 5 | 15,131.5 | 14,944.2–15,514.9 | 16.1 |
+| luna-xhigh/specialized | 18 | 5 of 5 | 10,059.6 | 10,016.8–10,135.4 | 11.7 |
+| luna-xhigh/generic | 18 | 5 of 5 | 10,756.3 | 10,750.8–10,808.8 | 12.5 |
+| luna-xhigh/tier1 | 18 | 5 of 5 | 10,760.6 | 10,756.8–10,794.9 | 12.4 |
+| luna-high/specialized | 18 | 5 of 5 | 7,567.9 | 7,528.0–7,736.9 | 8.4 |
+| luna-high/generic | 18 | 5 of 5 | 22,954.3 | 22,765.8–23,315.5 | 23.9 |
+| luna-high/tier1 | 18 | 5 of 5 | 22,795.6 | 22,470.5–22,831.3 | 23.8 |

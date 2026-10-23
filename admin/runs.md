@@ -575,7 +575,7 @@ Calibration on this machine
 | sol-high | gpt-6.1-sol | high | `1d944f4` | Codex CLI 0.163.0, interactive | 2026-10-22 19:20–20:34 | `07848a8` | done, verified, timed |
 | luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | 2026-10-22 21:11–21:40 | `3562d5a` | done, verified, timed |
 | luna-xhigh | gpt-6-luna | xhigh | `ada55d5` | Codex CLI 0.163.0, interactive | 2026-10-22 22:20–22:55 | `1ad13ab` | done, verified, timed |
-| luna-high | gpt-6-luna | high | `d3c2480` | Codex CLI 0.163.0, interactive | 2026-10-22 23:39– | | running |
+| luna-high | gpt-6-luna | high | `d3c2480` | Codex CLI 0.163.0, interactive | 2026-10-22 23:39–00:09 | `2142282` | done, verified, timed |
 
 ## Tier 2: astra-max
 
@@ -1139,6 +1139,90 @@ Calibration on this machine
 - The last of the nine. luna-high's Tier 1 entry already emits a generated TS1
   source (`generated/ts1.c`), and its case report prints PASS lines from a fixed
   list once its one test program passes (Tier 1 Results).
+- Progress, from Claude Code's read-only checks every 20 minutes: at 20
+  minutes, no commit yet, its specialized solver matching its own generic run
+  exactly and MICM's 100-cell result, all five disclosed scenarios passing with
+  both compilers, and its own 18-thread time 7.76 s against 21.34 s for its
+  generic solver; the turn ended before the 40-minute check. The compliance
+  scan found nothing outside the run directory and its inputs.
+- Session end: the one turn ended at 00:09:03 on 2026-10-23 with DONE (29 min
+  52 s from the goal), no context compaction, no warning; Codex showed "Goal
+  achieved (29m)". Every turn context shows gpt-6-luna at high, approval
+  `never`, sandbox `danger-full-access`. Claude Code quit Codex (00:19:19) and
+  collected and archived it with `admin/collect_tier2.sh`. It left the tracked
+  PROMPT.md's change, the Tier 2 prompt, out of its commit, because the prompt
+  names its model and the review is blind.
+- Final commit `2142282` (00:08), 1 commit after `d3c2480`, "Add generated TS1
+  solver specialization": 13 files changed, 872 lines added and 233 removed
+  (its generator `tools/generate_c.py`, 162 lines added; the specialized
+  benchmark and scenario driver in `src/main.c`, 273; generated-operation
+  callbacks in `src/solver.c`; a comparison test). Collected as
+  `tier2/luna/high`.
+- Tokens: 294,076 total; input 224,226 (plus 24,717,056 cached); output 69,850
+  (32,100 reasoning). Codex's usage window went from 5 % to 6 %.
+- Other load during the session: Claude Code's read-only progress checks and
+  staging of the held-out publication. No builds, tests, or timing by the
+  experimenter.
+- Self-reported, not yet verified: both compilers pass the Tier 1 and
+  specialized tests and every disclosed scenario; 7.76 s at 18 threads against
+  21.34 s for its generic solver and 12.74 s for MICM, and 90.42 against 305.34
+  and 134.18 s on one.
+- Transcript archived as `transcripts/tier2/luna-high.jsonl.gz` (1,418 lines,
+  2.8 MB). The credential scan's four matches were inside encrypted content.
+- 00:20: the last run over, Tier 2's held-out scenarios and the ranking
+  input's seed were published in `tier2/heldout/` (commit `cd7caad`);
+  `make_heldout.sh` there has the SHA-256 recorded before the first launch.
+- Verified, 00:19–00:24, with `admin/verify_tier2.py`
+  (`results/2026-10-23-tier2-luna-high-verification`): both compilers build
+  without warnings (clean builds 12.6 s with clang, 31.0 s with gcc-15); 662
+  PASS, 0 FAIL, 18 N/A with each (as in Tier 1); the Tier 1 TS1 gate passes
+  (5.34e-14, 1.43e-13); bin/ts1_bench_specialized passes on the seed-2026 cells
+  (the same) and the undisclosed input (4.1e-14, 1.52e-13), with MICM's default
+  grouping's 16,200 internal steps; `make test-specialized` passes; the
+  day-night gate passes on all ten scenarios with both compilers, 14.07 to
+  14.46 digits overall and at least 13.36 per species; the audit's 75 matches
+  are all a parameter named `vector_size`, as in Tier 1. Generated C for TS1:
+  `generated/ts1.c`, 31,335 lines, 1.12 MB. Its scenario program's statistics
+  count only the last scenario step (each step's call overwrites its group's
+  statistics: 288 internal steps on diurnal-10min against MICM's 90,980), a
+  reporting defect: its results agree with MICM's to 14 digits. No provisional
+  timing: the ranking session followed at once.
+
+## Tier 2: ranking
+
+- The session at 18 threads (`results/2026-10-23-tier2-ranking/18-threads`):
+  `admin/time_tier2.sh` waited for 10 idle checks a minute apart (00:25:38 to
+  00:34:39), then timed 30 programs from 00:34:39 to 01:11:50, in 5 rotating
+  rounds on the undisclosed ranking input. The programs were MICM's three
+  (default grouping, 32-cell groups, and vector8 with 32-cell groups) and, for
+  each entry, its specialized benchmark, its generic solver, and its Tier 1
+  commit built here. All 150 runs pass the gate.
+- The ranking, by the median of the specialized benchmark, ms:
+  astra-xhigh 2,048.9; sol-max 2,403.4; sol-xhigh 2,706.9; sol-high 2,796.9;
+  astra-high 3,156.8; astra-max 3,216.4; luna-max 5,381.0; luna-high 7,567.9;
+  luna-xhigh 10,059.6. MICM: 12,192.1 by default, 11,492.9 with 32-cell
+  groups, and 4,705.3 with vector8 and 32-cell groups.
+- Places 5 and 6 are a tie: astra-high beat astra-max in 3 of the 5 rounds,
+  by 1.9 % in the median. Every other adjacent pair kept its order in all five
+  rounds.
+- The first six programs in the rotation, MICM's three and astra-max's three,
+  ran 8.5 to 15 % slower in rounds 2 to 4 than in rounds 1 and 5; the other 24
+  show no such pattern, and the cause is not known. MICM's programs spread 12
+  to 20 %, and the entries' 27 a median 3.7 %.
+- Other load: Claude Code wrote `admin/rank_tier2.py`, tried it on an earlier
+  session's file, and edited CLAUDE.md. No builds, tests, or timing.
+
+## Tier 2: blind review and exercises
+
+- 01:12:16: the two blind reviewers started, from `tier2/review/run-review.sh`
+  in fresh `claude -p` sessions at max effort, each reading the anonymized
+  copies A to I. Opus 5.5 reads them in the order A to I, and Fable 5.1 in the
+  order I to A.
+  - Fable's session ended at once: "You've reached your Fable limit" (HTTP
+    429, `model_requires_usage_credits`). Usage credits are not spent without
+    the SSE's permission.
+- 01:12:57: exercises (a) and (b) started, with `admin/tier2_exercises.py` on
+  all nine entries, three at a time.
 
 # Tier 3
 
