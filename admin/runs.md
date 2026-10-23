@@ -573,7 +573,7 @@ Calibration on this machine
 | sol-max | gpt-6.1-sol | max | `001fb64` | Codex CLI 0.163.0, interactive | 2026-10-22 15:39–17:21 | `ca0119e` | done, verified, timed |
 | sol-xhigh | gpt-6.1-sol | xhigh | `171f54a` | Codex CLI 0.163.0, interactive | 2026-10-22 17:58–18:33 | `7af0738` | done, verified, timed |
 | sol-high | gpt-6.1-sol | high | `1d944f4` | Codex CLI 0.163.0, interactive | 2026-10-22 19:20–20:34 | `07848a8` | done, verified, timed |
-| luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | | | set up |
+| luna-max | gpt-6-luna | max | `da2d722` | Codex CLI 0.163.0, interactive | 2026-10-22 21:11– | | running |
 | luna-xhigh | gpt-6-luna | xhigh | `ada55d5` | Codex CLI 0.163.0, interactive | | | set up |
 | luna-high | gpt-6-luna | high | `d3c2480` | Codex CLI 0.163.0, interactive | | | set up |
 
@@ -990,6 +990,20 @@ Calibration on this machine
   2,426.7, astra-xhigh's 2,042.8, astra-max's 3,001.8, astra-high's 3,193.4 ms.
   Specialization gains 1.37 times over its own generic solver; 4.19 times
   MICM's default and 1.53 times its fastest.
+
+## Tier 2: luna-max
+
+- Session start: 2026-10-22 21:11:19, launched by Claude Code with
+  `admin/launch_codex_run.sh --tier2 luna-max gpt-6-luna max`, once sol-high
+  was collected, archived, verified, and timed; the goal was sent at 21:11:24.
+  The session record shows gpt-6-luna at max, base instructions from
+  gpt-6-luna, Codex 0.163.0, approval `never` and sandbox `danger-full-access`,
+  and no model switch; the process's environment holds no Claude Code variables
+  besides the SSE's own `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`.
+- Codex session `01a16650-05af-7cf2-b421-d5800f93e165`; process 22711;
+  `caffeinate -ims -w 22711`. No other Codex session was running; AC power.
+- luna-max's Tier 1 entry keeps MICM's default grouping (one group per thread)
+  and was slower than MICM's default (0.90 times at ten threads on the M5).
 
 # Tier 3
 
