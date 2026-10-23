@@ -9,9 +9,12 @@ generator that the agent keeps and that works for any mechanism. Tier 3 (in
 Status: adopted by the SSE on 2026-10-16, with the prompt's choices settled the
 same day (`prompt.v1`). On 2026-10-22 the SSE chose the arms, all nine Tier 1
 entrants, and their order, and the runs moved to a second machine (below);
-`prompt.v2` is the template for that machine. The run log is
-`admin/runs.md`, under "Tier 2"; the wiki has Tier-2-Design, Tier-2-Prompt, and
-Tier-2-Results.
+`prompt.v2` is the template for that machine. All nine runs ended between
+2026-10-22 09:58 and 2026-10-23 00:09, and every entry passes the whole gate
+with both compilers. The ranking at 18 threads, the measured exercises, and
+the blind review were done on 2026-10-23 (see Results, below); the session at
+one thread follows. The run log is `admin/runs.md`, under "Tier 2"; the wiki
+has Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
 
 This directory mirrors the committed files of the Tier 2 run root,
 `ODE/benchmarks/tier2`; keep the two identical (`diff -r`), except for this
@@ -77,6 +80,13 @@ rights). What changes:
 | `scenarios/README.md` | the scenario, output, gate, and scoring formats, for the agents |
 | `../admin/launch_codex_run.sh --tier2` | the launch: no `--search`, tmux session `tier2-<run>` |
 | `../admin/verify_tier2.py` | the verification: builds, the 680 cases, both TS1 gates, the generator's tests, the day-night gate, the audit |
+| `../admin/progress.py`, `../admin/scan_commands.py` | a running session's progress, and its commands that reach outside the run directory (read-only) |
+| `../admin/collect_tier2.sh` | closes a finished run's Codex session, collects its branch `tier2/<model>/<effort>`, and archives its transcript |
+| `../admin/time_tier2.sh`, `../admin/rank_tier2.py` | a timing session on the ranking input after an idle wait, with a load audit; the ranking table from its `timings.csv` |
+| `../admin/tier2_exercises.py` | exercises (a) and (b), measured: add a reaction to TS1, change a rate parameter, regenerate, compare |
+| `../admin/v0_to_canonical.py`, `../admin/micm_header.py`, `../admin/vary_cells.py` | exercise (c): MUSICA v0 mechanisms resolved into one form, MICM's reference for each, and 64 distinct cells |
+| `../admin/anonymize_tier2.py`, `review/` | the blind review: anonymized copies, the reviewers' instructions (`REVIEW.md`), the prompt as they saw it, and `run-review.sh` |
+| `heldout/` | the held-out scenarios' script, the ranking input's seed, and their checksums, published after the last run |
 
 ## Undisclosed inputs
 
@@ -85,7 +95,16 @@ Both fixed on 2026-10-22, before any Tier 2 run, in `~/NSF-NCAR/.tier2-heldout/`
 `admin/runs.md`.
 - **Five held-out day-night scenarios**, varying seeds, latitudes, seasons,
   start times, and initial NOx, with steps of 5 to 30 minutes and runs of up to
-  48 hours, as `scenarios/README.md` announces. `make_heldout.sh` will be
-  published in `heldout/` when the last run ends.
+  48 hours, as `scenarios/README.md` announces. `make_heldout.sh` was
+  published in `heldout/` when the last run ended (2026-10-23, 00:20).
 - **The TS1 ranking input:** 10,000 cells from `reference/make_cells_csv.py`
-  with a 63-bit seed from Python's `secrets`.
+  with a 63-bit seed from Python's `secrets`, published in `heldout/SEED`.
+
+## Results
+
+| Folder | Contents |
+|---|---|
+| `results/2026-10-22-tier2-<run>-verification`, `results/2026-10-23-tier2-luna-high-verification` | each entry's verification, with a provisional timing session for the first eight |
+| `results/2026-10-23-tier2-ranking` | the ranking: all nine entries, MICM's three programs, and each entry's generic solver and Tier 1 build, in one session at 18 threads (and at one thread, to follow) |
+| `results/2026-10-23-tier2-exercises` | the review's three exercises, measured on every entry |
+| `results/2026-10-23-tier2-blind-review` | the blind review: procedure, key, the two reports, scores, and ranks |

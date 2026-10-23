@@ -222,20 +222,23 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
 - **The M5 Pro's MICM** (e15898ce, built 2026-10-22) passes its 67 tests, gives
   the same 680-case list, and reproduces the M5's TS1 results and the day-night
   calibration exactly.
-- **Status (2026-10-23, 01:30):** all nine runs done (2026-10-22 09:58 to
-  2026-10-23 00:09, 29 min to 1 h 42 min each, 0.18 to 0.57 M tokens),
-  collected (`tier2/<model>/<effort>`), archived, and verified: every entry
-  passes the whole gate with both compilers. Provisional 18-thread sessions in
-  `results/2026-10-2x-tier2-<run>-verification`; the held-out set and seed are
-  published (`tier2/heldout/`). Ranked at 18 threads, 00:34 to 01:11
-  (`results/2026-10-23-tier2-ranking/18-threads`): astra-xhigh 2,049 ms
-  (5.95 times MICM's default, 2.30 times its vector8-g32), sol-max, sol-xhigh,
+- **Status (2026-10-23, 02:20):** all nine runs done (2026-10-22 09:58 to
+  2026-10-23 00:09), collected, archived, verified (every entry passes the
+  whole gate with both compilers), and ranked at 18 threads
+  (`results/2026-10-23-tier2-ranking/18-threads`): astra-xhigh 2,049 ms (5.95
+  times MICM's default, 2.30 times its vector8-g32), then sol-max, sol-xhigh,
   sol-high, astra-high and astra-max (tied), luna-max, luna-high, luna-xhigh.
-  Under way: the blind review (`tier2/review/`; folder and private key in
-  `~/NSF-NCAR/tier2-work/blind-review/`; Opus running, Fable at its usage
-  limit) and the measured exercises (`admin/tier2_exercises.py`; Chapman and
-  CB5 from MUSICA's `configs/v0` for "another mechanism"). Then a 1-thread
-  session (`results/2026-10-23-tier2-ranking/1-thread`).
+  Exercises measured (`results/2026-10-23-tier2-exercises`): all nine pass (a)
+  and (b), and (c), Chapman and CB5 within 3.4e-14 of MICM. Blind review
+  (`results/2026-10-23-tier2-blind-review`): two fresh Opus sessions (Fable at
+  its usage limit; a deviation), both rank sol-xhigh first; totals of 60:
+  sol-xhigh 47, astra-high 46, sol-max and astra-max 44, astra-xhigh 41,
+  sol-high 39, luna-max 31, luna-xhigh and luna-high 24. Running: the 1-thread
+  session from 02:11 (tmux `tier2-timing-1`, out
+  `~/NSF-NCAR/tier2-work/timing/ranking-1`, about 2.2 h). Still to do: copy it
+  to `results/2026-10-23-tier2-ranking/1-thread` and publish it; Fable's
+  review as a third report when its limit allows (`tier2/review/run-review.sh
+  fable "I H G F E D C B A" REVIEW OUT fable`).
 - **Findings so far:** astra-high's and sol-xhigh's outputs are byte-identical
   (convergence, checked: independent generators, no cross-reading); luna-high's
   scenario statistics count only the last step (a reporting defect); the
