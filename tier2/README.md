@@ -15,7 +15,9 @@ with both compilers. The ranking at 18 threads and at one thread, the
 measured exercises, and the blind review were done on 2026-10-23 (see
 Results, below). Tier 2 is complete, apart from Fable's review: the design
 names Opus and Fable, Fable was at its usage limit, and two Opus sessions
-reviewed instead. Fable's would be a third report. The run log is
+reviewed instead. Fable's is to be a third report, after its usage reset at
+22:00 on 2026-10-23; `admin/CLOSEOUT-tier2.md` says what runs and what to do
+then. The run log is
 `admin/runs.md`, under "Tier 2"; the wiki has Tier-2-Design, Tier-2-Prompt,
 and Tier-2-Results.
 
@@ -89,6 +91,7 @@ rights). What changes:
 | `../admin/tier2_exercises.py` | exercises (a) and (b), measured: add a reaction to TS1, change a rate parameter, regenerate, compare |
 | `../admin/v0_to_canonical.py`, `../admin/micm_header.py`, `../admin/vary_cells.py` | exercise (c): MUSICA v0 mechanisms resolved into one form, MICM's reference for each, and 64 distinct cells |
 | `../admin/anonymize_tier2.py`, `review/` | the blind review: anonymized copies, the reviewers' instructions (`REVIEW.md`), the prompt as they saw it, and `run-review.sh` |
+| `../admin/check_review_session.py`, `../admin/review_tables.py` | a reviewer's transcript checked for paths outside the review folder; the reports decoded and tabulated |
 | `heldout/` | the held-out scenarios' script, the ranking input's seed, and their checksums, published after the last run |
 
 ## Undisclosed inputs

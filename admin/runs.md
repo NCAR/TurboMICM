@@ -1321,6 +1321,14 @@ Calibration on this machine
   wait for it. Every probe through 07:04 was refused. The watcher was
   restarted to wait until 22:00:30, checking the clock every minute, then
   probe every 5 minutes and run the review when Fable answers.
+- 07:30: closeout, at the SSE's request, before the session is suspended.
+  - `admin/CLOSEOUT-tier2.md` records the state, the deviations, the watcher,
+    and the steps for Fable's report.
+  - `admin/check_review_session.py` checks a reviewer's transcript for paths
+    outside the review folder; both Opus sessions pass.
+  - `admin/review_tables.py` decodes and tabulates the reports.
+  - The wiki's Tier-2-Results gains a summary of the rankings, and
+    Role-of-Claude-in-the-Design a section on Tier 2.
 
 # Tier 3
 

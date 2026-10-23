@@ -222,7 +222,8 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
 - **The M5 Pro's MICM** (e15898ce, built 2026-10-22) passes its 67 tests, gives
   the same 680-case list, and reproduces the M5's TS1 results and the day-night
   calibration exactly.
-- **Status: complete (2026-10-23, 04:40).** All nine runs done (2026-10-22 09:58
+- **Status: complete but for Fable's review (2026-10-23, 07:30; closeout in
+  `admin/CLOSEOUT-tier2.md`).** All nine runs done (2026-10-22 09:58
   to 2026-10-23 00:09), collected, archived, verified (every entry passes the
   whole gate with both compilers), and ranked (`results/2026-10-23-tier2-ranking`):
   - At 18 threads: astra-xhigh 2,049 ms (5.95 times MICM's default, 2.30 times
@@ -237,9 +238,14 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
     sol-xhigh first. Totals of 60: sol-xhigh 47, astra-high 46, sol-max and
     astra-max 44, astra-xhigh 41, sol-high 39, luna-max 31, luna-xhigh and
     luna-high 24.
-  - Open: Fable's review, a third report, when its limit lifts or the SSE
-    allows usage credits:
-    `tier2/review/run-review.sh fable "I H G F E D C B A" ~/NSF-NCAR/tier2-work/blind-review/REVIEW ~/NSF-NCAR/tier2-work/blind-review fable`.
+  - Open: Fable's review, a third report. Fable's usage resets at 22:00 on
+    2026-10-23 (the SSE's word). The watcher in tmux `tier2-review-fable`
+    (`~/NSF-NCAR/tier2-work/blind-review/fable-when-available.sh`, log
+    `fable-probe.log`) probes from 22:00:30 every 5 minutes, then runs
+    `tier2/review/run-review.sh fable "I H G F E D C B A" … fable`. When
+    `report-fable.done` appears, follow `admin/CLOSEOUT-tier2.md`, "When
+    Fable's report is in" (`admin/check_review_session.py`,
+    `admin/review_tables.py`).
 - **Findings so far:** astra-high's and sol-xhigh's outputs are byte-identical
   (convergence, checked: independent generators, no cross-reading); luna-high's
   scenario statistics count only the last step (a reporting defect); the
