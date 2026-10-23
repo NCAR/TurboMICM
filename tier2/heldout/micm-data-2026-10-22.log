@@ -1,0 +1,85 @@
+# spring45-20min: 1000 cells (seed 301, NOx x1); 72 steps of 1200 s; diurnal photolysis, 45 N, day 110, from 6 h local time
+# made 2026-10-22 09:42 on Apple M5 Pro, with micm_scenario
+gate: $ micm_scenario --group-size 32 --atol 1e-15 scenario.txt elapsed_ms=2291.657 internal_steps=60435 accepted=60435 rejected=0 function_calls=120870 jacobian_updates=60435 decompositions=60435 solves=181305 
+default: $ micm_scenario --group-size 32 scenario.txt elapsed_ms=746.977 internal_steps=20736 accepted=20736 rejected=0 function_calls=41472 jacobian_updates=20736 decompositions=20736 solves=62208 
+tight: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-9 --atol 1e-22 --max-steps 10000000 scenario.txt elapsed_ms=44347.485 internal_steps=142165 accepted=140348 rejected=0 function_calls=851173 jacobian_updates=142165 decompositions=142165 solves=852990 
+tighter: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-10 --atol 1e-23 --max-steps 10000000 scenario.txt elapsed_ms=90776.068 internal_steps=276583 accepted=273743 rejected=0 function_calls=1656658 jacobian_updates=276583 decompositions=276583 solves=1659498 
+convergence (tight against tighter): overall 10.20 digits over 589841 values (179 species, 4000 rows); worst species: OCLO 9.28, N2O5 9.47, BRCL 9.53, CLO 9.55, TERP2O2 9.62
+gate run against tighter: overall 4.84 digits over 589841 values (179 species, 4000 rows); worst species: ISOP 3.57, ISOPNITA 4.01, HYDRALD 4.02, MACR 4.03, MTERP 4.05
+MICM default against tighter: overall 2.67 digits over 589841 values (179 species, 4000 rows); worst species: ISOP 1.47, OCLO 1.71, ISOPNITA 1.84, MTERP 1.87, ISOPO2VBS 1.88
+files:
+  cf228d9613212a936612d49448e6e1f1ac520318b0598e7ef3e4baad038d7280  cells.csv
+  002d39159bee238f7e4ef9bcb02b48f41987ca3865707698b15d8d0743bf0640  photolysis.csv
+  5dec0a9597b11ee564b1e9e2eaf5712684365de2440529912c76c8e9939867d8  scenario.txt
+  b82adaf290630f27849da8126306d12cc8d4efb59ee6e34051727287f71ec5c1  micm_final.csv
+  95d03842e530e27e0e6dee9e015ad59a0a66294408d035df65fdd947c1ac04fe  micm_snapshots.csv
+  d3ca6ef427cb8e8bd3e60ecf90bb34e66006a87505e79dfb9678ea0803a05ee6  reference_final.csv
+  2bdd202049c87a3599ee6aa7d5d7184216fcd25b248fc804ee3c29aeb7bd9ffb  reference_snapshots.csv
+# tropics-polluted-15min: 1000 cells (seed 302, NOx x3); 96 steps of 900 s; diurnal photolysis, 5 N, day 200, from 6 h local time
+# made 2026-10-22 09:46 on Apple M5 Pro, with micm_scenario
+gate: $ micm_scenario --group-size 32 --atol 1e-15 scenario.txt elapsed_ms=2860.348 internal_steps=75293 accepted=75282 rejected=0 function_calls=150575 jacobian_updates=75293 decompositions=75293 solves=225879 
+default: $ micm_scenario --group-size 32 scenario.txt cells 320-383 failed: step 1: Convergence Exceeded Max Steps FAILED 
+tight: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-9 --atol 1e-22 --max-steps 10000000 scenario.txt elapsed_ms=59199.817 internal_steps=174630 accepted=172539 rejected=0 function_calls=1045689 jacobian_updates=174630 decompositions=174630 solves=1047780 
+tighter: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-10 --atol 1e-23 --max-steps 10000000 scenario.txt elapsed_ms=132620.053 internal_steps=344880 accepted=341663 rejected=0 function_calls=2066063 jacobian_updates=344880 decompositions=344880 solves=2069280 
+convergence (tight against tighter): overall 10.29 digits over 552912 values (172 species, 4000 rows); worst species: HO2NO2 9.46, N2O5 9.64, CLO 9.66, HOCH2OO 9.74, RO2 9.74
+gate run against tighter: overall 5.10 digits over 552912 values (172 species, 4000 rows); worst species: ISOP 4.10, HYDRALD 4.14, MACR 4.15, ISOPNITA 4.27, BIGENE 4.31
+MICM default against tighter: no result (the default run failed)
+files:
+  be2f6f3f29cb786f436e6988a8711022c160d0b56c54eaefc6f2e1816e1a7d64  cells.csv
+  74733543cf64eee4bc0d221857434a6fd562ada05f65195a6471b0ae5b0086f0  photolysis.csv
+  78bdd7efde6d1909197ce85af98890555613cb642fb82cbfe598093c1ec72112  scenario.txt
+  c17c4d072734de511a591e1962cc998ee729d915133a9370428ba64f975b61e6  micm_final.csv
+  2e7e3666860ce09764197e57a6ce23eb292f0e1bb7fb7b0b24058a84edd1fa99  micm_snapshots.csv
+  2bb7302f82990d31152d407f5d3bd83fcd0823f7c2d1e7ed1b41a7f7452d0769  reference_final.csv
+  c23577cfba0041b2deaa83ac8f9aae5aaf646503544f80555bbcac9708b956fa  reference_snapshots.csv
+# arctic-summer-10min: 1000 cells (seed 303, NOx x0.5); 144 steps of 600 s; diurnal photolysis, 70 N, day 172, from 6 h local time
+# made 2026-10-22 09:49 on Apple M5 Pro, with micm_scenario
+gate: $ micm_scenario --group-size 32 --atol 1e-15 scenario.txt elapsed_ms=4000.557 internal_steps=103211 accepted=103211 rejected=0 function_calls=206422 jacobian_updates=103211 decompositions=103211 solves=309633 
+default: $ micm_scenario --group-size 32 scenario.txt elapsed_ms=1658.586 internal_steps=41472 accepted=41472 rejected=0 function_calls=82944 jacobian_updates=41472 decompositions=41472 solves=124416 
+tight: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-9 --atol 1e-22 --max-steps 10000000 scenario.txt elapsed_ms=77752.260 internal_steps=232467 accepted=227294 rejected=0 function_calls=1389629 jacobian_updates=232467 decompositions=232467 solves=1394802 
+tighter: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-10 --atol 1e-23 --max-steps 10000000 scenario.txt elapsed_ms=137330.454 internal_steps=413696 accepted=407660 rejected=0 function_calls=2476140 jacobian_updates=413696 decompositions=413696 solves=2482176 
+convergence (tight against tighter): overall 10.10 digits over 593164 values (179 species, 4000 rows); worst species: OCLO 9.10, BRCL 9.26, CLO 9.40, HO2NO2 9.50, TERP2O2 9.53
+gate run against tighter: overall 5.04 digits over 593164 values (179 species, 4000 rows); worst species: ISOP 3.78, ISOPNITA 4.14, HYDRALD 4.16, MACR 4.19, ISOPNITB 4.20
+MICM default against tighter: overall 3.64 digits over 593164 values (179 species, 4000 rows); worst species: ISOP 2.51, ISOPO2VBS 2.79, ISOPAO2 2.82, ISOPNITA 2.82, MTERP 2.83
+files:
+  d493126571fdae34852dad06ff3ac4845656e4415dd73771cb7bc6851cff0a17  cells.csv
+  7e1b14145348f53e8b8d963dab8a5f987453ef8a96ada4602992caeb1d7079d5  photolysis.csv
+  c545960079f726497ea37a572de08bca11c1f3cb5b38de7f472cae0c0fb4b80e  scenario.txt
+  d2f61ecb3b168fb035f00dc962a5c5ff53572e98b47c356bad69d2c8ffadce17  micm_final.csv
+  0eceb227b4754ea780615384d707784e23efeaa6c8d22f08e5dd9a7fca42f185  micm_snapshots.csv
+  019b58dd1de0701c69c8d692580575132b358ee8bc28d610dfe6c772110b46fa  reference_final.csv
+  b28bdffcb4d62be64215b810bba86be462f867e03d8ac3bbb63087c808f687b8  reference_snapshots.csv
+# south-48h-30min: 1000 cells (seed 304, NOx x2); 96 steps of 1800 s; diurnal photolysis, -35 N, day 15, from 6 h local time
+# made 2026-10-22 09:53 on Apple M5 Pro, with micm_scenario
+gate: $ micm_scenario --group-size 32 --atol 1e-15 scenario.txt elapsed_ms=3693.409 internal_steps=95163 accepted=95157 rejected=0 function_calls=190320 jacobian_updates=95163 decompositions=95163 solves=285489 
+default: $ micm_scenario --group-size 32 scenario.txt elapsed_ms=1080.750 internal_steps=27648 accepted=27648 rejected=0 function_calls=55296 jacobian_updates=27648 decompositions=27648 solves=82944 
+tight: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-9 --atol 1e-22 --max-steps 10000000 scenario.txt elapsed_ms=79375.006 internal_steps=233003 accepted=229943 rejected=0 function_calls=1394958 jacobian_updates=233003 decompositions=233003 solves=1398018 
+tighter: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-10 --atol 1e-23 --max-steps 10000000 scenario.txt elapsed_ms=153507.306 internal_steps=451953 accepted=447855 rejected=0 function_calls=2707620 jacobian_updates=451953 decompositions=451953 solves=2711718 
+convergence (tight against tighter): overall 10.21 digits over 1060694 values (178 species, 8000 rows); worst species: BRCL 9.18, PHENO 9.31, OCLO 9.45, HO2NO2 9.57, C6H5O2 9.63
+gate run against tighter: overall 4.97 digits over 1060694 values (178 species, 8000 rows); worst species: ISOP 3.79, HYDRALD 3.97, MACR 4.02, ISOPNITA 4.11, ISOPOOH 4.12
+MICM default against tighter: overall 2.36 digits over 1060694 values (178 species, 8000 rows); worst species: ISOP 1.02, HYDRALD 1.28, ISOPNITA 1.28, ISOPNITB 1.30, MACR 1.31
+files:
+  d8f149452e1d7a0b3ff7652e8273b28af87512d3ccc95c21042b378346d8948c  cells.csv
+  de14e54faae89d6043c3411b08126922a456ecb491dd2d36fefba3ff1d2a5d51  photolysis.csv
+  241c85e4641151fef503f79de93c279e76fdcb5463bc7d6f7232a7ba649ec9e7  scenario.txt
+  9011d8bfcc8c6520bdcf6db187005ab0f29dcebdfcef92d14d0b12a321cd89b0  micm_final.csv
+  6b5972f1084c79acc7a2941a89aec14a67e78e955a7131e0ae407a4cba821ca4  micm_snapshots.csv
+  07845c3651bb564b2cac14da298c8499cad186d8e1f8da3e1d1712750f74d329  reference_final.csv
+  2fb3be2385d324efe5ae669b751bcd463fdd9898936a8be2900553381edc234c  reference_snapshots.csv
+# night-start-5min: 1000 cells (seed 305, NOx x0.1); 288 steps of 300 s; diurnal photolysis, 40 N, day 300, from 18 h local time
+# made 2026-10-22 09:57 on Apple M5 Pro, with micm_scenario
+gate: $ micm_scenario --group-size 32 --atol 1e-15 scenario.txt elapsed_ms=5167.845 internal_steps=132855 accepted=132852 rejected=0 function_calls=265707 jacobian_updates=132855 decompositions=132855 solves=398565 
+default: $ micm_scenario --group-size 32 scenario.txt elapsed_ms=3532.884 internal_steps=82944 accepted=82944 rejected=0 function_calls=165888 jacobian_updates=82944 decompositions=82944 solves=248832 
+tight: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-9 --atol 1e-22 --max-steps 10000000 scenario.txt elapsed_ms=77491.610 internal_steps=232563 accepted=228225 rejected=0 function_calls=1391040 jacobian_updates=232563 decompositions=232563 solves=1395378 
+tighter: $ micm_scenario --threads 10 --method rosenbrock6dae --rtol 1e-10 --atol 1e-23 --max-steps 10000000 scenario.txt elapsed_ms=144357.131 internal_steps=419647 accepted=413367 rejected=0 function_calls=2511602 jacobian_updates=419647 decompositions=419647 solves=2517882 
+convergence (tight against tighter): overall 10.44 digits over 647882 values (179 species, 4000 rows); worst species: BRO 9.52, NC4CHO 9.62, OH 9.71, ISOP 9.72, ISOPNO3 9.76
+gate run against tighter: overall 4.73 digits over 647882 values (179 species, 4000 rows); worst species: BRO 3.57, CLO 3.79, XO2 4.12, RO2 4.14, MACRO2 4.15
+MICM default against tighter: overall 3.61 digits over 647882 values (179 species, 4000 rows); worst species: MTERP 2.88, MTERPO2VBS 3.01, NTERPO2 3.07, ISOPNO3 3.08, N2O5 3.11
+files:
+  5549de0216f4aabe35f90a9390bf4a6b08bbeabd45fd5762f1907172e0905527  cells.csv
+  5170677d2d300c809c7d17e37dedbd2c1414dde6b71754ac54eeb1d197352315  photolysis.csv
+  3d3b6fb56732b2b5b6f2b00874c55d06d1fe89a87fdc313310c8d05528b4c751  scenario.txt
+  747e6194e457a7aea0aae3f2683e6152a56eb65f403d8aa2354f17bdeded94d3  micm_final.csv
+  b1a8ac6749bfd49cf08cc02cacf2968a19ca37e5c02fc31bf32b76a2e6029a59  micm_snapshots.csv
+  521680384053ef8598418918d8ce3ea7e1a741f2fd353be1faf523884f50a106  reference_final.csv
+  d1b46d3b476646f59808e8162f1f76d9c5db18c99d50fec3e9bfdbb144813ebc  reference_snapshots.csv
