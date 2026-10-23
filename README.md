@@ -29,6 +29,7 @@ below.
 | `transcripts/tier2/astra-high.jsonl.gz` | Tier 2 astra-high | Codex CLI 0.163.0 | `01a164c1-c86d-74f1-a385-74d24b64d3a1` | 2.3 MB |
 | `transcripts/tier2/sol-max.jsonl.gz` | Tier 2 sol-max | Codex CLI 0.163.0 | `01a16520-0dd1-7032-bd32-99fef62218eb` | 4.4 MB |
 | `transcripts/tier2/sol-xhigh.jsonl.gz` | Tier 2 sol-xhigh | Codex CLI 0.163.0 | `01a1659f-81c3-7d00-b307-1f319db2589c` | 2.2 MB |
+| `transcripts/tier2/sol-high.jsonl.gz` | Tier 2 sol-high | Codex CLI 0.163.0 | `01a165ea-3043-75a0-876c-f74b06d91fbf` | 3.6 MB |
 
 ## Tier 3 runs
 
