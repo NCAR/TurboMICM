@@ -1317,6 +1317,10 @@ Calibration on this machine
   nothing. When Fable answers, it runs `tier2/review/run-review.sh fable` on
   the same folder, prompt, and tools, reading the entries I to A. The failed
   01:12 attempt's files are kept as `report-fable-attempt1.*`.
+- 07:14: the SSE reported that Fable's usage resets at 22:00 and chose to
+  wait for it. Every probe through 07:04 was refused. The watcher was
+  restarted to wait until 22:00:30, checking the clock every minute, then
+  probe every 5 minutes and run the review when Fable answers.
 
 # Tier 3
 
