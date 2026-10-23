@@ -1271,7 +1271,21 @@ Calibration on this machine
     astra-xhigh), an undocumented override (luna-max), and a divide by zero
     for a mechanism without user-defined rates (luna-high).
 - 02:02: the 1-thread session's idle wait started (tmux `tier2-timing-1`,
-  `~/NSF-NCAR/tier2-work/timing/run-ranking-1.sh`).
+  `~/NSF-NCAR/tier2-work/timing/run-ranking-1.sh`). After 10 idle checks it
+  began timing at 02:11:16: 21 programs (MICM's three and each entry's
+  specialized and generic benchmarks), 5 rotating rounds.
+- 02:08:15: the second Opus review ended (27 min, 182 turns, $14.64 at list
+  prices). Neither reviewer's transcript shows a path outside the review
+  folder; the only refused commands were a few `ls` and `cd`. The key was
+  decoded, and the results are in `results/2026-10-23-tier2-blind-review`.
+  - Sums of the three scores, reviewer 1 then reviewer 2: sol-xhigh 24 and 23
+    (47); astra-high 23 and 23 (46); sol-max 23 and 21 and astra-max 21 and
+    23 (44 each); astra-xhigh 21 and 20 (41); sol-high 19 and 20 (39);
+    luna-max 13 and 18 (31); luna-xhigh 10 and 14 and luna-high 11 and 13 (24
+    each).
+  - Both reviewers rank sol-xhigh first and have the same top four. Fable was
+    still at its limit at 02:09; its report waits for the limit, or for the
+    SSE's word on usage credits.
 
 # Tier 3
 
