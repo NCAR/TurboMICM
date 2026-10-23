@@ -136,3 +136,27 @@
 - Empty reaction sets get a C11 dummy descriptor element with a reaction count of
   zero. Tests include inert species, high-order repeated reactants, self-products,
   source/loss rates, condition multipliers, and every supported rate family.
+- Default generation uses direct reaction/Jacobian code and a compact immutable
+  LU plan. Fully unrolled linear algebra, fused reaction batches, reaction-shape
+  sharing, narrow plan indices, and small matrix tiles were measured as
+  alternatives; the selected combination follows the 18-thread ranking rather
+  than choosing the fastest single-thread microbenchmark. SPECIALIZATION.md
+  gives the measured combinations and their limits.
+- Reciprocal pivots use ordinary double division, once per pivot. All three
+  solves use the same factors. Completed stage storage supplies temporary
+  normalized-error components, followed by the original ordered scalar sum of
+  squares. Neither change introduces approximate reciprocals, a parallel error
+  reduction, or additional factorization reuse.
+- Static scheduling remains the default. `OMP_SCHEDULE` can select any supported
+  runtime schedule; a dynamic-schedule comparison requires identical final CSV
+  values. Output order follows input cell order, independently of scheduling.
+- Validation adds a 65-cell, 48-hour scenario at latitude 62, day 200, starting
+  at 23:00 with NOx multiplied by three. A second table shifts sample times and
+  truncates coverage to exercise interpolation and endpoint extension. Snapshots
+  every 25 steps exercise an uneven last interval. Both use independent local
+  MICM reference runs with the same 32-cell groups and tight tolerances.
+- Fixed numeric operands are parenthesized before unary negation in emitted
+  formulas. Negative tunneling and branched-rate activation coefficients are
+  tested explicitly, preventing accidental C decrement tokens. The corrected
+  generator leaves the TS1 source, object, and benchmark binary identical to
+  the timed version.

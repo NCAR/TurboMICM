@@ -29,7 +29,7 @@ owner = C.CDLL(str(ROOT / 'build/specialized_tests.so'))
 
 def close(a, b, context, rtol=1e-10):
     assert math.isfinite(a) and math.isfinite(b), (context, a, b)
-    assert abs(a - b) <= rtol * abs(b) + 1e-30, (context, a, b)
+    assert abs(a - b) <= rtol * abs(b), (context, a, b)
 
 
 def check(prefix, config, cells):
@@ -81,6 +81,17 @@ def check(prefix, config, cells):
                     lib.chem_parameters(s)[i * cells + c] = value
         for s in (generic, special):
             assert lib.chem_calculate_air_density(s) == 0
+        # Probe every runtime custom column with distinct nonzero data, including
+        # TS1 photolysis columns that the trajectory fixture deliberately zeros.
+        saved = [lib.chem_parameters(generic)[i] for i in range(data.parameter_count * cells)]
+        for s in (generic, special):
+            for i in range(data.parameter_count * cells):
+                lib.chem_parameters(s)[i] = 1.3e-5 * (i + 1)
+        assert lib.chem_update_rates(generic) == rate(special) == 0
+        for i in range(data.reaction_count * cells):
+            close(lib.chem_rate_constants(special)[i], lib.chem_rate_constants(generic)[i], (prefix, 'custom probe', i), 1e-13)
+        for s in (generic, special):
+            for i, value in enumerate(saved): lib.chem_parameters(s)[i] = value
         params = lib.chem_rosenbrock_parameters(3)
         params.max_steps = 10000
         # Tight tolerances exercise the error controller and rejected steps as

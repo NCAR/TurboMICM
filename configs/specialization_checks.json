@@ -1,18 +1,155 @@
 {
   "camp-data": [
-    {"type": "CHEM_SPEC", "name": "A", "initial concentration": 1},
-    {"type": "CHEM_SPEC", "name": "B"},
-    {"type": "CHEM_SPEC", "name": "C"},
-    {"type": "CHEM_SPEC", "name": "D"},
-    {"type": "CHEM_SPEC", "name": "M", "third body": true},
-    {"type": "CHEM_SPEC", "name": "X", "parameterization": {"constant": 1, "temperature": 0.001, "pressure": 1e-7, "air density": 0.002}},
-    {"type": "MECHANISM", "rate units": "mol m-3", "reactions": [
-      {"type": "TAYLOR_SERIES", "A": 0.001, "B": 0.3, "C": -40, "D": 290, "E": 1e-7, "coefficients": [1, 0.001, -1e-7], "reactants": {"A": {}, "X": {}}, "products": {"B": {"yield": 0.75}}},
-      {"type": "TERNARY_CHEMICAL_ACTIVATION_JPL19", "k0_A": 0.0001, "k0_B": -1, "kinf_A": 0.1, "kinf_B": 0.1, "kint_A": 0.001, "kint_C": -30, "Fc": 0.6, "N": 1.1, "reactants": {"B": {}}, "products": {"C": {}}},
-      {"type": "REVERSIBLE", "A": 0.02, "C": -50, "k_r": 0.1, "reactants": {"C": {}}, "products": {"D": {}}},
-      {"type": "ARRHENIUS", "A": 1e-7, "reactants": {"D": {"qty": 3}, "M": {"qty": 2}}, "products": {"D": {"yield": 0.5}, "A": {"yield": 2}}},
-      {"type": "EMISSION", "species": "A", "MUSICA name": "source", "scaling_factor": 0.5},
-      {"type": "FIRST_ORDER_LOSS", "species": "B", "MUSICA name": "loss", "scaling_factor": 1.2}
-    ]}
+    {
+      "type": "CHEM_SPEC",
+      "name": "A",
+      "initial concentration": 1
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "B"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "D"
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "M",
+      "third body": true
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "X",
+      "parameterization": {
+        "constant": 1,
+        "temperature": 0.001,
+        "pressure": 1e-07,
+        "air density": 0.002
+      }
+    },
+    {
+      "type": "MECHANISM",
+      "rate units": "mol m-3",
+      "reactions": [
+        {
+          "type": "TAYLOR_SERIES",
+          "A": 0.001,
+          "B": 0.3,
+          "C": -40,
+          "D": 290,
+          "E": 1e-07,
+          "coefficients": [
+            1,
+            0.001,
+            -1e-07
+          ],
+          "reactants": {
+            "A": {},
+            "X": {}
+          },
+          "products": {
+            "B": {
+              "yield": 0.75
+            }
+          }
+        },
+        {
+          "type": "TERNARY_CHEMICAL_ACTIVATION_JPL19",
+          "k0_A": 0.0001,
+          "k0_B": -1,
+          "kinf_A": 0.1,
+          "kinf_B": 0.1,
+          "kint_A": 0.001,
+          "kint_C": -30,
+          "Fc": 0.6,
+          "N": 1.1,
+          "reactants": {
+            "B": {}
+          },
+          "products": {
+            "C": {}
+          }
+        },
+        {
+          "type": "REVERSIBLE",
+          "A": 0.02,
+          "C": -50,
+          "k_r": 0.1,
+          "reactants": {
+            "C": {}
+          },
+          "products": {
+            "D": {}
+          }
+        },
+        {
+          "type": "ARRHENIUS",
+          "A": 1e-07,
+          "reactants": {
+            "D": {
+              "qty": 3
+            },
+            "M": {
+              "qty": 2
+            }
+          },
+          "products": {
+            "D": {
+              "yield": 0.5
+            },
+            "A": {
+              "yield": 2
+            }
+          }
+        },
+        {
+          "type": "EMISSION",
+          "species": "A",
+          "MUSICA name": "source",
+          "scaling_factor": 0.5
+        },
+        {
+          "type": "FIRST_ORDER_LOSS",
+          "species": "B",
+          "MUSICA name": "loss",
+          "scaling_factor": 1.2
+        },
+        {
+          "type": "TUNNELING",
+          "A": 0.001,
+          "B": -2.3,
+          "C": -4.1,
+          "reactants": {
+            "A": {}
+          },
+          "products": {
+            "B": {
+              "yield": 0.5
+            }
+          }
+        },
+        {
+          "type": "BRANCHED",
+          "X": 0.003,
+          "Y": -3.1,
+          "a0": 0.2,
+          "n": 1,
+          "reactants": {
+            "A": {}
+          },
+          "alkoxy products": {
+            "C": {}
+          },
+          "nitrate products": {
+            "D": {}
+          }
+        }
+      ]
+    }
   ]
 }

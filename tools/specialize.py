@@ -204,7 +204,7 @@ def rate_formula(r):
                   f'double kf = k0m / (1.0 + ratio) * pow({p[12]}, {p[13]} / ({p[13]} + pow(log10(ratio), 2.0)));']
         expr = 'kf + kint * (1.0 - kf / kinf)'
     elif kind == 'TUNNELING':
-        expr = f'{p[0]} * exp(-{p[1]} / t + {p[2]} / (t * t * t))'
+        expr = f'{p[0]} * exp(-({p[1]}) / t + {p[2]} / (t * t * t))'
     elif kind in ('BRANCHED_ALKOXY', 'BRANCHED_NITRATE'):
         lines += [f'double k0 = 2e-22 * 6.02214076e23 * 1e-6 * exp({p[3]});',
                   'double ar = k0 * (2.45e19 / 6.02214076e23 * 1e6);',
@@ -213,7 +213,7 @@ def rate_formula(r):
                   f'double z = ref * (1.0 - {p[2]}) / {p[2]};',
                   'double a = k0 * air, b = .43 * pow(t / 298.0, -8.0);',
                   'double av = a / (1.0 + a / b) * pow(.41, 1.0 / (1.0 + pow(log10(a / b), 2.0)));',
-                  f'double pre = {p[0]} * exp(-{p[1]} / t);']
+                  f'double pre = {p[0]} * exp(-({p[1]}) / t);']
         expr = 'pre * (z / (z + av))' if kind == 'BRANCHED_ALKOXY' else 'pre * (av / (av + z))'
     elif kind == 'REVERSIBLE':
         expr = f'{p[0]} * exp({p[1]} / t) * {p[2]}'

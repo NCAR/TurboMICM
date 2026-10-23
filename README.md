@@ -105,7 +105,9 @@ statistics, and final CSV format. The scenario runner starts directly from the
 input, applies each step's photolysis factor, and writes `ts1_final.csv` and
 `ts1_snapshots.csv` when a snapshot interval is requested. It accepts arbitrary
 relative scenario paths and nonuniform photolysis tables with constant endpoints.
-Run each executable in a separate output directory when retaining comparisons.
+Its defaults are MICM's relative tolerance `1e-6` and absolute tolerance
+`1e-3`; the supplied day-night gates use `--atol 1e-15`. Run each executable in
+a separate output directory when retaining comparisons.
 
 ```sh
 .conda/bin/python tools/specialize.py CONFIG OUTPUT.c --prefix mechanism

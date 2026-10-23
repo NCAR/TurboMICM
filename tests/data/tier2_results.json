@@ -1,0 +1,1483 @@
+{
+  "machine": "Apple M5 Pro, 18 CPU cores, macOS 26.7.1",
+  "flags": "-O3 -DNDEBUG",
+  "compiler_gates": {
+    "clang": {
+      "compiler": "clang",
+      "flags": "-O3 -DNDEBUG",
+      "checks": {
+        "unit_gates": "675 applicable Tier 1 cases, 5 N/A, 36 generated-versus-generic cases PASS",
+        "ts1_bench_cpu-100": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 4.25e-14 (BCARY, cell 85) (rtol 1e-10, atol 1e-30)",
+        "ts1_bench_cpu-10000": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+        "ts1_bench_specialized-100": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.23e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)",
+        "ts1_bench_specialized-10000": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+        "extra": {
+          "overall_digits": 14.261,
+          "worst_species": [
+            [
+              "TERP2OOH",
+              13.852
+            ],
+            [
+              "TERPROD2",
+              13.858
+            ],
+            [
+              "HYDRALD",
+              13.903
+            ],
+            [
+              "MACR",
+              13.909
+            ],
+            [
+              "ISOPOOH",
+              13.932
+            ]
+          ],
+          "values_counted": 70100,
+          "species_counted": 181,
+          "rows": 520,
+          "nonfinite": 0,
+          "below_floor": 0,
+          "gate": "PASS",
+          "level": 10.0,
+          "level_result": "PASS"
+        },
+        "edge": {
+          "overall_digits": 14.251,
+          "worst_species": [
+            [
+              "HYDRALD",
+              13.815
+            ],
+            [
+              "TERPROD2",
+              13.864
+            ],
+            [
+              "TERP2OOH",
+              13.872
+            ],
+            [
+              "C3H6",
+              13.886
+            ],
+            [
+              "MACROOH",
+              13.899
+            ]
+          ],
+          "values_counted": 70300,
+          "species_counted": 181,
+          "rows": 520,
+          "nonfinite": 0,
+          "below_floor": 0,
+          "gate": "PASS",
+          "level": 10.0,
+          "level_result": "PASS"
+        },
+        "output_coverage": "all snapshot steps/cells and final values PASS",
+        "dynamic_schedule": "bit-identical final state PASS"
+      },
+      "clean_build_seconds": 13.771650707996741,
+      "generated_c_bytes": 990603,
+      "generated_c_sha256": "fce4dbfb32c38705550a22ab2ab4357f6fa8840cb6da9ed9cd75235a5088a2ee",
+      "scenarios": {
+        "diurnal-30min": {
+          "elapsed_ms": 529.312,
+          "statistics": {
+            "internal_steps": 48619,
+            "accepted": 48589,
+            "rejected": 0,
+            "function_calls": 97208,
+            "jacobian_updates": 48619,
+            "decompositions": 48619,
+            "solves": 145857
+          },
+          "micm": {
+            "overall_digits": 14.376,
+            "worst_species": [
+              [
+                "ISOP",
+                13.828
+              ],
+              [
+                "HYDRALD",
+                13.893
+              ],
+              [
+                "MACR",
+                13.901
+              ],
+              [
+                "ISOPOOH",
+                13.907
+              ],
+              [
+                "BIGENE",
+                13.944
+              ]
+            ],
+            "values_counted": 589857,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 4.748,
+            "worst_species": [
+              [
+                "ISOP",
+                3.61
+              ],
+              [
+                "HYDRALD",
+                4.002
+              ],
+              [
+                "ISOPNITA",
+                4.028
+              ],
+              [
+                "MACR",
+                4.032
+              ],
+              [
+                "ISOPNITB",
+                4.051
+              ]
+            ],
+            "values_counted": 589857,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        },
+        "diurnal-10min": {
+          "elapsed_ms": 995.987,
+          "statistics": {
+            "internal_steps": 90980,
+            "accepted": 90965,
+            "rejected": 0,
+            "function_calls": 181945,
+            "jacobian_updates": 90980,
+            "decompositions": 90980,
+            "solves": 272940
+          },
+          "micm": {
+            "overall_digits": 14.285,
+            "worst_species": [
+              [
+                "ISOP",
+                13.655
+              ],
+              [
+                "ISOPNO3",
+                13.712
+              ],
+              [
+                "HYDRALD",
+                13.797
+              ],
+              [
+                "MACR",
+                13.8
+              ],
+              [
+                "ISOPO2VBS",
+                13.807
+              ]
+            ],
+            "values_counted": 586475,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 5.052,
+            "worst_species": [
+              [
+                "ISOP",
+                3.824
+              ],
+              [
+                "ISOPNITA",
+                4.241
+              ],
+              [
+                "ISOPNITB",
+                4.283
+              ],
+              [
+                "HYDRALD",
+                4.33
+              ],
+              [
+                "MTERP",
+                4.34
+              ]
+            ],
+            "values_counted": 586475,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        },
+        "diurnal-5min": {
+          "elapsed_ms": 1615.883,
+          "statistics": {
+            "internal_steps": 145891,
+            "accepted": 145888,
+            "rejected": 0,
+            "function_calls": 291779,
+            "jacobian_updates": 145891,
+            "decompositions": 145891,
+            "solves": 437673
+          },
+          "micm": {
+            "overall_digits": 14.23,
+            "worst_species": [
+              [
+                "ISOP",
+                13.688
+              ],
+              [
+                "HYDRALD",
+                13.748
+              ],
+              [
+                "MACR",
+                13.751
+              ],
+              [
+                "BIGENE",
+                13.766
+              ],
+              [
+                "ISOPNO3",
+                13.778
+              ]
+            ],
+            "values_counted": 584951,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 5.214,
+            "worst_species": [
+              [
+                "ISOP",
+                4.328
+              ],
+              [
+                "BRO",
+                4.365
+              ],
+              [
+                "CLO",
+                4.382
+              ],
+              [
+                "MALO2",
+                4.528
+              ],
+              [
+                "HO2NO2",
+                4.571
+              ]
+            ],
+            "values_counted": 584951,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        },
+        "polluted-10min": {
+          "elapsed_ms": 1174.724,
+          "statistics": {
+            "internal_steps": 106393,
+            "accepted": 106387,
+            "rejected": 0,
+            "function_calls": 212780,
+            "jacobian_updates": 106393,
+            "decompositions": 106393,
+            "solves": 319179
+          },
+          "micm": {
+            "overall_digits": 14.047,
+            "worst_species": [
+              [
+                "ISOPNO3",
+                13.305
+              ],
+              [
+                "ISOP",
+                13.409
+              ],
+              [
+                "HYDRALD",
+                13.465
+              ],
+              [
+                "MACR",
+                13.471
+              ],
+              [
+                "BIGENE",
+                13.5
+              ]
+            ],
+            "values_counted": 554061,
+            "species_counted": 178,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 5.398,
+            "worst_species": [
+              [
+                "ISOP",
+                4.257
+              ],
+              [
+                "HYDRALD",
+                4.563
+              ],
+              [
+                "MACR",
+                4.597
+              ],
+              [
+                "ISOPNITA",
+                4.647
+              ],
+              [
+                "ISOPNITB",
+                4.698
+              ]
+            ],
+            "values_counted": 554061,
+            "species_counted": 178,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        },
+        "clean-10min": {
+          "elapsed_ms": 946.076,
+          "statistics": {
+            "internal_steps": 84273,
+            "accepted": 84264,
+            "rejected": 0,
+            "function_calls": 168537,
+            "jacobian_updates": 84273,
+            "decompositions": 84273,
+            "solves": 252819
+          },
+          "micm": {
+            "overall_digits": 14.342,
+            "worst_species": [
+              [
+                "ISOP",
+                13.792
+              ],
+              [
+                "HYDRALD",
+                13.922
+              ],
+              [
+                "MTERP",
+                13.93
+              ],
+              [
+                "MACR",
+                13.93
+              ],
+              [
+                "ISOPOOH",
+                13.934
+              ]
+            ],
+            "values_counted": 611626,
+            "species_counted": 181,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 4.907,
+            "worst_species": [
+              [
+                "ISOP",
+                3.766
+              ],
+              [
+                "ISOPO2VBS",
+                4.124
+              ],
+              [
+                "ISOPAO2",
+                4.138
+              ],
+              [
+                "ISOPBO2",
+                4.188
+              ],
+              [
+                "ISOPNITA",
+                4.228
+              ]
+            ],
+            "values_counted": 611626,
+            "species_counted": 181,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        }
+      }
+    },
+    "gcc-15": {
+      "compiler": "gcc-15",
+      "flags": "-O3 -DNDEBUG",
+      "checks": {
+        "unit_gates": "675 applicable Tier 1 cases, 5 N/A, 36 generated-versus-generic cases PASS",
+        "ts1_bench_cpu-100": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 5.3e-14 (BCARY, cell 87) (rtol 1e-10, atol 1e-30)",
+        "ts1_bench_cpu-10000": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.14e-13 (BCARY, cell 6848) (rtol 1e-10, atol 1e-30)",
+        "ts1_bench_specialized-100": "PASS: 21100 values in 100 cells x 211 columns; largest relative difference 3.66e-14 (BCARY, cell 86) (rtol 1e-10, atol 1e-30)",
+        "ts1_bench_specialized-10000": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.75e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+        "extra": {
+          "overall_digits": 14.279,
+          "worst_species": [
+            [
+              "HYDRALD",
+              13.873
+            ],
+            [
+              "MPAN",
+              13.888
+            ],
+            [
+              "MVK",
+              13.888
+            ],
+            [
+              "ISOPOOH",
+              13.897
+            ],
+            [
+              "TERP2OOH",
+              13.904
+            ]
+          ],
+          "values_counted": 70100,
+          "species_counted": 181,
+          "rows": 520,
+          "nonfinite": 0,
+          "below_floor": 0,
+          "gate": "PASS",
+          "level": 10.0,
+          "level_result": "PASS"
+        },
+        "edge": {
+          "overall_digits": 14.262,
+          "worst_species": [
+            [
+              "HYDRALD",
+              13.872
+            ],
+            [
+              "MVK",
+              13.883
+            ],
+            [
+              "MACROOH",
+              13.891
+            ],
+            [
+              "C3H6",
+              13.9
+            ],
+            [
+              "MPAN",
+              13.903
+            ]
+          ],
+          "values_counted": 70300,
+          "species_counted": 181,
+          "rows": 520,
+          "nonfinite": 0,
+          "below_floor": 0,
+          "gate": "PASS",
+          "level": 10.0,
+          "level_result": "PASS"
+        },
+        "output_coverage": "all snapshot steps/cells and final values PASS",
+        "dynamic_schedule": "bit-identical final state PASS"
+      },
+      "clean_build_seconds": 14.88862066600268,
+      "generated_c_bytes": 990603,
+      "generated_c_sha256": "fce4dbfb32c38705550a22ab2ab4357f6fa8840cb6da9ed9cd75235a5088a2ee",
+      "scenarios": {
+        "diurnal-30min": {
+          "elapsed_ms": 549.39,
+          "statistics": {
+            "internal_steps": 48619,
+            "accepted": 48589,
+            "rejected": 0,
+            "function_calls": 97208,
+            "jacobian_updates": 48619,
+            "decompositions": 48619,
+            "solves": 145857
+          },
+          "micm": {
+            "overall_digits": 14.363,
+            "worst_species": [
+              [
+                "ISOP",
+                13.791
+              ],
+              [
+                "ISOPO2VBS",
+                13.856
+              ],
+              [
+                "ISOPAO2",
+                13.858
+              ],
+              [
+                "HYDRALD",
+                13.873
+              ],
+              [
+                "MACR",
+                13.886
+              ]
+            ],
+            "values_counted": 589857,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 4.748,
+            "worst_species": [
+              [
+                "ISOP",
+                3.61
+              ],
+              [
+                "HYDRALD",
+                4.002
+              ],
+              [
+                "ISOPNITA",
+                4.028
+              ],
+              [
+                "MACR",
+                4.032
+              ],
+              [
+                "ISOPNITB",
+                4.051
+              ]
+            ],
+            "values_counted": 589857,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        },
+        "diurnal-10min": {
+          "elapsed_ms": 1007.047,
+          "statistics": {
+            "internal_steps": 90980,
+            "accepted": 90965,
+            "rejected": 0,
+            "function_calls": 181945,
+            "jacobian_updates": 90980,
+            "decompositions": 90980,
+            "solves": 272940
+          },
+          "micm": {
+            "overall_digits": 14.292,
+            "worst_species": [
+              [
+                "ISOP",
+                13.686
+              ],
+              [
+                "HYDRALD",
+                13.811
+              ],
+              [
+                "MACR",
+                13.817
+              ],
+              [
+                "ISOPAO2",
+                13.826
+              ],
+              [
+                "ISOPO2VBS",
+                13.829
+              ]
+            ],
+            "values_counted": 586475,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 5.052,
+            "worst_species": [
+              [
+                "ISOP",
+                3.824
+              ],
+              [
+                "ISOPNITA",
+                4.241
+              ],
+              [
+                "ISOPNITB",
+                4.283
+              ],
+              [
+                "HYDRALD",
+                4.33
+              ],
+              [
+                "MTERP",
+                4.34
+              ]
+            ],
+            "values_counted": 586475,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        },
+        "diurnal-5min": {
+          "elapsed_ms": 1607.24,
+          "statistics": {
+            "internal_steps": 145891,
+            "accepted": 145888,
+            "rejected": 0,
+            "function_calls": 291779,
+            "jacobian_updates": 145891,
+            "decompositions": 145891,
+            "solves": 437673
+          },
+          "micm": {
+            "overall_digits": 14.233,
+            "worst_species": [
+              [
+                "ISOPNO3",
+                13.537
+              ],
+              [
+                "OCLO",
+                13.611
+              ],
+              [
+                "ISOP",
+                13.67
+              ],
+              [
+                "BRCL",
+                13.699
+              ],
+              [
+                "NC4CHO",
+                13.706
+              ]
+            ],
+            "values_counted": 584951,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 5.214,
+            "worst_species": [
+              [
+                "ISOP",
+                4.328
+              ],
+              [
+                "BRO",
+                4.365
+              ],
+              [
+                "CLO",
+                4.382
+              ],
+              [
+                "MALO2",
+                4.528
+              ],
+              [
+                "HO2NO2",
+                4.571
+              ]
+            ],
+            "values_counted": 584951,
+            "species_counted": 180,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        },
+        "polluted-10min": {
+          "elapsed_ms": 1197.351,
+          "statistics": {
+            "internal_steps": 106393,
+            "accepted": 106387,
+            "rejected": 0,
+            "function_calls": 212780,
+            "jacobian_updates": 106393,
+            "decompositions": 106393,
+            "solves": 319179
+          },
+          "micm": {
+            "overall_digits": 14.051,
+            "worst_species": [
+              [
+                "ISOP",
+                13.44
+              ],
+              [
+                "HYDRALD",
+                13.465
+              ],
+              [
+                "MACR",
+                13.484
+              ],
+              [
+                "ISOPOOH",
+                13.496
+              ],
+              [
+                "BIGENE",
+                13.509
+              ]
+            ],
+            "values_counted": 554061,
+            "species_counted": 178,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 5.398,
+            "worst_species": [
+              [
+                "ISOP",
+                4.257
+              ],
+              [
+                "HYDRALD",
+                4.563
+              ],
+              [
+                "MACR",
+                4.597
+              ],
+              [
+                "ISOPNITA",
+                4.647
+              ],
+              [
+                "ISOPNITB",
+                4.698
+              ]
+            ],
+            "values_counted": 554061,
+            "species_counted": 178,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        },
+        "clean-10min": {
+          "elapsed_ms": 941.531,
+          "statistics": {
+            "internal_steps": 84273,
+            "accepted": 84264,
+            "rejected": 0,
+            "function_calls": 168537,
+            "jacobian_updates": 84273,
+            "decompositions": 84273,
+            "solves": 252819
+          },
+          "micm": {
+            "overall_digits": 14.335,
+            "worst_species": [
+              [
+                "ISOP",
+                13.811
+              ],
+              [
+                "HYDRALD",
+                13.901
+              ],
+              [
+                "MACR",
+                13.908
+              ],
+              [
+                "ISOPOOH",
+                13.922
+              ],
+              [
+                "BIGENE",
+                13.935
+              ]
+            ],
+            "values_counted": 611626,
+            "species_counted": 181,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS",
+            "level": 10.0,
+            "level_result": "PASS"
+          },
+          "reference": {
+            "overall_digits": 4.907,
+            "worst_species": [
+              [
+                "ISOP",
+                3.766
+              ],
+              [
+                "ISOPO2VBS",
+                4.124
+              ],
+              [
+                "ISOPAO2",
+                4.138
+              ],
+              [
+                "ISOPBO2",
+                4.188
+              ],
+              [
+                "ISOPNITA",
+                4.228
+              ]
+            ],
+            "values_counted": 611626,
+            "species_counted": 181,
+            "rows": 4000,
+            "nonfinite": 0,
+            "below_floor": 0,
+            "gate": "PASS"
+          }
+        }
+      }
+    }
+  },
+  "ranking_workload": {
+    "label": "clang",
+    "scenarios": {},
+    "benchmarks": {
+      "ts1_bench_specialized-18": {
+        "runs": [
+          {
+            "elapsed_ms": 2964.036,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          },
+          {
+            "elapsed_ms": 3014.059,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          },
+          {
+            "elapsed_ms": 3131.483,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          }
+        ],
+        "median_ms": 3014.059,
+        "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      "ts1_bench_cpu-18": {
+        "runs": [
+          {
+            "elapsed_ms": 4274.969,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          },
+          {
+            "elapsed_ms": 4346.424,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          },
+          {
+            "elapsed_ms": 4333.436,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          }
+        ],
+        "median_ms": 4333.436,
+        "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      "micm_ts1_ref-18": {
+        "runs": [
+          {
+            "elapsed_ms": 12771.726,
+            "statistics": {
+              "internal_steps": 16200,
+              "accepted": 16200,
+              "rejected": 0,
+              "function_calls": 32400,
+              "jacobian_updates": 16200,
+              "decompositions": 16200,
+              "solves": 48600
+            }
+          },
+          {
+            "elapsed_ms": 12944.968,
+            "statistics": {
+              "internal_steps": 16200,
+              "accepted": 16200,
+              "rejected": 0,
+              "function_calls": 32400,
+              "jacobian_updates": 16200,
+              "decompositions": 16200,
+              "solves": 48600
+            }
+          },
+          {
+            "elapsed_ms": 12936.619,
+            "statistics": {
+              "internal_steps": 16200,
+              "accepted": 16200,
+              "rejected": 0,
+              "function_calls": 32400,
+              "jacobian_updates": 16200,
+              "decompositions": 16200,
+              "solves": 48600
+            }
+          }
+        ],
+        "median_ms": 12936.619
+      },
+      "ts1_bench_specialized-1": {
+        "runs": [
+          {
+            "elapsed_ms": 35468.046,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          },
+          {
+            "elapsed_ms": 35049.822,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          },
+          {
+            "elapsed_ms": 34981.544,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          }
+        ],
+        "median_ms": 35049.822,
+        "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      "ts1_bench_cpu-1": {
+        "runs": [
+          {
+            "elapsed_ms": 46475.159,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          },
+          {
+            "elapsed_ms": 46578.221,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          },
+          {
+            "elapsed_ms": 46403.978,
+            "statistics": {
+              "internal_steps": 281700,
+              "accepted": 281700,
+              "rejected": 0,
+              "function_calls": 563400,
+              "jacobian_updates": 281700,
+              "decompositions": 281700,
+              "solves": 845100
+            }
+          }
+        ],
+        "median_ms": 46475.159,
+        "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)"
+      },
+      "micm_ts1_ref-1": {
+        "runs": [
+          {
+            "elapsed_ms": 136001.636,
+            "statistics": {
+              "internal_steps": 900,
+              "accepted": 900,
+              "rejected": 0,
+              "function_calls": 1800,
+              "jacobian_updates": 900,
+              "decompositions": 900,
+              "solves": 2700
+            }
+          },
+          {
+            "elapsed_ms": 137290.298,
+            "statistics": {
+              "internal_steps": 900,
+              "accepted": 900,
+              "rejected": 0,
+              "function_calls": 1800,
+              "jacobian_updates": 900,
+              "decompositions": 900,
+              "solves": 2700
+            }
+          },
+          {
+            "elapsed_ms": 135766.992,
+            "statistics": {
+              "internal_steps": 900,
+              "accepted": 900,
+              "rejected": 0,
+              "function_calls": 1800,
+              "jacobian_updates": 900,
+              "decompositions": 900,
+              "solves": 2700
+            }
+          }
+        ],
+        "median_ms": 136001.636
+      }
+    }
+  },
+  "specialization_variants": {
+    "generic": {
+      "samples_ms": [
+        896.645,
+        892.044,
+        895.678
+      ],
+      "median_ms": 895.678,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 0 (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "dynamic": {
+      "samples_ms": [
+        778.693,
+        781.158,
+        777.175
+      ],
+      "median_ms": 778.693,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 2.93e-15 (OH, cell 763) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "batch16": {
+      "samples_ms": [
+        1388.108,
+        1387.509,
+        1389.764
+      ],
+      "median_ms": 1388.108,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 2.93e-15 (OH, cell 763) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "fixed": {
+      "samples_ms": [
+        1004.736,
+        1003.768,
+        1003.911
+      ],
+      "median_ms": 1003.911,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 2.93e-15 (OH, cell 763) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "reciprocal": {
+      "samples_ms": [
+        1055.865,
+        1056.532,
+        1061.172
+      ],
+      "median_ms": 1056.532,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "tile2": {
+      "samples_ms": [
+        2607.286,
+        2611.473,
+        2609.205
+      ],
+      "median_ms": 2609.205,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "tile4": {
+      "samples_ms": [
+        1572.499,
+        1562.983,
+        1568.978
+      ],
+      "median_ms": 1568.978,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "tile8": {
+      "samples_ms": [
+        1698.65,
+        1704.059,
+        1697.329
+      ],
+      "median_ms": 1698.65,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "compact": {
+      "samples_ms": [
+        681.602,
+        683.765,
+        684.409
+      ],
+      "median_ms": 683.765,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "compactall": {
+      "samples_ms": [
+        709.832,
+        709.864,
+        708.595
+      ],
+      "median_ms": 709.832,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "block4": {
+      "samples_ms": [
+        672.311,
+        673.311,
+        674.43
+      ],
+      "median_ms": 673.311,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "packed": {
+      "samples_ms": [
+        1499.932,
+        1501.294,
+        1503.992
+      ],
+      "median_ms": 1501.294,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "generic-18": {
+      "samples_ms": [
+        3638.452,
+        3668.458,
+        3796.841
+      ],
+      "median_ms": 3668.458,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "compact-18": {
+      "samples_ms": [
+        2831.727,
+        2926.636,
+        2980.597
+      ],
+      "median_ms": 2926.636,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "compactall-18": {
+      "samples_ms": [
+        3164.356,
+        3240.083,
+        3258.755
+      ],
+      "median_ms": 3240.083,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "block4-18": {
+      "samples_ms": [
+        3068.214,
+        3117.265,
+        3166.331
+      ],
+      "median_ms": 3117.265,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "norm": {
+      "samples_ms": [
+        685.188,
+        684.687,
+        685.496
+      ],
+      "median_ms": 685.188,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "norm-18": {
+      "samples_ms": [
+        2655.033,
+        2690.342,
+        2697.812
+      ],
+      "median_ms": 2690.342,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "indices": {
+      "samples_ms": [
+        709.956,
+        710.116,
+        710.061
+      ],
+      "median_ms": 710.061,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "indices-18": {
+      "samples_ms": [
+        2697.45,
+        2768.705,
+        2877.001
+      ],
+      "median_ms": 2768.705,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "final": {
+      "samples_ms": [
+        727.745,
+        727.337,
+        728.182
+      ],
+      "median_ms": 727.745,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "final-18": {
+      "samples_ms": [
+        2934.182,
+        3012.49,
+        3112.803
+      ],
+      "median_ms": 3012.49,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "selected-1": {
+      "samples_ms": [
+        676.646,
+        676.137,
+        674.933
+      ],
+      "median_ms": 676.137,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "no_stage_fusion-1": {
+      "samples_ms": [
+        689.826,
+        690.752,
+        692.23
+      ],
+      "median_ms": 690.752,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 1.61e-14 (BCARY, cell 758) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "ordinary_pivots-1": {
+      "samples_ms": [
+        672.687,
+        674.773,
+        674.274
+      ],
+      "median_ms": 674.274,
+      "accuracy": "PASS: 211000 values in 1000 cells x 211 columns; largest relative difference 2.93e-15 (OH, cell 763) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "selected-18": {
+      "samples_ms": [
+        2671.304,
+        2746.376,
+        2971.451
+      ],
+      "median_ms": 2746.376,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "no_stage_fusion-18": {
+      "samples_ms": [
+        2849.959,
+        2919.862,
+        3110.938
+      ],
+      "median_ms": 2919.862,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.96e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    },
+    "ordinary_pivots-18": {
+      "samples_ms": [
+        2665.637,
+        2881.896,
+        3040.275
+      ],
+      "median_ms": 2881.896,
+      "accuracy": "PASS: 2110000 values in 10000 cells x 211 columns; largest relative difference 2.03e-13 (BCARY, cell 4179) (rtol 1e-10, atol 1e-30)",
+      "passed": true
+    }
+  },
+  "coefficient_fix_binary_identity": {
+    "before": {
+      "build/ts1_specialized.o": "521ab8c8046caf674e6345491f80b400c09e6c2ba70df2d3760fee59bd356ac1",
+      "bin/ts1_bench_specialized": "ee3b8883fe871916d4257793a03f42352b220872a84399bee7a173165ba5db00"
+    },
+    "after": {
+      "build/ts1_specialized.o": "521ab8c8046caf674e6345491f80b400c09e6c2ba70df2d3760fee59bd356ac1",
+      "bin/ts1_bench_specialized": "ee3b8883fe871916d4257793a03f42352b220872a84399bee7a173165ba5db00"
+    },
+    "identical": true
+  }
+}
