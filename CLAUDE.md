@@ -363,12 +363,20 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
 - Tier 1's secondary criteria: Judge 1, Opus, reported on 2026-10-21 (wiki
   Tier-1-Judging and Tier-1-Judging-Opus; `results/2026-10-20-tier1-judging-opus`):
   astra-xhigh 23.8 of 30, sol-xhigh 22.6, astra-high and astra-max 22.4, sol-high
-  20.6, sol-max 19.2, luna-xhigh 15.0, luna-max 13.8, luna-high 9.4. Next, Judge 2
-  (Fable 5.1 at max) and Judge 3 (the SSE): each gets a report page and a column
-  in Tier-1-Judging's Results table. Its findings for the SSE bear on the gate:
-  luna-high prints its PASS lines from a list once one program passes; luna-max
-  and luna-xhigh report many ids from shared checks; the Luna readers convert
-  MICM's units with fixed exponents.
+  20.6, sol-max 19.2, luna-xhigh 15.0, luna-max 13.8, luna-high 9.4. Judge 2,
+  Fable 5.1 at max, reported on 2026-10-24 (wiki Tier-1-Judging-Fable;
+  `results/2026-10-24-tier1-judging-fable`, with the judge's notes per entry,
+  the helpers' reports, and the E5 checker): astra-high 24.8, sol-xhigh 23.4,
+  astra-xhigh 23.2, sol-high 23.0, astra-max 21.4, sol-max 20.0, luna-max 16.2,
+  luna-xhigh 15.4, luna-high 9.4. It scored before reading Judge 1's report;
+  its comparison with Judge 1 is the last section of its page. Next, Judge 3
+  (the SSE): a report page and the third column of Tier-1-Judging's Results
+  table. Findings for the SSE that bear on the gate (both judges): luna-high
+  prints its PASS lines from a list once one program passes; luna-max and
+  luna-xhigh report many ids from shared checks; all three Luna entries accept
+  a step whose error norm is NaN; the Luna readers convert MICM's units with
+  fixed exponents; luna-high's generator emits wrong reactions for a CAMP
+  mechanism whose species order it changes (verified on a permuted tutorial).
 - Time the entries on an x86-64 Linux machine.
 - Tier 3: Luna's arm, if its Tier 1 passes (it needs new held-out scenarios,
   since `tier3/heldout/` is public). Fable's reference solution (not a

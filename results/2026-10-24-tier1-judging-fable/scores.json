@@ -1,0 +1,142 @@
+{
+ "judge": "Judge 2, Claude Fable 5.1, max effort",
+ "date": "2026-10-24",
+ "rubric": "readability and maintainability 1-10; extensibility = 2 x mean of E1..E5 (1-5), one decimal; total of 30; ties: extensibility, then maintainability",
+ "scores": [
+  {
+   "entrant": "astra-high",
+   "readability": 8,
+   "maintainability": 8,
+   "exercises": [
+    5,
+    4,
+    5,
+    4,
+    4
+   ],
+   "extensibility": 8.8,
+   "total": 24.8,
+   "rank": 1
+  },
+  {
+   "entrant": "sol-xhigh",
+   "readability": 7,
+   "maintainability": 8,
+   "exercises": [
+    5,
+    4,
+    5,
+    3,
+    4
+   ],
+   "extensibility": 8.4,
+   "total": 23.4,
+   "rank": 2
+  },
+  {
+   "entrant": "astra-xhigh",
+   "readability": 7,
+   "maintainability": 7,
+   "exercises": [
+    5,
+    5,
+    5,
+    4,
+    4
+   ],
+   "extensibility": 9.2,
+   "total": 23.2,
+   "rank": 3
+  },
+  {
+   "entrant": "sol-high",
+   "readability": 7,
+   "maintainability": 8,
+   "exercises": [
+    5,
+    4,
+    4,
+    3,
+    4
+   ],
+   "extensibility": 8.0,
+   "total": 23.0,
+   "rank": 4
+  },
+  {
+   "entrant": "astra-max",
+   "readability": 6,
+   "maintainability": 7,
+   "exercises": [
+    5,
+    4,
+    5,
+    3,
+    4
+   ],
+   "extensibility": 8.4,
+   "total": 21.4,
+   "rank": 5
+  },
+  {
+   "entrant": "sol-max",
+   "readability": 6,
+   "maintainability": 6,
+   "exercises": [
+    5,
+    4,
+    4,
+    3,
+    4
+   ],
+   "extensibility": 8.0,
+   "total": 20.0,
+   "rank": 6
+  },
+  {
+   "entrant": "luna-max",
+   "readability": 5,
+   "maintainability": 4,
+   "exercises": [
+    4,
+    3,
+    5,
+    3,
+    3
+   ],
+   "extensibility": 7.2,
+   "total": 16.2,
+   "rank": 7
+  },
+  {
+   "entrant": "luna-xhigh",
+   "readability": 4,
+   "maintainability": 5,
+   "exercises": [
+    5,
+    2,
+    3,
+    3,
+    3
+   ],
+   "extensibility": 6.4,
+   "total": 15.4,
+   "rank": 8
+  },
+  {
+   "entrant": "luna-high",
+   "readability": 3,
+   "maintainability": 2,
+   "exercises": [
+    2,
+    2,
+    2,
+    3,
+    2
+   ],
+   "extensibility": 4.4,
+   "total": 9.4,
+   "rank": 9
+  }
+ ]
+}

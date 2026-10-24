@@ -1,0 +1,7 @@
+{"camp-data": [
+ {"name": "units probe", "type": "MECHANISM", "reactions": [
+  {"type": "ARRHENIUS", "reactants": {"A": {}, "B": {}}, "products": {"C": {}}, "A": 1.0e-12},
+  {"type": "ARRHENIUS", "reactants": {"B": {}}, "products": {"C": {}}, "A": 1.0e-3},
+  {"type": "TROE", "reactants": {"A": {}}, "products": {"B": {}}, "k0_A": 1.0e-30, "kinf_A": 1.0e-11}
+ ]}
+]}

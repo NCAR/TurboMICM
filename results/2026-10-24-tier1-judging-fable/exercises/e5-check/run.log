@@ -1,0 +1,474 @@
+== sol-high on rate_constants_user_defined: input species ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   emitted species table ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   ok  ARRHENIUS                    A              -> Bx1
+   ok  BRANCHED_ALKOXY              B              -> Cx1
+   ok  BRANCHED_NITRATE             B              -> Dx1
+   ok  SURFACE                      C              -> Ex1
+   ok  TERNARY                      D              -> Fx2
+   ok  TROE                         E + E          -> Gx1
+   ok  TUNNELING                    F              -> Gx1
+   ok  USER                         C              -> Gx1
+   ok  USER                         B              -> (none)
+   ok  USER                         (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== sol-high on perm_user: input species ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   emitted species table ['A', 'B', 'D', 'F', 'C', 'G', 'E']
+   ok  ARRHENIUS                    A              -> Bx1
+   ok  BRANCHED_ALKOXY              B              -> Cx1
+   ok  BRANCHED_NITRATE             B              -> Dx1
+   ok  SURFACE                      C              -> Ex1
+   ok  TERNARY                      D              -> Fx2
+   ok  TROE                         E + E          -> Gx1
+   ok  TUNNELING                    F              -> Gx1
+   ok  USER                         C              -> Gx1
+   ok  USER                         B              -> (none)
+   ok  USER                         (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== sol-high on robertson: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  USER                         A              -> Bx1
+   ok  USER                         B + B          -> Bx1, Cx1
+   ok  USER                         B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== sol-high on perm_robertson: input species ['C', 'B', 'A']
+   emitted species table ['C', 'B', 'A']
+   ok  USER                         A              -> Bx1
+   ok  USER                         B + B          -> Bx1, Cx1
+   ok  USER                         B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== sol-high on units: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  ARRHENIUS                    A + B          -> Cx1
+   ok  ARRHENIUS                    B              -> Cx1
+   ok  TROE                         A              -> Bx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   units probe: {'Arrhenius A+B A': 602214.076, 'Troe A->B k0_A': 6.02214076e-13, 'Troe A->B kinf_A': 1e-11}
+
+== sol-xhigh on rate_constants_user_defined: input species ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   emitted species table ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'reaction rates no user defined']
+   !! emitted species set differs from the configuration
+   ok  CK_ARRHENIUS                 A              -> Bx1
+   ok  CK_BRANCH_ALKOXY             B              -> Cx1
+   ok  CK_BRANCH_NITRATE            B              -> Dx1
+   ok  CK_SURFACE                   C              -> Ex1
+   ok  CK_TERNARY                   D              -> Fx2
+   ok  CK_TROE                      E + E          -> Gx1
+   ok  CK_TUNNELING                 F              -> Gx1
+   ok  CK_USER                      C              -> Gx1
+   ok  CK_USER                      B              -> (none)
+   ok  CK_USER                      (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== sol-xhigh on perm_user: input species ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   emitted species table ['G', 'F', 'E', 'D', 'C', 'B', 'A', 'reaction rates no user defined']
+   !! emitted species set differs from the configuration
+   ok  CK_ARRHENIUS                 A              -> Bx1
+   ok  CK_BRANCH_ALKOXY             B              -> Cx1
+   ok  CK_BRANCH_NITRATE            B              -> Dx1
+   ok  CK_SURFACE                   C              -> Ex1
+   ok  CK_TERNARY                   D              -> Fx2
+   ok  CK_TROE                      E + E          -> Gx1
+   ok  CK_TUNNELING                 F              -> Gx1
+   ok  CK_USER                      C              -> Gx1
+   ok  CK_USER                      B              -> (none)
+   ok  CK_USER                      (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== sol-xhigh on robertson: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C', 'reaction rates no user defined']
+   !! emitted species set differs from the configuration
+   ok  CK_USER                      A              -> Bx1
+   ok  CK_USER                      B + B          -> Bx1, Cx1
+   ok  CK_USER                      B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== sol-xhigh on perm_robertson: input species ['C', 'B', 'A']
+   emitted species table ['C', 'B', 'A', 'reaction rates no user defined']
+   !! emitted species set differs from the configuration
+   ok  CK_USER                      A              -> Bx1
+   ok  CK_USER                      B + B          -> Bx1, Cx1
+   ok  CK_USER                      B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== sol-xhigh on units: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C', 'units probe']
+   !! emitted species set differs from the configuration
+   ok  CK_ARRHENIUS                 A + B          -> Cx1
+   ok  CK_ARRHENIUS                 B              -> Cx1
+   ok  CK_TROE                      A              -> Bx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   units probe: {'Arrhenius A+B A': 602214.076, 'Troe A->B k0_A': 6.02214076e-13, 'Troe A->B kinf_A': 1e-11}
+
+== sol-max on rate_constants_user_defined: input species ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   emitted species table ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   ok  CHEM_ARRHENIUS               A              -> Bx1
+   ok  CHEM_TROE                    E + E          -> Gx1
+   ok  CHEM_TERNARY                 D              -> Fx2
+   ok  CHEM_BRANCHED                B              -> Cx1
+   ok  CHEM_BRANCHED                B              -> Dx1
+   ok  CHEM_TUNNELING               F              -> Gx1
+   ok  CHEM_USER                    C              -> Gx1
+   ok  CHEM_USER                    B              -> (none)
+   ok  CHEM_USER                    (none)         -> Ax1
+   ok  CHEM_SURFACE                 C              -> Ex1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 10 forcing blocks; variable->species map {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6}; bijective=True; conflicts=none
+
+== sol-max on perm_user: input species ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   emitted species table ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   ok  CHEM_ARRHENIUS               A              -> Bx1
+   ok  CHEM_TROE                    E + E          -> Gx1
+   ok  CHEM_TERNARY                 D              -> Fx2
+   ok  CHEM_BRANCHED                B              -> Cx1
+   ok  CHEM_BRANCHED                B              -> Dx1
+   ok  CHEM_TUNNELING               F              -> Gx1
+   ok  CHEM_USER                    C              -> Gx1
+   ok  CHEM_USER                    B              -> (none)
+   ok  CHEM_USER                    (none)         -> Ax1
+   ok  CHEM_SURFACE                 C              -> Ex1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 10 forcing blocks; variable->species map {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6}; bijective=True; conflicts=none
+
+== sol-max on robertson: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_USER                    A              -> Bx1
+   ok  CHEM_USER                    B + B          -> Bx1, Cx1
+   ok  CHEM_USER                    B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 3 forcing blocks; variable->species map {0: 0, 1: 1, 2: 2}; bijective=True; conflicts=none
+
+== sol-max on perm_robertson: input species ['C', 'B', 'A']
+   emitted species table ['C', 'B', 'A']
+   ok  CHEM_USER                    A              -> Bx1
+   ok  CHEM_USER                    B + B          -> Bx1, Cx1
+   ok  CHEM_USER                    B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 3 forcing blocks; variable->species map {0: 0, 1: 1, 2: 2}; bijective=True; conflicts=none
+
+== sol-max on units: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_ARRHENIUS               A + B          -> Cx1
+   ok  CHEM_ARRHENIUS               B              -> Cx1
+   ok  CHEM_TROE                    A              -> Bx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 3 forcing blocks; variable->species map {0: 2, 1: 0, 2: 1}; bijective=True; conflicts=none
+   units probe: {'Arrhenius A+B A': 602214.076, 'Troe A->B k0_A': 6.02214076e-13, 'Troe A->B kinf_A': 1e-11}
+
+== astra-high on rate_constants_user_defined: input species ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   emitted species table ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   ok  CHEM_ARRHENIUS               A              -> Bx1
+   ok  CHEM_BRANCHED                B              -> Cx1
+   ok  CHEM_BRANCHED                B              -> Dx1
+   ok  CHEM_SURFACE                 C              -> Ex1
+   ok  CHEM_TERNARY                 D              -> Fx2
+   ok  CHEM_TROE                    E + E          -> Gx1
+   ok  CHEM_TUNNELING               F              -> Gx1
+   ok  CHEM_USER                    C              -> Gx1
+   ok  CHEM_USER                    B              -> (none)
+   ok  CHEM_USER                    (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== astra-high on perm_user: input species ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   emitted species table ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   ok  CHEM_ARRHENIUS               A              -> Bx1
+   ok  CHEM_BRANCHED                B              -> Cx1
+   ok  CHEM_BRANCHED                B              -> Dx1
+   ok  CHEM_SURFACE                 C              -> Ex1
+   ok  CHEM_TERNARY                 D              -> Fx2
+   ok  CHEM_TROE                    E + E          -> Gx1
+   ok  CHEM_TUNNELING               F              -> Gx1
+   ok  CHEM_USER                    C              -> Gx1
+   ok  CHEM_USER                    B              -> (none)
+   ok  CHEM_USER                    (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== astra-high on robertson: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_USER                    A              -> Bx1
+   ok  CHEM_USER                    B + B          -> Bx1, Cx1
+   ok  CHEM_USER                    B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== astra-high on perm_robertson: input species ['C', 'B', 'A']
+   emitted species table ['C', 'B', 'A']
+   ok  CHEM_USER                    A              -> Bx1
+   ok  CHEM_USER                    B + B          -> Bx1, Cx1
+   ok  CHEM_USER                    B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== astra-high on units: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_ARRHENIUS               A + B          -> Cx1
+   ok  CHEM_ARRHENIUS               B              -> Cx1
+   ok  CHEM_TROE                    A              -> Bx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   units probe: {'Arrhenius A+B A': 602214.076, 'Troe A->B k0_A': 6.02214076e-13, 'Troe A->B kinf_A': 1e-11}
+
+== astra-xhigh on rate_constants_user_defined: input species ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   emitted species table ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   ok  CHEM_ARRHENIUS               A              -> Bx1
+   ok  CHEM_BRANCHED                B              -> Cx1
+   ok  CHEM_BRANCHED                B              -> Dx1
+   ok  CHEM_SURFACE                 C              -> Ex1
+   ok  CHEM_TERNARY                 D              -> Fx2
+   ok  CHEM_TROE                    E + E          -> Gx1
+   ok  CHEM_TUNNELING               F              -> Gx1
+   ok  CHEM_USER                    C              -> Gx1
+   ok  CHEM_USER                    B              -> (none)
+   ok  CHEM_USER                    (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 10 forcing blocks; variable->species map {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6}; bijective=True; conflicts=none
+
+== astra-xhigh on perm_user: input species ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   emitted species table ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   ok  CHEM_ARRHENIUS               A              -> Bx1
+   ok  CHEM_BRANCHED                B              -> Cx1
+   ok  CHEM_BRANCHED                B              -> Dx1
+   ok  CHEM_SURFACE                 C              -> Ex1
+   ok  CHEM_TERNARY                 D              -> Fx2
+   ok  CHEM_TROE                    E + E          -> Gx1
+   ok  CHEM_TUNNELING               F              -> Gx1
+   ok  CHEM_USER                    C              -> Gx1
+   ok  CHEM_USER                    B              -> (none)
+   ok  CHEM_USER                    (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 10 forcing blocks; variable->species map {0: 6, 1: 5, 2: 3, 3: 1, 4: 4, 5: 0, 6: 2}; bijective=True; conflicts=none
+
+== astra-xhigh on robertson: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_USER                    A              -> Bx1
+   ok  CHEM_USER                    B + B          -> Bx1, Cx1
+   ok  CHEM_USER                    B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 3 forcing blocks; variable->species map {0: 0, 1: 1, 2: 2}; bijective=True; conflicts=none
+
+== astra-xhigh on perm_robertson: input species ['C', 'B', 'A']
+   emitted species table ['C', 'B', 'A']
+   ok  CHEM_USER                    A              -> Bx1
+   ok  CHEM_USER                    B + B          -> Bx1, Cx1
+   ok  CHEM_USER                    B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 3 forcing blocks; variable->species map {0: 0, 1: 1, 2: 2}; bijective=True; conflicts=none
+
+== astra-xhigh on units: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_ARRHENIUS               A + B          -> Cx1
+   ok  CHEM_ARRHENIUS               B              -> Cx1
+   ok  CHEM_TROE                    A              -> Bx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   kernel check: 3 forcing blocks; variable->species map {0: 0, 1: 1, 2: 2}; bijective=True; conflicts=none
+   units probe: {'Arrhenius A+B A': 602214.076, 'Troe A->B k0_A': 6.02214076e-13, 'Troe A->B kinf_A': 1e-11}
+
+== astra-max on rate_constants_user_defined: input species ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   emitted species table ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   ok  type0                        A              -> Bx1
+   ok  type5                        B              -> Cx1
+   ok  type5                        B              -> Dx1
+   ok  type6                        C              -> Ex1
+   ok  type2                        D              -> Fx2
+   ok  type1                        E + E          -> Gx1
+   ok  type4                        F              -> Gx1
+   ok  type7                        C              -> Gx1
+   ok  type7                        B              -> (none)
+   ok  type7                        (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== astra-max on perm_user: input species ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   emitted species table ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   ok  type0                        A              -> Bx1
+   ok  type5                        B              -> Cx1
+   ok  type5                        B              -> Dx1
+   ok  type6                        C              -> Ex1
+   ok  type2                        D              -> Fx2
+   ok  type1                        E + E          -> Gx1
+   ok  type4                        F              -> Gx1
+   ok  type7                        C              -> Gx1
+   ok  type7                        B              -> (none)
+   ok  type7                        (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== astra-max on robertson: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  type7                        A              -> Bx1
+   ok  type7                        B + B          -> Bx1, Cx1
+   ok  type7                        B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== astra-max on perm_robertson: input species ['C', 'B', 'A']
+   emitted species table ['C', 'B', 'A']
+   ok  type7                        A              -> Bx1
+   ok  type7                        B + B          -> Bx1, Cx1
+   ok  type7                        B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== astra-max on units: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  type0                        A + B          -> Cx1
+   ok  type0                        B              -> Cx1
+   ok  type1                        A              -> Bx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   units probe: {'Arrhenius A+B A': 602214.076, 'Troe A->B k0_A': 6.02214076e-13, 'Troe A->B kinf_A': 1e-11}
+
+== luna-max on rate_constants_user_defined: input species ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   emitted species table ['A', 'B', 'D', 'F', 'C', 'E', 'G']
+   ok  CHEM_ARRHENIUS               A              -> Bx1
+   ok  CHEM_BRANCHED                B              -> Cx1
+   ok  CHEM_BRANCHED                B              -> Dx1
+   ok  CHEM_SURFACE                 C              -> Ex1
+   ok  CHEM_TERNARY                 D              -> Fx2
+   ok  CHEM_TROE                    E + E          -> Gx1
+   ok  CHEM_TUNNELING               F              -> Gx1
+   ok  CHEM_USER_DEFINED            C              -> Gx1
+   ok  CHEM_USER_DEFINED            B              -> (none)
+   ok  CHEM_USER_DEFINED            (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== luna-max on perm_user: input species ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   emitted species table ['A', 'B', 'D', 'F', 'G', 'E', 'C']
+   ok  CHEM_ARRHENIUS               A              -> Bx1
+   ok  CHEM_BRANCHED                B              -> Cx1
+   ok  CHEM_BRANCHED                B              -> Dx1
+   ok  CHEM_SURFACE                 C              -> Ex1
+   ok  CHEM_TERNARY                 D              -> Fx2
+   ok  CHEM_TROE                    E + E          -> Gx1
+   ok  CHEM_TUNNELING               F              -> Gx1
+   ok  CHEM_USER_DEFINED            C              -> Gx1
+   ok  CHEM_USER_DEFINED            B              -> (none)
+   ok  CHEM_USER_DEFINED            (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== luna-max on robertson: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_USER_DEFINED            A              -> Bx1
+   ok  CHEM_USER_DEFINED            B + B          -> Bx1, Cx1
+   ok  CHEM_USER_DEFINED            B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== luna-max on perm_robertson: input species ['C', 'B', 'A']
+   emitted species table ['C', 'B', 'A']
+   ok  CHEM_USER_DEFINED            A              -> Bx1
+   ok  CHEM_USER_DEFINED            B + B          -> Bx1, Cx1
+   ok  CHEM_USER_DEFINED            B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+== luna-max on units: input species ['A', 'B', 'C']
+   emitted species table ['C', 'A', 'B']
+   ok  CHEM_ARRHENIUS               A + B          -> Cx1
+   ok  CHEM_ARRHENIUS               B              -> Cx1
+   ok  CHEM_TROE                    A              -> Bx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   units probe: {'Arrhenius A+B A': 1e-12, 'Troe A->B k0_A': 362661.7933325338, 'Troe A->B kinf_A': 6022140.76}
+
+generated luna-xhigh/out/luna-xhigh-rate_constants_user_defined.c: rate_constants_user_defined, 7 declared species, 10 reactions
+== luna-xhigh on rate_constants_user_defined: input species ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   emitted species table ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'C surface.effective radius [m]', 'C surface.particle number concentration [# m-3]', 'my photolysis rate', 'my loss rate', 'my emission rate']
+   !! emitted species set differs from the configuration
+   ok  CHEM_RATE_ARRHENIUS          A              -> Bx1
+   ok  CHEM_RATE_BRANCHED           B              -> Cx1
+   ok  CHEM_RATE_BRANCHED           B              -> Dx1
+   ok  CHEM_RATE_SURFACE            C              -> Ex1
+   ok  CHEM_RATE_TERNARY            D              -> Fx2
+   ok  CHEM_RATE_TROE               E + E          -> Gx1
+   ok  CHEM_RATE_TUNNELING          F              -> Gx1
+   ok  CHEM_RATE_USER               C              -> Gx1
+   ok  CHEM_RATE_USER               B              -> (none)
+   ok  CHEM_RATE_USER               (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+generated luna-xhigh/out/luna-xhigh-perm_user.c: perm_user, 7 declared species, 10 reactions
+== luna-xhigh on perm_user: input species ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   emitted species table ['G', 'F', 'E', 'D', 'C', 'B', 'A', 'C surface.effective radius [m]', 'C surface.particle number concentration [# m-3]', 'my photolysis rate', 'my loss rate', 'my emission rate']
+   !! emitted species set differs from the configuration
+   ok  CHEM_RATE_ARRHENIUS          A              -> Bx1
+   ok  CHEM_RATE_BRANCHED           B              -> Cx1
+   ok  CHEM_RATE_BRANCHED           B              -> Dx1
+   ok  CHEM_RATE_SURFACE            C              -> Ex1
+   ok  CHEM_RATE_TERNARY            D              -> Fx2
+   ok  CHEM_RATE_TROE               E + E          -> Gx1
+   ok  CHEM_RATE_TUNNELING          F              -> Gx1
+   ok  CHEM_RATE_USER               C              -> Gx1
+   ok  CHEM_RATE_USER               B              -> (none)
+   ok  CHEM_RATE_USER               (none)         -> Ax1
+   result: 10 emitted reactions, 10 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+generated luna-xhigh/out/luna-xhigh-robertson.c: robertson, 3 declared species, 3 reactions
+== luna-xhigh on robertson: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C', 'r1', 'r2', 'r3']
+   !! emitted species set differs from the configuration
+   ok  CHEM_RATE_USER               A              -> Bx1
+   ok  CHEM_RATE_USER               B + B          -> Bx1, Cx1
+   ok  CHEM_RATE_USER               B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+generated luna-xhigh/out/luna-xhigh-perm_robertson.c: perm_robertson, 3 declared species, 3 reactions
+== luna-xhigh on perm_robertson: input species ['C', 'B', 'A']
+   emitted species table ['C', 'B', 'A', 'r1', 'r2', 'r3']
+   !! emitted species set differs from the configuration
+   ok  CHEM_RATE_USER               A              -> Bx1
+   ok  CHEM_RATE_USER               B + B          -> Bx1, Cx1
+   ok  CHEM_RATE_USER               B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+
+generated luna-xhigh/out/luna-xhigh-units.c: units, 3 declared species, 3 reactions
+== luna-xhigh on units: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_RATE_ARRHENIUS          A + B          -> Cx1
+   ok  CHEM_RATE_ARRHENIUS          B              -> Cx1
+   ok  CHEM_RATE_TROE               A              -> Bx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   units probe: {'Arrhenius A+B A': 1e-12, 'Troe A->B k0_A': 362661.7933325338, 'Troe A->B kinf_A': 6022140.76}
+
+== luna-high on rate_constants_user_defined: input species ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   emitted species table ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+   ok  CHEM_ARRHENIUS               A              -> Bx1
+   BAD CHEM_TROE                    E              -> Gx1
+   ok  CHEM_TERNARY_ACTIVATION      D              -> Fx2
+   ok  CHEM_BRANCHED_ALKOXY         B              -> Cx1
+   ok  CHEM_BRANCHED_NITRATE        B              -> Dx1
+   ok  CHEM_TUNNELING               F              -> Gx1
+   ok  CHEM_USER_DEFINED            C              -> Gx1
+   ok  CHEM_USER_DEFINED            B              -> (none)
+   ok  CHEM_USER_DEFINED            (none)         -> Ax1
+   ok  CHEM_SURFACE                 C              -> Ex1
+   result: 10 emitted reactions, 10 in configuration, 1 with terms not in the configuration, 1 configuration reactions unmatched
+
+== luna-high on perm_user: input species ['G', 'F', 'E', 'D', 'C', 'B', 'A']
+   emitted species table ['A', 'B', 'D', 'F', 'C', 'G', 'E']
+   BAD CHEM_ARRHENIUS               E              -> Gx1
+   BAD CHEM_TROE                    D              -> Ax1
+   BAD CHEM_TERNARY_ACTIVATION      F              -> Bx2
+   BAD CHEM_BRANCHED_ALKOXY         G              -> Cx1
+   BAD CHEM_BRANCHED_NITRATE        G              -> Fx1
+   BAD CHEM_TUNNELING               B              -> Ax1
+   BAD CHEM_USER_DEFINED            C              -> Ax1
+   BAD CHEM_USER_DEFINED            G              -> (none)
+   BAD CHEM_USER_DEFINED            (none)         -> Ex1
+   BAD CHEM_SURFACE                 C              -> Dx1
+   result: 10 emitted reactions, 10 in configuration, 10 with terms not in the configuration, 10 configuration reactions unmatched
+
+== luna-high on robertson: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_USER_DEFINED            A              -> Bx1
+   BAD CHEM_USER_DEFINED            B              -> Bx1, Cx1
+   ok  CHEM_USER_DEFINED            B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 1 with terms not in the configuration, 1 configuration reactions unmatched
+
+== luna-high on perm_robertson: input species ['C', 'B', 'A']
+   emitted species table ['C', 'B', 'A']
+   ok  CHEM_USER_DEFINED            A              -> Bx1
+   BAD CHEM_USER_DEFINED            B              -> Bx1, Cx1
+   ok  CHEM_USER_DEFINED            B + C          -> Ax1, Cx1
+   result: 3 emitted reactions, 3 in configuration, 1 with terms not in the configuration, 1 configuration reactions unmatched
+
+== luna-high on units: input species ['A', 'B', 'C']
+   emitted species table ['A', 'B', 'C']
+   ok  CHEM_ARRHENIUS               A + B          -> Cx1
+   ok  CHEM_ARRHENIUS               B              -> Cx1
+   ok  CHEM_TROE                    A              -> Bx1
+   result: 3 emitted reactions, 3 in configuration, 0 with terms not in the configuration, 0 configuration reactions unmatched
+   units probe: {'Arrhenius A+B A': 1e-12, 'Troe A->B k0_A': 362661.7933325338, 'Troe A->B kinf_A': 6022140.76}
+
