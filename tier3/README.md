@@ -157,3 +157,9 @@ then types into a detached tmux session (`tmux -L turbomicm attach -t tier3-<run
 and then
 
     /goal read PROMPT.md and work until done, commit
+
+## Citation
+
+To cite TurboMICM, use
+[10.5281/zenodo.23618864](https://doi.org/10.5281/zenodo.23618864).
+See the [project citation](../README.md#citation) for release details.

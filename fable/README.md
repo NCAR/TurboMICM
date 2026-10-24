@@ -105,3 +105,9 @@ reads a configuration (YAML or JSON in the format of `configs/examples/`)
 and writes `generated/mine.c` and `mine.h`; compile `mine.c` with the library
 and call `mine_system()`, `mine_reactions()`, and `mine_kernels()`.
 `tools/mechanism.py` prints a mechanism's size, sparsity, and fingerprint.
+
+## Citation
+
+To cite TurboMICM, use
+[10.5281/zenodo.23618864](https://doi.org/10.5281/zenodo.23618864).
+See the [project citation](../README.md#citation) for release details.

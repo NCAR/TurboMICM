@@ -114,3 +114,9 @@ Both fixed on 2026-10-22, before any Tier 2 run, in `~/NSF-NCAR/.tier2-heldout/`
 | `results/2026-10-23-tier2-ranking` | the ranking: all nine entries, MICM's three programs, and each entry's generic solver (and Tier 1 build), in one session at 18 threads and one at one thread |
 | `results/2026-10-23-tier2-exercises` | the review's three exercises, measured on every entry |
 | `results/2026-10-23-tier2-blind-review` | the blind review: procedure, key, the two reports, scores, and ranks |
+
+## Citation
+
+To cite TurboMICM, use
+[10.5281/zenodo.23618864](https://doi.org/10.5281/zenodo.23618864).
+See the [project citation](../README.md#citation) for release details.

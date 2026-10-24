@@ -445,3 +445,9 @@ The same question applies to the partials buffer that `jacobian_lu` fills
 (up to 8 blocks of partials in one thread-local buffer, written reaction by
 reaction): writing it in the order the LU reads it is a second permutation of
 the same kind.
+
+## Citation
+
+To cite TurboMICM, use
+[10.5281/zenodo.23618864](https://doi.org/10.5281/zenodo.23618864).
+See the [project citation](../README.md#citation) for release details.

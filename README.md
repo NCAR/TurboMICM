@@ -1,11 +1,23 @@
 # TurboMICM
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23618864.svg)](https://doi.org/10.5281/zenodo.23618864)
+
 Optimized ODE solvers for the Model Independent Chemistry Module.
 
 This repository tracks the MICM-to-C experiment, a controlled comparison of LLM
 coding agents. Every agent gets the same prompt: port MICM's CPU solver to
 portable C (C11, libm, and OpenMP) and make it fast without depending on one chip,
 compiler, or operating system.
+
+## Citation
+
+Please cite the archived TurboMICM release when using this software or experiment:
+
+Fillmore, D. (2026). *NCAR/TurboMICM: v2026.10.001-beta* [Software]. Zenodo.
+[https://doi.org/10.5281/zenodo.23618864](https://doi.org/10.5281/zenodo.23618864).
+
+This DOI identifies release `v2026.10.001-beta`, published on 2026-10-24.
+Machine-readable citation metadata is in [CITATION.cff](CITATION.cff).
 
 ## REAPER
 
