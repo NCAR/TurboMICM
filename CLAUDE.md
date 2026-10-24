@@ -369,7 +369,10 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   the helpers' reports, and the E5 checker): astra-high 24.8, sol-xhigh 23.4,
   astra-xhigh 23.2, sol-high 23.0, astra-max 21.4, sol-max 20.0, luna-max 16.2,
   luna-xhigh 15.4, luna-high 9.4. It scored before reading Judge 1's report;
-  its comparison with Judge 1 is the last section of its page. Next, Judge 3
+  its comparison with Judge 1 is the last section of its page; it records two
+  of Judge 1's findings that Judge 2 had missed (sol-xhigh's user-rate
+  scaling, astra-high's callback scan) and their arithmetic, with the scores
+  left as fixed. Next, Judge 3
   (the SSE): a report page and the third column of Tier-1-Judging's Results
   table. Findings for the SSE that bear on the gate (both judges): luna-high
   prints its PASS lines from a list once one program passes; luna-max and

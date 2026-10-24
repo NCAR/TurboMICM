@@ -82,6 +82,19 @@ citations.
 - astra-high recomputes the rate constants inside the timed loop; luna-xhigh
   builds its symbolic plan and allocates inside the timer.
 
+## Compared with Judge 1
+
+The last section of the report, written after Judge 1's page was read and
+the scores committed (`1b1d404`): the same three entrants lead in both
+judgments in a different order, sol-high and astra-max exchange ranks 4
+and 5, luna-max and luna-xhigh ranks 7 and 8; Spearman 0.90; 32 of 45
+exercise ratings identical, the rest one point apart. Two of Judge 1's
+findings were not in this judgment's evidence and are confirmed there:
+sol-xhigh scales user-defined rates by the unit conversion (under this
+judgment's E5 standard a point, which would make its total 23.0), and
+astra-high's `chem_set_rate_callback` assumes `CHEM_CALLBACK` is the last
+type. The scores stand as committed.
+
 ## Files
 
 - `brief/`: `EXERCISES.md`, `TEST_FIDELITY.md` (Judge 1's briefs, reworded for

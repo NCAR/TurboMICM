@@ -5,7 +5,9 @@
   notes with citations), `brief/` (the three briefs and the independence
   note), `exercises/E1-E2.md`, `E3.md`, `E4-E5.md` (the helpers' exercise
   reports) with `exercises/e5-check/` (the checker, its inputs and its log),
-  and `tests/T1.md`, `T2.md` (the twelve traces).
+  `tests/T1.md`, `T2.md` (the twelve traces), `draft/` (the sections as
+  written, `comparison.md` among them) and `tools/spotcheck_page.py` (prints
+  the code behind a sample of the page's citations).
 - **Judge 1:** [Tier-1-Judging-Opus](Tier-1-Judging-Opus) and
   [`results/2026-10-20-tier1-judging-opus`](https://github.com/NCAR/TurboMICM/tree/main/results/2026-10-20-tier1-judging-opus).
 - **The entries:** branches `runs/<model>/<effort>` of
