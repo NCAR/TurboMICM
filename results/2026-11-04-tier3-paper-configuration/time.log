@@ -1,0 +1,298 @@
+== disclosed/tier1-30s: 23:34:32
+round 1 threads 10 micm/C2      elapsed_ms=   16165.523 process_s=  17.274 gate=PASS digits=5.63
+round 1 threads 10 micm/C3      elapsed_ms=   16529.128 process_s=  17.415 gate=PASS digits=6.479
+round 1 threads 10 loop/C2      elapsed_ms=    3788.220 process_s=   4.544 gate=PASS digits=5.382
+round 1 threads 10 loop/C3      elapsed_ms=    3893.844 process_s=   4.657 gate=PASS digits=6.479
+round 1 threads 10 retaining/C2 elapsed_ms=     567.785 process_s=   1.337 gate=PASS digits=5.82
+round 1 threads 10 retaining/C3 elapsed_ms=     580.192 process_s=   1.343 gate=PASS digits=5.84
+round 2 threads 10 loop/C2      elapsed_ms=    3726.693 process_s=   4.482 gate=PASS digits=5.382
+round 2 threads 10 loop/C3      elapsed_ms=    3845.029 process_s=   4.607 gate=PASS digits=6.479
+round 2 threads 10 retaining/C2 elapsed_ms=     561.663 process_s=   1.312 gate=PASS digits=5.82
+round 2 threads 10 retaining/C3 elapsed_ms=     577.991 process_s=   1.319 gate=PASS digits=5.84
+round 2 threads 10 micm/C2      elapsed_ms=   16986.726 process_s=  17.872 gate=PASS digits=5.63
+round 2 threads 10 micm/C3      elapsed_ms=   17385.259 process_s=  18.276 gate=PASS digits=6.479
+round 3 threads 10 retaining/C2 elapsed_ms=     559.286 process_s=   1.316 gate=PASS digits=5.82
+round 3 threads 10 retaining/C3 elapsed_ms=     579.812 process_s=   1.330 gate=PASS digits=5.84
+round 3 threads 10 micm/C2      elapsed_ms=   17031.135 process_s=  17.918 gate=PASS digits=5.63
+round 3 threads 10 micm/C3      elapsed_ms=   18386.857 process_s=  19.298 gate=PASS digits=6.479
+round 3 threads 10 loop/C2      elapsed_ms=    4015.771 process_s=   4.780 gate=PASS digits=5.382
+round 3 threads 10 loop/C3      elapsed_ms=    4080.068 process_s=   4.842 gate=PASS digits=6.479
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 16,986.7 | 16,165.5–17,031.1 | 17.9 | 5.63 |
+| micm/C3 | 10 | 3 of 3 | 17,385.3 | 16,529.1–18,386.9 | 18.3 | 6.48 |
+| loop/C2 | 10 | 3 of 3 | 3,788.2 | 3,726.7–4,015.8 | 4.5 | 5.38 |
+| loop/C3 | 10 | 3 of 3 | 3,893.8 | 3,845.0–4,080.1 | 4.7 | 6.48 |
+| retaining/C2 | 10 | 3 of 3 | 561.7 | 559.3–567.8 | 1.3 | 5.82 |
+| retaining/C3 | 10 | 3 of 3 | 579.8 | 578.0–580.2 | 1.3 | 5.84 |
+== disclosed/diurnal-30min: 23:38:30
+round 1 threads 10 micm/C2      elapsed_ms=   10119.414 process_s=  13.228 gate=PASS digits=2.522
+round 1 threads 10 micm/C3      elapsed_ms=   14000.741 process_s=  17.163 gate=PASS digits=3.336
+round 1 threads 10 loop/C2      elapsed_ms=    2136.653 process_s=   4.998 gate=PASS digits=2.316
+round 1 threads 10 loop/C3      elapsed_ms=    3161.141 process_s=   6.059 gate=PASS digits=3.336
+round 1 threads 10 retaining/C2 elapsed_ms=    1419.841 process_s=   4.285 gate=PASS digits=2.699
+round 1 threads 10 retaining/C3 elapsed_ms=    2336.111 process_s=   5.227 gate=PASS digits=3.286
+round 2 threads 10 loop/C2      elapsed_ms=    2088.379 process_s=   4.927 gate=PASS digits=2.316
+round 2 threads 10 loop/C3      elapsed_ms=    3102.953 process_s=   5.980 gate=PASS digits=3.336
+round 2 threads 10 retaining/C2 elapsed_ms=    1426.227 process_s=   4.284 gate=PASS digits=2.699
+round 2 threads 10 retaining/C3 elapsed_ms=    2282.103 process_s=   5.152 gate=PASS digits=3.286
+round 2 threads 10 micm/C2      elapsed_ms=    9470.217 process_s=  12.583 gate=PASS digits=2.522
+round 2 threads 10 micm/C3      elapsed_ms=   13835.472 process_s=  17.093 gate=PASS digits=3.336
+round 3 threads 10 retaining/C2 elapsed_ms=    1466.480 process_s=   4.330 gate=PASS digits=2.699
+round 3 threads 10 retaining/C3 elapsed_ms=    2393.370 process_s=   5.275 gate=PASS digits=3.286
+round 3 threads 10 micm/C2      elapsed_ms=    9581.796 process_s=  12.673 gate=PASS digits=2.522
+round 3 threads 10 micm/C3      elapsed_ms=   14521.875 process_s=  17.649 gate=PASS digits=3.336
+round 3 threads 10 loop/C2      elapsed_ms=    2136.701 process_s=   4.972 gate=PASS digits=2.316
+round 3 threads 10 loop/C3      elapsed_ms=    3092.602 process_s=   5.944 gate=PASS digits=3.336
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 9,581.8 | 9,470.2–10,119.4 | 12.7 | 2.52 |
+| micm/C3 | 10 | 3 of 3 | 14,000.7 | 13,835.5–14,521.9 | 17.2 | 3.34 |
+| loop/C2 | 10 | 3 of 3 | 2,136.7 | 2,088.4–2,136.7 | 5.0 | 2.32 |
+| loop/C3 | 10 | 3 of 3 | 3,103.0 | 3,092.6–3,161.1 | 6.0 | 3.34 |
+| retaining/C2 | 10 | 3 of 3 | 1,426.2 | 1,419.8–1,466.5 | 4.3 | 2.70 |
+| retaining/C3 | 10 | 3 of 3 | 2,336.1 | 2,282.1–2,393.4 | 5.2 | 3.29 |
+== disclosed/diurnal-10min: 23:42:46
+round 1 threads 10 micm/C2      elapsed_ms=   27558.690 process_s=  30.653 gate=PASS digits=3.459
+round 1 threads 10 micm/C3      elapsed_ms=   32176.292 process_s=  35.307 gate=PASS digits=4.029
+round 1 threads 10 loop/C2      elapsed_ms=    5695.242 process_s=   8.580 gate=PASS digits=3.396
+round 1 threads 10 loop/C3      elapsed_ms=    7125.424 process_s=  10.006 gate=PASS digits=4.029
+round 1 threads 10 retaining/C2 elapsed_ms=    1711.032 process_s=   4.588 gate=PASS digits=3.36
+round 1 threads 10 retaining/C3 elapsed_ms=    2450.889 process_s=   5.343 gate=PASS digits=3.56
+round 2 threads 10 loop/C2      elapsed_ms=    5825.766 process_s=   8.712 gate=PASS digits=3.396
+round 2 threads 10 loop/C3      elapsed_ms=    7238.359 process_s=  10.138 gate=PASS digits=4.029
+round 2 threads 10 retaining/C2 elapsed_ms=    1744.327 process_s=   4.626 gate=PASS digits=3.36
+round 2 threads 10 retaining/C3 elapsed_ms=    2495.051 process_s=   5.369 gate=PASS digits=3.56
+round 2 threads 10 micm/C2      elapsed_ms=   27863.012 process_s=  30.990 gate=PASS digits=3.459
+round 2 threads 10 micm/C3      elapsed_ms=   33431.811 process_s=  36.566 gate=PASS digits=4.029
+round 3 threads 10 retaining/C2 elapsed_ms=    1769.953 process_s=   4.652 gate=PASS digits=3.36
+round 3 threads 10 retaining/C3 elapsed_ms=    2437.999 process_s=   5.319 gate=PASS digits=3.56
+round 3 threads 10 micm/C2      elapsed_ms=   25730.199 process_s=  28.877 gate=PASS digits=3.459
+round 3 threads 10 micm/C3      elapsed_ms=   32833.026 process_s=  35.946 gate=PASS digits=4.029
+round 3 threads 10 loop/C2      elapsed_ms=    5769.912 process_s=   8.667 gate=PASS digits=3.396
+round 3 threads 10 loop/C3      elapsed_ms=    7324.981 process_s=  10.245 gate=PASS digits=4.029
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 27,558.7 | 25,730.2–27,863.0 | 30.7 | 3.46 |
+| micm/C3 | 10 | 3 of 3 | 32,833.0 | 32,176.3–33,431.8 | 35.9 | 4.03 |
+| loop/C2 | 10 | 3 of 3 | 5,769.9 | 5,695.2–5,825.8 | 8.7 | 3.40 |
+| loop/C3 | 10 | 3 of 3 | 7,238.4 | 7,125.4–7,325.0 | 10.1 | 4.03 |
+| retaining/C2 | 10 | 3 of 3 | 1,744.3 | 1,711.0–1,770.0 | 4.6 | 3.36 |
+| retaining/C3 | 10 | 3 of 3 | 2,450.9 | 2,438.0–2,495.1 | 5.3 | 3.56 |
+== disclosed/diurnal-5min: 23:49:15
+round 1 threads 10 micm/C2      elapsed_ms=   51199.174 process_s=  54.318 gate=PASS digits=3.403
+round 1 threads 10 micm/C3      elapsed_ms=   57832.627 process_s=  60.993 gate=PASS digits=4.363
+round 1 threads 10 loop/C2      elapsed_ms=   11294.748 process_s=  14.239 gate=PASS digits=3.314
+round 1 threads 10 loop/C3      elapsed_ms=   13291.464 process_s=  16.203 gate=PASS digits=4.363
+round 1 threads 10 retaining/C2 elapsed_ms=    2176.111 process_s=   5.073 gate=PASS digits=3.44
+round 1 threads 10 retaining/C3 elapsed_ms=    2736.611 process_s=   5.624 gate=PASS digits=3.508
+round 2 threads 10 loop/C2      elapsed_ms=   11334.271 process_s=  14.237 gate=PASS digits=3.314
+round 2 threads 10 loop/C3      elapsed_ms=   13647.762 process_s=  16.565 gate=PASS digits=4.363
+round 2 threads 10 retaining/C2 elapsed_ms=    2217.313 process_s=   5.112 gate=PASS digits=3.44
+round 2 threads 10 retaining/C3 elapsed_ms=    2784.072 process_s=   5.690 gate=PASS digits=3.508
+round 2 threads 10 micm/C2      elapsed_ms=   51574.160 process_s=  54.735 gate=PASS digits=3.403
+round 2 threads 10 micm/C3      elapsed_ms=   57454.154 process_s=  60.582 gate=PASS digits=4.363
+round 3 threads 10 retaining/C2 elapsed_ms=    2200.715 process_s=   5.110 gate=PASS digits=3.44
+round 3 threads 10 retaining/C3 elapsed_ms=    2725.701 process_s=   5.613 gate=PASS digits=3.508
+round 3 threads 10 micm/C2      elapsed_ms=   51474.045 process_s=  54.619 gate=PASS digits=3.403
+round 3 threads 10 micm/C3      elapsed_ms=   57010.402 process_s=  60.178 gate=PASS digits=4.363
+round 3 threads 10 loop/C2      elapsed_ms=   11394.061 process_s=  14.331 gate=PASS digits=3.314
+round 3 threads 10 loop/C3      elapsed_ms=   13369.089 process_s=  16.268 gate=PASS digits=4.363
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 51,474.0 | 51,199.2–51,574.2 | 54.6 | 3.40 |
+| micm/C3 | 10 | 3 of 3 | 57,454.2 | 57,010.4–57,832.6 | 60.6 | 4.36 |
+| loop/C2 | 10 | 3 of 3 | 11,334.3 | 11,294.7–11,394.1 | 14.2 | 3.31 |
+| loop/C3 | 10 | 3 of 3 | 13,369.1 | 13,291.5–13,647.8 | 16.3 | 4.36 |
+| retaining/C2 | 10 | 3 of 3 | 2,200.7 | 2,176.1–2,217.3 | 5.1 | 3.44 |
+| retaining/C3 | 10 | 3 of 3 | 2,736.6 | 2,725.7–2,784.1 | 5.6 | 3.51 |
+== disclosed/polluted-10min: 23:58:49
+round 1 threads 10 micm/C2      elapsed_ms=   27250.588 process_s=  30.390 gate=PASS digits=3.297
+round 1 threads 10 micm/C3      elapsed_ms=   33560.523 process_s=  36.735 gate=PASS digits=3.867
+round 1 threads 10 loop/C2      elapsed_ms=    5828.609 process_s=   8.727 gate=PASS digits=3.185
+round 1 threads 10 loop/C3      elapsed_ms=    7537.747 process_s=  10.430 gate=PASS digits=3.867
+round 1 threads 10 retaining/C2 elapsed_ms=    2082.163 process_s=   5.027 gate=PASS digits=3.255
+round 1 threads 10 retaining/C3 elapsed_ms=    3315.907 process_s=   6.236 gate=PASS digits=3.422
+round 2 threads 10 loop/C2      elapsed_ms=    5781.815 process_s=   8.672 gate=PASS digits=3.185
+round 2 threads 10 loop/C3      elapsed_ms=    7422.429 process_s=  10.332 gate=PASS digits=3.867
+round 2 threads 10 retaining/C2 elapsed_ms=    2118.594 process_s=   5.005 gate=PASS digits=3.255
+round 2 threads 10 retaining/C3 elapsed_ms=    3297.119 process_s=   6.192 gate=PASS digits=3.422
+round 2 threads 10 micm/C2      elapsed_ms=   26854.375 process_s=  29.998 gate=PASS digits=3.297
+round 2 threads 10 micm/C3      elapsed_ms=   33298.420 process_s=  36.442 gate=PASS digits=3.867
+round 3 threads 10 retaining/C2 elapsed_ms=    2089.722 process_s=   4.990 gate=PASS digits=3.255
+round 3 threads 10 retaining/C3 elapsed_ms=    3336.648 process_s=   6.233 gate=PASS digits=3.422
+round 3 threads 10 micm/C2      elapsed_ms=   26538.192 process_s=  29.689 gate=PASS digits=3.297
+round 3 threads 10 micm/C3      elapsed_ms=   34166.073 process_s=  37.327 gate=PASS digits=3.867
+round 3 threads 10 loop/C2      elapsed_ms=    5885.558 process_s=   8.800 gate=PASS digits=3.185
+round 3 threads 10 loop/C3      elapsed_ms=    7516.714 process_s=  10.410 gate=PASS digits=3.867
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 26,854.4 | 26,538.2–27,250.6 | 30.0 | 3.30 |
+| micm/C3 | 10 | 3 of 3 | 33,560.5 | 33,298.4–34,166.1 | 36.7 | 3.87 |
+| loop/C2 | 10 | 3 of 3 | 5,828.6 | 5,781.8–5,885.6 | 8.7 | 3.19 |
+| loop/C3 | 10 | 3 of 3 | 7,516.7 | 7,422.4–7,537.7 | 10.4 | 3.87 |
+| retaining/C2 | 10 | 3 of 3 | 2,089.7 | 2,082.2–2,118.6 | 5.0 | 3.25 |
+| retaining/C3 | 10 | 3 of 3 | 3,315.9 | 3,297.1–3,336.6 | 6.2 | 3.42 |
+== disclosed/clean-10min: 00:05:25
+round 1 threads 10 micm/C2      elapsed_ms=   25822.977 process_s=  28.924 gate=PASS digits=3.445
+round 1 threads 10 micm/C3      elapsed_ms=   31649.749 process_s=  34.772 gate=PASS digits=3.981
+round 1 threads 10 loop/C2      elapsed_ms=    5652.756 process_s=   8.547 gate=PASS digits=3.369
+round 1 threads 10 loop/C3      elapsed_ms=    7020.611 process_s=   9.922 gate=PASS digits=3.981
+round 1 threads 10 retaining/C2 elapsed_ms=    1580.046 process_s=   4.463 gate=PASS digits=3.448
+round 1 threads 10 retaining/C3 elapsed_ms=    2260.466 process_s=   5.152 gate=PASS digits=3.567
+round 2 threads 10 loop/C2      elapsed_ms=    5696.431 process_s=   8.594 gate=PASS digits=3.369
+round 2 threads 10 loop/C3      elapsed_ms=    7054.014 process_s=   9.946 gate=PASS digits=3.981
+round 2 threads 10 retaining/C2 elapsed_ms=    1615.180 process_s=   4.509 gate=PASS digits=3.448
+round 2 threads 10 retaining/C3 elapsed_ms=    2281.986 process_s=   5.172 gate=PASS digits=3.567
+round 2 threads 10 micm/C2      elapsed_ms=   26616.023 process_s=  29.729 gate=PASS digits=3.445
+round 2 threads 10 micm/C3      elapsed_ms=   32046.299 process_s=  35.175 gate=PASS digits=3.981
+round 3 threads 10 retaining/C2 elapsed_ms=    1620.065 process_s=   4.528 gate=PASS digits=3.448
+round 3 threads 10 retaining/C3 elapsed_ms=    2314.418 process_s=   5.191 gate=PASS digits=3.567
+round 3 threads 10 micm/C2      elapsed_ms=   25774.669 process_s=  28.916 gate=PASS digits=3.445
+round 3 threads 10 micm/C3      elapsed_ms=   32385.442 process_s=  35.501 gate=PASS digits=3.981
+round 3 threads 10 loop/C2      elapsed_ms=    5698.560 process_s=   8.587 gate=PASS digits=3.369
+round 3 threads 10 loop/C3      elapsed_ms=    7055.425 process_s=   9.948 gate=PASS digits=3.981
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 25,823.0 | 25,774.7–26,616.0 | 28.9 | 3.44 |
+| micm/C3 | 10 | 3 of 3 | 32,046.3 | 31,649.7–32,385.4 | 35.2 | 3.98 |
+| loop/C2 | 10 | 3 of 3 | 5,696.4 | 5,652.8–5,698.6 | 8.6 | 3.37 |
+| loop/C3 | 10 | 3 of 3 | 7,054.0 | 7,020.6–7,055.4 | 9.9 | 3.98 |
+| retaining/C2 | 10 | 3 of 3 | 1,615.2 | 1,580.0–1,620.1 | 4.5 | 3.45 |
+| retaining/C3 | 10 | 3 of 3 | 2,282.0 | 2,260.5–2,314.4 | 5.2 | 3.57 |
+== heldout/summer-15min: 00:11:47
+round 1 threads 10 micm/C2      elapsed_ms=   17899.514 process_s=  21.032 gate=PASS digits=3.25
+round 1 threads 10 micm/C3      elapsed_ms=   23408.719 process_s=  26.567 gate=PASS digits=3.744
+round 1 threads 10 loop/C2      elapsed_ms=    3951.834 process_s=   6.888 gate=PASS digits=3.15
+round 1 threads 10 loop/C3      elapsed_ms=    5291.240 process_s=   8.217 gate=PASS digits=3.744
+round 1 threads 10 retaining/C2 elapsed_ms=    1565.691 process_s=   4.485 gate=PASS digits=3.102
+round 1 threads 10 retaining/C3 elapsed_ms=    2345.138 process_s=   5.261 gate=PASS digits=3.313
+round 2 threads 10 loop/C2      elapsed_ms=    3863.556 process_s=   6.786 gate=PASS digits=3.15
+round 2 threads 10 loop/C3      elapsed_ms=    5300.126 process_s=   8.237 gate=PASS digits=3.744
+round 2 threads 10 retaining/C2 elapsed_ms=    1553.394 process_s=   4.472 gate=PASS digits=3.102
+round 2 threads 10 retaining/C3 elapsed_ms=    2354.332 process_s=   5.275 gate=PASS digits=3.313
+round 2 threads 10 micm/C2      elapsed_ms=   17965.549 process_s=  21.148 gate=PASS digits=3.25
+round 2 threads 10 micm/C3      elapsed_ms=   23691.580 process_s=  26.836 gate=PASS digits=3.744
+round 3 threads 10 retaining/C2 elapsed_ms=    1608.135 process_s=   4.535 gate=PASS digits=3.102
+round 3 threads 10 retaining/C3 elapsed_ms=    2403.632 process_s=   5.331 gate=PASS digits=3.313
+round 3 threads 10 micm/C2      elapsed_ms=   18414.592 process_s=  21.571 gate=PASS digits=3.25
+round 3 threads 10 micm/C3      elapsed_ms=   24157.287 process_s=  27.304 gate=PASS digits=3.744
+round 3 threads 10 loop/C2      elapsed_ms=    4003.585 process_s=   6.906 gate=PASS digits=3.15
+round 3 threads 10 loop/C3      elapsed_ms=    5432.887 process_s=   8.338 gate=PASS digits=3.744
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 17,965.5 | 17,899.5–18,414.6 | 21.1 | 3.25 |
+| micm/C3 | 10 | 3 of 3 | 23,691.6 | 23,408.7–24,157.3 | 26.8 | 3.74 |
+| loop/C2 | 10 | 3 of 3 | 3,951.8 | 3,863.6–4,003.6 | 6.9 | 3.15 |
+| loop/C3 | 10 | 3 of 3 | 5,300.1 | 5,291.2–5,432.9 | 8.2 | 3.74 |
+| retaining/C2 | 10 | 3 of 3 | 1,565.7 | 1,553.4–1,608.1 | 4.5 | 3.10 |
+| retaining/C3 | 10 | 3 of 3 | 2,354.3 | 2,345.1–2,403.6 | 5.3 | 3.31 |
+== heldout/tropics-20min: 00:17:10
+round 1 threads 10 micm/C2      elapsed_ms=   14186.754 process_s=  17.276 gate=PASS digits=2.71
+round 1 threads 10 micm/C3      elapsed_ms=   18231.842 process_s=  21.332 gate=PASS digits=3.426
+round 1 threads 10 loop/C2      elapsed_ms=    2981.640 process_s=   5.844 gate=PASS digits=2.628
+round 1 threads 10 loop/C3      elapsed_ms=    4079.935 process_s=   6.957 gate=PASS digits=3.426
+round 1 threads 10 retaining/C2 elapsed_ms=    1473.128 process_s=   4.366 gate=PASS digits=2.9
+round 1 threads 10 retaining/C3 elapsed_ms=    2339.803 process_s=   5.199 gate=PASS digits=3.206
+round 2 threads 10 loop/C2      elapsed_ms=    2908.785 process_s=   5.771 gate=PASS digits=2.628
+round 2 threads 10 loop/C3      elapsed_ms=    4111.369 process_s=   6.967 gate=PASS digits=3.426
+round 2 threads 10 retaining/C2 elapsed_ms=    1480.508 process_s=   4.326 gate=PASS digits=2.9
+round 2 threads 10 retaining/C3 elapsed_ms=    2318.820 process_s=   5.181 gate=PASS digits=3.206
+round 2 threads 10 micm/C2      elapsed_ms=   13507.213 process_s=  16.635 gate=PASS digits=2.71
+round 2 threads 10 micm/C3      elapsed_ms=   19259.190 process_s=  22.375 gate=PASS digits=3.426
+round 3 threads 10 retaining/C2 elapsed_ms=    1543.211 process_s=   4.408 gate=PASS digits=2.9
+round 3 threads 10 retaining/C3 elapsed_ms=    2384.634 process_s=   5.270 gate=PASS digits=3.206
+round 3 threads 10 micm/C2      elapsed_ms=   13934.961 process_s=  17.079 gate=PASS digits=2.71
+round 3 threads 10 micm/C3      elapsed_ms=   18843.276 process_s=  22.024 gate=PASS digits=3.426
+round 3 threads 10 loop/C2      elapsed_ms=    3046.991 process_s=   5.948 gate=PASS digits=2.628
+round 3 threads 10 loop/C3      elapsed_ms=    4305.938 process_s=   7.218 gate=PASS digits=3.426
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 13,935.0 | 13,507.2–14,186.8 | 17.1 | 2.71 |
+| micm/C3 | 10 | 3 of 3 | 18,843.3 | 18,231.8–19,259.2 | 22.0 | 3.43 |
+| loop/C2 | 10 | 3 of 3 | 2,981.6 | 2,908.8–3,047.0 | 5.8 | 2.63 |
+| loop/C3 | 10 | 3 of 3 | 4,111.4 | 4,079.9–4,305.9 | 7.0 | 3.43 |
+| retaining/C2 | 10 | 3 of 3 | 1,480.5 | 1,473.1–1,543.2 | 4.4 | 2.90 |
+| retaining/C3 | 10 | 3 of 3 | 2,339.8 | 2,318.8–2,384.6 | 5.2 | 3.21 |
+== heldout/winter60-10min: 00:21:58
+round 1 threads 10 micm/C2      elapsed_ms=   26379.542 process_s=  29.477 gate=PASS digits=3.142
+round 1 threads 10 micm/C3      elapsed_ms=   30787.988 process_s=  33.919 gate=PASS digits=3.711
+round 1 threads 10 loop/C2      elapsed_ms=    5787.275 process_s=   8.692 gate=PASS digits=3.03
+round 1 threads 10 loop/C3      elapsed_ms=    6710.468 process_s=   9.601 gate=PASS digits=3.711
+round 1 threads 10 retaining/C2 elapsed_ms=    1696.719 process_s=   4.556 gate=PASS digits=3.146
+round 1 threads 10 retaining/C3 elapsed_ms=    2485.891 process_s=   5.328 gate=PASS digits=3.401
+round 2 threads 10 loop/C2      elapsed_ms=    5477.234 process_s=   8.369 gate=PASS digits=3.03
+round 2 threads 10 loop/C3      elapsed_ms=    6810.718 process_s=   9.697 gate=PASS digits=3.711
+round 2 threads 10 retaining/C2 elapsed_ms=    1704.852 process_s=   4.571 gate=PASS digits=3.146
+round 2 threads 10 retaining/C3 elapsed_ms=    2450.012 process_s=   5.278 gate=PASS digits=3.401
+round 2 threads 10 micm/C2      elapsed_ms=   25356.605 process_s=  28.462 gate=PASS digits=3.142
+round 2 threads 10 micm/C3      elapsed_ms=   29797.075 process_s=  32.876 gate=PASS digits=3.711
+round 3 threads 10 retaining/C2 elapsed_ms=    1692.321 process_s=   4.542 gate=PASS digits=3.146
+round 3 threads 10 retaining/C3 elapsed_ms=    2512.378 process_s=   5.334 gate=PASS digits=3.401
+round 3 threads 10 micm/C2      elapsed_ms=   25147.707 process_s=  28.238 gate=PASS digits=3.142
+round 3 threads 10 micm/C3      elapsed_ms=   30725.582 process_s=  33.805 gate=PASS digits=3.711
+round 3 threads 10 loop/C2      elapsed_ms=    5786.333 process_s=   8.637 gate=PASS digits=3.03
+round 3 threads 10 loop/C3      elapsed_ms=    6607.680 process_s=   9.463 gate=PASS digits=3.711
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 25,356.6 | 25,147.7–26,379.5 | 28.5 | 3.14 |
+| micm/C3 | 10 | 3 of 3 | 30,725.6 | 29,797.1–30,788.0 | 33.8 | 3.71 |
+| loop/C2 | 10 | 3 of 3 | 5,786.3 | 5,477.2–5,787.3 | 8.6 | 3.03 |
+| loop/C3 | 10 | 3 of 3 | 6,710.5 | 6,607.7–6,810.7 | 9.6 | 3.71 |
+| retaining/C2 | 10 | 3 of 3 | 1,696.7 | 1,692.3–1,704.9 | 4.6 | 3.15 |
+| retaining/C3 | 10 | 3 of 3 | 2,485.9 | 2,450.0–2,512.4 | 5.3 | 3.40 |
+== heldout/polluted-48h-30min: 00:28:13
+round 1 threads 10 micm/C2      elapsed_ms=   18902.429 process_s=  24.220 gate=PASS digits=2.621
+round 1 threads 10 micm/C3      elapsed_ms=   26516.975 process_s=  31.925 gate=PASS digits=3.519
+round 1 threads 10 loop/C2      elapsed_ms=    4217.496 process_s=   9.197 gate=PASS digits=2.379
+round 1 threads 10 loop/C3      elapsed_ms=    6322.196 process_s=  11.420 gate=PASS digits=3.519
+round 1 threads 10 retaining/C2 elapsed_ms=    2702.287 process_s=   7.754 gate=PASS digits=2.875
+round 1 threads 10 retaining/C3 elapsed_ms=    4708.705 process_s=   9.817 gate=PASS digits=3.421
+round 2 threads 10 loop/C2      elapsed_ms=    3956.810 process_s=   8.855 gate=PASS digits=2.379
+round 2 threads 10 loop/C3      elapsed_ms=    6051.711 process_s=  11.118 gate=PASS digits=3.519
+round 2 threads 10 retaining/C2 elapsed_ms=    2792.575 process_s=   7.915 gate=PASS digits=2.875
+round 2 threads 10 retaining/C3 elapsed_ms=    4721.629 process_s=   9.846 gate=PASS digits=3.421
+round 2 threads 10 micm/C2      elapsed_ms=   18751.409 process_s=  24.087 gate=PASS digits=2.621
+round 2 threads 10 micm/C3      elapsed_ms=   27169.740 process_s=  32.589 gate=PASS digits=3.519
+round 3 threads 10 retaining/C2 elapsed_ms=    2714.043 process_s=   7.762 gate=PASS digits=2.875
+round 3 threads 10 retaining/C3 elapsed_ms=    4758.438 process_s=   9.851 gate=PASS digits=3.421
+round 3 threads 10 micm/C2      elapsed_ms=   18986.448 process_s=  24.308 gate=PASS digits=2.621
+round 3 threads 10 micm/C3      elapsed_ms=   27716.779 process_s=  33.140 gate=PASS digits=3.519
+round 3 threads 10 loop/C2      elapsed_ms=    4040.544 process_s=   8.992 gate=PASS digits=2.379
+round 3 threads 10 loop/C3      elapsed_ms=    6058.827 process_s=  11.096 gate=PASS digits=3.519
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 18,902.4 | 18,751.4–18,986.4 | 24.2 | 2.62 |
+| micm/C3 | 10 | 3 of 3 | 27,169.7 | 26,517.0–27,716.8 | 32.6 | 3.52 |
+| loop/C2 | 10 | 3 of 3 | 4,040.5 | 3,956.8–4,217.5 | 9.0 | 2.38 |
+| loop/C3 | 10 | 3 of 3 | 6,058.8 | 6,051.7–6,322.2 | 11.1 | 3.52 |
+| retaining/C2 | 10 | 3 of 3 | 2,714.0 | 2,702.3–2,792.6 | 7.8 | 2.88 |
+| retaining/C3 | 10 | 3 of 3 | 4,721.6 | 4,708.7–4,758.4 | 9.8 | 3.42 |
+== heldout/clean-48h-5min: 00:34:56
+round 1 threads 10 micm/C2      elapsed_ms=  101345.552 process_s= 106.804 gate=PASS digits=3.685
+round 1 threads 10 micm/C3      elapsed_ms=  117107.581 process_s= 122.573 gate=PASS digits=4.278
+round 1 threads 10 loop/C2      elapsed_ms=   23610.108 process_s=  28.727 gate=PASS digits=3.465
+round 1 threads 10 loop/C3      elapsed_ms=   26986.462 process_s=  32.087 gate=PASS digits=4.278
+round 1 threads 10 retaining/C2 elapsed_ms=    4020.441 process_s=   9.110 gate=PASS digits=3.496
+round 1 threads 10 retaining/C3 elapsed_ms=    5001.473 process_s=  10.102 gate=PASS digits=3.582
+round 2 threads 10 loop/C2      elapsed_ms=   21878.757 process_s=  26.995 gate=PASS digits=3.465
+round 2 threads 10 loop/C3      elapsed_ms=   26489.799 process_s=  31.596 gate=PASS digits=4.278
+round 2 threads 10 retaining/C2 elapsed_ms=    4132.236 process_s=   9.218 gate=PASS digits=3.496
+round 2 threads 10 retaining/C3 elapsed_ms=    5011.175 process_s=  10.073 gate=PASS digits=3.582
+round 2 threads 10 micm/C2      elapsed_ms=   98697.527 process_s= 104.153 gate=PASS digits=3.685
+round 2 threads 10 micm/C3      elapsed_ms=  114100.612 process_s= 119.581 gate=PASS digits=4.278
+round 3 threads 10 retaining/C2 elapsed_ms=    3963.514 process_s=   9.018 gate=PASS digits=3.496
+round 3 threads 10 retaining/C3 elapsed_ms=    4964.238 process_s=  10.040 gate=PASS digits=3.582
+round 3 threads 10 micm/C2      elapsed_ms=   98429.863 process_s= 103.872 gate=PASS digits=3.685
+round 3 threads 10 micm/C3      elapsed_ms=  114527.128 process_s= 120.060 gate=PASS digits=4.278
+round 3 threads 10 loop/C2      elapsed_ms=   23157.750 process_s=  28.287 gate=PASS digits=3.465
+round 3 threads 10 loop/C3      elapsed_ms=   26080.921 process_s=  31.253 gate=PASS digits=4.278
+| Program | Threads | Runs passing the gate | Median elapsed_ms | Range | Median process wall time (s) | Median digits |
+|---|---:|---:|---:|---:|---:|---:|
+| micm/C2 | 10 | 3 of 3 | 98,697.5 | 98,429.9–101,345.6 | 104.2 | 3.69 |
+| micm/C3 | 10 | 3 of 3 | 114,527.1 | 114,100.6–117,107.6 | 120.1 | 4.28 |
+| loop/C2 | 10 | 3 of 3 | 23,157.8 | 21,878.8–23,610.1 | 28.3 | 3.46 |
+| loop/C3 | 10 | 3 of 3 | 26,489.8 | 26,080.9–26,986.5 | 31.6 | 4.28 |
+| retaining/C2 | 10 | 3 of 3 | 4,020.4 | 3,963.5–4,132.2 | 9.1 | 3.50 |
+| retaining/C3 | 10 | 3 of 3 | 5,001.5 | 4,964.2–5,011.2 | 10.1 | 3.58 |
+== done: 00:52:07

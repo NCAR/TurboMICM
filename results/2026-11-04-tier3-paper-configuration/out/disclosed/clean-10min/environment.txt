@@ -1,0 +1,15 @@
+date: 2026-11-05T00:05:25
+host: LALAL0726071122
+platform: macOS-26.7.2-arm64-arm-64bit-Mach-O
+sysctl -n hw.model machdep.cpu.brand_string hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu: Mac17,8 | Apple M5 Pro | 6 | 12
+pmset -g batt: Now drawing from 'AC Power' |  -InternalBattery-0 (id=24379491)	100%; charged; 0:00 remaining present: true
+uptime: 0:05  up  2:18, 3 users, load averages: 7.28 7.33 6.59
+scenario: /Users/dfillmor/NSF-NCAR/tier2-work/check/disclosed-10000/clean-10min/scenario.txt
+reference: /Users/dfillmor/DavidFillmore/Fast-ODE-Atmospheric-Chem/data/scenarios/clean-10min/reference_snapshots.csv (scores ts1_snapshots.csv)
+threads: 10; rounds: 3
+program micm/C2: /Users/dfillmor/NSF-NCAR/tier3-paper-work/bin/micm_scenario --group-size 32 --rtol 1e-2 --atol 1e-15
+program micm/C3: /Users/dfillmor/NSF-NCAR/tier3-paper-work/bin/micm_scenario --group-size 32 --rtol 3e-4 --atol 1e-15
+program loop/C2: /Users/dfillmor/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option warm_start=0 --option quantize=0 --option controller=micm --option rtol=0.03 --option atol=1e-15
+program loop/C3: /Users/dfillmor/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option warm_start=0 --option quantize=0 --option controller=micm --option rtol=0.0003 --option atol=1e-15
+program retaining/C2: /Users/dfillmor/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option rtol=0.01 --option atol=1e-16 --option quantize=1 --option controller=h211b --option safety=0.9 --option exact_end=1 --option reject_elementary=1 --option strict_min=1
+program retaining/C3: /Users/dfillmor/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option rtol=0.005 --option atol=5e-17 --option quantize=1 --option controller=h211b --option safety=0.9 --option exact_end=1 --option reject_elementary=1 --option strict_min=1

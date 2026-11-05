@@ -1,0 +1,7 @@
+# The paper's configurations and the baselines, all with 32-cell groups.
+micm/C2=$HOME/NSF-NCAR/tier3-paper-work/bin/micm_scenario --group-size 32 --rtol 1e-2 --atol 1e-15
+micm/C3=$HOME/NSF-NCAR/tier3-paper-work/bin/micm_scenario --group-size 32 --rtol 3e-4 --atol 1e-15
+loop/C2=$HOME/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option warm_start=0 --option quantize=0 --option controller=micm --option rtol=0.03 --option atol=1e-15
+loop/C3=$HOME/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option warm_start=0 --option quantize=0 --option controller=micm --option rtol=0.0003 --option atol=1e-15
+retaining/C2=$HOME/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option rtol=0.01 --option atol=1e-16 --option quantize=1 --option controller=h211b --option safety=0.9 --option exact_end=1 --option reject_elementary=1 --option strict_min=1
+retaining/C3=$HOME/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option rtol=0.005 --option atol=5e-17 --option quantize=1 --option controller=h211b --option safety=0.9 --option exact_end=1 --option reject_elementary=1 --option strict_min=1
