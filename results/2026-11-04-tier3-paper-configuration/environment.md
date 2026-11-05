@@ -1,6 +1,6 @@
 # Environment of the 4 November 2026 session
 
-- Machine: Apple M5 Pro laptop, 18 cores (6 performance, 12 efficiency), 24 GB,
+- Machine: Apple M5 Pro laptop, 18 cores (6 "Super" and 12 "Performance" cores, as `sysctl hw.perflevel0.name` names them), 24 GB,
   macOS 26.7.2; the second machine of the Tier 2 verifications, not the
   10-core M5 laptop of the Tier 3 scans and ranking. Timings here compare only
   with each other.

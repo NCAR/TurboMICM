@@ -53,7 +53,11 @@ The time ratio between the two loops, which share the kernels, equals the
 paper's arithmetic ratio (3.6 and 3.0 at the two criteria) and follows the
 paper's per-scenario attempt ratios (1.3 on Diurnal 30 min, 6.6 on
 Benchmark 30 s). The factor against MICM's loop includes the generated
-kernels, worth 4.4 to 4.5 on this machine.
+kernels, worth 4.4 to 4.5 on this machine against MICM's default layout
+(standard ordering, in-place Mozart LU). MICM's fastest layout (vector
+ordering of 8) was timed on 5 November, 2.4 to 2.5 times faster with the
+same steps; the short manuscript now compares against it (6.5 and 5.3 times
+the retaining solver): see `../2026-11-05-micm-fastest-tier3/`.
 
 ## Files
 

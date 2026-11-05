@@ -1,0 +1,7 @@
+# MICM's fastest CPU configuration (vector ordering of 8 cells, in-place Mozart LU)
+# in 32-cell groups, at the Tier 3 baseline tolerances of the 4 November session,
+# and the retaining solver as the anchor to that session (same command lines).
+micm8/C2=$HOME/NSF-NCAR/tier3-paper-work/micm-fastest/bin/micm_scenario_vector8 --group-size 32 --rtol 1e-2 --atol 1e-15
+micm8/C3=$HOME/NSF-NCAR/tier3-paper-work/micm-fastest/bin/micm_scenario_vector8 --group-size 32 --rtol 3e-4 --atol 1e-15
+retaining/C2=$HOME/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option rtol=0.01 --option atol=1e-16 --option quantize=1 --option controller=h211b --option safety=0.9 --option exact_end=1 --option reject_elementary=1 --option strict_min=1
+retaining/C3=$HOME/NSF-NCAR/TurboMICM-paper/bin/ts1_scenario --method ros3 --option rtol=0.005 --option atol=5e-17 --option quantize=1 --option controller=h211b --option safety=0.9 --option exact_end=1 --option reject_elementary=1 --option strict_min=1
