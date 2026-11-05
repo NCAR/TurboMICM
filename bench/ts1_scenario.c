@@ -32,14 +32,15 @@
 
 static const char *USAGE =
     "usage: ts1_scenario [--threads N] [--method NAME] [--option KEY=VALUE ...] SCENARIO\n"
-    "methods: micm3 (default) ros2 ros3 ros4 rodas3 rodas4 ros34pw2 extrap\n"
+    "methods: micm3 (default) ros2 ros3 ros4 rodas3 rodas4 ros34pw2 extrap be\n"
     "options: rtol=R atol=A group_size=G schedule=static|dynamic|guided chunk=K generic=0|1\n"
     "         warm_start=0|1 h_start=SECONDS h_start_factor=F h_max=SECONDS max_steps=M\n"
     "         norm=rms|cellmax|max controller=micm|predictive|h211b clamp=0|1 quantize=0|1\n"
     "         reuse_age=STEPS reuse_change=FRACTION freeze_band=FACTOR\n"
     "         safety=DELTA fac_min=Q fac_max=Q h211_b=B h211_k=K filter_error=0|1\n"
     "         order=K sequence=harmonic|shifted|even (extrap)\n"
-    "         exact_end=0|1 reject_elementary=0|1 strict_min=0|1 (the paper's interval rules)\n";
+    "         exact_end=0|1 reject_elementary=0|1 strict_min=0|1 (the paper's interval rules)\n"
+    "         substeps=N (each host step solved as N equal pieces, photolysis fixed over the step)\n";
 
 typedef struct
 {
@@ -47,6 +48,7 @@ typedef struct
   int group_size, chunk, generic, warm_start, norm, controller, clamp, quantize, reuse_age, order, sequence, max_steps, filter_error;
   omp_sched_t schedule;
   int exact_end, reject_elementary, strict_min; /* after the positional initializer's last field, so they start at zero */
+  int substeps;
 } options;
 
 typedef struct
@@ -167,6 +169,8 @@ static void option(options *o, const char *key, const char *value)
     o->reject_elementary = parse_bool(value);
   else if (!strcmp(key, "strict_min"))
     o->strict_min = parse_bool(value);
+  else if (!strcmp(key, "substeps"))
+    o->substeps = atoi(value);
   else if (!strcmp(key, "sequence"))
   {
     if (!strcmp(value, "harmonic"))
@@ -347,7 +351,7 @@ static void add_stats(tmc_stats *total, const tmc_stats *part)
 int main(int argc, char **argv)
 {
   tmc_program = "ts1_scenario";
-  options o = { -1.0, -1.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, TMC_DEFAULT_GROUP_SIZE, 1, 0, -1, TMC_NORM_RMS, TMC_CONTROLLER_MICM, 0, 0, 0, 4, TMC_SEQUENCE_HARMONIC, 0, 0, omp_sched_dynamic, 0, 0, 0 };
+  options o = { -1.0, -1.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, TMC_DEFAULT_GROUP_SIZE, 1, 0, -1, TMC_NORM_RMS, TMC_CONTROLLER_MICM, 0, 0, 0, 4, TMC_SEQUENCE_HARMONIC, 0, 0, omp_sched_dynamic, 0, 0, 0, 0 };
   const char *method = "micm3";
   int threads = 0;
   int i = 1;
@@ -388,10 +392,21 @@ int main(int argc, char **argv)
     omp_set_num_threads(threads);
   omp_set_schedule(o.schedule, o.chunk);
 
-  /* The method's parameters with the options applied */
+  if (o.substeps < 0)
+    fail("substeps must be positive");
+  if (o.substeps == 0)
+    o.substeps = 1;
+
+  /* The method's parameters with the options applied; `be` is MICM's backward Euler with Newton's iteration */
+  const bool backward_euler = !strcmp(method, "be");
   tmc_rosenbrock_parameters p;
   int warm_default;
-  if (!method_parameters(method, &p, &warm_default))
+  if (backward_euler)
+  {
+    p = tmc_rosenbrock_three_stage();
+    warm_default = 0;
+  }
+  else if (!method_parameters(method, &p, &warm_default))
   {
     fprintf(stderr, "ts1_scenario: unknown method '%s'\n%s", method, USAGE);
     return 2;
@@ -434,7 +449,7 @@ int main(int argc, char **argv)
   tmc_system system = ts1_system();
   tmc_reaction *reactions;
   int n_reactions = ts1_reactions(&reactions);
-  tmc_builder *builder = tmc_builder_create_rosenbrock(p);
+  tmc_builder *builder = backward_euler ? tmc_builder_create_backward_euler(tmc_backward_euler_defaults()) : tmc_builder_create_rosenbrock(p);
   tmc_builder_set_system(builder, &system);
   tmc_builder_set_reactions(builder, reactions, n_reactions);
   tmc_builder_set_ignore_unused_species(builder, true);
@@ -578,8 +593,15 @@ int main(int argc, char **argv)
         grp->rate_updates += 1;
         last_factor = factor;
       }
-      tmc_result r = tmc_solver_solve(solver, sc.dt, state);
-      add_stats(stats, &r.stats);
+      /* The host step, as o.substeps equal pieces when asked, the photolysis fixed over the step */
+      tmc_result r;
+      for (int sub = 0; sub < o.substeps; ++sub)
+      {
+        r = tmc_solver_solve(solver, sc.dt / o.substeps, state);
+        add_stats(stats, &r.stats);
+        if (r.state != TMC_CONVERGED)
+          break;
+      }
       if (r.state != TMC_CONVERGED)
       {
         snprintf(grp->error, sizeof grp->error, "step %d of cells %d-%d: %s", step, grp->first_cell, grp->first_cell + grp->n_cells - 1, tmc_solver_state_name(r.state));

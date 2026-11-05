@@ -221,6 +221,7 @@ prototypes/              the same methods in Python over the library's pieces (p
 | `--method` | Loop | Formula | Stages | Forcing evaluations | Order (embedded) |
 |---|---|---|---|---|---|
 | `micm3` (default) | MICM's | MICM's three-stage Rosenbrock | 3 | 2 | 3 (2) |
+| `be` | MICM's backward Euler | one implicit Euler step per solve with full Newton iteration, MICM's convergence test and step reductions | 1 | 1 per iteration | 1 |
 | `ros2` | ROW | MICM's two-stage Rosenbrock (ROS2, a W-method) | 2 | 2 | 2 (1) |
 | `ros3` | ROW | MICM's three-stage Rosenbrock | 3 | 2 | 3 (2) |
 | `ros4` | ROW | MICM's four-stage Rosenbrock | 4 | 3 | 4 (3) |
@@ -270,6 +271,7 @@ factorizations, 10 solves, and 7 forcing evaluations.
 | `exact_end=1` | 0 | ROW loop: the last step of a solve ends exactly on the interval, and a step shortened to fit (by more than a relative 1e-8) enters neither the controller's memory nor the step carried to the next solve |
 | `reject_elementary=1` | 0 | ROW loop: after a rejection the step is reduced by the elementary factor, bounded below by `fac_min`, whatever the controller; the filter's factor also weighs the last accepted estimate and need not be below one |
 | `strict_min=1` | 0 | ROW loop: a step below the minimum is a failure, not MICM's acceptance of an inaccurate step, and the attempt budget and the step floor are checked before every retry |
+| `substeps=N` | 1 | every host step is solved as N equal pieces, one solver call each, with the photolysis fixed over the host step: the equal sub-steps of the paper's backward Euler comparison |
 
 Every option value gives a valid run; the operating points in
 OPERATING_POINTS.md name the ones the measurements support.
