@@ -559,6 +559,10 @@ typedef struct tmc_rosenbrock_parameters
   int extrapolation_sequence; /* TMC_SEQUENCE_HARMONIC, TMC_SEQUENCE_SHIFTED, or TMC_SEQUENCE_EVEN */
   double h211_b, h211_k;      /* H211b's b and k (0: b = 4 and k = the estimator order, Soderlind's choice) */
   int filter_error;           /* ROW loop: judge the step by (alpha I - J)^-1 alpha e instead of e (one more solve) */
+  /* ---- The interval rules of the paper's retaining solver (every field zero: the scans' loop) ---- */
+  int exact_end;              /* ROW loop: end the last step exactly on the interval; a step shortened to fit enters neither the controller's memory nor the carried step */
+  int reject_elementary;      /* ROW loop: after a rejection reduce by the elementary factor (bounded below by factor_min), whatever the controller */
+  int strict_min;             /* ROW loop: fail below h_min instead of MICM's acceptance, and apply the step and attempt guards to every retry */
 } tmc_rosenbrock_parameters;
 
 enum { TMC_LOOP_MICM = 0, TMC_LOOP_ROW = 1, TMC_LOOP_EXTRAPOLATION = 2 };

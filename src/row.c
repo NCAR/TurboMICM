@@ -114,17 +114,30 @@ tmc_result tmc_row_solve(const tmc_solver *s, double time_step, tmc_state *st)
 
   while (t - time_step + p->round_off <= 0.0 && result.state == TMC_RUNNING)
   {
-    if (stats->number_of_steps > p->max_number_of_steps)
+    if (p->strict_min ? stats->number_of_steps >= p->max_number_of_steps : stats->number_of_steps > p->max_number_of_steps)
     {
       result.state = TMC_CONVERGENCE_EXCEEDED_MAX_STEPS;
       break;
     }
-    if (t + 0.1 * H == t || H <= fmin(p->round_off, h_min))
+    if (t + 0.1 * H == t || (p->strict_min ? H < h_min : H <= fmin(p->round_off, h_min)))
     {
       result.state = TMC_STEP_SIZE_TOO_SMALL;
       break;
     }
-    H = fmin(H, fabs(time_step - t));
+    /* The last step of the interval: with exact_end it lands on the end exactly, and a
+     * step shortened to fit (by more than a relative 1e-8) is marked, since it enters
+     * neither the controller's memory nor the step carried to the next solve. */
+    bool last = false, shortened = false;
+    double H_ctrl = H; /* the step the controller selected, before any shortening */
+    if (p->exact_end)
+    {
+      last = time_step - t <= H * (1.0 + 1.0e-8);
+      shortened = last && time_step - t < H * (1.0 - 1.0e-8);
+      if (last)
+        H = time_step - t;
+    }
+    else
+      H = fmin(H, fabs(time_step - t));
 
     /* The step's forcing, and its matrix unless the one in the state may serve again. */
     const bool reuse = p->max_matrix_age > 0 && st->lu_h > 0.0 && fabs(st->lu_h - H) <= SAME_STEP * H &&
@@ -158,6 +171,20 @@ tmc_result tmc_row_solve(const tmc_solver *s, double time_step, tmc_state *st)
     bool accepted = false;
     while (!accepted)
     {
+      if (p->strict_min && !factored)
+      {
+        /* a retry is an attempt too: neither the attempt budget nor the step floor may be bypassed */
+        if (stats->number_of_steps >= p->max_number_of_steps)
+        {
+          result.state = TMC_CONVERGENCE_EXCEEDED_MAX_STEPS;
+          break;
+        }
+        if (H < h_min || t + 0.1 * H == t)
+        {
+          result.state = TMC_STEP_SIZE_TOO_SMALL;
+          break;
+        }
+      }
       if (!factored)
       {
         /* after a rejection: the matrix for the new H, at the same Y */
@@ -194,10 +221,23 @@ tmc_result tmc_row_solve(const tmc_solver *s, double time_step, tmc_state *st)
         break;
       }
       const double fac = tmc_row_step_factor(p, error, H, st);
-      if (error < 1.0 || H < h_min)
+      if (error < 1.0 && shortened)
+      {
+        /* accepted, but a step shortened to fit enters neither the memory nor the carried step */
+        stats->accepted += 1;
+        t = time_step;
+        tmc_dense_swap(Y, Ynew);
+        if (p->clamp_internal)
+          tmc_dense_max(Y, 0.0);
+        st->lu_age += 1;
+        reject_last = reject_more = false;
+        proposed = H_ctrl;
+        accepted = true;
+      }
+      else if (error < 1.0 || (!p->strict_min && H < h_min))
       {
         stats->accepted += 1;
-        t += H;
+        t = last ? time_step : t + H;
         tmc_dense_swap(Y, Ynew);
         if (p->clamp_internal)
           tmc_dense_max(Y, 0.0);
@@ -219,7 +259,9 @@ tmc_result tmc_row_solve(const tmc_solver *s, double time_step, tmc_state *st)
       }
       else
       {
-        double Hnew = H * fac;
+        /* the elementary factor is below one whenever error >= 1; the filter's, which also weighs the last accepted estimate, need not be */
+        const double reduce = p->reject_elementary ? fmax(p->factor_min, p->safety_factor / pow(error, 1.0 / p->estimator_of_local_order)) : fac;
+        double Hnew = H * reduce;
         if (reject_more)
           Hnew = H * p->rejection_factor_decrease;
         reject_more = reject_last;
@@ -229,6 +271,14 @@ tmc_result tmc_row_solve(const tmc_solver *s, double time_step, tmc_state *st)
         H = Hnew;
         stats->rejected += 1;
         st->lu_h = 0.0; /* the in-place factorization is for the old H */
+        if (p->exact_end)
+        {
+          last = time_step - t <= H * (1.0 + 1.0e-8);
+          shortened = last && time_step - t < H * (1.0 - 1.0e-8);
+          H_ctrl = H;
+          if (last)
+            H = time_step - t;
+        }
       }
     }
   }

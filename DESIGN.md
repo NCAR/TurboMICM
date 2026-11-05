@@ -267,6 +267,9 @@ factorizations, 10 solves, and 7 forcing evaluations.
 | `h_start_factor=F` | MICM's 1e-6 | the first step of a solve as a fraction of the interval, when not warm-started |
 | `filter_error=1` | 0 | ROW loop: the error estimate is passed through the step's own matrix, (alpha I - J)^-1 alpha e, before the norm (one more solve per step), RADAU5's device against estimates excited by a stiff transient |
 | `order=K`, `sequence=harmonic|shifted|even` | 4, harmonic | extrapolation: the number of entries, and the sequence 1,2,3,...; 2,3,4,...; or 2,4,6,... |
+| `exact_end=1` | 0 | ROW loop: the last step of a solve ends exactly on the interval, and a step shortened to fit (by more than a relative 1e-8) enters neither the controller's memory nor the step carried to the next solve |
+| `reject_elementary=1` | 0 | ROW loop: after a rejection the step is reduced by the elementary factor, bounded below by `fac_min`, whatever the controller; the filter's factor also weighs the last accepted estimate and need not be below one |
+| `strict_min=1` | 0 | ROW loop: a step below the minimum is a failure, not MICM's acceptance of an inaccurate step, and the attempt budget and the step floor are checked before every retry |
 
 Every option value gives a valid run; the operating points in
 OPERATING_POINTS.md name the ones the measurements support.
