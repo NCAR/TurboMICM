@@ -15,6 +15,11 @@ alongside the ordinary reactant and product maps. Stoichiometric multiplicities
 use the examples' `qty` and `yield` fields. These extensions encode data, not
 special cases in the C solver.
 
+A parameterized reactant can alternatively use a `parameterization` map with
+`constant`, `temperature`, `pressure`, and `air density` coefficients. Its
+concentration is the corresponding linear combination of the cell conditions;
+multiple parameterized reactants multiply their concentrations into the rate.
+
 The example configurations use molecule cm-3 rate units, as shown by their
 hand-built equivalents. The generator converts rate coefficients to mol m-3
 using reaction order. TS1 is already in molar units, so its configuration sets

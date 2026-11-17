@@ -12,6 +12,7 @@ typedef enum {
 } ChemRateKind;
 
 typedef double (*ChemRateFunction)(double temperature, double pressure, double air_density, void *context);
+typedef struct { double constant, temperature, pressure, air_density; } ChemParameterizedFunction;
 
 typedef struct {
     const char *name;
@@ -48,6 +49,9 @@ typedef struct {
     const char *label;
     ChemRateFunction function;
     void *context;
+    /* Parameterized reactants multiply the rate by their concentration. */
+    size_t parameterization_count;
+    const ChemParameterizedFunction *parameterizations;
 } ChemRate;
 
 typedef struct {
@@ -66,6 +70,14 @@ typedef struct {
     const double *parameter_defaults;
     double initial_temperature, initial_pressure;
 } ChemMechanism;
+
+/* Stable rate-type index into the mechanism's reaction array. Entries for
+ * kind k occupy offsets[k] through offsets[k+1] in reaction_indices. */
+typedef struct { size_t offsets[CHEM_CALLBACK+2]; size_t *reaction_indices; } ChemRateIndex;
+int chem_rate_index_init(ChemRateIndex *index, const ChemMechanism *mechanism);
+void chem_rate_index_destroy(ChemRateIndex *index);
+int chem_branched_constants(const ChemRate *rate, double *k0, double *z);
+int chem_surface_speed_factor(const ChemRate *rate, double *factor);
 
 typedef struct {
     unsigned long internal_steps, accepted, rejected, function_calls;

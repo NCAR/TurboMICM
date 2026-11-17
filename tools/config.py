@@ -72,9 +72,15 @@ def normalize(document):
             if not isinstance(name, str) or not name or name in by_name:
                 raise ValueError(f"invalid or duplicate species name: {name!r}")
             param = entry.get("parameterization")
-            if param not in (None, "air density"):
+            if param is not None and param != "air density" and not isinstance(param, dict):
                 raise ValueError(f"{name}: unknown parameterization {param!r}")
+            if isinstance(param, dict):
+                allowed = {"constant", "temperature", "pressure", "air density"}
+                if set(param) - allowed:
+                    raise ValueError(f"{name}: unknown parameterization coefficients {set(param) - allowed}")
+                param = {key: number(param.get(key, 0), name) for key in allowed}
             item = {"name": name, "parameterized": param is not None,
+                    "parameterization": param,
                     "initial": number(entry.get("initial concentration [mol m-3]", 0), name),
                     "absolute_tolerance": number(entry.get("absolute tolerance", 1e-3), name),
                     "molecular_weight": number(entry.get("molecular weight [kg mol-1]", 0), name),
@@ -105,7 +111,7 @@ def normalize(document):
     def members(mapping, products=False):
         if not isinstance(mapping, dict):
             raise ValueError("reaction species must be a mapping")
-        result, air_power = [], 0
+        result, air_power, parameterizations = [], 0, []
         for name, properties in mapping.items():
             if name not in by_name:
                 raise ValueError(f"unknown species {name!r}")
@@ -120,10 +126,15 @@ def normalize(document):
                 if qty < 0 or int(qty) != qty:
                     raise ValueError(f"{name}: reactant qty must be a nonnegative integer")
                 if spec["parameterized"]:
-                    air_power += int(qty)
+                    if spec["parameterization"] == "air density":
+                        air_power += int(qty)
+                    else:
+                        parameterizations.extend([spec["parameterization"]] * int(qty))
                 else:
                     result.extend([spec["index"]] * int(qty))
-        return result, air_power
+        if air_power + len(parameterizations) > 4:
+            raise ValueError("a reaction may have at most four parameterized reactants")
+        return result, air_power, parameterizations
 
     output = []
     for raw in reactions:
@@ -135,14 +146,14 @@ def normalize(document):
             reactants, products = {raw["gas-phase reactant"]: {}}, raw["gas-phase products"]
         else:
             reactants, products = raw.get("reactants", {}), raw.get("products", {})
-        reactant_ids, air_power = members(reactants)
+        reactant_ids, air_power, parameterizations = members(reactants)
         rates = [(typ, products)]
         if typ == "BRANCHED":
             rates = [("BRANCHED_ALKOXY", raw["alkoxy products"]), ("BRANCHED_NITRATE", raw["nitrate products"])]
         for kind, product_map in rates:
-            product_ids, _ = members(product_map, products=True)
+            product_ids, _, _ = members(product_map, products=True)
             spec = {"kind": kind, "raw": raw, "reactants": reactant_ids,
-                    "products": product_ids, "air_power": air_power, "parameter": -1,
+                    "products": product_ids, "air_power": air_power, "parameterizations": parameterizations, "parameter": -1,
                     "molecule_units": units == "molecules cm-3"}
             if kind in ("PHOTOLYSIS", "USER_DEFINED", "FIRST_ORDER_LOSS", "EMISSION"):
                 spec["parameter"] = parameter(raw["MUSICA name"])

@@ -1,10 +1,54 @@
 #include "internal.h"
 
 #include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 static const double gas_constant = 1.380649e-23 * 6.02214076e23;
 static const double pi = 3.14159265358979323846;
+
+int chem_rate_index_init(ChemRateIndex *index, const ChemMechanism *m)
+{
+    if (!index || !m || (m->reaction_count && !m->reactions) ||
+        m->reaction_count>SIZE_MAX/sizeof(*index->reaction_indices)) return CHEM_INVALID;
+    memset(index,0,sizeof(*index));
+    size_t counts[CHEM_CALLBACK+1]={0}, cursor[CHEM_CALLBACK+1];
+    for (size_t i=0;i<m->reaction_count;++i) {
+        ChemRateKind kind=m->reactions[i].rate.kind;
+        if (kind<CHEM_ARRHENIUS || kind>CHEM_CALLBACK) return CHEM_INVALID;
+        ++counts[kind];
+    }
+    for (size_t i=0;i<=CHEM_CALLBACK;++i) {
+        index->offsets[i+1]=index->offsets[i]+counts[i];
+        cursor[i]=index->offsets[i];
+    }
+    index->reaction_indices=malloc((m->reaction_count ? m->reaction_count : 1)*sizeof(*index->reaction_indices));
+    if (!index->reaction_indices) return CHEM_MEMORY;
+    for (size_t i=0;i<m->reaction_count;++i)
+        index->reaction_indices[cursor[m->reactions[i].rate.kind]++]=i;
+    return CHEM_OK;
+}
+void chem_rate_index_destroy(ChemRateIndex *index)
+{ if (index) { free(index->reaction_indices); memset(index,0,sizeof(*index)); } }
+
+int chem_branched_constants(const ChemRate *p, double *k0, double *z)
+{
+    if (!p || p->kind!=CHEM_BRANCHED || !k0 || !z || p->branch_a0==0) return CHEM_INVALID;
+    *k0=2.0e-22*6.02214076e23*1.0e-6*exp(p->branch_n);
+    double ref=2.45e19/6.02214076e23*1.0e6, a=*k0*ref;
+    double b=.43*pow(293.0/298.0,-8.0);
+    *z=a/(1+a/b)*pow(.41,1/(1+pow(log10(a/b),2)))*(1-p->branch_a0)/p->branch_a0;
+    return isfinite(*k0) && isfinite(*z) ? CHEM_OK : CHEM_NONFINITE;
+}
+int chem_surface_speed_factor(const ChemRate *p, double *factor)
+{
+    if (!p || !factor || p->kind!=CHEM_SURFACE) return CHEM_INVALID;
+    if (p->diffusion<=0) return CHEM_MISSING_DIFFUSION;
+    if (p->molecular_weight<=0) return CHEM_MISSING_MOLECULAR_WEIGHT;
+    *factor=8*gas_constant/(pi*p->molecular_weight);
+    return isfinite(*factor) ? CHEM_OK : CHEM_NONFINITE;
+}
 
 static double falloff(const ChemRate *p, double temperature, double density, double scale)
 {
@@ -14,8 +58,8 @@ static double falloff(const ChemRate *p, double temperature, double density, dou
     return k0 * scale / (1.0 + ratio) * pow(p->fc, p->n / (p->n + pow(log10(ratio), 2.0)));
 }
 
-static double rate_value(const ChemRate *p, double temperature, double pressure,
-                         double density, const double *parameters, size_t cells, size_t cell)
+static double base_rate_value(const ChemRate *p, double temperature, double pressure,
+                              double density, const double *parameters, size_t cells, size_t cell)
 {
     double k0, kinf, kint, ratio, f, a, b, z, ref, poly, power;
     switch (p->kind) {
@@ -59,6 +103,17 @@ static double rate_value(const ChemRate *p, double temperature, double pressure,
     return NAN;
 }
 
+static double rate_value(const ChemRate *p, double temperature, double pressure,
+                         double density, const double *parameters, size_t cells, size_t cell)
+{
+    double value=base_rate_value(p,temperature,pressure,density,parameters,cells,cell);
+    for (size_t i=0;i<p->parameterization_count;++i) {
+        const ChemParameterizedFunction *f=&p->parameterizations[i];
+        value*=f->constant+f->temperature*temperature+f->pressure*pressure+f->air_density*density;
+    }
+    return value;
+}
+
 ChemRate chem_rate_defaults(ChemRateKind kind)
 {
     ChemRate p = {0};
@@ -83,6 +138,7 @@ ChemRate chem_rate_defaults(ChemRateKind kind)
 static int validate_rate(const ChemRate *p, const double *parameters, size_t parameter_count)
 {
     if (!p || p->kind < CHEM_ARRHENIUS || p->kind > CHEM_CALLBACK) return CHEM_INVALID;
+    if (p->parameterization_count>4 || (p->parameterization_count && !p->parameterizations)) return CHEM_INVALID;
     if ((p->kind == CHEM_USER || p->kind == CHEM_SURFACE) &&
         (!parameters || p->parameter < 0 || (size_t)p->parameter >= parameter_count ||
          (p->kind == CHEM_SURFACE && (size_t)p->parameter+1 >= parameter_count))) return CHEM_INVALID;
@@ -118,6 +174,7 @@ int chem_update_rates(ChemState *s)
         const ChemRate *p = &configured;
         int status = validate_rate(p, s->parameters, m->parameter_count);
         if (status) return status;
+        if (rx->air_density_power>4 || p->parameterization_count>4-rx->air_density_power) return CHEM_INVALID;
         for (size_t c = 0; c < cells; ++c) {
             double t = s->temperatures[c], p_air = s->pressures[c];
             double density = s->explicit_air_density[c] ? s->air_densities[c] : p_air / (gas_constant * t);

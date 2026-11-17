@@ -8,6 +8,7 @@ extern const ChemMechanism tutorial_user;
 extern const ChemMechanism tutorial_robertson;
 extern const ChemMechanism tutorial_ordered;
 extern const ChemMechanism tutorial_unordered;
+extern const ChemMechanism tutorial_parameterized;
 
 #define CHECK(condition) do { if (!(condition)) { \
     fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #condition); return 1; \
@@ -157,12 +158,47 @@ static int check_generated_ordering(void)
     return 0;
 }
 
+static int check_parameterized(void)
+{
+    const ChemSpecies species[]={{"A",0,1e-3,0,0},{"B",0,1e-3,0,0}};
+    const int reactants[]={0,0}; const ChemProduct products[]={{1,1},{1,1}};
+    const ChemParameterizedFunction factors[]={{1,.01,.00001,2},{0,.1,0,0},{0,.1,0,0}};
+    const ChemReaction reactions[]={
+        {0,1,0,1,0,{.kind=CHEM_ARRHENIUS,.a=2,.d=300,.parameterization_count=1,.parameterizations=factors}},
+        {1,1,1,1,0,{.kind=CHEM_ARRHENIUS,.a=3,.d=300,.parameterization_count=2,.parameterizations=factors+1}}};
+    const ChemMechanism hand={2,2,0,species,reactions,reactants,products,NULL,NULL,300,101325};
+    ChemState *a=chem_state_create(&tutorial_parameterized,2), *b=chem_state_create(&hand,2);
+    CHECK(a && b && tutorial_parameterized.species_count==2);
+    for (size_t i=0;i<2;++i) {
+        chem_temperatures(a)[i]=chem_temperatures(b)[i]=300+10*i;
+        chem_pressures(a)[i]=chem_pressures(b)[i]=101325+100*i;
+        CHECK(chem_set_air_density(a,i,5+5*i)==CHEM_OK && chem_set_air_density(b,i,5+5*i)==CHEM_OK);
+        chem_species_values(a,0)[i]=chem_species_values(b,0)[i]=.01*(i+1);
+    }
+    CHECK(chem_update_rates(a)==CHEM_OK && chem_update_rates(b)==CHEM_OK);
+    for (size_t i=0;i<2;++i) {
+        double t=300+10*i, pressure=101325+100*i, density=5+5*i;
+        CHECK(close_enough(chem_rate_constants(a,0)[i],2*(1+.01*t+.00001*pressure+2*density)));
+        CHECK(close_enough(chem_rate_constants(a,1)[i],3*(.1*t)*(.1*t)));
+        double fa[2],fb[2],ja[4],jb[4];
+        CHECK(chem_evaluate(a,i,fa,ja)==CHEM_OK && chem_evaluate(b,i,fb,jb)==CHEM_OK);
+        for (size_t j=0;j<2;++j) CHECK(close_enough(fa[j],fb[j]));
+        for (size_t j=0;j<4;++j) CHECK(close_enough(ja[j],jb[j]));
+    }
+    ChemRosenbrock p=chem_rosenbrock_three_stage(); ChemStats sa,sb;
+    CHECK(chem_solve(a,&p,.001,&sa)==CHEM_OK && chem_solve(b,&p,.001,&sb)==CHEM_OK);
+    for (size_t i=0;i<2;++i) for (size_t j=0;j<2;++j)
+        CHECK(close_enough(chem_species_values(a,i)[j],chem_species_values(b,i)[j]));
+    chem_state_free(a); chem_state_free(b); return 0;
+}
+
 int main(void)
 {
     CHECK(check_pair(&tutorial_no_user, &hand_no_user, 0) == 0);
     CHECK(check_pair(&tutorial_user, &hand_user, 1) == 0);
     CHECK(check_robertson() == 0);
     CHECK(check_generated_ordering() == 0);
+    CHECK(check_parameterized() == 0);
     puts("YAML, JSON, and Robertson configurations match hand-built mechanisms: PASS");
     return 0;
 }

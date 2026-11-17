@@ -66,7 +66,7 @@ def c_string(value):
     return json.dumps(value, ensure_ascii=True)
 
 
-def fields(reaction):
+def fields(reaction, index):
     kind, raw = reaction["kind"], reaction["raw"]
     mapped = {"PHOTOLYSIS": "USER", "USER_DEFINED": "USER", "FIRST_ORDER_LOSS": "USER", "EMISSION": "USER",
               "TERNARY_CHEMICAL_ACTIVATION": "TERNARY", "TERNARY_CHEMICAL_ACTIVATION_JPL19": "TERNARY_JPL19",
@@ -77,7 +77,10 @@ def fields(reaction):
         raise ValueError(f"unsupported reaction type {kind!r}")
     output = [f".kind = CHEM_{mapped[kind]}", f".parameter = {reaction['parameter']}"]
 
-    order = len(reaction["reactants"]) + reaction["air_power"]
+    parameterizations = reaction.get("parameterizations", [])
+    if parameterizations:
+        output.extend([f".parameterization_count = {len(parameterizations)}", f".parameterizations = parameterized_{index}"])
+    order = len(reaction["reactants"]) + reaction["air_power"] + len(parameterizations)
     molecule_factor = 1.0e-6 * 6.02214076e23 if reaction["molecule_units"] else 1.0
 
     def add(field, key, default, conversion_power=0):
@@ -139,9 +142,17 @@ def generate(mechanism, symbol):
         lines.append("    { " + ", ".join([c_string(s["name"])] + [c_number(s[k]) for k in ("initial", "absolute_tolerance", "molecular_weight", "diffusion")]) + " },")
     lines.append("};")
     reactants, products = [], []
+    for i, reaction in enumerate(mechanism["reactions"]):
+        funcs = reaction.get("parameterizations", [])
+        if funcs:
+            lines.append(f"static const ChemParameterizedFunction parameterized_{i}[] = {{")
+            for func in funcs:
+                lines.append("    { " + ", ".join(c_number(func[key]) for key in
+                                               ("constant", "temperature", "pressure", "air density")) + " },")
+            lines.append("};")
     lines.append("static const ChemReaction reactions[] = {")
-    for r in mechanism["reactions"]:
-        lines.append(f"    {{ {len(reactants)}, {len(r['reactants'])}, {len(products)}, {len(r['products'])}, {r['air_power']}, {fields(r)} }},")
+    for i, r in enumerate(mechanism["reactions"]):
+        lines.append(f"    {{ {len(reactants)}, {len(r['reactants'])}, {len(products)}, {len(r['products'])}, {r['air_power']}, {fields(r, i)} }},")
         reactants.extend(r["reactants"])
         products.extend(r["products"])
     if not mechanism["reactions"]:

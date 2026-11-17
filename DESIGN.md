@@ -30,6 +30,9 @@ absolute-tolerance array contains one value per species.
 `chem_state_clone` copies mutable values and rate data while sharing the
 immutable symbolic plan; callback contexts and mechanism data remain borrowed.
 Named bulk setters check every label and vector length before changing a state.
+Parameterized reactants may supply linear functions of temperature, pressure,
+and air density; their values multiply the associated reaction rate during a
+rate update. A stable optional rate index groups reaction IDs by rate kind.
 
 `chem_matrix.h` provides typed-by-element-size dense matrices with row-major or
 grouped storage, checked row and column operations, reusable matrix functions,
