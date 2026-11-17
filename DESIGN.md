@@ -35,6 +35,9 @@ Named bulk setters check every label and vector length before changing a state.
 grouped storage, checked row and column operations, reusable matrix functions,
 and strict or padded reductions. These utilities have independent reference
 tests; the chemistry kernel keeps its own specialized species-major workspace.
+`chem_sparse.h` adds compressed-row and compressed-column structures whose
+blocks use the same row-major or grouped storage. Sparse coordinates are
+validated and deduplicated when a structure is created.
 
 ## Numerical components
 

@@ -161,6 +161,9 @@ int chem_matrix_function_init(ChemMatrixFunction *f, ChemMatrix *const *matrices
     if (!f->columns) return CHEM_MEMORY;
     for (size_t i=0;i<count;++i) {
         if (!matrices[i] || !matrices[i]->data) { chem_matrix_function_destroy(f); return CHEM_INVALID; }
+        size_t group=matrices[i]->group_size ? matrices[i]->group_size : 1;
+        if (i && group!=f->group_size) { chem_matrix_function_destroy(f); return CHEM_INVALID; }
+        f->group_size=group;
         f->columns[i]=matrices[i]->columns;
     }
     f->matrix_count=count; f->vector_count=vectors; f->body=body; f->context=context;
@@ -175,7 +178,8 @@ int chem_matrix_function_call(const ChemMatrixFunction *f, ChemMatrix *const *ma
     if (!matrices[0] || !matrices[0]->data) return CHEM_INVALID;
     size_t rows=matrices[0]->rows;
     for (size_t i=0;i<f->matrix_count;++i)
-        if (!matrices[i] || !matrices[i]->data || matrices[i]->rows!=rows || matrices[i]->columns!=f->columns[i]) return CHEM_INVALID;
+        if (!matrices[i] || !matrices[i]->data || matrices[i]->rows!=rows || matrices[i]->columns!=f->columns[i] ||
+            (matrices[i]->group_size ? matrices[i]->group_size : 1)!=f->group_size) return CHEM_INVALID;
     for (size_t i=0;i<f->vector_count;++i)
         if (lengths[i]!=rows || (rows && !vectors[i])) return CHEM_INVALID;
     return f->body(matrices,vectors,f->context);

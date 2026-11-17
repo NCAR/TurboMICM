@@ -40,7 +40,7 @@ int chem_matrix_reduce_column(const ChemMatrix *matrix, size_t column, int stric
 
 typedef int (*ChemMatrixFunctionBody)(ChemMatrix *const *matrices, void *const *vectors, void *context);
 typedef struct {
-    size_t matrix_count, vector_count, *columns;
+    size_t matrix_count, vector_count, group_size, *columns;
     ChemMatrixFunctionBody body;
     void *context;
 } ChemMatrixFunction;

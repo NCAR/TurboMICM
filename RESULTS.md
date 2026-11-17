@@ -1,7 +1,7 @@
 # Results
 
 The work is incomplete. At the latest full case audit, `make test-cpu` emitted
-680 case lines under both clang and gcc-15: 326 PASS, 350 FAIL because the case
+680 case lines under both clang and gcc-15: 364 PASS, 312 FAIL because the case
 has not yet been ported, and 4 N/A for C++ template-concept/SFINAE checks with
 no C equivalent. The analytic, configuration, constraint, and Doolittle core
 checks also passed under both compilers. A failing case report exits nonzero.
