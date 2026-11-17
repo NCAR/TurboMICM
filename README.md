@@ -23,8 +23,8 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently only
-223 cases have been ported, so the target intentionally fails and labels the
-other 457 as unported. The focused `make check` tests cover additional behavior
+230 cases have been ported, so the target intentionally fails and labels the
+other 450 as unported. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
 The single-cell backward Euler API is declared in `include/backward_euler.h`.
@@ -41,3 +41,6 @@ systems must include both kinetic and constraint Jacobian structure.
 concentration and custom parameter updates. Its arrays can be passed to the
 existing rate and integration APIs. Initialize states to zero before use and
 release them with `chem_state_destroy`.
+
+Custom DAE constraints can provide residual and negative-Jacobian callbacks
+and declare their state dependencies through `ChemCustomConstraint`.

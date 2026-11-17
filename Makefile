@@ -14,7 +14,7 @@ build:
 	mkdir -p $@
 build/chem.o: src/chem.c include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/rosenbrock.o: src/rosenbrock.c include/rosenbrock.h include/sparse.h | build
+build/rosenbrock.o: src/rosenbrock.c include/rosenbrock.h include/sparse.h include/constraint.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/rates.o: src/rates.c include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -59,6 +59,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_nonlinear
 	./build/test_backward_euler
 	./build/test_constraints
+	./build/test_external_constraints
 	./build/test_constraint_set
 	./build/test_constraint_init
 	./build/test_dae
@@ -132,7 +133,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_external_constraints build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
@@ -208,3 +209,7 @@ check: build/test_process_random
 build/test_nonlinear: tests/test_nonlinear.c build/robertson.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_nonlinear.c build/robertson.c build/libchem.a -lm -o $@
 check: build/test_nonlinear
+
+build/test_external_constraints: tests/test_external_constraints.c build/libchem.a
+	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
+check: build/test_external_constraints

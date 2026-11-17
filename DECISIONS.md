@@ -41,3 +41,8 @@ Mechanism generation preserves a separate species catalog with used flags, so
 queries include parameterized species even though those species do not occupy
 state slots. The catalog retains configuration order when state variables are
 reordered; this avoids making name queries depend on the solver permutation.
+
+External algebraic models use caller-owned C callbacks and explicit dependency
+indices. The Jacobian callback adds the negative derivative to an existing
+row, matching the existing constraint interface and permitting the same sparse
+solver path to handle built-in and external constraints.

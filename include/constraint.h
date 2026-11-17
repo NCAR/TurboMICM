@@ -3,7 +3,18 @@
 #include <stddef.h>
 
 typedef struct { size_t species; double coefficient; } ChemConstraintTerm;
-typedef enum { CHEM_CONSTRAINT_LINEAR, CHEM_CONSTRAINT_EQUILIBRIUM } ChemConstraintType;
+typedef enum { CHEM_CONSTRAINT_LINEAR, CHEM_CONSTRAINT_EQUILIBRIUM, CHEM_CONSTRAINT_CUSTOM } ChemConstraintType;
+/* Callbacks borrow context and dependencies. parameter points to the cell's
+   constraint parameter, or is NULL when no override array is supplied.
+   subtract_jacobian adds -d(residual)/dy to the supplied existing row. */
+typedef struct {
+    void *context;
+    const size_t *dependencies;
+    size_t dependency_count;
+    double (*residual)(void *context, const double *state, double temperature, const double *parameter);
+    void (*subtract_jacobian)(void *context, const double *state, double temperature,
+                              const double *parameter, double *row);
+} ChemCustomConstraint;
 typedef struct {
     const char *name;
     ChemConstraintType type;
@@ -12,6 +23,7 @@ typedef struct {
     size_t reactant_count, product_count;
     double constant; /* linear total or equilibrium reference constant */
     double enthalpy, gas_constant, reference_temperature;
+    const ChemCustomConstraint *custom; /* required for CHEM_CONSTRAINT_CUSTOM */
 } ChemConstraint;
 typedef struct { size_t variables, count; const ChemConstraint *constraints; } ChemConstraintSet;
 typedef enum {

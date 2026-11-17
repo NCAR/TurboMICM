@@ -18,7 +18,7 @@ static void jac(void *context,const double *y,double *j)
 int main(void)
 {
     const ChemConstraintTerm b[]={{1,1}}, c[]={{2,1}};
-    ChemConstraint constraint={"eq",CHEM_CONSTRAINT_EQUILIBRIUM,2,b,c,1,1,2,0,8.31446261815324,298.15};
+    ChemConstraint constraint={"eq",CHEM_CONSTRAINT_EQUILIBRIUM,2,b,c,1,1,2,0,8.31446261815324,298.15,NULL};
     ChemConstraintSet set={3,1,&constraint};
     const double atol[]={1e-3,1e-3,1e-3};
     ChemRosenbrockOptions options=chem_rosenbrock_defaults(atol); options.constraints=&set;
@@ -53,7 +53,7 @@ int main(void)
     const double row_scales[]={1,1e-12,1e12};
     for(size_t i=0;i<3;++i) {
         for(size_t j=0;j<3;++j) mass[j].coefficient=row_scales[i];
-        constraint=(ChemConstraint){"mass",CHEM_CONSTRAINT_LINEAR,2,mass,NULL,3,0,1.3*row_scales[i],0,0,0};
+        constraint=(ChemConstraint){"mass",CHEM_CONSTRAINT_LINEAR,2,mass,NULL,3,0,1.3*row_scales[i],0,0,0,NULL};
         y[0]=.7; y[1]=.15; y[2]=5;
         assert(chem_rosenbrock_solve(3,y,.001,rhs,jac,NULL,&method,&options,&stats)==CHEM_SOLVE_OK);
         assert(fabs(y[2]-.45) <= 4.5e-6);
@@ -79,7 +79,7 @@ int main(void)
     }
     options.constraint_init_max_backtracks=24;
     ChemConstraintTerm linear[]={{0,1},{1,-1}};
-    constraint=(ChemConstraint){"scaled",CHEM_CONSTRAINT_LINEAR,1,linear,NULL,2,0,0,0,0,0};
+    constraint=(ChemConstraint){"scaled",CHEM_CONSTRAINT_LINEAR,1,linear,NULL,2,0,0,0,0,0,NULL};
     set=(ChemConstraintSet){2,1,&constraint};
     const double tight_atol[]={1e-12,1e-12}; options.absolute_tolerance=tight_atol; options.relative_tolerance=1e-8;
     const double scales[]={1e-12,1,1e12};

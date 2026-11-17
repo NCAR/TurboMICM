@@ -124,3 +124,9 @@ The latest case report has 223 passing cases and 457 unported failures on
 both compilers. New Chapman checks cover 100-step oxygen and spectator
 conservation, rate constants, forcing, and analytical Jacobians. Both
 compilers continue to pass the 100-cell TS1 check.
+
+The latest case report has 230 passing cases and 450 unported failures on
+both compilers. New external constraint checks cover residual/Jacobian finite
+differences, conservation, row replacement, and multiple cells. Custom
+nonlinear projection and composition with built-in constraints are also
+exercised. Both compilers pass the 100-cell TS1 comparison.

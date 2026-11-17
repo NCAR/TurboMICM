@@ -89,3 +89,10 @@ marks those occurring in reactions, including parameterized reactants and
 products that are not stored as state variables. It is independent of the
 solver permutation. Callers constructing mechanisms in C can provide the same
 borrowed catalog representation.
+
+Custom constraints borrow a callback context and dependency list through
+`ChemCustomConstraint`. Their residual and negative Jacobian callbacks receive
+the state, temperature, and optional per-cell parameter override. They can be
+combined with built-in constraints in one set; declared dependencies are added
+to the sparse pattern before constructing a plan. Context and dependency
+storage must outlive the solve.

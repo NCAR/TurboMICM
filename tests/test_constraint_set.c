@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #define CLOSE(a,b) assert(fabs((a)-(b)) < 1e-10)
-#define EQ(row,rin,rnum,pout,pnum) {"eq",CHEM_CONSTRAINT_EQUILIBRIUM,row,rin,pout,rnum,pnum,.033,-24000,8.31446261815324,298.15}
+#define EQ(row,rin,rnum,pout,pnum) {"eq",CHEM_CONSTRAINT_EQUILIBRIUM,row,rin,pout,rnum,pnum,.033,-24000,8.31446261815324,298.15,NULL}
 int main(void)
 {
     const ChemConstraintTerm a[]={{0,1}}, b[]={{1,1}}, c[]={{2,1}}, d[]={{3,1}};

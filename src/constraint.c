@@ -8,6 +8,14 @@ ChemConstraintStatus chem_constraint_validate(const ChemConstraintSet *set)
         const ChemConstraint *c=set->constraints+i;
         if (c->row >= set->variables) return CHEM_CONSTRAINT_UNKNOWN_SPECIES;
         for (size_t j=0;j<i;++j) if (set->constraints[j].row == c->row) return CHEM_CONSTRAINT_DUPLICATE_ROW;
+        if (c->type == CHEM_CONSTRAINT_CUSTOM) {
+            const ChemCustomConstraint *custom=c->custom;
+            if (!custom || !custom->residual || !custom->subtract_jacobian ||
+                (custom->dependency_count && !custom->dependencies)) return CHEM_CONSTRAINT_INVALID;
+            for (size_t j=0;j<custom->dependency_count;++j)
+                if (custom->dependencies[j]>=set->variables) return CHEM_CONSTRAINT_UNKNOWN_SPECIES;
+            continue;
+        }
         if (c->type != CHEM_CONSTRAINT_LINEAR && c->type != CHEM_CONSTRAINT_EQUILIBRIUM) return CHEM_CONSTRAINT_INVALID;
         if (!c->reactant_count) return CHEM_CONSTRAINT_EMPTY_REACTANTS;
         if (!c->reactants || (c->product_count && !c->products)) return CHEM_CONSTRAINT_INVALID;
@@ -59,7 +67,10 @@ void chem_constraint_residuals(const ChemConstraintSet *set, size_t cells, const
         for (size_t i=0;i<set->count;++i) {
             const ChemConstraint *c=set->constraints+i;
             double value;
-            if (c->type == CHEM_CONSTRAINT_LINEAR) {
+            if (c->type == CHEM_CONSTRAINT_CUSTOM) {
+                value=c->custom->residual(c->custom->context,y,temperatures ? temperatures[cell] : 0,
+                                         parameters ? parameters+cell*set->count+i : NULL);
+            } else if (c->type == CHEM_CONSTRAINT_LINEAR) {
                 value=0;
                 for (size_t j=0;j<c->reactant_count;++j) value += c->reactants[j].coefficient*y[c->reactants[j].species];
                 value -= c->constant;
@@ -80,7 +91,10 @@ void chem_constraint_subtract_jacobian(const ChemConstraintSet *set, size_t cell
         for (size_t i=0;i<set->count;++i) {
             const ChemConstraint *c=set->constraints+i;
             double *row=jacobian+cell*n*n+c->row*n;
-            if (c->type == CHEM_CONSTRAINT_LINEAR) {
+            if (c->type == CHEM_CONSTRAINT_CUSTOM) {
+                c->custom->subtract_jacobian(c->custom->context,y,temperatures ? temperatures[cell] : 0,
+                                             parameters ? parameters+cell*set->count+i : NULL,row);
+            } else if (c->type == CHEM_CONSTRAINT_LINEAR) {
                 for (size_t j=0;j<c->reactant_count;++j) row[c->reactants[j].species]-=c->reactants[j].coefficient;
             } else {
                 double k=keq(set,c,cell,i,temperatures,parameters);
@@ -96,6 +110,11 @@ void chem_constraint_sparsity(const ChemConstraintSet *set, unsigned char *patte
     for (size_t i=0;i<set->count;++i) {
         const ChemConstraint *c=set->constraints+i;
         pattern[c->row*n+c->row]=1;
+        if (c->type == CHEM_CONSTRAINT_CUSTOM) {
+            for (size_t j=0;j<c->custom->dependency_count;++j)
+                pattern[c->row*n+c->custom->dependencies[j]]=1;
+            continue;
+        }
         for (size_t j=0;j<c->reactant_count;++j) pattern[c->row*n+c->reactants[j].species]=1;
         for (size_t j=0;j<c->product_count;++j) pattern[c->row*n+c->products[j].species]=1;
     }

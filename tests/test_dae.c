@@ -54,19 +54,19 @@ int main(void)
 {
     const ChemConstraintTerm b[]={{1,1}}, c[]={{2,1}}, d[]={{3,1}};
     ChemConstraint constraints[]={
-        {"B_C",CHEM_CONSTRAINT_EQUILIBRIUM,2,b,c,1,1,2,-2400,8.31446261815324,298.15},
-        {"B_D",CHEM_CONSTRAINT_EQUILIBRIUM,3,b,d,1,1,5,-2400,8.31446261815324,298.15}
+        {"B_C",CHEM_CONSTRAINT_EQUILIBRIUM,2,b,c,1,1,2,-2400,8.31446261815324,298.15,NULL},
+        {"B_D",CHEM_CONSTRAINT_EQUILIBRIUM,3,b,d,1,1,5,-2400,8.31446261815324,298.15,NULL}
     };
     ChemConstraintSet set={3,1,constraints}; Reaction reaction={3,0,1,1};
     double y[]={1,0,0}; run(&set,&reaction,y,100,.001,270);
     const ChemConstraintTerm reordered_b[]={{2,1}}, reordered_c[]={{0,1}};
-    constraints[0]=(ChemConstraint){"B_C",CHEM_CONSTRAINT_EQUILIBRIUM,0,reordered_b,reordered_c,1,1,2,-2400,8.31446261815324,298.15};
+    constraints[0]=(ChemConstraint){"B_C",CHEM_CONSTRAINT_EQUILIBRIUM,0,reordered_b,reordered_c,1,1,2,-2400,8.31446261815324,298.15,NULL};
     reaction=(Reaction){3,1,2,1}; double reordered[]={0,1,0}; run(&set,&reaction,reordered,100,.001,400);
-    constraints[0]=(ChemConstraint){"B_C",CHEM_CONSTRAINT_EQUILIBRIUM,2,b,c,1,1,3,-2400,8.31446261815324,298.15};
+    constraints[0]=(ChemConstraint){"B_C",CHEM_CONSTRAINT_EQUILIBRIUM,2,b,c,1,1,3,-2400,8.31446261815324,298.15,NULL};
     reaction=(Reaction){3,0,1,1}; set.variables=4; set.count=2; reaction.n=4;
     double y4[]={1,0,0,0}; run(&set,&reaction,y4,100,.001,300);
     const ChemConstraintTerm a2[]={{0,2}}, bproduct[]={{1,1}};
-    constraints[0]=(ChemConstraint){"A2_B",CHEM_CONSTRAINT_EQUILIBRIUM,1,a2,bproduct,1,1,10,-2400,8.31446261815324,298.15};
+    constraints[0]=(ChemConstraint){"A2_B",CHEM_CONSTRAINT_EQUILIBRIUM,1,a2,bproduct,1,1,10,-2400,8.31446261815324,298.15,NULL};
     set=(ChemConstraintSet){3,1,constraints}; reaction=(Reaction){3,2,0,.5};
     double yn[]={.1,.1,1}; run(&set,&reaction,yn,50,.001,298);
     puts("equilibrium DAE integration PASS"); return 0;
