@@ -31,3 +31,8 @@
   species have no state variable; their reactant multipliers are folded into
   the rate constant during the conditions update. This generalizes the
   air-density-only third-body field.
+- Tutorial program output snapshots were captured by running the reference
+  executables in a copied build directory. The tests compare the numerical
+  output and solver statistics exactly. Measured nanoseconds are normalized,
+  and concurrent progress messages are excluded because their ordering and
+  interleaving depend on thread scheduling.

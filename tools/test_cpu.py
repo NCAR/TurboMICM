@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Report each reference case independently; unported cases are failures."""
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -20,6 +21,21 @@ for case, executable, args in [
 ]:
     result = subprocess.run([str(root / 'build' / executable), *args], text=True, capture_output=True)
     results[case] = result.returncode == 0 and result.stdout == expected
+for case in ('README_example', 'solve_results', 'multiple_grid_cells', 'solver_configuration',
+             'vectorized_matrix_solver', 'openmp_tutorial'):
+    result = subprocess.run([str(root / 'build' / 'tutorial_programs'), case], text=True, capture_output=True)
+    expected = (root / 'tests' / 'reference_programs' / f'{case}.txt').read_text()
+    actual = result.stdout
+    if case == 'solver_configuration':
+        # Timings are observations, so compare all output except the number of nanoseconds.
+        normalize = lambda s: re.sub(r'Total solve time: [0-9.eE+-]+ nanoseconds', 'Total solve time: <elapsed> nanoseconds', s)
+        expected, actual = normalize(expected), normalize(actual)
+    elif case == 'openmp_tutorial':
+        # The progress messages are emitted concurrently and can interleave.
+        expected, actual = expected[expected.find('Thread 1\n'):], actual[actual.find('Thread 1\n'):]
+    results[case] = result.returncode == 0 and actual == expected
+result = subprocess.run([str(root / 'build' / 'tutorial_programs'), 'openmp_unit'], text=True, capture_output=True)
+results['openmp:OpenMP.OneSolverManyStates'] = result.returncode == 0
 not_applicable = {
     'view_category_sfinae:ViewCategorySFINAE.VectorTypes': 'C has no C++ concepts or SFINAE',
     'view_category_sfinae:ViewCategorySFINAE.MatrixViews': 'C has no template view-category traits',
