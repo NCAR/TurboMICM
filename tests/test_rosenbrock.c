@@ -3,8 +3,10 @@
 #undef NDEBUG
 #endif
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef struct { double rate; } Decay;
 static void rhs(void *ctx, const double *y, double *out)
@@ -20,6 +22,10 @@ static void jac(void *ctx, const double *y, double *out)
     out[0] = -d->rate; out[1] = 0;
     out[2] = d->rate; out[3] = 0;
 }
+static void constant_rhs(void *ctx,const double *y,double *out)
+{ (void)y; out[0]=*(const double *)ctx; }
+static void zero_jac(void *ctx,const double *y,double *out)
+{ (void)ctx; (void)y; out[0]=0; }
 int main(void)
 {
     Decay d = {2};
@@ -49,6 +55,17 @@ int main(void)
         assert(fabs(y[0]+y[1]-1) < 1e-12);
         assert(stats.solves == methods[i].stages*stats.decompositions);
     }
+    /* Preserve the reference's separate NaN and infinity failure states. */
+    const double one_atol[]={1};
+    ChemRosenbrockMethod extreme={0}; extreme.stages=1; extreme.gamma0=1; extreme.error_order=1;
+    extreme.e[0]=DBL_MAX;
+    ChemRosenbrockOptions extreme_options=chem_rosenbrock_defaults(one_atol);
+    double value=1, forcing=DBL_MAX;
+    assert(chem_rosenbrock_solve(1,&value,1,constant_rhs,zero_jac,&forcing,&extreme,&extreme_options,NULL)==CHEM_SOLVE_INFINITY);
+    assert(!strcmp(chem_solve_status_string(CHEM_SOLVE_INFINITY),"InfDetected"));
+    value=1; forcing=NAN;
+    assert(chem_rosenbrock_solve(1,&value,1,constant_rhs,zero_jac,&forcing,&extreme,&extreme_options,NULL)==CHEM_SOLVE_NAN);
+    assert(!strcmp(chem_solve_status_string(CHEM_SOLVE_NAN),"NaNDetected"));
     puts("Rosenbrock decay PASS");
     return 0;
 }

@@ -81,7 +81,10 @@ ChemSolveStatus chem_backward_euler_solve(size_t n, double *y, double duration,
             ++stats->rejected; successes = 0;
             if (failures >= 5) {
                 t += h; status = CHEM_SOLVE_UNCONVERGED;
-                for (size_t i = 0; i < n; ++i) if (!isfinite(y[i])) status = CHEM_SOLVE_NONFINITE;
+                for (size_t i = 0; i < n; ++i) {
+                    if (isnan(y[i])) { status = CHEM_SOLVE_NAN; break; }
+                    if (isinf(y[i])) status = CHEM_SOLVE_INFINITY;
+                }
                 break;
             }
             memcpy(y,yn,n*sizeof(*y)); h *= o->time_step_reductions[failures++];

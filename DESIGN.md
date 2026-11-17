@@ -193,3 +193,7 @@ methods or change solver tolerances.
 For Rosenbrock statistics, a Jacobian update is counted once per outer step;
 rebuilding the matrix after an in-place rejected attempt does not increment
 that count. Decompositions and stage solves are counted for every attempt.
+
+Rosenbrock error estimates and exhausted backward Euler retries distinguish
+NaN from infinity, matching the reference solver result states. A generic
+nonfinite status remains available for constraint initialization failures.

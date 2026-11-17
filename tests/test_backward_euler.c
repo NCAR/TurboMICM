@@ -26,6 +26,10 @@ static void jac(void *context, const double *y, double *out)
     double k = *(double *)context; (void)y;
     out[0] = -k; out[1] = 0; out[2] = k; out[3] = 0;
 }
+static void nonfinite_rhs(void *context,const double *y,double *out)
+{ (void)y; out[0]=*(const double *)context; }
+static void zero_jac(void *context,const double *y,double *out)
+{ (void)context; (void)y; out[0]=0; }
 int main(void)
 {
     double residual[12] = {0}, state[12] = {0}, abs_tol[3] = {1e-6,1e-6,1e-6};
@@ -94,6 +98,12 @@ int main(void)
     double chain_y[] = {1,0,0};
     assert(chem_backward_euler_solve(3,chain_y,1,chain_rhs,chain_jac,&chain,&options,&stats) == CHEM_SOLVE_OK);
     assert(fabs(chain_y[0]+chain_y[1]+chain_y[2]-1) < 1e-14);
+    const double one_atol[]={1};
+    ChemBackwardEulerOptions extreme=chem_backward_euler_defaults(one_atol); extreme.max_iterations=1;
+    double value=1,forcing=INFINITY;
+    assert(chem_backward_euler_solve(1,&value,1,nonfinite_rhs,zero_jac,&forcing,&extreme,NULL)==CHEM_SOLVE_INFINITY);
+    value=1; forcing=NAN;
+    assert(chem_backward_euler_solve(1,&value,1,nonfinite_rhs,zero_jac,&forcing,&extreme,NULL)==CHEM_SOLVE_NAN);
     puts("backward Euler convergence and solve PASS");
     return 0;
 }

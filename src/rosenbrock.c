@@ -18,6 +18,8 @@ const char *chem_solve_status_string(ChemSolveStatus status)
     case CHEM_SOLVE_NONFINITE: return "Nonfinite Value";
     case CHEM_SOLVE_UNCONVERGED: return "AcceptingUnconvergedIntegration";
     case CHEM_SOLVE_CONSTRAINT_INIT: return "Constraint Initialization Failed";
+    case CHEM_SOLVE_NAN: return "NaNDetected";
+    case CHEM_SOLVE_INFINITY: return "InfDetected";
     }
     return "Unknown";
 }
@@ -118,7 +120,7 @@ double chem_rosenbrock_normalized_error(size_t cells, size_t variables,
             double scaled=errors[k]/(atol[i]+rtol*ymax);
             sum += scaled*scaled;
         }
-    if (!isfinite(sum)) return NAN;
+    if (!isfinite(sum)) return sum;
     return fmax(sqrt(sum/(cells*variables)),1e-10);
 }
 
@@ -243,7 +245,8 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
             if (constraints && constraints->count) chem_constraint_step_errors(constraints,1,y,next,err);
             double error = chem_rosenbrock_normalized_error(1,n,y,next,err,o->absolute_tolerance,o->relative_tolerance);
             ++stats->steps;
-            if (!isfinite(error)) { status = CHEM_SOLVE_NONFINITE; goto done; }
+            if (isnan(error)) { status = CHEM_SOLVE_NAN; goto done; }
+            if (isinf(error)) { status = CHEM_SOLVE_INFINITY; goto done; }
             double fac = fmin(o->factor_max, fmax(o->factor_min, o->safety/pow(error, 1.0/p->error_order)));
             double hnew = h*fac;
             if (error < 1 || h < hmin) {
