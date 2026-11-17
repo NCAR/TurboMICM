@@ -92,6 +92,18 @@ ChemMatrixStatus chem_sparse_matrix_diagonal_indices(const ChemSparseMatrix *m,s
     }
     return CHEM_MATRIX_OK;
 }
+ChemMatrixStatus chem_sparse_matrix_block(ChemSparseMatrix *m,size_t row,size_t col,ChemColumnView *view)
+{
+    size_t entry=chem_sparse_matrix_entry(m,row,col);
+    return entry==SIZE_MAX ? CHEM_MATRIX_INVALID : chem_matrix_column(&m->values,entry,view);
+}
+ChemMatrixStatus chem_sparse_matrix_block_by_index(ChemSparseMatrix *m,size_t index,ChemColumnView *view)
+{
+    if (!m) return CHEM_MATRIX_INVALID;
+    size_t stride=m->values.width ? m->values.width : 1;
+    if (index%stride || index/stride>=m->nonzeros) return CHEM_MATRIX_INVALID;
+    return chem_matrix_column(&m->values,index/stride,view);
+}
 void chem_sparse_matrix_fill(ChemSparseMatrix *m,double value) { chem_matrix_fill(&m->values,value); }
 void chem_sparse_matrix_add_diagonal(ChemSparseMatrix *m,double value)
 {

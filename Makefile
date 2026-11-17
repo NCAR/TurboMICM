@@ -79,6 +79,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_falloff
 	./build/test_sparse
 	./build/test_sparse_matrix
+	./build/test_sparse_views
 	./build/test_doolittle
 	./build/test_linear_solve
 	./build/test_reordered
@@ -142,7 +143,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_sparse_matrix build/test_matrix_function build/test_matrix_views build/test_matrix build/test_external_composition build/test_external_constraints build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_sparse_views build/test_sparse_matrix build/test_matrix_function build/test_matrix_views build/test_matrix build/test_external_composition build/test_external_constraints build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
@@ -242,3 +243,7 @@ check: build/test_matrix_function
 build/test_sparse_matrix: tests/test_sparse_matrix.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
 check: build/test_sparse_matrix
+
+build/test_sparse_views: tests/test_sparse_views.c build/libchem.a
+	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
+check: build/test_sparse_views

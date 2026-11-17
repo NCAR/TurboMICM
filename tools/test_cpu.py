@@ -7,6 +7,17 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"{prefix}:{suite}.{case}": ("build/test_sparse_views", "sparse block views")
+       for prefix, suite in [
+           ("sparse_matrix_standard_compressed_row_ordering", "SparseCompressedRowMatrix"),
+           ("sparse_matrix_standard_compressed_column_ordering", "SparseCompressedColumnMatrix"),
+           ("sparse_matrix_vector_compressed_row_ordering", "SparseVectorCompressedRowMatrix"),
+           ("sparse_matrix_vector_compressed_column_ordering", "SparseVectorCompressedColumnMatrix")]
+       for case in ["ArrayFunction", "MultiMatrixArrayFunction", "MultipleTemporaries", "BlockViewReuse", "FunctionReusability",
+                    "TwoSparseMatricesDifferentStructure", "SparseAndDenseMatrixFunction", "GetBlockViewByVectorIndex", "TestFill", "TestCopy"]},
+    **{f"{prefix}:{suite}.SparseAndVectorMatrixFunction": ("build/test_sparse_views", "mixed sparse and group views")
+       for prefix, suite in [("sparse_matrix_vector_compressed_row_ordering", "SparseVectorCompressedRowMatrix"),
+                             ("sparse_matrix_vector_compressed_column_ordering", "SparseVectorCompressedColumnMatrix")]},
     **{f"{prefix}:{suite}.{case}": ("build/test_sparse_matrix", "compressed sparse blocks")
        for prefix, suite in [
            ("sparse_matrix_standard_compressed_row_ordering", "SparseCompressedRowMatrix"),

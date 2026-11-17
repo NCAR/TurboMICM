@@ -119,3 +119,8 @@ block values. Its CSR or CSC order controls entry numbering, and the matrix
 group width controls how block values are interleaved. Duplicate coordinates
 are coalesced; absent and out-of-range entries return an invalid index. This
 utility is separate from the current LU plan, which retains dense value buffers.
+
+Sparse entries expose borrowed block views that share the dense column-view
+interface. Views can be selected by row and column or by the physical index
+of an entry in block zero. Column fill, copy, and row callbacks operate on
+logical blocks, including across sparse, dense, and vector storage.

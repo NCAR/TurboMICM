@@ -39,6 +39,8 @@ ChemMatrixStatus chem_matrix_get_column(const ChemMatrix *m,size_t col,double *v
 typedef struct { ChemMatrix *matrix; size_t column; double *vector; size_t length; } ChemColumnView;
 ChemMatrixStatus chem_matrix_column(ChemMatrix *m,size_t col,ChemColumnView *view);
 ChemColumnView chem_vector_column(double *data,size_t length);
+ChemMatrixStatus chem_column_fill(const ChemColumnView *view,double value);
+ChemMatrixStatus chem_column_copy(const ChemColumnView *destination,const ChemColumnView *source);
 typedef void (*ChemRowFunction)(size_t row,double *const *values,void *context);
 ChemMatrixStatus chem_columns_apply(const ChemColumnView *views,size_t count,ChemRowFunction function,void *context);
 typedef struct { double *data; size_t length; } ChemVector;

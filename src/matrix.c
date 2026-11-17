@@ -147,6 +147,19 @@ static double *column_at(const ChemColumnView *view,size_t row)
 {
     return view->matrix ? view->matrix->data+chem_matrix_index(view->matrix,row,view->column) : view->vector+row;
 }
+ChemMatrixStatus chem_column_fill(const ChemColumnView *view,double value)
+{
+    if (!valid_column(view)) return CHEM_MATRIX_INVALID;
+    for (size_t row=0;row<view->length;++row) *column_at(view,row)=value;
+    return CHEM_MATRIX_OK;
+}
+ChemMatrixStatus chem_column_copy(const ChemColumnView *destination,const ChemColumnView *source)
+{
+    if (!valid_column(destination) || !valid_column(source)) return CHEM_MATRIX_INVALID;
+    if (destination->length!=source->length) return CHEM_MATRIX_SIZE;
+    for (size_t row=0;row<destination->length;++row) *column_at(destination,row)=*column_at(source,row);
+    return CHEM_MATRIX_OK;
+}
 ChemMatrixStatus chem_columns_apply(const ChemColumnView *views,size_t count,ChemRowFunction function,void *context)
 {
     if (!function || (count && !views)) return CHEM_MATRIX_INVALID;

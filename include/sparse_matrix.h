@@ -24,6 +24,10 @@ double *chem_sparse_matrix_at(ChemSparseMatrix *m,size_t block,size_t row,size_t
 const double *chem_sparse_matrix_const_at(const ChemSparseMatrix *m,size_t block,size_t row,size_t column);
 ChemMatrixStatus chem_sparse_matrix_diagonal_indices(const ChemSparseMatrix *m,size_t block,
         size_t *indices,size_t capacity,size_t *count);
+/* Borrow a view across all blocks of one structural entry. The index form
+   accepts a physical storage index for block zero. */
+ChemMatrixStatus chem_sparse_matrix_block(ChemSparseMatrix *m,size_t row,size_t column,ChemColumnView *view);
+ChemMatrixStatus chem_sparse_matrix_block_by_index(ChemSparseMatrix *m,size_t block_zero_index,ChemColumnView *view);
 void chem_sparse_matrix_fill(ChemSparseMatrix *m,double value);
 void chem_sparse_matrix_add_diagonal(ChemSparseMatrix *m,double value);
 ChemMatrixStatus chem_sparse_matrix_print(const ChemSparseMatrix *m,FILE *stream,int nonzeros_only);
