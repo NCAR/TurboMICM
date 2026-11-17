@@ -36,3 +36,8 @@
   output and solver statistics exactly. Measured nanoseconds are normalized,
   and concurrent progress messages are excluded because their ordering and
   interleaving depend on thread scheduling.
+- The terminator test uses fixed positive concentrations spanning the same
+  scales as the reference's implementation-dependent random distribution;
+  the reference analytical solution and its error bounds are unchanged.
+- The flow-tube regression data are copied into the repository so tests do
+  not require the reference tree at runtime.

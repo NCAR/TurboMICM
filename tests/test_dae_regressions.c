@@ -44,6 +44,33 @@ static int check_pool(Result r)
     double *y=r.y;
     return !r.status && fabs(y[0]+y[1]+y[2]-1e-6)<=1e-12 && y[0]>=-1e-18 && y[1]>=-1e-18 && fabs(y[2]-1e-6)<=1e-8;
 }
+static int terminator_robertson(void)
+{
+    const char *names[]={"Cl2","Cl","A","B","C"},*parameters[]={"terminator_k1","robertson_r1","robertson_r2","robertson_r3"};
+    const ChemTerm r[]={{0,1},{1,1},{1,1},{2,1},{3,1},{3,1},{3,1},{4,1}};
+    const ChemTerm q[]={{1,2},{0,1},{3,1},{3,1},{4,1},{2,1},{4,1}};
+    const ChemReaction rx[]={
+        {CHEM_USER,0,1,0,1,0,{1}},{CHEM_ARRHENIUS,1,2,1,1,-1,{1,0,0,300}},
+        {CHEM_USER,3,1,2,1,1,{1}},{CHEM_USER,4,2,3,2,2,{1}},{CHEM_USER,6,2,5,2,3,{1}}
+    };
+    const ChemMechanism m={5,5,4,names,parameters,NULL,NULL,rx,r,q,0,NULL};
+    const ChemTerm mass[]={{2,1},{3,1},{4,1}};
+    const ChemConstraint constraint={"mass",CHEM_LINEAR_CONSTRAINT,4,mass,NULL,3,0,1,0,0,0};
+    ChemWorkspace *w=chem_workspace_create_constrained(&m,&constraint,1);if(!w)return 0;
+    ChemRosenbrockParameters p=chem_rosenbrock_four_stage_dae();double atol[]={1e-20,1e-20,1e-3,1e-3,1e-3};
+    p.absolute_tolerances=atol;p.relative_tolerance=1e-8;
+    ChemConditions conditions={298,101300,42,1};double custom[]={0,.04,3e7,1e4},rates[5],y[]={1.8e-10,1.2e-6,1,0,0};
+    double total=2*y[0]+y[1],dt=1;int ok=!chem_rate_constants(&m,conditions,custom,rates);
+    for(int i=0;i<12 && ok;++i){double advanced=0;while(advanced<dt){ChemStatistics stats;int status=chem_rosenbrock_solve(&m,w,&p,conditions,rates,dt-advanced,y,&stats);
+            if((status && status!=2) || !(stats.final_time>0)){ok=0;break;}advanced+=stats.final_time;}
+        if(fabs(y[2]+y[3]+y[4]-1)>1e-10 || fabs(2*y[0]+y[1]-total)>1e-6*total)ok=0;
+        for(int j=0;j<5;++j)if(!isfinite(y[j]) || y[j]<0)ok=0;
+        if(i==0 && !(y[2]<.99 && y[3]>0 && y[4]>1e-3))ok=0;
+        dt*=10;
+    }
+    if(!(y[4]>.95 && y[2]<.05 && y[0]>.4*total && y[1]<.1*total))ok=0;
+    chem_workspace_free(w);return ok;
+}
 int main(void)
 {
     int simple=check_simple(run(0,2,0,1e4,0,0));
@@ -57,5 +84,6 @@ int main(void)
     printf("dae_constraint_overshoot:DAEConstraintOvershoot.AllRosenbrockOrdersConstrained %d\n",all);
     printf("dae_algebraic_error_insensitivity:DAEAlgebraicError.ErrorSensitiveToBalanceAtol %d\n",sensitive);
     printf("dae_algebraic_error_insensitivity:DAEAlgebraicError.AlgebraicVariableDoesNotOvershootDeeply %d\n",overshoot);
+    printf("linear_constraint:DAESolveWithConstraint.TerminatorAndRobertson %d\n",terminator_robertson());
     return 0;
 }

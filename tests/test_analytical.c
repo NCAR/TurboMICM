@@ -111,8 +111,65 @@ static int run_case(int kind,int backward,int stiff,int method,int algorithm,siz
     }
     chem_workspace_free(work);chem_state_free(&state);return ok;
 }
+static int robertson_case(int method,int algorithm)
+{
+    const char *names[]={"A","B","C"},*parameters[]={"r1","r2","r3"};
+    const ChemTerm r[]={{0,1},{1,1},{1,1},{1,1},{2,1}},q[]={{1,1},{1,1},{2,1},{0,1},{2,1}};
+    const ChemReaction rx[]={{CHEM_USER,0,1,0,1,0,{1}},{CHEM_USER,1,2,1,2,1,{1}},{CHEM_USER,3,2,3,2,2,{1}}};
+    const ChemMechanism m={3,3,3,names,parameters,NULL,NULL,rx,r,q,0,NULL};
+    const double expected[12][3]={
+        {.9664597373330035,.3074626578578675e-4,.3350951640121071e-1},
+        {.8413699238414729,.1623390937990473e-4,.1586138422491472},
+        {.6172348823960878,.6153591274639123e-5,.3827589640126376},
+        {.3368745306607069,.2013702318261393e-5,.6631234556369748},
+        {.1073004285378040,.4800166972571660e-6,.8926990914454987},
+        {.1786592114209946e-1,.7274751468436319e-7,.9821340061103859},
+        {.2031483924973415e-2,.8142277783356159e-8,.9979685079327488},
+        {.2076093439016395e-3,.8306077485067610e-9,.9997923898254906},
+        {.2082417512179460e-4,.8329841429908955e-10,.9999791757415798},
+        {.2083229471647004e-5,.8332935037760723e-11,.9999979167621954},
+        {.2083328471883087e-6,.8333315602809495e-12,.9999997916663195},
+        {.2083340149701284e-7,.8333360770334744e-13,.9999999791665152}
+    };
+    ChemWorkspace *w=chem_workspace_create(&m);if(!w)return 0;
+    ChemRosenbrockParameters p=method==0?chem_rosenbrock_two_stage():method==1?chem_rosenbrock_three_stage():method==2?chem_rosenbrock_four_stage():method==3?chem_rosenbrock_four_stage_dae():chem_rosenbrock_six_stage_dae();
+    p.relative_tolerance=1e-10;p.absolute_tolerance=1e-12;p.linear_solver=(ChemLUAlgorithm)algorithm;
+    ChemConditions c={272.5,101253.3,1e6,1};double rates[]={.04,3e7,1e4},y[]={1,0,0},target=1,now=0;int ok=1;
+    for(int i=0;i<12 && ok;++i){double duration=target-now,advanced=0;
+        while(advanced<duration){ChemStatistics stats;int status=chem_rosenbrock_solve(&m,w,&p,c,rates,duration-advanced,y,&stats);
+            if((status && status!=2) || !(stats.final_time>0)){fprintf(stderr,"Robertson method %d algorithm %d step %d status %d\n",method,algorithm,i,status);ok=0;break;}advanced+=stats.final_time;}
+        for(int j=0;j<3;++j)if(fabs(y[j]-expected[i][j])>=.3e-3 && fabs(y[j]-expected[i][j])>=1e-6*fabs(expected[i][j])){fprintf(stderr,"Robertson method %d step %d species %d got %.8g expected %.8g\n",method,i,j,y[j],expected[i][j]);ok=0;}
+        now=target;target*=10;
+    }
+    chem_workspace_free(w);return ok;
+}
+static int surface_case(int backward,int method)
+{
+    const char *names[]={"foo","bar","baz"},*parameters[]={"radius","number"};
+    const ChemTerm reactants[]={{0,1}},products[]={{1,1},{2,.4}};
+    const ChemReaction rx[]={{CHEM_SURFACE,0,1,0,2,0,{.95e-5,.04607,.02}}};
+    const ChemMechanism m={3,1,2,names,parameters,NULL,NULL,rx,reactants,products,0,NULL};
+    const double pi=acos(-1),gmd=1e-6,gsd=.1,temperature=272.5;
+    double custom[]={gmd/2*exp(2.5*pow(log(gsd),2)),6/(pi*pow(gmd,3)*exp(4.5*pow(log(gsd),2)))*(.002/1000+.003/1000)};
+    const double speed=sqrt(8*(1.380649e-23*6.02214076e23)*temperature/(pi*.04607));
+    const double reference_rate=4*custom[1]*pi*custom[0]*custom[0]/(custom[0]/.95e-5+4/(speed*.02));
+    const double tolerances[]={1e-2,1e-5,1e-6,1e-5,1e-7};double tol=backward?.05:tolerances[method],rate,y[]={1,0,0};
+    ChemConditions c={temperature,101253.3,0,0};ChemWorkspace *w=chem_workspace_create(&m);if(!w)return 0;
+    ChemRosenbrockParameters rp=method==0?chem_rosenbrock_two_stage():method==1?chem_rosenbrock_three_stage():method==2?chem_rosenbrock_four_stage():method==3?chem_rosenbrock_four_stage_dae():chem_rosenbrock_six_stage_dae();
+    ChemBackwardEulerParameters bp=chem_backward_euler_defaults();int ok=!chem_rate_constants(&m,c,custom,&rate) && fabs(rate-reference_rate)<=1e-8;
+    for(int i=1;i<=10 && ok;++i){ChemStatistics stats;int status=backward?chem_backward_euler_solve(&m,w,&bp,c,&rate,.1/reference_rate,y,&stats):chem_rosenbrock_solve(&m,w,&rp,c,&rate,.1/reference_rate,y,&stats);
+        double foo=exp(-.1*i),exact[]={foo,1-foo,.4*(1-foo)};if(status)ok=0;
+        for(int j=0;j<3;++j)if(fabs(y[j]-exact[j])>tol*fabs(exact[j]))ok=0;
+    }
+    chem_workspace_free(w);return ok;
+}
 int main(void)
 {
+    int robertson=1;for(int method=0;method<5;++method)for(int algorithm=0;algorithm<2;++algorithm)robertson &= robertson_case(method,algorithm);
+    printf("analytical_rosenbrock_integration:AnalyticalExamples.Robertson %d\n",robertson);
+    int surface=1;for(int method=0;method<5;++method)surface &= surface_case(0,method);
+    printf("analytical_rosenbrock_integration:AnalyticalExamples.SurfaceRxn %d\n",surface);
+    printf("analytical_backward_euler:AnalyticalExamples.SurfaceRxn %d\n",surface_case(1,0));
     const char *names[]={"Troe","Photolysis","TernaryChemicalActivation","Tunneling","Arrhenius","Branched"};
     for(int backward=0;backward<2;++backward) for(int stiff=0;stiff<2;++stiff) for(int kind=0;kind<6;++kind) {
         int ok=1;

@@ -179,9 +179,41 @@ static int regression_solve(size_t width,int method)
     for(size_t i=0;i<3;++i)chem_workspace_free(work[i]);
     chem_state_free(&state);return ok;
 }
+static int chapman_integration(void)
+{
+    ChemReaction rx[7];memcpy(rx,reactions,sizeof rx);rx[3].p[1]=0;rx[3].p[2]=2.4;
+    ChemMechanism m=mechanism;m.reactions=rx;ChemWorkspace *w=chem_workspace_create(&m);if(!w)return 0;
+    double y[]={.1,.1,.1,.2,.2,.2,.3,.3,.3},initial[9],rates[7],photo[]={.1,.2,.3};memcpy(initial,y,sizeof y);
+    const double oxygen=y[5]+y[6]+2*y[7]+3*y[8];ChemConditions conditions={2,3,0,0};int ok=!chem_rate_constants(&m,conditions,photo,rates);
+    ChemRosenbrockParameters p=chem_rosenbrock_three_stage();
+    for(int step=0;step<100 && ok;++step){ChemStatistics stats;if(chem_rosenbrock_solve(&m,w,&p,conditions,rates,30,y,&stats))ok=0;
+        for(int i=0;i<9;++i)if(!isfinite(y[i]) || y[i]<0)ok=0;
+        if(fabs(y[5]+y[6]+2*y[7]+3*y[8]-oxygen)>1e-8*oxygen)ok=0;
+        for(int i=0;i<5;++i)if(fabs(y[i]-initial[i])>1e-8*fabs(initial[i]))ok=0;
+    }
+    if(!(y[7]<.5*initial[7] && y[6]>initial[6] && y[6]>.5*oxygen))ok=0;
+    chem_workspace_free(w);return ok;
+}
+static int integrated_reaction_rates(void)
+{
+    const char *sp[]={"a","b","c","irr_1","irr_2"},*parameters[]={"r2"};
+    const ChemTerm r[]={{0,1},{1,1}},q[]={{1,1},{3,1},{2,1},{4,1}};
+    const ChemReaction rx[]={{CHEM_ARRHENIUS,0,1,0,2,-1,{2.15e-11,0,110,300}},{CHEM_USER,1,1,2,2,0,{1}}};
+    const ChemMechanism m={5,2,1,sp,parameters,NULL,NULL,rx,r,q,0,NULL};
+    ChemWorkspace *w=chem_workspace_create(&m);if(!w)return 0;
+    ChemRosenbrockParameters p=chem_rosenbrock_three_stage();ChemConditions c={273,1000,0,0};
+    double y[]={1,0,0,0,0},rates[2],custom=1;int ok=1;
+    for(int t=0;t<100 && ok;++t){if(t>50)custom=0;double before1=y[3],before2=y[4];ChemStatistics stats;
+        if(chem_rate_constants(&m,c,&custom,rates)||chem_rosenbrock_solve(&m,w,&p,c,rates,30,y,&stats))ok=0;
+        if(y[3]<before1 || y[4]<before2)ok=0;
+    }
+    chem_workspace_free(w);return ok;
+}
 
 int main(void)
 {
+    printf("chapman_integration:ChapmanIntegration.CanBuildChapmanSystem %d\n",chapman_integration());
+    printf("integrated_reaction_rates:ChapmanIntegration.CanBuildChapmanSystem %d\n",integrated_reaction_rates());
     ChemRosenbrockParameters p=chem_rosenbrock_three_stage();
     printf("chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.DefaultConstructor %d\n",p.stages==3);
     printf("chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.lin_solve %d\n",matrix_solve(0));
