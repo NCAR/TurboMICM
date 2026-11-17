@@ -71,3 +71,8 @@ and using its exact state permutation still left 137 of 211 warm-up values
 outside the tolerance on the all-default photolysis stress input (gcc-15 C
 port versus clang reference). This experiment did not change the production
 ordering and indicates that ordering alone does not explain the divergence.
+Three additional 100-cell inputs from the supplied generator, using seeds 42,
+12345, and 753, also passed against separately run references. The largest
+relative differences were 2.74e-14, 2.54e-14, and 7.66e-14, respectively.
+These used gcc-15 for the C port, with three threads, and the clang reference
+with one thread.
