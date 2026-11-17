@@ -246,3 +246,9 @@ Backward Euler now supports grouped, shared-convergence solves. The four
 single- and multi-cell aerosol trajectory cases pass at the reference
 tolerances with both compilers; the case report has 597 passing and 83
 unported failures. Both compilers also pass the 100-cell TS1 comparison.
+
+An eight-thread test now checks one shared solver and sparse plan with
+independent states, and the OpenMP tutorial reproduces the reference results.
+Thread announcements are compared without assuming their ordering. Both
+compilers pass the TS1 comparison; the case report has 599 passing and 81
+unported failures.

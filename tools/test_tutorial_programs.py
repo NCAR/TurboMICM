@@ -12,11 +12,23 @@ programs = (
     ("multiple_grid_cells", "multiple_grid_cells.expected"),
     ("solve_results", "solve_results.expected"),
     ("solver_configuration", "solver_configuration.expected"),
+    ("openmp_tutorial", "openmp_tutorial.expected"),
 )
 for program, expected_name in programs:
     result = subprocess.run([root / "build" / program], capture_output=True, check=True)
     expected = (root / "tests" / "reference" / expected_name).read_bytes()
     actual = result.stdout
+    if program == "openmp_tutorial":
+        marker = b"Thread 1\n"
+        if marker not in actual:
+            print(f"{program}: missing result header", file=sys.stderr)
+            sys.exit(1)
+        announcements, suffix = actual.split(marker, 1)
+        required = sorted(f"Running solver on thread {i}".encode() for i in range(3))
+        if sorted(announcements.splitlines()) != required:
+            print(f"{program}: invalid thread announcements", file=sys.stderr)
+            sys.exit(1)
+        actual = marker + suffix
     if program == "solver_configuration":
         pattern = rb"Total solve time: ([0-9.eE+-]+) nanoseconds"
         actual_times = re.findall(pattern, actual)

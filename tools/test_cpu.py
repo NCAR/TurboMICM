@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    "openmp:OpenMP.OneSolverManyStates": ("build/test_openmp", "shared solver and thread-local states"),
     **{f"process:Process.{case}": ("build/test_process_builder", "owned reaction construction")
        for case in ["BuildsChemicalReaction", "ChemicalReactionCopyAssignmentSucceeds"]},
     **{f"solver_builder:SolverBuilder.{case}": ("build/test_process_builder", "mechanism validation")
@@ -27,7 +28,7 @@ CASES = {
                     "CanCalculateSingleGridCellJacobianWithStubAerosolModel"]},
     **{case: ("tools/test_tutorial_programs.py", "tutorial output matches reference")
        for case in ["rate_constants_no_user_defined_example_by_hand", "rate_constants_user_defined_example_by_hand",
-                    "README_example", "multiple_grid_cells", "solve_results", "solver_configuration"]},
+                    "README_example", "multiple_grid_cells", "solve_results", "solver_configuration", "openmp_tutorial"]},
     **{f"{prefix}:AerosolModelIntegration.{case}": ("build/test_aerosol", "grouped aerosol solves")
        for prefix in ["aerosol_model_rosenbrock", "aerosol_model_backward_euler"]
        for case in ["CanSolveSingleGridCellWithStubAerosolModel1", "CanSolveSingleGridCellWithTwoStubAerosolModels",
