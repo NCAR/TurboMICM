@@ -138,6 +138,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_generated
 	.conda/bin/python tests/test_config.py
 	.conda/bin/python tests/test_ts1_config.py
+	.conda/bin/python tests/test_benchmark_defaults.py
 	.conda/bin/python tests/test_markowitz.py
 build/tutorial.c: tools/generate.py tools/config.py | build
 	.conda/bin/python tools/generate.py ../micm/test/tutorial/configs/rate_constants_no_user_defined/config.yaml $@
@@ -382,3 +383,4 @@ check: build/test_rejected_factorization
 build/test_reorder: tests/test_reorder.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
 check: build/test_reorder
+check: bin/ts1_bench_cpu

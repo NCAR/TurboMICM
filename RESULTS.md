@@ -24,3 +24,12 @@ Timing output and the order of independent OpenMP thread announcements are
 normalized because those fields are nondeterministic. The vectorized matrix
 tutorial's reference solve loop starts in the converged state and therefore
 updates rate parameters without advancing concentrations.
+
+An additional one-cell input omitted temperature and pressure. With the six
+unphysical photolysis defaults set to zero, the generated condition defaults
+agree with the reference within 3.44e-15 relative after two timed steps. When
+those six rates are also omitted and therefore retain their reference defaults
+of 1 s-1, the comparison is less close: 44 of 211 values exceed the gate
+tolerance after two timed steps, with a largest relative difference of
+1.47e-5. This stiff input is outside the supplied ranking inputs, which set
+those six rates to zero; its discrepancy remains under investigation.

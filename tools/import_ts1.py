@@ -25,6 +25,10 @@ def translate(source):
     process_text, initialization = remainder.split('static void InitState', 1)
     concentrations = dict((k, float(v)) for k, v in re.findall(r'concentration\("([^"]+)",\s*(' + NUMBER + r')\)', initialization))
     defaults = dict((k, float(v)) for k, v in re.findall(r'parameter\("([^"]+)",\s*(' + NUMBER + r')\)', initialization))
+    conditions = {
+        'temperature [K]': float(one(r'conditions_\[c\]\.temperature_\s*=\s*(' + NUMBER + r')\s*;', initialization, 'default temperature')),
+        'pressure [Pa]': float(one(r'conditions_\[c\]\.pressure_\s*=\s*(' + NUMBER + r')\s*;', initialization, 'default pressure')),
+    }
     species = []
     blocks = re.findall(r'auto species = micm::Species\("([^"]+)"\);(.*?)phase_species\.emplace_back\(species(?:,\s*(' + NUMBER + r'))?\);', phase, re.S)
     for name, body, diffusion in blocks:
@@ -79,7 +83,7 @@ def translate(source):
         reactions.append(r)
     if len(reactions) != 547:
         raise ValueError(f'expected 547 reactions, got {len(reactions)}')
-    return species, reactions, defaults
+    return species, reactions, defaults, conditions
 
 
 def main():
@@ -87,10 +91,10 @@ def main():
     parser.add_argument('source', type=Path)
     parser.add_argument('directory', type=Path)
     args = parser.parse_args()
-    species, reactions, defaults = translate(args.source.read_text(encoding='utf-8'))
+    species, reactions, defaults, conditions = translate(args.source.read_text(encoding='utf-8'))
     args.directory.mkdir(parents=True, exist_ok=True)
     files = {'config.json': {'camp-files': ['species.json', 'reactions.json'], 'custom parameter defaults': defaults,
-                             'temperature [K]': 287.45, 'pressure [Pa]': 101319.9},
+                             **conditions},
              'species.json': {'camp-data': species},
              'reactions.json': {'camp-data': [{'name': 'TS1', 'type': 'MECHANISM', 'reactions': reactions}]}}
     for name, content in files.items():

@@ -34,7 +34,9 @@ plan uses dense value buffers with structural index lists.
 CAMP-style JSON files. The generator excludes parameterized species from the state and emits their
 condition-dependent functions; `chem_rates_parameterized` applies their product
 to reaction constants. A third body is the special case equal to air density.
-Species and custom defaults are also emitted as C arrays. See DECISIONS.md for
+Species and custom defaults are also emitted as C arrays; the default
+temperature and pressure are generated scalars. Missing condition defaults in
+a configuration produce zero scalars for the caller to replace. See DECISIONS.md for
 the configuration extensions.
 
 The benchmark schedules individual cells with OpenMP static

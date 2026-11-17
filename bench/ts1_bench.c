@@ -17,6 +17,7 @@ extern const ChemRate generated_rates[];
 extern const ChemRateMultiplier generated_multipliers[];
 extern const ChemParameterizedSpecies generated_multiplier_functions[];
 extern const double generated_custom_defaults[], generated_initial_concentrations[];
+extern const double generated_default_temperature, generated_default_pressure;
 
 typedef struct {
     double temperature, pressure;
@@ -157,7 +158,7 @@ int main(int argc, char **argv)
         cells[i].custom = cells[i].y+n; cells[i].rates = cells[i].custom+generated_custom_count;
         memcpy(cells[i].y, generated_initial_concentrations, n*sizeof(double));
         memcpy(cells[i].custom, generated_custom_defaults, generated_custom_count*sizeof(double));
-        cells[i].temperature = 287.45; cells[i].pressure = 101319.9;
+        cells[i].temperature = generated_default_temperature; cells[i].pressure = generated_default_pressure;
     }
     if (!read_cells(argv[arg+3], cells, count)) { free(cells); free(storage); free(atol); return 1; }
     ChemRosenbrockMethod method = chem_rosenbrock_three_stage();
