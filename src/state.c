@@ -138,3 +138,16 @@ int chem_state_update_constraint_parameters(ChemState *s,ChemConstraintSet set)
     }
     return 0;
 }
+int chem_state_update_external_parameters(ChemState *s,const ChemExternalModel *models,size_t count)
+{
+    if(!s || (count && !models) || s->parameters.parameter_count>SIZE_MAX/sizeof(double)) return 1;
+    size_t n=s->parameters.parameter_count;
+    double *params=malloc((n?n:1)*sizeof(double)); if(!params) return 1;
+    int status=0;
+    for(size_t cell=0;cell<s->cells && !status;++cell) {
+        if(chem_matrix_get_row(&s->custom_parameters,cell,params,n)) { status=1; break; }
+        for(size_t i=0;i<count;++i) if(models[i].update_parameters && models[i].update_parameters(models[i].context,s->conditions[cell],params,n)) { status=1; break; }
+        if(!status && chem_matrix_set_row(&s->custom_parameters,cell,params,n)) status=1;
+    }
+    free(params); return status;
+}

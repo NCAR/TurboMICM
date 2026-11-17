@@ -88,6 +88,19 @@ typedef enum {
 const char *chem_solver_status_string(ChemSolverStatus);
 typedef struct ChemWorkspace ChemWorkspace;
 typedef struct ChemConstraint ChemConstraint;
+/* External models add to forcing and its positive Jacobian. Their pattern is a
+ * row-major species_count square array, and all borrowed data must outlive the
+ * workspace. Callbacks may use conditions and caller-owned per-cell context. */
+typedef int (*ChemExternalFunction)(void *context, ChemConditions, const double *state, double *output);
+typedef int (*ChemExternalUpdate)(void *context, ChemConditions, double *parameters, size_t parameter_count);
+typedef struct {
+    const unsigned char *jacobian_pattern;
+    ChemExternalFunction add_forcing, add_jacobian;
+    void *context;
+    const char *const *variable_names, *const *parameter_names;
+    size_t variable_count, parameter_count;
+    ChemExternalUpdate update_parameters;
+} ChemExternalModel;
 
 ChemRosenbrockParameters chem_rosenbrock_two_stage(void);
 ChemRosenbrockParameters chem_rosenbrock_three_stage(void);
@@ -101,6 +114,8 @@ double chem_rosenbrock_normalized_error(size_t cells, size_t species, const doub
 ChemWorkspace *chem_workspace_create(const ChemMechanism *);
 /* Constraints and their term arrays must outlive the workspace. */
 ChemWorkspace *chem_workspace_create_constrained(const ChemMechanism *, const ChemConstraint *, size_t);
+ChemWorkspace *chem_workspace_create_external(const ChemMechanism *, const ChemConstraint *, size_t,
+                                               const ChemExternalModel *, size_t);
 void chem_workspace_free(ChemWorkspace *);
 /* Generic sparse-pattern linear algebra using the same LU kernels as the
  * integrators. Pattern and matrices are row-major n-by-n arrays. Diagonal
@@ -122,6 +137,11 @@ int chem_initialize_constraints(ChemWorkspace *, const ChemRosenbrockParameters 
 int chem_rosenbrock_solve(const ChemMechanism *, ChemWorkspace *,
                           const ChemRosenbrockParameters *, ChemConditions,
                           const double *rates, double dt, double *y, ChemStatistics *);
+/* A group shares step-size/error control; each cell has its own workspace,
+ * conditions, external-model context, rates, and row-major state. */
+int chem_rosenbrock_solve_group(const ChemMechanism *, ChemWorkspace *const *, size_t cells,
+                                const ChemRosenbrockParameters *, const ChemConditions *,
+                                const double *rates, double dt, double *y, ChemStatistics *);
 
 typedef struct {
     double small, h_start, reductions[5], relative_tolerance, absolute_tolerance;

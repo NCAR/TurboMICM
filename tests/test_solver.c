@@ -28,6 +28,16 @@ int main(void)
         }
         if (!chem_rosenbrock_solve(&mechanism, w, &p, conditions, rates, 0, y, &stats)) return 3;
     }
+    /* A one-cell group must follow the same step sequence as the scalar API. */
+    ChemWorkspace *other=chem_workspace_create(&mechanism);
+    if (!other) return 5;
+    ChemWorkspace *group[]={other}; ChemRosenbrockParameters rp=chem_rosenbrock_three_stage();
+    double scalar[]={1,0}, grouped[]={1,0}; ChemStatistics ss,gs;
+    if (chem_rosenbrock_solve(&mechanism,w,&rp,conditions,rates,.1,scalar,&ss) ||
+        chem_rosenbrock_solve_group(&mechanism,group,1,&rp,&conditions,rates,.1,grouped,&gs) ||
+        scalar[0]!=grouped[0] || scalar[1]!=grouped[1] || ss.internal_steps!=gs.internal_steps ||
+        ss.accepted!=gs.accepted || ss.rejected!=gs.rejected || ss.solves!=gs.solves) return 6;
+    chem_workspace_free(other);
     ChemBackwardEulerParameters be = chem_backward_euler_defaults();
     for (int algorithm = 0; algorithm < 2; ++algorithm) {
         be.linear_solver = (ChemLUAlgorithm)algorithm;

@@ -36,4 +36,5 @@ int chem_state_set_parameter_rows(ChemState *, const double *const *rows, const 
 int chem_state_update_rate_constants(ChemState *, const ChemMechanism *, const ChemCallback *callbacks);
 int chem_state_apply_phase_tolerances(ChemState *, ChemPhase);
 int chem_state_update_constraint_parameters(ChemState *, ChemConstraintSet);
+int chem_state_update_external_parameters(ChemState *, const ChemExternalModel *, size_t model_count);
 #endif

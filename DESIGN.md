@@ -26,6 +26,10 @@ operations also expose additive forcing, negative Jacobians, symbolic patterns,
 and optional algebraic-row masks.
 
 Rate constants, forcing, and Jacobian evaluation are separate from the solver.
+External models can add forcing and Jacobian entries through callbacks and
+declare their symbolic pattern; they may also update per-cell parameters.
+The group Rosenbrock interface shares a time step and error norm across cells,
+while retaining a workspace and external context for each cell.
 `ChemRosenbrockParameters` contains stage coefficients and control parameters;
 two-, three-, and four-stage ODE parameter sets are provided.
 `chem_rosenbrock_solve` implements the stage loop and error controller. The
