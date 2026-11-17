@@ -252,3 +252,9 @@ independent states, and the OpenMP tutorial reproduces the reference results.
 Thread announcements are compared without assuming their ordering. Both
 compilers pass the TS1 comparison; the case report has 599 passing and 81
 unported failures.
+
+The multi-cell Chapman regression checks all five Rosenbrock methods and
+group widths 1–4 against independently evaluated rate equations, a scalar
+reference-method solve, and a high-accuracy RK4 trajectory. Both compilers pass
+the 100-cell TS1 comparison; the case report has 605 passing and 75 unported
+failures.

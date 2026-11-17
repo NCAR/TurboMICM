@@ -23,8 +23,8 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently
-599 cases have been ported, so the target intentionally fails and labels the
-other 81 as unported. The focused `make check` tests cover additional behavior
+605 cases have been ported, so the target intentionally fails and labels the
+other 75 as unported. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
 The backward Euler API is declared in `include/backward_euler.h`. It supports

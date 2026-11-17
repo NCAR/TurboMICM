@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"regression_test_solve:RegressionRosenbrock.{case}": ("build/test_chapman_regression", "multi-cell Chapman trajectories")
+       for case in ["TwoStageSolve", "ThreeStageSolve", "FourStageSolve", "FourStageDASolve", "SixStageDASolve", "VectorSolve"]},
     "openmp:OpenMP.OneSolverManyStates": ("build/test_openmp", "shared solver and thread-local states"),
     **{f"process:Process.{case}": ("build/test_process_builder", "owned reaction construction")
        for case in ["BuildsChemicalReaction", "ChemicalReactionCopyAssignmentSucceeds"]},
