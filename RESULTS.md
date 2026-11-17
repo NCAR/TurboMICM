@@ -103,3 +103,9 @@ The latest case report has 205 passing cases and 475 unported failures on
 both compilers. The fixed process-set fixture now exercises generated
 parameterized-species metadata, forcing, and Jacobian values. The 100-cell TS1
 comparison remains passing on both compilers.
+
+The latest case report has 208 passing cases and 472 unported failures on
+both compilers. The additional checks cover every published Robertson and
+HIRES output time in the reference, using each available Rosenbrock method
+and both LU algorithms; HIRES also checks backward Euler. The 100-cell TS1
+comparison remains passing with both compilers.
