@@ -14,11 +14,13 @@ build:
 	mkdir -p $@
 build/chem.o: src/chem.c include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/rosenbrock.o: src/rosenbrock.c include/rosenbrock.h | build
+build/rosenbrock.o: src/rosenbrock.c include/rosenbrock.h include/sparse.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/rates.o: src/rates.c include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/chem.o build/rosenbrock.o build/rates.o
+build/sparse.o: src/sparse.c include/sparse.h include/chem.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/libchem.a: build/chem.o build/rosenbrock.o build/rates.o build/sparse.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
@@ -35,6 +37,8 @@ build/test_chemical_solver: tests/test_chemical_solver.c build/robertson.c build
 check: build/test_chem build/test_generated build/test_rosenbrock build/test_chemical_solver
 	./build/test_chem
 	./build/test_rosenbrock
+	./build/test_sparse
+	./build/test_reordered
 	./build/test_chemical_solver
 	./build/test_tutorial
 	./build/test_tutorial_custom
@@ -52,7 +56,7 @@ build/test_tutorial_custom: tests/test_tutorial.c build/tutorial_custom.c build/
 	$(CC) $(CFLAGS) -DWITH_CUSTOM tests/test_tutorial.c build/tutorial_custom.c build/libchem.a -lm -o $@
 check: build/test_tutorial build/test_tutorial_custom
 build/ts1.c: tools/generate.py tools/config.py configs/ts1/config.json configs/ts1/species.json configs/ts1/reactions.json | build
-	.conda/bin/python tools/generate.py configs/ts1/config.json $@
+	.conda/bin/python tools/generate.py --reorder configs/ts1/config.json $@
 build/test_ts1_rates: tests/test_ts1_rates.c build/ts1.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_ts1_rates.c build/ts1.c build/libchem.a -lm -o $@
 check: build/test_ts1_rates
@@ -82,3 +86,10 @@ check-ts1: bin/ts1_bench_cpu
 cpu: bin/ts1_bench_cpu
 micm-ref: | bin
 	clang++ -std=c++20 $(OPTFLAGS) -I../micm/include -I../micm/test/benchmark ../reference/micm_ts1_ref.cpp -o bin/micm_ts1_ref
+build/reordered.c: tools/generate.py tools/config.py tests/reorder/config.json tests/reorder/species.json tests/reorder/reactions.json | build
+	.conda/bin/python tools/generate.py --reorder tests/reorder/config.json $@
+build/test_reordered: tests/test_reordered.c build/reordered.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_reordered.c build/reordered.c build/libchem.a -lm -o $@
+build/test_sparse: tests/test_sparse.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_sparse.c build/libchem.a -lm -o $@
+check: build/test_sparse build/test_reordered

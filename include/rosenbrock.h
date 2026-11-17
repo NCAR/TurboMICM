@@ -1,6 +1,7 @@
 #ifndef ROSENBROCK_H
 #define ROSENBROCK_H
 #include <stddef.h>
+#include "sparse.h"
 
 /* Autonomous ODE callbacks. Jacobian is dense and row-major. */
 typedef void (*ChemOdeFunction)(void *context, const double *y, double *out);
@@ -15,6 +16,7 @@ typedef struct {
     double h_min, h_max, h_start; /* zero chooses the reference default */
     double factor_min, factor_max, safety, rejection_factor;
     size_t max_steps;
+    const ChemSparsePlan *sparse_plan; /* NULL uses dense elimination */
 } ChemRosenbrockOptions;
 typedef struct {
     size_t steps, accepted, rejected, function_calls, jacobian_updates;

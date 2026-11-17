@@ -36,6 +36,13 @@ int main(void)
     assert(fabs(y[0] - 0.985172114) < 2e-8);
     assert(fabs(y[1] - 0.00003386395) < 2e-10);
     assert(fabs(y[0] + y[1] + y[2] - 1) < 1e-12);
+    double sparse_y[] = {1,0,0};
+    ChemSparsePlan *plan = chem_sparse_plan_create(&generated_mechanism);
+    assert(plan);
+    options.sparse_plan = plan;
+    assert(chem_rosenbrock_solve(3, sparse_y, 0.4, rhs, jac, &system, &method, &options, NULL) == CHEM_SOLVE_OK);
+    for (size_t i = 0; i < 3; ++i) assert(fabs(sparse_y[i]-y[i]) < 1e-14);
+    chem_sparse_plan_destroy(plan);
     puts("generated Robertson integration PASS");
     return 0;
 }

@@ -19,5 +19,5 @@ Build the preliminary TS1 driver with `make bench`, then run
 `bin/ts1_bench_cpu [--threads N] CELLS STEPS DT CELLS_CSV`. It writes
 `ts1_final.csv`. `make check-ts1` compares 100 cells and 100 steps with the
 supplied reference, and `make micm-ref` builds the independent timing reference.
-The current solver uses independent dense factorizations per cell; it is not yet
-optimized for the requested benchmark scale.
+The current solver uses independent per-cell integration and sparse no-pivot
+factorization; further optimization and broader verification are still needed.

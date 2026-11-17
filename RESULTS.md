@@ -24,3 +24,14 @@ large gap reflects the current dense, independent-cell implementation.
 
 The same 100-cell gate also passed with gcc-15; largest relative difference
 was 3.59e-14 and one preliminary timed run took 19,356 ms.
+
+After adding sparse elimination and automatic species reordering, single runs
+of the 100-cell check took 424 ms with clang and 543 ms with gcc-15, versus
+219 ms for the clang reference. Both passed the final-state comparison (largest
+relative differences 4.18e-14 and 6.04e-14, respectively).
+
+At the requested scale (10,000 cells, seed 2026, 100 timed steps of 30 s,
+10 threads), one clang run took 42,002 ms; the clang reference with the same
+optimization flags took 27,426 ms. All 2,110,000 output values passed the gate;
+the largest relative difference was 1.77e-13. These are single measurements,
+not the specified median-of-five ranking measurements.

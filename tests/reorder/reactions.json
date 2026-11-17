@@ -1,0 +1,3 @@
+{"camp-data": [{"name":"test", "type":"MECHANISM", "reactions":[
+  {"type":"PHOTOLYSIS", "MUSICA name":"k", "reactants":{"A":{},"B":{}}, "products":{"C":{},"D":{}}}
+]}]}

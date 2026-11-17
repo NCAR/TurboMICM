@@ -25,7 +25,7 @@ ChemRosenbrockMethod chem_rosenbrock_three_stage(void)
 
 ChemRosenbrockOptions chem_rosenbrock_defaults(const double *atol)
 {
-    ChemRosenbrockOptions p = {1e-6, atol, 0, 0, 0, 0.2, 6, 0.9, 0.1, 1000};
+    ChemRosenbrockOptions p = {1e-6, atol, 0, 0, 0, 0.2, 6, 0.9, 0.1, 1000, NULL};
     return p;
 }
 
@@ -69,7 +69,8 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
         o->factor_min <= 0 || o->factor_max < o->factor_min || o->safety <= 0 ||
         !isfinite(o->rejection_factor) || o->rejection_factor <= 0 ||
         !isfinite(o->h_min) || !isfinite(o->h_max) || !isfinite(o->h_start) ||
-        o->h_min < 0 || o->h_max < 0 || o->h_start < 0)
+        o->h_min < 0 || o->h_max < 0 || o->h_start < 0 ||
+        (o->sparse_plan && chem_sparse_plan_size(o->sparse_plan) != n))
         return CHEM_SOLVE_INVALID;
     for (size_t i = 0; i < n; ++i)
         if (!isfinite(o->absolute_tolerance[i]) || !(o->absolute_tolerance[i] > 0)) return CHEM_SOLVE_INVALID;
@@ -99,7 +100,7 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
             for (size_t i = 0; i < n*n; ++i) matrix[i] = -matrix[i];
             for (size_t i = 0; i < n; ++i) matrix[i*n+i] += 1.0/(h*p->gamma0);
             ++stats->decompositions;
-            if (!factor(matrix, n)) { status = CHEM_SOLVE_SINGULAR; goto done; }
+            if (!(o->sparse_plan ? chem_sparse_factor(o->sparse_plan, matrix) : factor(matrix, n))) { status = CHEM_SOLVE_SINGULAR; goto done; }
             for (size_t s = 0; s < p->stages; ++s) {
                 double *ks = stage + s*n;
                 size_t offset = s*(s-1)/2;
@@ -114,7 +115,9 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
                     memcpy(stage+(s+1)*n, ks, n*sizeof(*ks));
                 for (size_t j = 0; j < s; ++j)
                     for (size_t i = 0; i < n; ++i) ks[i] += (p->c[offset+j]/h)*stage[j*n+i];
-                solve(matrix, n, ks); ++stats->solves;
+                if (o->sparse_plan) chem_sparse_solve(o->sparse_plan, matrix, ks);
+                else solve(matrix, n, ks);
+                ++stats->solves;
             }
             memcpy(next, y, n*sizeof(*next));
             memset(err, 0, n*sizeof(*err));

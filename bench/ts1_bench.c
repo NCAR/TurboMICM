@@ -156,6 +156,9 @@ int main(int argc, char **argv)
     if (!read_cells(argv[arg+3], cells, count)) { free(cells); free(storage); free(atol); return 1; }
     ChemRosenbrockMethod method = chem_rosenbrock_three_stage();
     ChemRosenbrockOptions options = chem_rosenbrock_defaults(atol);
+    ChemSparsePlan *plan = chem_sparse_plan_create(&generated_mechanism);
+    if (!plan) { fprintf(stderr, "cannot create sparse plan\n"); free(cells); free(storage); free(atol); return 1; }
+    options.sparse_plan = plan;
     omp_set_num_threads((int)threads);
 #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < count; ++i) {
@@ -196,5 +199,6 @@ int main(int argc, char **argv)
     }
     if (ok) printf("elapsed_ms=%.6f\ninternal_steps=%zu accepted=%zu rejected=%zu function_calls=%zu jacobian_updates=%zu decompositions=%zu solves=%zu\n",
         elapsed,total.steps,total.accepted,total.rejected,total.function_calls,total.jacobian_updates,total.decompositions,total.solves);
+    chem_sparse_plan_destroy(plan);
     free(cells); free(storage); free(atol); return ok ? 0 : 1;
 }

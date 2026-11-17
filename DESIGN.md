@@ -10,9 +10,9 @@ separates the mechanism from the kernel and leaves the choice of solver open.
 
 `src/rosenbrock.c` provides a single-cell autonomous ODE solver using callback
 functions for forcing and Jacobian, configurable Rosenbrock coefficients, and
-reference step-size defaults. It uses dense no-pivot Mozart elimination. The solver clamps negative ODE values after each public solve, as the reference
+reference step-size defaults. It supports dense or sparse no-pivot Mozart elimination. The solver clamps negative ODE values after each public solve, as the reference
 CPU solver does. The current implementation allocates scratch space per solve; multi-cell scheduling,
-sparse matrices, other solver families, and constraints are not yet implemented.
+compact sparse matrix storage, other solver families, and constraints are not yet implemented.
 
 This is a starting point, not the final architecture.
 
@@ -25,5 +25,8 @@ the configuration extensions.
 The preliminary benchmark schedules individual cells with OpenMP static
 scheduling; `--threads` sets the thread count (default: OpenMP maximum). Each
 cell currently owns independent solver state and error control. Timings exclude
-input, rate setup, warm-up, and output. Dense factorization is a known scaling
-limitation and should be replaced by a mechanism-generic sparse implementation.
+input, rate setup, warm-up, and output. A mechanism-generic symbolic plan calculates fill once, then skips structural
+zeros during factorization and triangular solves. Matrix values still occupy
+dense row-major storage. The `--reorder` generator option applies a diagonal
+Markowitz permutation before emitting the mechanism; the tests exercise that
+path with a separate small mechanism.

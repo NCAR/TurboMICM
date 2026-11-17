@@ -7,7 +7,31 @@ from config import read_mechanism, read_document
 CONVERSION = 6.02214076e17  # molecules cm-3 per mol m-3
 
 
-def generate(path):
+def markowitz_order(count, rows, reactants, products):
+    """Choose a generic symmetric permutation to reduce no-pivot LU fill."""
+    edges = [{i} for i in range(count)]
+    for rb, rn, pb, pn in rows:
+        inputs = set(reactants[rb:rb+rn])
+        outputs = inputs | {species for species, _ in products[pb:pb+pn]}
+        for row in outputs:
+            edges[row].update(inputs)
+    active = set(range(count))
+    order = []
+    while active:
+        def cost(i):
+            return ((len(edges[i] & active)-1) *
+                    (sum(i in edges[j] for j in active)-1), i)
+        pivot = min(active, key=cost)
+        order.append(pivot)
+        active.remove(pivot)
+        cols = edges[pivot] & active
+        for row in active:
+            if pivot in edges[row]:
+                edges[row].update(cols)
+    return order
+
+
+def generate(path, reorder=False):
     species, source_reactions = read_mechanism(path)
     root = read_document(path)
     third_bodies = {s['name'] for s in species if s.get('third body', False)}
@@ -84,6 +108,13 @@ def generate(path):
         else:
             raise ValueError(f'unsupported reaction type: {typ}')
 
+    if reorder:
+        order = markowitz_order(len(species), rows, reactants, products)
+        inverse = {old: new for new, old in enumerate(order)}
+        species = [species[old] for old in order]
+        reactants = [inverse[i] for i in reactants]
+        products = [(inverse[i], y) for i, y in products]
+
     def number(value):
         value = float(value)
         if not math.isfinite(value):
@@ -109,8 +140,9 @@ def generate(path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--reorder', action='store_true')
     parser.add_argument('config')
     parser.add_argument('output')
     args = parser.parse_args()
     with open(args.output, 'w', encoding='utf-8') as out:
-        out.write(generate(args.config))
+        out.write(generate(args.config, reorder=args.reorder))
