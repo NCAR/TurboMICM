@@ -33,6 +33,11 @@ Named bulk setters check every label and vector length before changing a state.
 Parameterized reactants may supply linear functions of temperature, pressure,
 and air density; their values multiply the associated reaction rate during a
 rate update. A stable optional rate index groups reaction IDs by rate kind.
+`chem_system.h` supplies owned, typed species metadata and borrowed phase and
+system views for hand-built mechanisms. Phase export creates the runtime
+species array, excluding parameterized species. Checked state construction
+can reject species unused by native reactions; extended mechanisms may instead
+use their model declarations when validating dependencies.
 
 `chem_matrix.h` provides typed-by-element-size dense matrices with row-major or
 grouped storage, checked row and column operations, reusable matrix functions,

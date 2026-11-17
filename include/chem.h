@@ -195,6 +195,10 @@ int chem_rate_calculate(const ChemRate *rate, double temperature, double pressur
                         double air_density, const double *parameters, size_t parameter_count,
                         double *result);
 ChemState *chem_state_create(const ChemMechanism *mechanism, size_t cells);
+/* Checked construction can reject species that occur in no native reaction.
+ * Use the extended constructor directly when external models own dependencies. */
+int chem_validate_reaction_species(const ChemMechanism *mechanism, int ignore_unused);
+int chem_state_build(ChemState **state, const ChemMechanism *mechanism, size_t cells, int ignore_unused);
 ChemState *chem_state_create_constrained(const ChemMechanism *mechanism, const ChemConstraint *constraints,
                                          size_t constraint_count, size_t cells);
 ChemState *chem_state_create_extended(const ChemMechanism *mechanism, const ChemConstraint *constraints,
@@ -268,6 +272,7 @@ const char *chem_error_string(int code);
 enum { CHEM_OK = 0, CHEM_INVALID = 1, CHEM_MEMORY = 2, CHEM_SINGULAR = 3,
        CHEM_TOO_MANY_STEPS = 4, CHEM_STEP_TOO_SMALL = 5, CHEM_NONFINITE = 6,
        CHEM_MISSING_DIFFUSION = 7, CHEM_MISSING_MOLECULAR_WEIGHT = 8,
-       CHEM_UNCONVERGED = 9, CHEM_CONSTRAINT_INITIALIZATION_FAILED = 10 };
+       CHEM_UNCONVERGED = 9, CHEM_CONSTRAINT_INITIALIZATION_FAILED = 10,
+       CHEM_PROPERTY_NOT_FOUND = 11, CHEM_INVALID_PROPERTY_TYPE = 12, CHEM_UNUSED_SPECIES = 13 };
 
 #endif

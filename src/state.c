@@ -314,6 +314,9 @@ const char *chem_error_string(int code)
     case CHEM_MISSING_MOLECULAR_WEIGHT: return "surface molecular weight is missing";
     case CHEM_UNCONVERGED: return "backward Euler accepted an unconverged integration";
     case CHEM_CONSTRAINT_INITIALIZATION_FAILED: return "Constraint Initialization Failed";
+    case CHEM_PROPERTY_NOT_FOUND: return "species property not found";
+    case CHEM_INVALID_PROPERTY_TYPE: return "invalid species property type";
+    case CHEM_UNUSED_SPECIES: return "species does not occur in a reaction";
     default: return "unknown error";
     }
 }

@@ -63,3 +63,9 @@ Optional model species and parameters are appended by a composition step;
 duplicate names are rejected. Model callbacks and their contexts are borrowed,
 so callers control their lifetime and can use independent contexts for different
 symbolic plans.
+
+Species metadata uses explicit tagged properties and deep copies in C. Phase
+and system objects are borrowed views; an export operation creates the state
+species array, preserving property values needed by the runtime. Strict
+unused-species validation is an opt-in check of native reactions, because an
+external callback can also use a species without a native reaction.

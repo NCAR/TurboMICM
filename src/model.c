@@ -4,6 +4,44 @@
 #include <stdlib.h>
 #include <string.h>
 
+int chem_validate_reaction_species(const ChemMechanism *m,int ignore_unused)
+{
+    if (!m || !m->species_count || !m->species || (m->reaction_count && !m->reactions) ||
+        (m->parameter_count && (!m->parameter_names || !m->parameter_defaults))) return CHEM_INVALID;
+    for (size_t i=0;i<m->species_count;++i) if (!m->species[i].name) return CHEM_INVALID;
+    unsigned char *used=ignore_unused ? NULL : calloc(m->species_count,1);
+    if (!ignore_unused && !used) return CHEM_MEMORY;
+    for (size_t i=0;i<m->reaction_count;++i) {
+        const ChemReaction *r=&m->reactions[i];
+        if ((r->reactant_count && !m->reactants) || (r->product_count && !m->products) ||
+            r->reactant_count>SIZE_MAX-r->reactant_start || r->product_count>SIZE_MAX-r->product_start) {
+            free(used); return CHEM_INVALID;
+        }
+        for (size_t j=0;j<r->reactant_count;++j) {
+            int index=m->reactants[r->reactant_start+j];
+            if (index<0 || (size_t)index>=m->species_count) { free(used); return CHEM_INVALID; }
+            if (used) used[index]=1;
+        }
+        for (size_t j=0;j<r->product_count;++j) {
+            int index=m->products[r->product_start+j].species;
+            if (index<0 || (size_t)index>=m->species_count) { free(used); return CHEM_INVALID; }
+            if (used) used[index]=1;
+        }
+    }
+    if (used) for (size_t i=0;i<m->species_count;++i) if (!used[i]) { free(used); return CHEM_UNUSED_SPECIES; }
+    free(used); return CHEM_OK;
+}
+
+int chem_state_build(ChemState **state,const ChemMechanism *m,size_t cells,int ignore_unused)
+{
+    if (!state || !cells) return CHEM_INVALID;
+    int status=chem_validate_reaction_species(m,ignore_unused);
+    if (status) return status;
+    ChemState *created=chem_state_create(m,cells);
+    if (!created) return CHEM_INVALID;
+    *state=created; return CHEM_OK;
+}
+
 void chem_mechanism_composition_destroy(ChemMechanismComposition *c)
 {
     if (!c) return;
