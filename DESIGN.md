@@ -52,9 +52,13 @@ strictly lower or upper entries. Matrix values still occupy
 dense row-major storage. Sparse-plan clearing and sign changes visit only
 structural and fill positions; the benchmark accumulates its Jacobian into
 those cleared entries. The plan must cover every possible derivative. The
-`--reorder` generator option applies a diagonal
-Markowitz permutation before emitting the mechanism; the tests exercise that
-path with a separate small mechanism.
+`--reference-order` generator option stably groups reactions by rate type
+and applies the reference builder's Markowitz ordering to the unshifted
+Jacobian. This is the benchmark default and improves agreement on highly
+sensitive stiff inputs. `--reorder` instead applies diagonal Markowitz
+ordering; both paths are mechanism-generic and covered by generated-mechanism
+tests. `TS1_ORDER_FLAGS` selects the benchmark generator option at build time;
+run `make clean` before changing it.
 
 `src/backward_euler.c` implements the implicit Newton iteration and reference
 step-reduction sequence. Its grouped interface shares convergence and step

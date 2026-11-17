@@ -42,6 +42,15 @@ class Ts1Translation(unittest.TestCase):
         for key, label in [('temperature [K]', 'temperature'), ('pressure [Pa]', 'pressure')]:
             value = re.search(r'generated_default_' + label + r' = ([^;]+);', output).group(1)
             self.assertEqual(float(value), conditions[key])
+        ordered = generate(ROOT/'configs/ts1/config.json', reference_order=True)
+        names = json.loads('[' + re.search(r'generated_species\[\] = \{(.*?)\};', ordered).group(1) + ']')
+        with (ROOT/'tests/reference/ts1_missing_conditions.csv').open(newline='') as stream:
+            reference_names = next(csv.reader(stream))[2:]
+        self.assertEqual(names, reference_names)
+        rate_data = re.search(r'generated_rates\[\] = \{(.*?)\};', ordered).group(1)
+        rate_types = re.findall(r'CHEM_RATE_([A-Z_0-9]+)', rate_data)
+        ranks = {'ARRHENIUS': 0, 'TROE': 1, 'USER': 8, 'SURFACE': 9}
+        self.assertEqual([ranks[kind] for kind in rate_types], sorted(ranks[kind] for kind in rate_types))
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,7 @@
 CC = clang
 OPTFLAGS ?= -O3 -DNDEBUG
 CONDA ?= conda
+TS1_ORDER_FLAGS ?= --reference-order
 CFLAGS = $(OPTFLAGS) -std=c11 -Wall -Wextra -Wpedantic -Iinclude
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
@@ -121,6 +122,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_callback
 	./build/test_rate_extensions
 	./build/test_generated_rate_extensions
+	./build/test_generated_reference_rates
 	./build/test_falloff
 	./build/test_sparse
 	./build/test_sparse_matrix
@@ -167,7 +169,7 @@ build/solver_configuration: examples/solver_configuration.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
 check: build/solver_configuration
 build/ts1.c: tools/generate.py tools/config.py configs/ts1/config.json configs/ts1/species.json configs/ts1/reactions.json | build
-	.conda/bin/python tools/generate.py --reorder configs/ts1/config.json $@
+	.conda/bin/python tools/generate.py $(TS1_ORDER_FLAGS) configs/ts1/config.json $@
 build/test_ts1_rates: tests/test_ts1_rates.c build/ts1.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_ts1_rates.c build/ts1.c build/libchem.a -lm -o $@
 check: build/test_ts1_rates
@@ -226,6 +228,11 @@ build/extended_rates.c: tools/generate.py tools/config.py tests/rate_extensions/
 build/test_generated_rate_extensions: tests/test_generated_rate_extensions.c build/extended_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_generated_rate_extensions.c build/extended_rates.c build/libchem.a -lm -o $@
 check: build/test_generated_rate_extensions
+build/reference_rates.c: tools/generate.py tools/config.py tests/rate_extensions/config.json tests/rate_extensions/species.json tests/rate_extensions/reactions.json | build
+	.conda/bin/python tools/generate.py --reference-order tests/rate_extensions/config.json $@
+build/test_generated_reference_rates: tests/test_generated_rate_extensions.c build/reference_rates.c build/libchem.a
+	$(CC) $(CFLAGS) -DREFERENCE_ORDER tests/test_generated_rate_extensions.c build/reference_rates.c build/libchem.a -lm -o $@
+check: build/test_generated_reference_rates
 build/test_analytical_methods: tests/test_analytical_methods.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_analytical_methods.c build/libchem.a -lm -o $@
 check: build/test_analytical_methods

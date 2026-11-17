@@ -69,3 +69,10 @@ template dispatch equivalent. C uses explicit row-view and group-span APIs;
 the reporter marks those five cases N/A and separately checks runtime vector
 use. The compatibility version functions return the version reported by the
 reference checkout's version header; they do not claim this port is complete.
+
+For the benchmark, generated reaction and state order defaults to the reference
+builder's ordering. The same option works for other supported configurations.
+On a very stiff default-rate input, reproducing this order gives identical
+results with the same compiler; alternate valid orderings amplify roundoff.
+`TS1_ORDER_FLAGS=--reorder` retains the diagonal Markowitz alternative for
+performance experiments.

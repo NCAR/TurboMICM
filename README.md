@@ -22,7 +22,9 @@ Build the TS1 driver with `make bench`, then run
 without it, the benchmark uses static scheduling. `make check-ts1` compares 100 cells and 100 steps with the
 supplied reference, and `make micm-ref` builds the independent timing reference.
 The current solver uses independent per-cell integration and sparse no-pivot
-factorization.
+factorization. Its default generated ordering follows the reference process
+and state order. To try the alternate diagonal Markowitz ordering, run
+`make clean` and rebuild with `TS1_ORDER_FLAGS=--reorder`.
 
 `make test-cpu` reports every ID from the reference case list. Currently
 675 cases pass and five C++ template-dispatch cases are N/A. The focused

@@ -38,9 +38,43 @@ def markowitz_pattern(pattern):
     return order
 
 
-def generate(path, reorder=False):
+def reference_markowitz_order(count, rows, reactants, products):
+    """Match the reference builder's ordering of the unshifted Jacobian."""
+    edges = [set() for _ in range(count)]
+    for rb, rn, pb, pn in rows:
+        inputs = set(reactants[rb:rb+rn])
+        for row in inputs | {species for species, _ in products[pb:pb+pn]}:
+            edges[row].update(inputs)
+    active = set(range(count))
+    order = []
+    while active:
+        def cost(i):
+            value = (len(edges[i] & active)-1) * (sum(i in edges[j] for j in active)-1)
+            # The reference uses unsigned indices. A negative product wraps
+            # above every nonnegative cost; more negative products sort first.
+            return (value < 0, value, i)
+        pivot = min(active, key=cost)
+        order.append(pivot)
+        active.remove(pivot)
+        cols = edges[pivot] & active
+        for row in active:
+            if pivot in edges[row]:
+                edges[row].update(cols)
+    return order
+
+
+def generate(path, reorder=False, reference_order=False):
     species, source_reactions = read_mechanism(path)
     root = read_document(path)
+    if reference_order:
+        # Stable type grouping is also used by the reference process builder.
+        rate_order = {'ARRHENIUS': 0, 'TROE': 1, 'TERNARY_CHEMICAL_ACTIVATION': 2,
+                      'TERNARY_CHEMICAL_ACTIVATION_JPL19': 3, 'BRANCHED': 4,
+                      'TUNNELING': 5, 'TAYLOR_SERIES': 6, 'REVERSIBLE': 7,
+                      'USER_DEFINED': 8, 'PHOTOLYSIS': 8, 'FIRST_ORDER_LOSS': 8,
+                      'EMISSION': 8, 'SURFACE': 9, 'CALLBACK': 10}
+        source_reactions.sort(key=lambda reaction: rate_order.get(reaction['type'], 11))
+        reorder = True
     all_species_names = [s['name'] for s in species]
     used_species = set()
     parameterized = {}
@@ -160,7 +194,8 @@ def generate(path, reorder=False):
             raise ValueError(f'unsupported reaction type: {typ}')
 
     if reorder:
-        order = markowitz_order(len(species), rows, reactants, products)
+        order_function = reference_markowitz_order if reference_order else markowitz_order
+        order = order_function(len(species), rows, reactants, products)
         inverse = {old: new for new, old in enumerate(order)}
         species = [species[old] for old in order]
         reactants = [inverse[i] for i in reactants]
@@ -203,8 +238,9 @@ def generate(path, reorder=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--reorder', action='store_true')
+    parser.add_argument('--reference-order', action='store_true')
     parser.add_argument('config')
     parser.add_argument('output')
     args = parser.parse_args()
     with open(args.output, 'w', encoding='utf-8') as out:
-        out.write(generate(args.config, reorder=args.reorder))
+        out.write(generate(args.config, reorder=args.reorder, reference_order=args.reference_order))
