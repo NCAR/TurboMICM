@@ -5,7 +5,7 @@ mass-action library. `make check CC=clang` or `make check CC=gcc-15` builds and
 runs the current focused tests; the tests read tutorial configuration input from
 the adjacent `micm` checkout. `OPTFLAGS` can be supplied to make.
 
-A preliminary single-cell three-stage Rosenbrock solver is available through
+A preliminary single-cell Rosenbrock solver with five parameter sets is available through
 `include/rosenbrock.h`. The required full test suite, remaining rate types, additional
 solver features, and TS1 benchmark remain to be implemented. Run `make clean`
 before switching compilers.
@@ -23,8 +23,8 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently only
-30 cases have been ported, so the target intentionally fails and labels the
-other 650 as unported. The focused `make check` tests cover additional behavior
+32 cases have been ported, so the target intentionally fails and labels the
+other 648 as unported. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
 The single-cell backward Euler API is declared in `include/backward_euler.h`.

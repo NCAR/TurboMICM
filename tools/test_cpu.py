@@ -41,6 +41,8 @@ CASES = {
         'troe_rate_constant:TroeRateConstant.AnalyticalTroeExampleAB',
         'troe_rate_constant:TroeRateConstant.AnalyticalTroeExampleBC',
     ]},
+    'rosenbrock:RosenbrockSolver.StandardNormalizedError': ('build/test_normalized_error', 'normalized error'),
+    'rosenbrock:RosenbrockSolver.VectorNormalizedError': ('build/test_normalized_error', 'normalized error'),
     'backward_euler:BackwardEuler.CanCallSolve': ('build/test_backward_euler', 'chain solve'),
     'backward_euler:BackwardEuler.IsConverged': ('build/test_backward_euler', 'convergence thresholds'),
 }

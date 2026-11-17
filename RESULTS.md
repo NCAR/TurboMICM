@@ -45,3 +45,8 @@ The latest case report has 30 passing rate and backward-Euler cases and 650
 unported failures with each compiler. New reversible, Taylor-series, JPL-19,
 branching, falloff, and surface calculations also have direct reference-value
 checks; a separate fixture exercises generation of the added rate families.
+
+The latest case report has 32 passing cases and 648 unported failures with both
+compilers. All five Rosenbrock methods pass the 999-step analytical photolysis
+and stiff-exchange trajectories at the reference tolerances using both dense
+and sparse Mozart solves. This does not yet cover Doolittle or constrained DAEs.

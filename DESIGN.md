@@ -9,8 +9,11 @@ one factor, so zero concentrations are handled without division. The interface
 separates the mechanism from the kernel and leaves the choice of solver open.
 
 `src/rosenbrock.c` provides a single-cell autonomous ODE solver using callback
-functions for forcing and Jacobian, configurable Rosenbrock coefficients, and
-reference step-size defaults. It supports dense or sparse no-pivot Mozart elimination. The solver clamps negative ODE values after each public solve, as the reference
+functions for forcing and Jacobian, five reference Rosenbrock parameter sets,
+and reference step-size defaults. To add a parameter set, construct a
+`ChemRosenbrockMethod` with stage coefficients, evaluation flags, gamma, and
+error order; the existing integrator consumes it. The two DA parameter sets are
+currently usable only for ODEs because algebraic constraints are not implemented. It supports dense or sparse no-pivot Mozart elimination. The solver clamps negative ODE values after each public solve, as the reference
 CPU solver does. The current implementation allocates scratch space per solve; multi-cell scheduling,
 compact sparse matrix storage, additional solver features, and constraints are not yet implemented.
 

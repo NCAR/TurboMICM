@@ -35,6 +35,20 @@ int main(void)
     assert(stats.solves == 3*stats.decompositions);
     assert(stats.jacobian_updates == stats.decompositions);
     assert(chem_rosenbrock_solve(2, y, -1, rhs, jac, &d, &method, &options, &stats) == CHEM_SOLVE_INVALID);
+    ChemRosenbrockMethod methods[] = {
+        chem_rosenbrock_two_stage(), chem_rosenbrock_three_stage(),
+        chem_rosenbrock_four_stage(), chem_rosenbrock_four_stage_da(),
+        chem_rosenbrock_six_stage_da()
+    };
+    options.relative_tolerance = 1e-6;
+    options.max_steps = 100000;
+    for (size_t i=0; i<sizeof(methods)/sizeof(methods[0]); ++i) {
+        y[0]=1; y[1]=0;
+        assert(chem_rosenbrock_solve(2,y,1,rhs,jac,&d,&methods[i],&options,&stats) == CHEM_SOLVE_OK);
+        assert(fabs(y[0]-exp(-2)) < 2e-6);
+        assert(fabs(y[0]+y[1]-1) < 1e-12);
+        assert(stats.solves == methods[i].stages*stats.decompositions);
+    }
     puts("Rosenbrock decay PASS");
     return 0;
 }

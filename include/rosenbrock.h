@@ -29,7 +29,16 @@ typedef enum {
     CHEM_SOLVE_NONFINITE, CHEM_SOLVE_UNCONVERGED
 } ChemSolveStatus;
 
+ChemRosenbrockMethod chem_rosenbrock_two_stage(void);
 ChemRosenbrockMethod chem_rosenbrock_three_stage(void);
+ChemRosenbrockMethod chem_rosenbrock_four_stage(void);
+/* These parameter sets can also solve ODEs; constraints are not yet supported. */
+ChemRosenbrockMethod chem_rosenbrock_four_stage_da(void);
+ChemRosenbrockMethod chem_rosenbrock_six_stage_da(void);
+/* Row-major cell-by-variable arrays; tolerances are per variable. */
+double chem_rosenbrock_normalized_error(size_t cells, size_t variables,
+    const double *old_state, const double *new_state, const double *errors,
+    const double *absolute_tolerance, double relative_tolerance);
 ChemRosenbrockOptions chem_rosenbrock_defaults(const double *absolute_tolerance);
 /* Modifies y in place and clamps negative values after solving. Each call
    resets the internal step size, as in the reference CPU solver. */
