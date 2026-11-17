@@ -27,6 +27,9 @@ mechanism and constraint arrays and callback contexts are borrowed and must
 outlive their states. Mutable arrays returned by the state API are per state.
 The returned species and parameter arrays contain one value per cell; the
 absolute-tolerance array contains one value per species.
+`chem_state_clone` copies mutable values and rate data while sharing the
+immutable symbolic plan; callback contexts and mechanism data remain borrowed.
+Named bulk setters check every label and vector length before changing a state.
 
 ## Numerical components
 

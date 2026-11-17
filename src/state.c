@@ -98,6 +98,28 @@ ChemState *chem_state_create_constrained(const ChemMechanism *m, const ChemConst
 ChemState *chem_state_create_like(const ChemState *s, size_t cells)
 { return s ? create_state(s->mechanism, cells, NULL, s->constraint_count, s) : NULL; }
 
+ChemState *chem_state_clone(const ChemState *s)
+{
+    if (!s) return NULL;
+    ChemState *copy=chem_state_create_like(s,s->cells);
+    if (!copy) return NULL;
+    size_t cells=s->cells, species=s->mechanism->species_count, parameters=s->mechanism->parameter_count;
+    size_t reactions=s->mechanism->reaction_count;
+    memcpy(copy->values,s->values,species*cells*sizeof(*s->values));
+    memcpy(copy->parameters,s->parameters,parameters*cells*sizeof(*s->parameters));
+    memcpy(copy->temperatures,s->temperatures,cells*sizeof(*s->temperatures));
+    memcpy(copy->pressures,s->pressures,cells*sizeof(*s->pressures));
+    memcpy(copy->air_densities,s->air_densities,cells*sizeof(*s->air_densities));
+    memcpy(copy->explicit_air_density,s->explicit_air_density,cells*sizeof(*s->explicit_air_density));
+    memcpy(copy->absolute_tolerances,s->absolute_tolerances,species*sizeof(*s->absolute_tolerances));
+    memcpy(copy->constraint_constants,s->constraint_constants,s->constraint_count*cells*sizeof(*s->constraint_constants));
+    memcpy(copy->rates,s->rates,reactions*cells*sizeof(*s->rates));
+    memcpy(copy->rate_functions,s->rate_functions,reactions*sizeof(*s->rate_functions));
+    memcpy(copy->rate_contexts,s->rate_contexts,reactions*sizeof(*s->rate_contexts));
+    copy->linear_solver=s->linear_solver; copy->linear_solver_context=s->linear_solver_context;
+    return copy;
+}
+
 void chem_state_free(ChemState *s)
 {
     if (!s) return;
@@ -115,6 +137,8 @@ void chem_state_free(ChemState *s)
 
 size_t chem_cell_count(const ChemState *s) { return s ? s->cells : 0; }
 double *chem_species_values(ChemState *s, size_t i)
+{ return s && i < s->mechanism->species_count ? s->values + i*s->cells : NULL; }
+const double *chem_species_values_const(const ChemState *s, size_t i)
 { return s && i < s->mechanism->species_count ? s->values + i*s->cells : NULL; }
 double *chem_parameter_values(ChemState *s, size_t i)
 { return s && i < s->mechanism->parameter_count ? s->parameters + i*s->cells : NULL; }
@@ -160,6 +184,38 @@ int chem_find_parameter(const ChemMechanism *m, const char *name)
     for (size_t i = 0; i < m->parameter_count; ++i)
         if (!strcmp(name, m->parameter_names[i])) return (int)i;
     return -1;
+}
+
+static int set_named(ChemState *s, const ChemNamedValues *items, size_t count, int parameters)
+{
+    if (!s || (count && !items)) return CHEM_INVALID;
+    for (size_t i=0;i<count;++i) {
+        int index=parameters ? chem_find_parameter(s->mechanism,items[i].name) :
+                               chem_find_species(s->mechanism,items[i].name);
+        if (index<0 || !items[i].values || items[i].count!=s->cells) return CHEM_INVALID;
+    }
+    for (size_t i=0;i<count;++i) {
+        int index=parameters ? chem_find_parameter(s->mechanism,items[i].name) :
+                               chem_find_species(s->mechanism,items[i].name);
+        double *target=parameters ? s->parameters+(size_t)index*s->cells : s->values+(size_t)index*s->cells;
+        memmove(target,items[i].values,s->cells*sizeof(*target));
+    }
+    return CHEM_OK;
+}
+
+int chem_set_concentrations(ChemState *s, const ChemNamedValues *items, size_t count)
+{ return set_named(s,items,count,0); }
+
+int chem_set_parameters(ChemState *s, const ChemNamedValues *items, size_t count)
+{ return set_named(s,items,count,1); }
+
+int chem_set_parameters_row_major(ChemState *s, const double *values, size_t cells, size_t parameters)
+{
+    if (!s || cells!=s->cells || parameters!=s->mechanism->parameter_count ||
+        (cells && parameters && !values)) return CHEM_INVALID;
+    for (size_t c=0;c<cells;++c) for (size_t i=0;i<parameters;++i)
+        s->parameters[i*cells+c]=values[c*parameters+i];
+    return CHEM_OK;
 }
 
 int chem_override_rate_function(ChemState *s, const char *label, ChemRateFunction function, void *context)

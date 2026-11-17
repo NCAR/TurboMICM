@@ -98,6 +98,7 @@ typedef struct {
 } ChemBackwardEuler;
 
 typedef struct ChemState ChemState;
+typedef struct { const char *name; const double *values; size_t count; } ChemNamedValues;
 
 /* Matrix entries use sparse row order; values[entry*cells+cell] holds one
  * value per cell. lookup[row*species_count+column] is -1 for structural zero.
@@ -138,10 +139,13 @@ int chem_constraints_apply(const ChemState *state, size_t cell, const double *va
 int chem_initialize_constraints(ChemState *state, const ChemRosenbrock *parameters, ChemStats *stats);
 /* Share the immutable symbolic linear-solver plan with an existing state. */
 ChemState *chem_state_create_like(const ChemState *state, size_t cells);
+/* Deep-copy mutable state; immutable mechanism data and callback contexts remain borrowed. */
+ChemState *chem_state_clone(const ChemState *state);
 void chem_state_free(ChemState *state);
 size_t chem_cell_count(const ChemState *state);
 /* Each returned array has chem_cell_count() entries. */
 double *chem_species_values(ChemState *state, size_t species);
+const double *chem_species_values_const(const ChemState *state, size_t species);
 double *chem_parameter_values(ChemState *state, size_t parameter);
 double *chem_temperatures(ChemState *state);
 double *chem_pressures(ChemState *state);
@@ -157,6 +161,12 @@ int chem_set_air_density(ChemState *state, size_t cell, double density);
 int chem_use_ideal_air_density(ChemState *state, size_t cell);
 int chem_find_species(const ChemMechanism *mechanism, const char *name);
 int chem_find_parameter(const ChemMechanism *mechanism, const char *name);
+/* Named inputs must contain exactly one value per cell. Bulk setters validate
+ * every entry before changing any values. Row-major parameters are indexed
+ * as values[cell * parameter_count + parameter]. */
+int chem_set_concentrations(ChemState *state, const ChemNamedValues *items, size_t count);
+int chem_set_parameters(ChemState *state, const ChemNamedValues *items, size_t count);
+int chem_set_parameters_row_major(ChemState *state, const double *values, size_t cells, size_t parameter_count);
 int chem_override_rate_function(ChemState *state, const char *label, ChemRateFunction function, void *context);
 /* NULL restores the default in-place Mozart solver; callback context is borrowed. */
 int chem_set_linear_solver(ChemState *state, const ChemLinearSolver *solver, void *context);

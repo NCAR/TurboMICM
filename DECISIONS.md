@@ -43,3 +43,8 @@ Randomized linear-algebra cases use a fixed C random sequence to generate the
 same matrix sizes and distributions as the reference tests. This avoids relying
 on implementation-specific C++ random-engine sequences while checking the same
 factorization and solve residuals at the reference tolerances.
+
+The C API keeps relative tolerances in the selected solver parameters and
+per-species absolute tolerances in the state. C state copies use an explicit
+deep clone, while transferring ownership of a state uses an ordinary pointer
+assignment. Named setters return errors instead of throwing exceptions.
