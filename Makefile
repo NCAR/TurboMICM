@@ -54,7 +54,10 @@ build/matrix.o: src/matrix.c include/matrix.h | build
 build/sparse.o: src/sparse.c include/sparse.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/libchem.a: build/chem.o build/rosenbrock.o build/constraint.o build/model.o build/matrix.o build/sparse.o
+build/state.o: src/state.c include/state.h include/matrix.h include/chem.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/libchem.a: build/chem.o build/rosenbrock.o build/constraint.o build/model.o build/matrix.o build/sparse.o build/state.o
 	ar rcs $@ $^
 
 cpu: bin/ts1_bench_cpu
@@ -82,6 +85,9 @@ build/test_lu_cases: tests/test_lu_cases.c build/libchem.a
 build/test_grouped_views: tests/test_grouped_views.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
+build/test_state_cases: tests/test_state_cases.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
 build/test_sparse_function_cases: tests/test_sparse_function_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
@@ -101,7 +107,7 @@ build/test_cases: tests/test_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
 test-cpu:
-	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/test_sparse_remaining build/test_lu_cases build/test_grouped_views build/tutorial_no_user build/tutorial_user
+	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/test_sparse_remaining build/test_lu_cases build/test_grouped_views build/test_state_cases build/tutorial_no_user build/tutorial_user
 	@$(PYTHON) tools/test_cpu.py
 
 build/test_dae: tests/test_dae.c build/libchem.a

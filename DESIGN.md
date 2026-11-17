@@ -18,6 +18,9 @@ compressed row and column layouts, grouped blocks, and block functions. Function
 expected column shapes and validate row and vector sizes on each invocation.
 Dense and sparse group views expose contiguous active entries; a partial group's
 count excludes padded entries. Mutable and const views have distinct C types.
+`state.h` stores per-cell conditions, variables, custom parameters, and rate
+constants; names are borrowed while data and tolerances are owned. Bulk
+setters validate all labels and dimensions before changing the state.
 
 Rate constants, forcing, and Jacobian evaluation are separate from the solver.
 `ChemRosenbrockParameters` contains stage coefficients and control parameters;
