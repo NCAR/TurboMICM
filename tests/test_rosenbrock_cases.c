@@ -57,6 +57,24 @@ static int tolerances(void)
     }
     chem_species_free(&foo);chem_species_free(&bar);return ok;
 }
+static int rejected_step(void)
+{
+    const char *names[]={"foo","bar","baz","quz","quuz"};
+    ChemTerm rs[]={{0,1},{2,1},{1,1},{3,1}},ps[]={{1,1},{4,2.4},{0,1},{3,1.4}};
+    ChemReaction reactions[]={
+        {.type=CHEM_ARRHENIUS,.reactant_count=2,.product_count=2,.p={2e-11,0,110,300}},
+        {.type=CHEM_ARRHENIUS,.reactant_begin=2,.reactant_count=1,.product_begin=2,.product_count=2,.p={1e-6,0,0,300}},
+        {.type=CHEM_ARRHENIUS,.reactant_begin=3,.reactant_count=1,.p={3.5e-6,0,0,300}}
+    };
+    ChemMechanism m={.species_count=5,.reaction_count=3,.species_names=names,.reactions=reactions,.reactants=rs,.products=ps};
+    ChemWorkspace *a=chem_workspace_create(&m),*b=chem_workspace_create(&m);if(!a || !b){chem_workspace_free(a);chem_workspace_free(b);return 0;}
+    ChemWorkspace *group[]={b};ChemConditions conditions={298.15,101325,0,0};double rates[3],x[]={1e12,1e12,1e12,1e12,1e12},y[]={1e12,1e12,1e12,1e12,1e12};
+    ChemRosenbrockParameters p=chem_rosenbrock_three_stage();p.h_start=1e3;ChemStatistics sa,sb;
+    int ok=!chem_rate_constants(&m,conditions,NULL,rates) && !chem_rosenbrock_solve(&m,a,&p,conditions,rates,1e3,x,&sa) &&
+        !chem_rosenbrock_solve_group(&m,group,1,&p,&conditions,rates,1e3,y,&sb);
+    if(ok && (sa.internal_steps-sa.accepted<2 || sa.internal_steps!=sb.internal_steps || sa.accepted!=sb.accepted || sa.rejected!=sb.rejected))ok=0;
+    chem_workspace_free(a);chem_workspace_free(b);return ok;
+}
 int main(void)
 {
     int standard=1,vector=1,standard_norm=1,vector_norm=1,standard_constraint=1,vector_constraint=1;
@@ -73,5 +91,6 @@ int main(void)
     printf("rosenbrock:RosenbrockSolver.VectorNormalizedError %d\n",vector_norm);
     printf("rosenbrock:RosenbrockSolver.StandardNormalizedErrorWithConstraints %d\n",standard_constraint);
     printf("rosenbrock:RosenbrockSolver.VectorNormalizedErrorWithConstraints %d\n",vector_constraint);
+    printf("rosenbrock:RosenbrockSolver.RejectedStepAlphaMatchesInPlaceSolver %d\n",rejected_step());
     return 0;
 }

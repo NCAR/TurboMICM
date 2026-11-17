@@ -1,5 +1,6 @@
 #include "chem.h"
 #include "sparse.h"
+#include "state.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -87,6 +88,98 @@ static int solve(double scale,int random)
     }
     chem_workspace_free(w);return ok;
 }
+/* Independent net stoichiometry used as the reference for the reaction-set
+ * forcing and derivative checks. Rows for the five carrier species are zero. */
+static const double net[4][7]={{-1,-1,0,0,0,1,0},{1,1,-1,-1,2,0,1},{0,0,2,-1,-1,1,1},{0,0,-1,1,0,-1,-1}};
+static void reference_force_jacobian(const double *k,const double *y,double *f,double *j)
+{
+    double flux[]={k[0]*y[4]*y[5],k[1]*y[5]*y[7],k[2]*y[6]*y[8],k[3]*y[0]*y[6]*y[7],k[4]*y[7],k[5]*y[8],k[6]*y[8]};
+    double d[7][9]={{0}};
+    d[0][4]=k[0]*y[5];d[0][5]=k[0]*y[4];d[1][5]=k[1]*y[7];d[1][7]=k[1]*y[5];
+    d[2][6]=k[2]*y[8];d[2][8]=k[2]*y[6];d[3][0]=k[3]*y[6]*y[7];d[3][6]=k[3]*y[0]*y[7];d[3][7]=k[3]*y[0]*y[6];
+    d[4][7]=k[4];d[5][8]=k[5];d[6][8]=k[6];
+    memset(f,0,9*sizeof(double));memset(j,0,81*sizeof(double));
+    for(size_t i=0;i<4;++i) for(size_t r=0;r<7;++r) {
+        f[5+i]+=net[i][r]*flux[r];
+        for(size_t c=0;c<9;++c)j[(5+i)*9+c]+=net[i][r]*d[r][c];
+    }
+}
+static int regression_rates(size_t width)
+{
+    const double temperature[]={284.19,215.02,299.31},pressure[]={101245,100789.2,101398};
+    const double photo[3][3]={{1e-4,1e-5,1e-6},{3.2e-4,7.3e-5,3.2e-6},{5.2e-4,8.2e-5,4.6e-6}};
+    ChemState state={0};ChemStateParameters p={7,9,3,species,photolysis,1e-6,NULL};
+    if(chem_state_init(&state,&p,3,width))return 0;
+    for(size_t i=0;i<3;++i) {state.conditions[i]=(ChemConditions){temperature[i],pressure[i],0,0};chem_matrix_set_row(&state.custom_parameters,i,photo[i],3);}
+    int ok=!chem_state_update_rate_constants(&state,&mechanism,NULL);
+    for(size_t i=0;i<3;++i) {
+        double t=temperature[i],expected[]={2.15e-11*exp(110/t),3.3e-11*exp(55/t),8e-12*exp(-2060/t),6e-34*pow(t/300,2.4),photo[i][0],photo[i][1],photo[i][2]};
+        for(size_t j=0;j<7;++j)if(*chem_matrix_at(&state.rate_constants,i,j)!=expected[j])ok=0;
+    }
+    chem_state_free(&state);return ok;
+}
+static int regression_derivatives(size_t width,int derivative)
+{
+    ChemMatrix variables={0},rate_matrix={0};if(chem_matrix_init(&variables,3,9,width,width!=1,0)||chem_matrix_init(&rate_matrix,3,7,width,width!=1,0))return 0;
+    unsigned seed=739;int ok=1;
+    for(size_t cell=0;cell<3;++cell) {
+        double y[9],rates[7],force[9],expected[9],jac[81],expected_jac[81];
+        for(size_t i=0;i<9;++i){seed=1664525u*seed+1013904223u;y[i]=.01+(seed>>8)/16777216.0*3;}
+        for(size_t i=0;i<7;++i){seed=1664525u*seed+1013904223u;rates[i]=.01+(seed>>8)/16777216.0*3;}
+        chem_matrix_set_row(&variables,cell,y,9);chem_matrix_set_row(&rate_matrix,cell,rates,7);
+        chem_forcing(&mechanism,(ChemConditions){0},rates,y,force);chem_jacobian(&mechanism,(ChemConditions){0},rates,y,jac);
+        reference_force_jacobian(rates,y,expected,expected_jac);
+        if(derivative) for(size_t i=0;i<23;++i) {
+            double a=jac[row[i]*9+col[i]],b=expected_jac[row[i]*9+col[i]];
+            if(fabs(a-b)>(fabs(a)+fabs(b))*1e-8+1e-12)ok=0;
+        } else for(size_t i=0;i<9;++i)if(fabs(force[i]-expected[i])>(fabs(force[i])+fabs(expected[i]))*1e-8+1e-12)ok=0;
+    }
+    chem_matrix_free(&variables);chem_matrix_free(&rate_matrix);return ok;
+}
+static void reference_rk4(const double *rates,double *state)
+{
+    double a[9],b[9],c[9],d[9],trial[9],scratch[81];
+    for(int step=0;step<1000;++step) {
+        reference_force_jacobian(rates,state,a,scratch);
+        for(size_t i=0;i<9;++i)trial[i]=state[i]+.25*a[i];
+        reference_force_jacobian(rates,trial,b,scratch);
+        for(size_t i=0;i<9;++i)trial[i]=state[i]+.25*b[i];
+        reference_force_jacobian(rates,trial,c,scratch);
+        for(size_t i=0;i<9;++i)trial[i]=state[i]+.5*c[i];
+        reference_force_jacobian(rates,trial,d,scratch);
+        for(size_t i=0;i<9;++i)state[i]+=(a[i]+2*b[i]+2*c[i]+d[i])/12;
+    }
+}
+static int regression_solve(size_t width,int method)
+{
+    const double temperature[]={284.19,215.02,299.31},pressure[]={101245,100789.2,101398};
+    const double photo[3][3]={{1e-4,1e-5,1e-6},{3.2e-4,7.3e-5,3.2e-6},{5.2e-4,8.2e-5,4.6e-6}};
+    ChemState state={0};ChemStateParameters sp={7,9,3,species,photolysis,1e-6,NULL};if(chem_state_init(&state,&sp,3,width))return 0;
+    ChemWorkspace *work[3]={0};double y[27],reference[27],independent[27],rates[21];unsigned seed=2221;int ok=1;
+    for(size_t cell=0;cell<3;++cell) {
+        state.conditions[cell]=(ChemConditions){temperature[cell],pressure[cell],0,0};
+        chem_matrix_set_row(&state.custom_parameters,cell,photo[cell],3);
+        for(size_t i=0;i<9;++i){seed=1664525u*seed+1013904223u;y[cell*9+i]=.01+(seed>>8)/16777216.0;}
+        chem_matrix_set_row(&state.variables,cell,y+cell*9,9);work[cell]=chem_workspace_create(&mechanism);if(!work[cell])ok=0;
+    }
+    if(chem_state_update_rate_constants(&state,&mechanism,NULL))ok=0;
+    for(size_t i=0;i<3;++i)chem_matrix_get_row(&state.rate_constants,i,rates+7*i,7);
+    memcpy(reference,y,sizeof y);memcpy(independent,y,sizeof y);
+    for(size_t cell=0;cell<3;++cell)reference_rk4(rates+7*cell,independent+9*cell);
+    ChemRosenbrockParameters legacy=chem_rosenbrock_three_stage();legacy.relative_tolerance=1e-4;legacy.h_start=1e-6;legacy.max_steps=100;
+    for(size_t cell=0;cell<3 && ok;++cell) {ChemStatistics stats;if(chem_rosenbrock_solve(&mechanism,work[cell],&legacy,state.conditions[cell],rates+7*cell,500,reference+9*cell,&stats))ok=0;}
+    ChemRosenbrockParameters p=method==0?chem_rosenbrock_two_stage():method==1?chem_rosenbrock_three_stage():method==2?chem_rosenbrock_four_stage():method==3?chem_rosenbrock_four_stage_dae():chem_rosenbrock_six_stage_dae();
+    ChemStatistics stats;if(ok && chem_rosenbrock_solve_group(&mechanism,work,3,&p,state.conditions,rates,500,y,&stats))ok=0;
+    double max_initial=0;for(size_t i=0;i<27;++i)if(*chem_matrix_at(&state.variables,i/9,i%9)>max_initial)max_initial=*chem_matrix_at(&state.variables,i/9,i%9);
+    double rel=method==0?1e-2:1e-4;
+    for(size_t i=0;i<27;++i) {
+        if(fabs(y[i]-reference[i])>(fabs(y[i])+fabs(reference[i]))*rel+max_initial*1e-12)ok=0;
+        if(fabs(y[i]-independent[i])>(fabs(y[i])+fabs(independent[i]))*rel+max_initial*1e-12)ok=0;
+    }
+    for(size_t i=0;i<3;++i)chem_workspace_free(work[i]);
+    chem_state_free(&state);return ok;
+}
+
 int main(void)
 {
     ChemRosenbrockParameters p=chem_rosenbrock_three_stage();
@@ -103,5 +196,16 @@ int main(void)
     printf("chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.solve_10_times_larger %d\n",solve(10,0));
     printf("chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.solve_with_random_number_densities %d\n",solve(1,1));
     printf("chapman_ode_solver:RegressionChapmanODESolver.solve_10_times_smaller %d\n",solve(.1,0));
+    int vr=1,vf=1,vj=1,vs=1;
+    for(size_t width=1;width<=4;++width){vr &= regression_rates(width);vf &= regression_derivatives(width,0);vj &= regression_derivatives(width,1);vs &= regression_solve(width,1);}
+    printf("regression_test_rosenbrock_p_force:RegressionRosenbrock.RateConstants %d\n",regression_rates(1));
+    printf("regression_test_rosenbrock_p_force:RegressionRosenbrock.VectorRateConstants %d\n",vr);
+    printf("regression_test_rosenbrock_p_force:RegressionRosenbrock.Forcing %d\n",regression_derivatives(1,0));
+    printf("regression_test_rosenbrock_p_force:RegressionRosenbrock.VectorForcing %d\n",vf);
+    printf("regression_test_rosenbrock_dforce_dy:RegressionRosenbrock.Jacobian %d\n",regression_derivatives(1,1));
+    printf("regression_test_rosenbrock_dforce_dy:RegressionRosenbrock.VectorJacobian %d\n",vj);
+    const char *methods[]={"TwoStageSolve","ThreeStageSolve","FourStageSolve","FourStageDASolve","SixStageDASolve"};
+    for(int method=0;method<5;++method)printf("regression_test_solve:RegressionRosenbrock.%s %d\n",methods[method],regression_solve(1,method));
+    printf("regression_test_solve:RegressionRosenbrock.VectorSolve %d\n",vs);
     return 0;
 }
