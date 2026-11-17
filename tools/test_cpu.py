@@ -59,7 +59,7 @@ CASES = {
                     "CanCalculateSingleGridCellJacobianWithStubAerosolModel"]},
     **{case: ("tools/test_tutorial_programs.py", "tutorial output matches reference")
        for case in ["rate_constants_no_user_defined_example_by_hand", "rate_constants_user_defined_example_by_hand",
-                    "README_example", "multiple_grid_cells", "solve_results", "solver_configuration", "openmp_tutorial"]},
+                    "README_example", "multiple_grid_cells", "solve_results", "solver_configuration", "openmp_tutorial", "vectorized_matrix_solver"]},
     **{f"{prefix}:AerosolModelIntegration.{case}": ("build/test_aerosol", "grouped aerosol solves")
        for prefix in ["aerosol_model_rosenbrock", "aerosol_model_backward_euler"]
        for case in ["CanSolveSingleGridCellWithStubAerosolModel1", "CanSolveSingleGridCellWithTwoStubAerosolModels",

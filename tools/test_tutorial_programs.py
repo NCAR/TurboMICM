@@ -13,6 +13,7 @@ programs = (
     ("solve_results", "solve_results.expected"),
     ("solver_configuration", "solver_configuration.expected"),
     ("openmp_tutorial", "openmp_tutorial.expected"),
+    ("vectorized_matrix_solver", "vectorized_matrix_solver.expected"),
 )
 for program, expected_name in programs:
     result = subprocess.run([root / "build" / program], capture_output=True, check=True)

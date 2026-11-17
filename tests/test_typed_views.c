@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "typed_matrix.h"
 #include "sparse_matrix.h"
+#include "typed_sparse_matrix.h"
 
 static void sum2(size_t row,const void *const *in,void *const *out,void *context)
 { (void)row; (void)context; *(double *)out[0]=*(const double *)in[0]+*(const double *)in[1]; }
@@ -123,6 +124,22 @@ static void sparse(size_t width,ChemSparseOrdering ordering)
     assert(chem_matrix_function_call(&function,arguments,1,NULL,0)==CHEM_MATRIX_OK);
     chem_matrix_function_destroy(&function); chem_sparse_matrix_destroy(&matrix);
 }
+static void typed_sparse(size_t width,ChemSparseOrdering ordering)
+{
+    const ChemSparseEntry entries[]={{0,1},{2,1},{2,3},{3,2}};
+    const char *initial="initial", *replacement="replacement";
+    ChemTypedSparseMatrix matrix={0},copy={0};
+    assert(chem_typed_sparse_init(&matrix,4,3,width,ordering,entries,4,sizeof(initial),&initial)==CHEM_MATRIX_OK);
+    for (size_t block=0;block<3;++block) for (size_t i=0;i<4;++i)
+        assert(*(const char *const *)chem_typed_sparse_const_at(&matrix,block,entries[i].row,entries[i].column)==initial);
+    *(const char **)chem_typed_sparse_at(&matrix,1,2,3)=replacement;
+    assert(!chem_typed_sparse_at(&matrix,0,0,0) && !chem_typed_sparse_at(&matrix,3,2,3));
+    assert(chem_typed_sparse_clone(&copy,&matrix)==CHEM_MATRIX_OK);
+    assert(*(const char *const *)chem_typed_sparse_const_at(&copy,1,2,3)==replacement);
+    *(const char **)chem_typed_sparse_at(&copy,1,2,3)=initial;
+    assert(*(const char *const *)chem_typed_sparse_const_at(&matrix,1,2,3)==replacement);
+    chem_typed_sparse_destroy(&matrix); chem_typed_sparse_destroy(&copy);
+}
 int main(void)
 {
     const double values[]={1,2,3,4,5}; double total=0;
@@ -136,7 +153,7 @@ int main(void)
     chem_typed_matrix_destroy(&matrix);
     for (size_t width=0;width<=4;++width) {
         dense(width);
-        for (int order=0;order<2;++order) sparse(width,(ChemSparseOrdering)order);
+        for (int order=0;order<2;++order) { sparse(width,(ChemSparseOrdering)order); typed_sparse(width,(ChemSparseOrdering)order); }
     }
     return 0;
 }

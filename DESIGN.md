@@ -148,3 +148,10 @@ Group spans expose the contiguous lanes of a dense column or sparse block
 entry, with separate logical length and padded capacity. Const spans allow
 read-only access; group fill and copy cover the allocated lanes, including
 tail padding, while callers can restrict calculations to the logical length.
+
+Typed sparse blocks pair the same compressed structure with arbitrary-sized
+trivially copyable values. Cloning copies the values and structure; when values
+are pointers, their targets remain owned by the caller. The vectorized matrix
+tutorial uses these blocks to demonstrate standard and grouped string-pointer
+storage. Its reference solve loop starts converged and therefore updates rates
+without advancing the concentrations.

@@ -288,3 +288,8 @@ group widths 1–4 against independently evaluated rate equations, a scalar
 reference-method solve, and a high-accuracy RK4 trajectory. Both compilers pass
 the 100-cell TS1 comparison; the case report has 605 passing and 75 unported
 failures.
+
+The vectorized matrix tutorial now reproduces the reference output, including
+the regular and grouped sparse string layouts. The reference initializes the
+solver state as converged, so its inner solve loop does not run. The CPU case
+report has 666 passing, 5 N/A, and 9 unported failures.

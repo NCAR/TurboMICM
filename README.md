@@ -23,7 +23,7 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently
-665 cases pass, five C++ template-dispatch cases are N/A, and 10 remain
+666 cases pass, five C++ template-dispatch cases are N/A, and 9 remain
 unported, so the target intentionally fails. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
@@ -65,4 +65,6 @@ with checked row and column operations and configurable group width.
 const input and mutable output row views for callbacks.
 
 `include/sparse_matrix.h` provides compressed row and column sparse blocks
-with optional interleaved cell groups.
+with optional interleaved cell groups. `include/typed_sparse_matrix.h` provides
+the same layouts for trivially copyable values; pointers stored there remain
+caller-owned.
