@@ -47,13 +47,14 @@ typedef struct { double *data; size_t length; } ChemVector;
 typedef void (*ChemMatrixFunctionCallback)(ChemMatrix *const *matrices,const ChemVector *vectors,
                                            size_t rows,void *context);
 typedef struct {
-    size_t matrix_count, vector_count;
+    size_t matrix_count, vector_count, group_width;
     size_t *columns;
     ChemMatrixFunctionCallback callback;
     void *context;
 } ChemMatrixFunction;
 /* Creation records matrix column counts but permits different row counts.
-   Invocation validates all row counts and vector lengths before the callback. */
+   Creation also checks compatible group widths. Invocation validates column
+   counts, group widths, row counts and vector lengths before the callback. */
 ChemMatrixStatus chem_matrix_function_init(ChemMatrixFunction *function,ChemMatrix *const *matrices,
         size_t matrix_count,size_t vector_count,ChemMatrixFunctionCallback callback,void *context);
 ChemMatrixStatus chem_matrix_function_call(const ChemMatrixFunction *function,ChemMatrix *const *matrices,

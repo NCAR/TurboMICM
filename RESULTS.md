@@ -160,3 +160,8 @@ The latest case report has 419 passing cases and 261 unported failures on
 both compilers. New sparse tests cover reusable block views, row callbacks,
 multiple structures, dense and vector interoperability, index lookup, fill,
 and copy. Both compilers pass the 100-cell TS1 comparison.
+
+The latest case report has 505 passing cases and 175 unported failures on
+both compilers. New checks cover sparse function block/vector dimensions,
+reusable functions, empty blocks, and incompatible group widths. Both
+compilers pass the 100-cell TS1 comparison.

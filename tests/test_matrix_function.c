@@ -56,7 +56,7 @@ static void run(size_t width)
     assert(chem_matrix_init(&a,0,3,width,1)==CHEM_MATRIX_OK); vectors[0].length=5;
     assert(chem_matrix_function_call(&function,args,1,vectors,1)==CHEM_MATRIX_SIZE);
     vectors[0].length=0; vectors[0].data=NULL;
-    assert(chem_matrix_function_call(&function,args,1,vectors,1)==CHEM_MATRIX_OK && context.calls==1);
+    assert(chem_matrix_function_call(&function,args,1,vectors,1)==CHEM_MATRIX_OK && context.calls==0);
     assert(chem_matrix_init(&a,5,4,width,1)==CHEM_MATRIX_OK);
     vectors[0]=(ChemVector){data,5}; assert(chem_matrix_function_call(&function,args,1,vectors,1)==CHEM_MATRIX_SIZE);
     assert(chem_matrix_init(&a,5,2,width,1)==CHEM_MATRIX_OK);

@@ -7,6 +7,22 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"{prefix}:{suite}.{case}": ("build/test_sparse_functions", "sparse function validation")
+       for prefix, suite in [
+           ("sparse_matrix_standard_compressed_row_ordering", "SparseCompressedRowMatrix"),
+           ("sparse_matrix_standard_compressed_column_ordering", "SparseCompressedColumnMatrix"),
+           ("sparse_matrix_vector_compressed_row_ordering", "SparseVectorCompressedRowMatrix"),
+           ("sparse_matrix_vector_compressed_column_ordering", "SparseVectorCompressedColumnMatrix")]
+       for case in ["MismatchedBlockDimensions", "MismatchedElementDimensions", "MultipleSparseMatricesDifferentBlocksFromCreation",
+                    "SparseMatrixVectorDifferentBlocksFromCreation", "MismatchedBlocksAtInvocation", "MultipleSparseMatricesMismatchedBlocksAtInvocation",
+                    "VectorInSparseMatrixFunction", "VectorTooSmall", "VectorTooLarge", "EmptyVectorNonEmptySparseMatrix",
+                    "NonEmptyVectorEmptySparseMatrix", "EmptyVectorEmptySparseMatrix", "MultipleVectorsDifferentSizes", "MultipleVectorsSameSize",
+                    "MultipleSparseMatricesOneVector", "MultipleSparseMatricesDifferentBlocksVector", "VectorSizeMatchesOneSparseMatrixOnly",
+                    "MutableVectorSparse", "FunctionReusabilityWithVectorsSparse", "FunctionInvocationWithWrongSizedVectorSparse"]},
+    **{f"{prefix}:{suite}.{case}": ("build/test_sparse_functions", "group width compatibility")
+       for prefix, suite in [("sparse_matrix_vector_compressed_row_ordering", "SparseVectorCompressedRowMatrix"),
+                             ("sparse_matrix_vector_compressed_column_ordering", "SparseVectorCompressedColumnMatrix")]
+       for case in ["IncompatibleOrdering", "IncompatibleVectorOrdering", "IncompatibleSparseOrdering"]},
     **{f"{prefix}:{suite}.{case}": ("build/test_sparse_views", "sparse block views")
        for prefix, suite in [
            ("sparse_matrix_standard_compressed_row_ordering", "SparseCompressedRowMatrix"),

@@ -124,3 +124,7 @@ Sparse entries expose borrowed block views that share the dense column-view
 interface. Views can be selected by row and column or by the physical index
 of an entry in block zero. Column fill, copy, and row callbacks operate on
 logical blocks, including across sparse, dense, and vector storage.
+
+Sparse block functions use the shared matrix-function signature over their
+value matrices. Signatures validate compatible group widths at creation and
+again at invocation. An empty invocation returns without calling the callback.
