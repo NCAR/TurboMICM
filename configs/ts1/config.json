@@ -3,6 +3,7 @@
     "species.json",
     "reactions.json"
   ],
+  "rate units": "mol m-3",
   "initial conditions": {
     "O2": 8.90261411,
     "N2": 33.1007671,

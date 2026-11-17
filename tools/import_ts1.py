@@ -77,7 +77,7 @@ def main():
     args = parser.parse_args()
     species, reactions, defaults = translate(args.source.read_text())
     args.output.mkdir(parents=True, exist_ok=True)
-    for name, obj in [('config.json', {'camp-files': ['species.json', 'reactions.json'], 'initial conditions': defaults}),
+    for name, obj in [('config.json', {'camp-files': ['species.json', 'reactions.json'], 'rate units': 'mol m-3', 'initial conditions': defaults}),
                       ('species.json', {'camp-data': species}),
                       ('reactions.json', {'camp-data': [{'type': 'MECHANISM', 'name': 'TS1', 'reactions': reactions}]})]:
         (args.output / name).write_text(json.dumps(obj, indent=2) + '\n')

@@ -7,6 +7,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 from mechanism import MechanismError, read_mechanism
+from generate import compile_mechanism
 
 ROOT = Path(__file__).resolve().parents[1]
 TUTORIAL = ROOT.parent / 'micm/test/tutorial/configs'
@@ -21,6 +22,17 @@ class ReaderTests(unittest.TestCase):
         self.assertEqual((len(json_mech['species']), len(json_mech['reactions'])), (7, 9))
         self.assertEqual((len(robertson['species']), len(robertson['reactions'])), (3, 3))
         self.assertEqual(yaml_mech['reactions'], json_mech['reactions'][:6])
+
+    def test_tutorial_rate_unit_conversion(self):
+        mech = read_mechanism(TUTORIAL / 'rate_constants_no_user_defined/config.yaml')
+        reactions = compile_mechanism(mech)[-1]
+        factor = 1e-6 * 6.02214076e23
+        ternary = next(r for r in reactions if r[0] == 'TERNARY')[-1]
+        troe = next(r for r in reactions if r[0] == 'TROE')[-1]
+        self.assertEqual(ternary[0], 1.2)
+        self.assertEqual(ternary[3], 2.6 / factor)
+        self.assertEqual(troe[0], 1.8e-30 * factor**2)
+        self.assertEqual(troe[3], 2.8e-11 * factor)
 
     def test_ts1_counts_and_defaults(self):
         mech = read_mechanism(ROOT / 'configs/ts1/config.json')

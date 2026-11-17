@@ -14,6 +14,37 @@ def number(x):
     return x.hex()
 
 
+def reorder_species(species, rs, ps, reactions):
+    """Choose a diagonal minimum-degree ordering and remap table indices."""
+    n = len(species)
+    rows = [{i} for i in range(n)]
+    for _, rb, rc, pb, pc, _, _ in reactions:
+        cols = {s for s, _ in rs[rb:rb+rc] if s >= 0}
+        targets = cols | {s for s, _ in ps[pb:pb+pc]}
+        for row in targets:
+            rows[row].update(cols)
+    live = set(range(n))
+    order = []
+    while live:
+        def cost(i):
+            row = len(rows[i] & live) - 1
+            col = sum(i in rows[j] for j in live) - 1
+            return (row * col, i)
+        pivot = min(live, key=cost)
+        remaining = live - {pivot}
+        cols = rows[pivot] & remaining
+        for row in remaining:
+            if pivot in rows[row]:
+                rows[row].update(cols)
+        live.remove(pivot)
+        order.append(pivot)
+    inverse = {old: new for new, old in enumerate(order)}
+    species = [species[i] for i in order]
+    rs = [(inverse[i] if i >= 0 else -1, value) for i, value in rs]
+    ps = [(inverse[i], value) for i, value in ps]
+    return species, rs, ps
+
+
 def compile_mechanism(mech):
     species = [s for s in mech['species'] if not s.get('third body')]
     indices = {s['name']: i for i, s in enumerate(species)}
@@ -70,7 +101,23 @@ def compile_mechanism(mech):
                 enum, values = kind, [r[k] for k in ('X','Y','a0','n')]
             else:
                 raise MechanismError('unsupported reaction ' + kind)
+            # Tutorial rate constants are in molecule cm-3 units. TS1's
+            # generated C++ constants have already been converted to SI.
+            if mech['rate units'] == 'molecule cm-3':
+                conversion = 1e-6 * 6.02214076e23
+                order = len(rs)-rb
+                if enum in ('ARRHENIUS', 'TUNNELING'):
+                    values[0] *= conversion ** (order-1)
+                elif enum == 'TROE':
+                    values[0] *= conversion ** order
+                    values[3] *= conversion ** (order-1)
+                elif enum == 'TERNARY':
+                    values[0] *= conversion ** (order-1)
+                    values[3] *= conversion ** (order-2)
+                elif enum.startswith('BRANCH_'):
+                    values[0] *= conversion ** (order-1)
             reactions.append((enum, rb, len(rs)-rb, pb, len(ps)-pb, idx, values))
+    species, rs, ps = reorder_species(species, rs, ps, reactions)
     return species, params, rs, ps, reactions
 
 

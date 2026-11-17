@@ -66,4 +66,7 @@ def read_mechanism(path):
         for key in ('species', 'gas-phase reactant'):
             if key in reaction and reaction[key] not in names:
                 raise MechanismError(f'reaction {i}: unknown {key} {reaction[key]!r}')
-    return {'species': species, 'reactions': reactions, 'initial conditions': config.get('initial conditions', {})}
+    units = config.get('rate units', 'molecule cm-3')
+    if units not in ('mol m-3', 'molecule cm-3'):
+        raise MechanismError(f'unsupported rate units {units!r}')
+    return {'species': species, 'reactions': reactions, 'initial conditions': config.get('initial conditions', {}), 'rate units': units}

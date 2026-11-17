@@ -16,7 +16,7 @@ static double branch_factor(double a, double b)
 
 int chem_rate_constants(const ChemMechanism *m, ChemConditions c, const double *parameters, double *rates)
 {
-    if (!m || !rates || (m->parameter_count && !parameters) || !(c.temperature > 0) || !(c.pressure > 0)) return 1;
+    if (!m || !rates || (m->parameter_count && !parameters) || !(c.temperature > 0) || !(c.pressure >= 0)) return 1;
     double t = c.temperature, air = c.pressure / (gas_constant * t);
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemReaction *r = &m->reactions[i];
