@@ -152,7 +152,8 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
         !isfinite(o->h_min) || !isfinite(o->h_max) || !isfinite(o->h_start) ||
         o->h_min < 0 || o->h_max < 0 || o->h_start < 0 ||
         (o->sparse_plan && chem_sparse_plan_size(o->sparse_plan) != n) ||
-        (o->lu_algorithm != CHEM_LU_MOZART && o->lu_algorithm != CHEM_LU_DOOLITTLE))
+        (o->lu_algorithm != CHEM_LU_MOZART && o->lu_algorithm != CHEM_LU_DOOLITTLE) ||
+        (o->factor_out_of_place != 0 && o->factor_out_of_place != 1))
         return CHEM_SOLVE_INVALID;
     for (size_t i = 0; i < n; ++i)
         if (!isfinite(o->absolute_tolerance[i]) || !(o->absolute_tolerance[i] > 0)) return CHEM_SOLVE_INVALID;
@@ -167,6 +168,8 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
     double *work = calloc(n*n + 10*n, sizeof(*work));
     if (!work) { free(algebraic); return CHEM_SOLVE_ALLOCATION; }
     double *matrix = work, *initial = matrix+n*n, *next = initial+n;
+    double *factors = o->factor_out_of_place ? malloc(n*n*sizeof(*factors)) : matrix;
+    if (!factors) { free(work); free(algebraic); return CHEM_SOLVE_ALLOCATION; }
     double *stage = next+n, *forcing = stage+6*n, *err = forcing+n;
     double hmin = o->h_min == 0 ? 1e-15*duration : o->h_min;
     double hmax = o->h_max == 0 ? duration : fmin(duration, o->h_max);
@@ -197,10 +200,15 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
             for (size_t i = 0; i < n; ++i) if (!algebraic[i]) matrix[i*n+i] += 1.0/(h*p->gamma0);
             ++stats->decompositions;
             int factored;
-            if (o->sparse_plan)
-                factored = o->lu_algorithm == CHEM_LU_DOOLITTLE ? chem_sparse_factor_doolittle(o->sparse_plan,matrix) : chem_sparse_factor(o->sparse_plan,matrix);
-            else
-                factored = o->lu_algorithm == CHEM_LU_DOOLITTLE ? chem_dense_factor_doolittle(matrix,n) : chem_dense_factor(matrix,n);
+            if (o->sparse_plan) {
+                if (o->factor_out_of_place)
+                    factored = o->lu_algorithm == CHEM_LU_DOOLITTLE ? chem_sparse_factor_doolittle_copy(o->sparse_plan,matrix,factors) : chem_sparse_factor_copy(o->sparse_plan,matrix,factors);
+                else
+                    factored = o->lu_algorithm == CHEM_LU_DOOLITTLE ? chem_sparse_factor_doolittle(o->sparse_plan,factors) : chem_sparse_factor(o->sparse_plan,factors);
+            } else {
+                if (o->factor_out_of_place) memcpy(factors,matrix,n*n*sizeof(*factors));
+                factored = o->lu_algorithm == CHEM_LU_DOOLITTLE ? chem_dense_factor_doolittle(factors,n) : chem_dense_factor(factors,n);
+            }
             if (!factored) { status = CHEM_SOLVE_SINGULAR; goto done; }
             for (size_t s = 0; s < p->stages; ++s) {
                 double *ks = stage + s*n;
@@ -218,8 +226,8 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
                     memcpy(stage+(s+1)*n, ks, n*sizeof(*ks));
                 for (size_t j = 0; j < s; ++j)
                     for (size_t i = 0; i < n; ++i) if (!algebraic[i]) ks[i] += (p->c[offset+j]/h)*stage[j*n+i];
-                if (o->sparse_plan) chem_sparse_solve(o->sparse_plan, matrix, ks);
-                else chem_dense_solve(matrix, n, ks);
+                if (o->sparse_plan) chem_sparse_solve(o->sparse_plan, factors, ks);
+                else chem_dense_solve(factors, n, ks);
                 ++stats->solves;
             }
             memcpy(next, y, n*sizeof(*next));
@@ -252,6 +260,7 @@ done:
     stats->final_time = t;
     /* The CPU solver clamps ODE state after each public solve call. */
     for (size_t i = 0; i < n; ++i) if (!algebraic[i]) y[i] = y[i] > 0.0 ? y[i] : 0.0;
+    if (o->factor_out_of_place) free(factors);
     free(algebraic); free(work);
     return status;
 }

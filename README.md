@@ -23,7 +23,7 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently
-673 cases pass, five C++ template-dispatch cases are N/A, and 2 remain
+674 cases pass, five C++ template-dispatch cases are N/A, and 1 remains
 unported, so the target intentionally fails. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 

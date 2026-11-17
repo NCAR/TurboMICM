@@ -46,6 +46,7 @@ CASES = {
     **{f"solver_builder:SolverBuilder.{case}": ("build/test_cpu_solver", "built solver and solve options")
        for case in ["CanBuildBackwardEuler", "CanBuildRosenbrock", "CanBuildBackwardEulerOverloadedSolverMethod",
                     "CanBuildRosenbrockOverloadedSolveMethod"]},
+    "rosenbrock:RosenbrockSolver.RejectedStepAlphaMatchesInPlaceSolver": ("build/test_rejected_factorization", "rejected steps agree for both LU storage modes"),
     "rosenbrock:RosenbrockSolver.CanSetTolerances": ("build/test_process_builder", "species tolerance propagation"),
     **{f"species:Species.{case}": ("build/test_species", "species properties and copy")
        for case in ["StringConstructor", "StringAndVectorConstructor", "GetProperty", "SetThirdBody", "CopyConstructor", "CopyAssignment"]},

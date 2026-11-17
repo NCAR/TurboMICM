@@ -304,3 +304,9 @@ counts. Grouped solves with nonzero rates are checked separately. Clang and
 GCC pass the focused suite and TS1 comparison; the CPU report has 673 passing,
 5 N/A, and 2 unported failures. The fixed Chapman names are test data passed
 to a mechanism-generic metadata API rather than specialized library code.
+
+Rosenbrock in-place and out-of-place factorization produce identical step,
+acceptance, and rejection counts on the reference stiff five-species case;
+the check covers dense and sparse Mozart and Doolittle factorization. Both
+compilers pass the focused suite and TS1 comparison. The case report has 674
+passing, 5 N/A, and 1 unported failure.

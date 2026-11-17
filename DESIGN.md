@@ -163,3 +163,7 @@ uses one cell or a group with shared acceptance. A group width of zero permits
 unbounded cell counts, while a positive width sets the maximum group size.
 Override options persist in the solver; tolerances come from the current state,
 and other option pointers are borrowed.
+
+Rosenbrock factorization can use the assembled matrix in place or copy it to
+a separate LU buffer. Both modes use the same LU algorithm and sparse plan,
+and retry rejected steps with a newly assembled alpha-minus-Jacobian matrix.

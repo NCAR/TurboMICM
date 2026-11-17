@@ -25,6 +25,7 @@ typedef struct {
     double constraint_temperature;
     size_t constraint_init_max_iterations, constraint_init_max_backtracks;
     double constraint_init_tolerance, constraint_init_backtrack_factor, constraint_init_sufficient_decrease;
+    int factor_out_of_place; /* preserve the assembled matrix in a separate LU buffer */
 } ChemRosenbrockOptions;
 typedef struct {
     size_t steps, accepted, rejected, function_calls, jacobian_updates;
