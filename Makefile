@@ -16,7 +16,9 @@ build/chem.o: src/chem.c include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/rosenbrock.o: src/rosenbrock.c include/rosenbrock.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/chem.o build/rosenbrock.o
+build/rates.o: src/rates.c include/rates.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/libchem.a: build/chem.o build/rosenbrock.o build/rates.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(filter-out -DNDEBUG,$(CFLAGS)) $< build/libchem.a -lm -o $@
@@ -34,5 +36,16 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_chem
 	./build/test_rosenbrock
 	./build/test_chemical_solver
+	./build/test_tutorial
+	./build/test_tutorial_custom
 	./build/test_generated
 	.conda/bin/python tests/test_config.py
+build/tutorial.c: tools/generate.py tools/config.py | build
+	.conda/bin/python tools/generate.py ../micm/test/tutorial/configs/rate_constants_no_user_defined/config.yaml $@
+build/tutorial_custom.c: tools/generate.py tools/config.py | build
+	.conda/bin/python tools/generate.py ../micm/test/tutorial/configs/rate_constants_user_defined/config.json $@
+build/test_tutorial: tests/test_tutorial.c build/tutorial.c build/libchem.a
+	$(CC) $(filter-out -DNDEBUG,$(CFLAGS)) tests/test_tutorial.c build/tutorial.c build/libchem.a -lm -o $@
+build/test_tutorial_custom: tests/test_tutorial.c build/tutorial_custom.c build/libchem.a
+	$(CC) $(filter-out -DNDEBUG,$(CFLAGS)) -DWITH_CUSTOM tests/test_tutorial.c build/tutorial_custom.c build/libchem.a -lm -o $@
+check: build/test_tutorial build/test_tutorial_custom

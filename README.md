@@ -6,6 +6,6 @@ runs the current focused tests; the tests read tutorial configuration input from
 the adjacent `micm` checkout. `OPTFLAGS` can be supplied to make.
 
 A preliminary single-cell three-stage Rosenbrock solver is available through
-`include/rosenbrock.h`. The required full test suite, rate constants, additional
+`include/rosenbrock.h`. The required full test suite, remaining rate types, additional
 solver features, and TS1 benchmark remain to be implemented. Run `make clean`
 before switching compilers.

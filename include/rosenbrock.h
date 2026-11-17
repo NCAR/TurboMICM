@@ -28,7 +28,8 @@ typedef enum {
 
 ChemRosenbrockMethod chem_rosenbrock_three_stage(void);
 ChemRosenbrockOptions chem_rosenbrock_defaults(const double *absolute_tolerance);
-/* Modifies y in place. Each call resets the internal step size, as in MICM. */
+/* Modifies y in place and clamps negative values after solving. Each call
+   resets the internal step size, as in the reference CPU solver. */
 ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
     ChemOdeFunction rhs, ChemOdeFunction jacobian, void *context,
     const ChemRosenbrockMethod *method, const ChemRosenbrockOptions *options,

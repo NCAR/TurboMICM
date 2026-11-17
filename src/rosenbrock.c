@@ -148,6 +148,8 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
         }
     }
 done:
+    /* The CPU solver clamps ODE state after each public solve call. */
+    for (size_t i = 0; i < n; ++i) y[i] = y[i] > 0.0 ? y[i] : 0.0;
     free(work);
     return status;
 }

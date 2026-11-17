@@ -19,9 +19,10 @@ class ConfigurationTests(unittest.TestCase):
                 species, reactions = read_mechanism(ROOT / name / ('config.' + extension))
                 self.assertEqual((len(species), len(reactions)), (n_species, n_reactions))
 
-    def test_generator_rejects_unsupported_rate(self):
-        with self.assertRaisesRegex(ValueError, 'ARRHENIUS'):
-            generate(ROOT / 'rate_constants_no_user_defined/config.yaml')
+    def test_generator_supports_all_examples(self):
+        for path in ROOT.glob('*/config.*'):
+            with self.subTest(path=path):
+                self.assertIn('generated_rates', generate(path))
 
 if __name__ == '__main__':
     unittest.main()
