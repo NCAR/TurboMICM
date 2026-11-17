@@ -121,6 +121,17 @@ double *chem_parameter_values(ChemState *s, size_t i)
 double *chem_temperatures(ChemState *s) { return s ? s->temperatures : NULL; }
 double *chem_pressures(ChemState *s) { return s ? s->pressures : NULL; }
 double *chem_absolute_tolerances(ChemState *s) { return s ? s->absolute_tolerances : NULL; }
+double *chem_constraint_constants(ChemState *s, size_t i)
+{ return s && i < s->constraint_count ? s->constraint_constants+i*s->cells : NULL; }
+int chem_find_constraint(const ChemState *s, const char *name)
+{
+    if (!s || !name) return -1;
+    for (size_t i=0;i<s->constraint_count;++i)
+        if (s->constraints[i].name && !strcmp(s->constraints[i].name,name)) return (int)i;
+    return -1;
+}
+int chem_is_algebraic(const ChemState *s, size_t species)
+{ return s && species<s->mechanism->species_count ? !!s->algebraic[species] : -1; }
 int chem_set_air_density(ChemState *s, size_t cell, double density)
 {
     if (!s || cell >= s->cells || !isfinite(density) || density < 0) return CHEM_INVALID;

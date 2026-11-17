@@ -9,7 +9,7 @@ import yaml
 
 def read_config(path):
     """Resolve camp-files relative to their parent, preserving declaration order."""
-    entries, initial, units = [], {}, []
+    entries, initial, units, constraints = [], {}, [], []
     visited, active = set(), set()
 
     def visit(file):
@@ -31,6 +31,10 @@ def read_config(path):
         if not isinstance(items, list):
             raise ValueError(f"{file}: camp-data must be a list")
         entries.extend(items)
+        constraint_items = data.get("constraints", [])
+        if not isinstance(constraint_items, list):
+            raise ValueError(f"{file}: constraints must be a list")
+        constraints.extend(constraint_items)
         if "initial conditions" in data:
             initial.update(data["initial conditions"])
         if "rate units" in data:
@@ -41,7 +45,7 @@ def read_config(path):
     visit(path)
     if len(set(units)) > 1:
         raise ValueError("conflicting rate units")
-    return {"camp-data": entries, "initial conditions": initial,
+    return {"camp-data": entries, "initial conditions": initial, "constraints": constraints,
             "rate units": units[0] if units else "molecules cm-3"}
 
 
@@ -156,6 +160,47 @@ def normalize(document):
     unused_defaults = set(defaults) - set(indices)
     if unused_defaults:
         raise ValueError(f"defaults for unknown parameters: {sorted(unused_defaults)}")
-    return {"species": species, "reactions": output, "parameters": parameters,
+    constraints = []
+    used_rows, constraint_names = set(), set()
+    for raw in document.get("constraints", []):
+        kind = raw["type"]
+        if kind not in ("LINEAR", "EQUILIBRIUM"):
+            raise ValueError(f"unsupported constraint type {kind!r}")
+        name = raw["name"]
+        if not isinstance(name, str) or not name or name in constraint_names:
+            raise ValueError(f"invalid or duplicate constraint name {name!r}")
+        constraint_names.add(name)
+        row_name = raw["algebraic species"]
+        if row_name not in by_name or by_name[row_name]["parameterized"]:
+            raise ValueError(f"unknown algebraic species {row_name!r}")
+        row = by_name[row_name]["index"]
+        if row in used_rows:
+            raise ValueError(f"multiple constraints for {row_name!r}")
+        used_rows.add(row)
+
+        def constraint_terms(mapping):
+            if not isinstance(mapping, dict) or not mapping:
+                raise ValueError(f"{name}: constraint terms must be a nonempty mapping")
+            terms = []
+            for species_name, coefficient in mapping.items():
+                if species_name not in by_name or by_name[species_name]["parameterized"]:
+                    raise ValueError(f"{name}: unknown constraint species {species_name!r}")
+                value = number(coefficient, name)
+                if kind == "EQUILIBRIUM" and value <= 0:
+                    raise ValueError(f"{name}: equilibrium stoichiometry must be positive")
+                terms.append((by_name[species_name]["index"], value))
+            return terms
+
+        left = constraint_terms(raw["terms"] if kind == "LINEAR" else raw["reactants"])
+        right = constraint_terms(raw["products"]) if kind == "EQUILIBRIUM" else []
+        k = number(raw.get("equilibrium constant", 0), name)
+        if kind == "EQUILIBRIUM" and k <= 0:
+            raise ValueError(f"{name}: equilibrium constant must be positive")
+        constraints.append({"kind": kind, "name": name, "row": row, "reactants": left, "products": right,
+                            "constant": number(raw.get("constant", 0), name), "equilibrium_constant": k,
+                            "enthalpy": number(raw.get("enthalpy", 0), name),
+                            "gas_constant": number(raw.get("gas constant", 0), name),
+                            "reference_temperature": number(raw.get("reference temperature", 0), name)})
+    return {"species": species, "reactions": output, "parameters": parameters, "constraints": constraints,
             "temperature": number(initial.get("temperature", 0), "temperature"),
             "pressure": number(initial.get("pressure", 0), "pressure")}

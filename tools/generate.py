@@ -18,12 +18,17 @@ def reorder_mechanism(mechanism):
     """
     n = len(mechanism["species"])
     rows = [{i} for i in range(n)]
+    algebraic = {constraint["row"] for constraint in mechanism.get("constraints", [])}
     for reaction in mechanism["reactions"]:
         for col in reaction["reactants"]:
             for row in reaction["reactants"]:
-                rows[row].add(col)
+                if row not in algebraic:
+                    rows[row].add(col)
             for row, _ in reaction["products"]:
-                rows[row].add(col)
+                if row not in algebraic:
+                    rows[row].add(col)
+    for constraint in mechanism.get("constraints", []):
+        rows[constraint["row"]].update(i for i, _ in constraint["reactants"] + constraint["products"])
     alive = set(range(n))
     order = []
     while alive:
@@ -40,9 +45,15 @@ def reorder_mechanism(mechanism):
         alive.remove(pivot)
     inverse = {old: new for new, old in enumerate(order)}
     mechanism["species"] = [mechanism["species"][i] for i in order]
+    for index, species in enumerate(mechanism["species"]):
+        species["index"] = index
     for reaction in mechanism["reactions"]:
         reaction["reactants"] = [inverse[i] for i in reaction["reactants"]]
         reaction["products"] = [(inverse[i], amount) for i, amount in reaction["products"]]
+    for constraint in mechanism.get("constraints", []):
+        constraint["row"] = inverse[constraint["row"]]
+        constraint["reactants"] = [(inverse[i], amount) for i, amount in constraint["reactants"]]
+        constraint["products"] = [(inverse[i], amount) for i, amount in constraint["products"]]
     return mechanism
 
 
@@ -142,6 +153,22 @@ def generate(mechanism, symbol):
     lines.append("static const char *const parameters[] = { " + (", ".join(c_string(n) for n, _ in params) or '""') + " };")
     lines.append("static const double defaults[] = { " + (", ".join(c_number(v) for _, v in params) or "0.0") + " };")
     lines.append(f"const ChemMechanism {symbol} = {{ {len(mechanism['species'])}, {len(mechanism['reactions'])}, {len(params)}, species, reactions, reactants, products, parameters, defaults, {c_number(mechanism['temperature'])}, {c_number(mechanism['pressure'])} }};")
+    constraints = mechanism.get("constraints", [])
+    for i, constraint in enumerate(constraints):
+        for side in ("reactants", "products"):
+            terms = constraint[side]
+            lines.append(f"static const ChemTerm constraint_{i}_{side}[] = {{ " +
+                         (", ".join("{ %d, %s }" % (j, c_number(value)) for j, value in terms) or "{0, 0.0}") + " };")
+    lines.append(f"const ChemConstraint {symbol}_constraints[] = {{")
+    for i, constraint in enumerate(constraints):
+        kind = "CHEM_LINEAR_CONSTRAINT" if constraint["kind"] == "LINEAR" else "CHEM_EQUILIBRIUM_CONSTRAINT"
+        numeric = ", ".join(c_number(constraint[key]) for key in ("constant", "equilibrium_constant", "enthalpy", "gas_constant", "reference_temperature"))
+        lines.append(f"    {{ {c_string(constraint['name'])}, {kind}, {constraint['row']}, constraint_{i}_reactants, "
+                     f"constraint_{i}_products, {len(constraint['reactants'])}, {len(constraint['products'])}, {numeric} }},")
+    if not constraints:
+        lines.append("    {0},")
+    lines.append("};")
+    lines.append(f"const size_t {symbol}_constraint_count = {len(constraints)};")
     return "\n".join(lines) + "\n"
 
 

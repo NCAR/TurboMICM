@@ -68,6 +68,12 @@ bin/reference_solver: tests/reference_solver.c build/libchem.a build/.compiler |
 bin/reference_constraints: tests/reference_constraints.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
+bin/reference_constraint_set: tests/reference_constraint_set.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/reference_equilibrium_integration: tests/reference_equilibrium_integration.c build/constrained_original.o build/constrained_ordered.o build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/constrained_original.o build/constrained_ordered.o build/libchem.a $(LDLIBS) -o $@
+
 bin/reference_initialization: tests/reference_initialization.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
@@ -95,7 +101,16 @@ build/tutorial_unordered.c: tests/fixtures/reorder.json tools/config.py tools/ge
 build/tutorial_robertson.c: tests/fixtures/robertson/config.json tests/fixtures/robertson/species.json tests/fixtures/robertson/reactions.json tools/config.py tools/generate.py
 	@$(PYTHON) tools/generate.py $< $@ --symbol tutorial_robertson
 
+build/constrained_original.c: tests/fixtures/constrained_reorder.json tools/config.py tools/generate.py
+	@$(PYTHON) tools/generate.py $< $@ --symbol constrained_original
+
+build/constrained_ordered.c: tests/fixtures/constrained_reorder.json tools/config.py tools/generate.py
+	@$(PYTHON) tools/generate.py $< $@ --symbol constrained_ordered --reorder
+
 build/tutorial_%.o: build/tutorial_%.c include/chem.h build/.compiler
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+build/constrained_%.o: build/constrained_%.c include/chem.h build/.compiler
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 bin/test_configurations: tests/test_configurations.c build/tutorial_no_user.o build/tutorial_user.o build/tutorial_ordered.o build/tutorial_unordered.o build/tutorial_robertson.o build/libchem.a build/.compiler | bin
@@ -110,7 +125,7 @@ test-core: bin/test_core bin/test_configurations bin/test_constraints bin/test_l
 	./bin/test_constraints
 	./bin/test_linear
 
-test-cpu: bin/reference_rates bin/reference_solver bin/reference_constraints bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
+test-cpu: bin/reference_rates bin/reference_solver bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
 	@$(PYTHON) tests/run_cases.py
 
 cpu bench: bin/ts1_bench_cpu

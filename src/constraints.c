@@ -1,6 +1,8 @@
 #include "internal.h"
 
 #include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 static int validate_one(const ChemConstraint *c, size_t species_count)
@@ -30,6 +32,23 @@ int chem_validate_constraints(const ChemMechanism *m, const ChemConstraint *cons
         if (validate_one(&constraints[i],m->species_count)) return CHEM_INVALID;
         for (size_t j=0; j<i; ++j)
             if (constraints[i].algebraic_species == constraints[j].algebraic_species) return CHEM_INVALID;
+    }
+    return CHEM_OK;
+}
+
+int chem_constraint_pattern(const ChemMechanism *m, const ChemConstraint *constraints, size_t count,
+                            unsigned char *pattern)
+{
+    if (!m || !pattern || !m->species_count || m->species_count > SIZE_MAX/m->species_count ||
+        chem_validate_constraints(m,constraints,count)!=CHEM_OK) return CHEM_INVALID;
+    size_t n=m->species_count;
+    memset(pattern,0,n*n);
+    for (size_t i=0;i<count;++i) {
+        const ChemConstraint *c=&constraints[i];
+        size_t row=(size_t)c->algebraic_species;
+        pattern[row*n+row]=1;
+        for (size_t j=0;j<c->reactant_count;++j) pattern[row*n+(size_t)c->reactants[j].species]=1;
+        for (size_t j=0;j<c->product_count;++j) pattern[row*n+(size_t)c->products[j].species]=1;
     }
     return CHEM_OK;
 }
@@ -88,6 +107,24 @@ int chem_constraint_evaluate(const ChemConstraint *c, const double *y, size_t n,
     double k=c->kind == CHEM_EQUILIBRIUM_CONSTRAINT ? equilibrium_constant(c,temperature) : 0;
     *residual=chem_constraint_value(c,y,1,0,k,gradient,n);
     return isfinite(*residual) ? CHEM_OK : CHEM_NONFINITE;
+}
+
+int chem_constraints_apply(const ChemState *s, size_t cell, const double *y,
+                           double *forcing, double *negative_jacobian)
+{
+    if (!s || cell>=s->cells || !y || !forcing || !negative_jacobian) return CHEM_INVALID;
+    if (!s->constraint_count) return CHEM_OK;
+    size_t n=s->mechanism->species_count;
+    double *gradient=malloc(n*sizeof(*gradient));
+    if (!gradient) return CHEM_MEMORY;
+    for (size_t i=0;i<s->constraint_count;++i) {
+        const ChemConstraint *c=&s->constraints[i];
+        size_t row=(size_t)c->algebraic_species;
+        forcing[row]=chem_constraint_value(c,y,1,0,s->constraint_constants[i*s->cells+cell],gradient,n);
+        for (size_t col=0;col<n;++col) negative_jacobian[row*n+col]-=gradient[col];
+    }
+    free(gradient);
+    return CHEM_OK;
 }
 
 int chem_update_constraint_constants(ChemState *s)

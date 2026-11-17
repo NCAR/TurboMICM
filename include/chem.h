@@ -128,8 +128,13 @@ ChemState *chem_state_create(const ChemMechanism *mechanism, size_t cells);
 ChemState *chem_state_create_constrained(const ChemMechanism *mechanism, const ChemConstraint *constraints,
                                          size_t constraint_count, size_t cells);
 int chem_validate_constraints(const ChemMechanism *mechanism, const ChemConstraint *constraints, size_t count);
+/* pattern is a zeroed-or-overwritten species_count-square row-major byte array. */
+int chem_constraint_pattern(const ChemMechanism *mechanism, const ChemConstraint *constraints,
+                            size_t count, unsigned char *pattern);
 int chem_constraint_evaluate(const ChemConstraint *constraint, const double *values, size_t species_count,
                              double temperature, double *residual, double *gradient);
+int chem_constraints_apply(const ChemState *state, size_t cell, const double *values,
+                           double *forcing, double *negative_jacobian);
 int chem_initialize_constraints(ChemState *state, const ChemRosenbrock *parameters, ChemStats *stats);
 /* Share the immutable symbolic linear-solver plan with an existing state. */
 ChemState *chem_state_create_like(const ChemState *state, size_t cells);
@@ -141,6 +146,9 @@ double *chem_parameter_values(ChemState *state, size_t parameter);
 double *chem_temperatures(ChemState *state);
 double *chem_pressures(ChemState *state);
 double *chem_absolute_tolerances(ChemState *state);
+double *chem_constraint_constants(ChemState *state, size_t constraint);
+int chem_find_constraint(const ChemState *state, const char *name);
+int chem_is_algebraic(const ChemState *state, size_t species);
 /* By default air density is calculated from temperature and pressure at rate
  * update. An explicit density can be installed independently for each cell. */
 int chem_set_air_density(ChemState *state, size_t cell, double density);

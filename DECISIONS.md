@@ -21,6 +21,13 @@ using reaction order. TS1 is already in molar units, so its configuration sets
 `rate units: mol m-3`. Named user parameters are supplied in the library's
 molar units, including emission parameters.
 
+For constraints supplied in configuration, a top-level `constraints` list
+supports `LINEAR` entries with a species-to-coefficient `terms` map and a
+`constant`, and `EQUILIBRIUM` entries with reactant and product stoichiometry,
+an `equilibrium constant`, and optional Van't Hoff parameters. Both name the
+`algebraic species` whose row is replaced. This extension permits the same
+ordering and C generation path to handle constrained mechanisms.
+
 Generated mechanisms may use a symmetric minimum-fill ordering computed from
 their reaction graph. The benchmark enables it; an independent fixture checks
 ordered and original forms by species name. Hand-built mechanisms retain the

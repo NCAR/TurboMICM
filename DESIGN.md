@@ -9,7 +9,9 @@ rate coefficients to molar units, expands branched reactions, and can compute
 a symmetric minimum-fill species order from the reaction graph. The generated
 tables use the same `ChemMechanism` representation that callers can construct
 in C. The tests compare generated and hand-built mechanisms and also compare a
-reordered mechanism with its original form.
+reordered mechanism with its original form. Optional configuration constraints
+produce a separate `ChemConstraint` array and count, with all row and term
+indices remapped together when ordering is enabled.
 
 The C library stores each state variable, rate, and sparse-matrix entry across
 the cells of one group contiguously. Forcing and Jacobian evaluation use the

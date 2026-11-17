@@ -1,0 +1,17 @@
+{
+  "rate units": "mol m-3",
+  "camp-data": [
+    {"type": "CHEM_SPEC", "name": "B"},
+    {"type": "CHEM_SPEC", "name": "A"},
+    {"type": "CHEM_SPEC", "name": "C"},
+    {"type": "MECHANISM", "name": "decay", "reactions": [
+      {"type": "ARRHENIUS", "A": 1.0, "reactants": {"A": {}}, "products": {"B": {}}}
+    ]}
+  ],
+  "constraints": [
+    {"type": "EQUILIBRIUM", "name": "B_C_eq", "algebraic species": "C",
+     "reactants": {"B": 1.0}, "products": {"C": 1.0},
+     "equilibrium constant": 2.0, "enthalpy": -2400.0}
+  ],
+  "initial conditions": {"temperature": 400.0, "pressure": 101325}
+}
