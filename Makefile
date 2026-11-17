@@ -73,6 +73,9 @@ build/test_chem: tests/test_chem.c build/ts1.o build/libchem.a
 build/test_solver: tests/test_solver.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
+build/test_sparse_remaining: tests/test_sparse_remaining.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
 build/test_sparse_function_cases: tests/test_sparse_function_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
@@ -92,7 +95,7 @@ build/test_cases: tests/test_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
 test-cpu:
-	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/tutorial_no_user build/tutorial_user
+	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/test_sparse_remaining build/tutorial_no_user build/tutorial_user
 	@$(PYTHON) tools/test_cpu.py
 
 build/test_dae: tests/test_dae.c build/libchem.a

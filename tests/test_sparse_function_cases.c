@@ -134,8 +134,6 @@ int main(void)
     const char *prefix[]={"sparse_matrix_standard_compressed_row_ordering:SparseCompressedRowMatrix", "sparse_matrix_standard_compressed_column_ordering:SparseCompressedColumnMatrix", "sparse_matrix_vector_compressed_row_ordering:SparseVectorCompressedRowMatrix", "sparse_matrix_vector_compressed_column_ordering:SparseVectorCompressedColumnMatrix"};
     const char *names[]={"VectorInSparseMatrixFunction","VectorTooSmall","VectorTooLarge","EmptyVectorNonEmptySparseMatrix","NonEmptyVectorEmptySparseMatrix","EmptyVectorEmptySparseMatrix","MultipleVectorsDifferentSizes","MultipleVectorsSameSize","MultipleSparseMatricesOneVector","MultipleSparseMatricesDifferentBlocksVector","VectorSizeMatchesOneSparseMatrixOnly","ConstVectorSparse","MutableVectorSparse","FunctionReusabilityWithVectorsSparse","FunctionInvocationWithWrongSizedVectorSparse","MixedVectorBlockViewBlockVariable","IntegerVectorSparse","FunctionWithConstSignatureSparse","SparseMatrixVectorDifferentBlocksFromCreation","MismatchedBlockDimensions","MismatchedElementDimensions","MismatchedBlocksAtInvocation","MultipleSparseMatricesMismatchedBlocksAtInvocation"};
     for(int layout=0;layout<4;++layout) for(int kind=0;kind<23;++kind) {
-        /* These two names exist only for standard layouts. */
-        if (layout>=2 && (kind==19 || kind==20)) continue;
         printf("%s.%s %d\n",prefix[layout],names[kind],all_widths(kind,layout>=2,layout%2));
     }
     return 0;
