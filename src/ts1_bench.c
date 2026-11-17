@@ -9,6 +9,7 @@
 #include <string.h>
 
 extern const ChemMechanism generated_mechanism;
+extern const ChemConditions generated_mechanism_initial_conditions;
 typedef struct { ChemConditions conditions; double *y, *rates; } Cell;
 
 /* ISO C line reader; unlike a fixed buffer it accepts long mechanism rows. */
@@ -95,7 +96,7 @@ static int read_cells(const char *path, Cell *cells, size_t count, const ChemMec
     if (!params) { free(mapping); fclose(f); return 1; }
     int failed = 0;
     for (size_t i = 0; i < count; ++i) {
-        cells[i].conditions = (ChemConditions){287.45, 101319.9, 0, 0};
+        cells[i].conditions = generated_mechanism_initial_conditions;
         memcpy(cells[i].y, m->initial_species, m->species_count*sizeof(double));
         memcpy(params, m->initial_parameters, m->parameter_count*sizeof(double));
         line = read_line(f);

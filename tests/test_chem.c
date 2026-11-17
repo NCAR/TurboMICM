@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 extern const ChemMechanism generated_mechanism;
+extern const ChemConditions generated_mechanism_initial_conditions;
 
 static int near(double a, double b, double f) { return fabs(a - b) <= 2e-5 * (1 + fabs(b)) + 1e-8 * fabs(f); }
 
@@ -17,7 +18,8 @@ int main(void)
     double *fm = calloc(m->species_count, sizeof *fm);
     double *j = calloc(m->species_count * m->species_count, sizeof *j);
     if (!rates || !y || !f || !fp || !fm || !j) return 1;
-    ChemConditions c = { 287.45, 101319.9, 0, 0 };
+    ChemConditions c = generated_mechanism_initial_conditions;
+    if (c.temperature!=287.45 || c.pressure!=101319.9 || c.has_air_density) return 8;
     if (chem_rate_constants(m, c, m->initial_parameters, rates)) return 2;
     for (size_t i = 0; i < m->species_count; ++i) y[i] = 0.1 + i * 0.001;
     chem_forcing(m, c, rates, y, f);

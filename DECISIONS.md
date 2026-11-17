@@ -4,7 +4,8 @@
   preserve species and reaction ordering. JSON and YAML use the same reader.
   The C generator emits immutable tables, so the runtime does not need Python.
 - TS1 adds `third body` on a species, `USER_DEFINED` with a `scaling factor`,
-  and `initial conditions` on the root configuration. A third body contributes
+  and `initial conditions` and `initial environment` on the root configuration.
+  The latter holds default temperature and pressure. A third body contributes
   air density to reaction rates but has no state variable. The translated
   surface reactions retain both the phase reactant and the explicit reactant
   and product lists. These extensions express details in the C++ source which

@@ -169,6 +169,8 @@ def emit(mech, symbol):
         rows.append('{CHEM_%s, %d, %d, %d, %d, %d, {%s}}' % (kind, rb, rc, pb, pc, idx, ', '.join(map(number, values))))
     array('ChemReaction', 'reactions', rows or ['{0}'])
     out.append(f'const ChemMechanism {symbol} = {{{len(species)}, {len(reactions)}, {len(params)}, species_names, parameter_names, initial_species, initial_parameters, reactions, reactants, products, {len(parameterized)}, parameterized_species}};')
+    environment = mech.get('initial environment', {})
+    out.append(f"const ChemConditions {symbol}_initial_conditions = {{{number(environment.get('temperature', 0))}, {number(environment.get('pressure', 0))}, 0, 0}};")
     return '\n'.join(out) + '\n'
 
 

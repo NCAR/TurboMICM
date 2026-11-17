@@ -48,6 +48,7 @@ class ReaderTests(unittest.TestCase):
         defaults = mech['initial conditions']
         for name, value in reference.items():
             if name in ('temperature', 'pressure'):
+                self.assertEqual(mech['initial environment'][name], float(value), name)
                 continue
             self.assertEqual(defaults.get(name, 0.0), float(value), name)
 
@@ -69,6 +70,15 @@ class ReaderTests(unittest.TestCase):
                 {'type': 'MECHANISM', 'reactions': [{'type': 'ARRHENIUS', 'reactants': {'B': {}}}]}]}))
             with self.assertRaises(MechanismError):
                 read_mechanism(path / 'config.json')
+
+    def test_bad_initial_environment(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / 'build') as directory:
+            path = Path(directory)
+            (path / 'data.json').write_text(json.dumps({'camp-data': [{'type': 'CHEM_SPEC', 'name': 'A'}]}))
+            for environment in ({'temperature': -1}, {'pressure': True}, {'unknown': 1}, []):
+                (path / 'config.json').write_text(json.dumps({'camp-files': ['data.json'], 'initial environment': environment}))
+                with self.assertRaises(MechanismError):
+                    read_mechanism(path / 'config.json')
 
 
 if __name__ == '__main__':

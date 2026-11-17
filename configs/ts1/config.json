@@ -382,5 +382,9 @@
     "usr_NC4CH2OH_aer.particle number concentration [# m-3]": 100000000000.0,
     "usr_CO_OH": 0.0,
     "usr_DMS_OH": 0.0
+  },
+  "initial environment": {
+    "temperature": 287.45,
+    "pressure": 101319.9
   }
 }

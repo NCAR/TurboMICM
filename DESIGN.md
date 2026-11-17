@@ -8,6 +8,9 @@ factorizations, and triangular solves used by the integration workspace.
 `tools/generate.py` emits immutable C tables. `chem.h` also exposes the table
 format for mechanisms constructed directly in C. The tables list repeated
 reactants explicitly, preserving the product rule even at zero concentration.
+The generator also emits a `ChemConditions` initial-environment symbol;
+omitted temperature or pressure fields default to zero. The benchmark uses
+the explicit environment values in its generated configuration.
 The generator chooses a diagonal minimum-degree species ordering from the
 Jacobian graph to reduce factorization fill. Names in the output preserve the
 mapping back to the input.

@@ -10,6 +10,9 @@ For the supplied 100-cell seed-1 input, 100 timed 30-second steps after warm-up,
 the clang build agreed with the supplied MICM final state in all 21,100 values
 at the requested tolerance (largest relative difference 4.18e-14). The GCC build also passed after the species-ordering and clamp changes (largest
 relative difference 6.04e-14).
+An input omitting temperature, pressure, and all photolysis columns also
+matched the reference after three 1e-6-second steps; all 211 reported values
+passed, with a largest relative difference of 2.88e-16.
 
 A single 10-thread run on 10,000 cells, 100 timed 30-second steps, seed 2026,
 with clang `-O3 -DNDEBUG` measured 28,867 ms for this implementation and

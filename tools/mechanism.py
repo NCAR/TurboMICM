@@ -4,6 +4,7 @@ The result retains the input ordering. It is independent of the code generator s
 it can also be used by validation tools. Invalid references fail at build time.
 """
 import json
+import math
 from pathlib import Path
 
 import yaml
@@ -72,4 +73,11 @@ def read_mechanism(path):
     units = config.get('rate units', 'molecule cm-3')
     if units not in ('mol m-3', 'molecule cm-3'):
         raise MechanismError(f'unsupported rate units {units!r}')
-    return {'species': species, 'reactions': reactions, 'initial conditions': config.get('initial conditions', {}), 'rate units': units}
+    environment = config.get('initial environment', {})
+    if not isinstance(environment, dict) or set(environment) - {'temperature', 'pressure'}:
+        raise MechanismError('initial environment must contain only temperature and pressure')
+    for name, value in environment.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+            raise MechanismError(f'initial environment {name} must be a positive finite number')
+    return {'species': species, 'reactions': reactions, 'initial conditions': config.get('initial conditions', {}),
+            'initial environment': environment, 'rate units': units}

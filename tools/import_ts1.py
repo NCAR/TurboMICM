@@ -67,7 +67,13 @@ def translate(source):
         if name in defaults:
             raise ValueError('duplicate default: ' + name)
         defaults[name] = float(value)
-    return species, reactions, defaults
+    environment = {}
+    for field in ('temperature', 'pressure'):
+        matches = re.findall(r'state\.conditions_\[c\]\.' + field + r'_\s*=\s*(' + NUMBER + r')\s*;', source)
+        if len(matches) != 1:
+            raise ValueError(f'expected one initial {field}, found {len(matches)}')
+        environment[field] = float(matches[0])
+    return species, reactions, defaults, environment
 
 
 def main():
@@ -75,9 +81,9 @@ def main():
     parser.add_argument('source', type=Path)
     parser.add_argument('output', type=Path)
     args = parser.parse_args()
-    species, reactions, defaults = translate(args.source.read_text())
+    species, reactions, defaults, environment = translate(args.source.read_text())
     args.output.mkdir(parents=True, exist_ok=True)
-    for name, obj in [('config.json', {'camp-files': ['species.json', 'reactions.json'], 'rate units': 'mol m-3', 'initial conditions': defaults}),
+    for name, obj in [('config.json', {'camp-files': ['species.json', 'reactions.json'], 'rate units': 'mol m-3', 'initial conditions': defaults, 'initial environment': environment}),
                       ('species.json', {'camp-data': species}),
                       ('reactions.json', {'camp-data': [{'type': 'MECHANISM', 'name': 'TS1', 'reactions': reactions}]})]:
         (args.output / name).write_text(json.dumps(obj, indent=2) + '\n')
