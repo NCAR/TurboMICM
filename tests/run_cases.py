@@ -12,8 +12,11 @@ cases = [line.split()[0] for line in (ROOT / "tests" / "cases.txt").read_text().
 results = {}
 unexpected_failure = False
 
-for executable in ("reference_rates", "reference_solver", "reference_constraints", "reference_initialization"):
-    process = subprocess.run([ROOT / "bin" / executable], cwd=ROOT, capture_output=True, text=True)
+providers = [(name, [ROOT / "bin" / name]) for name in
+             ("reference_rates", "reference_solver", "reference_constraints", "reference_initialization", "reference_lu")]
+providers.append(("reference_ordering", [sys.executable, ROOT / "tests" / "reference_ordering.py"]))
+for executable, command in providers:
+    process = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
     for line in process.stdout.splitlines():
         parts = line.split(" ", 2)
         if len(parts) != 3 or parts[0] not in cases or parts[0] in results or parts[1] not in ("PASS", "FAIL"):

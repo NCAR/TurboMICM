@@ -151,6 +151,11 @@ int chem_override_rate_function(ChemState *state, const char *label, ChemRateFun
 /* NULL restores the default in-place Mozart solver; callback context is borrowed. */
 int chem_set_linear_solver(ChemState *state, const ChemLinearSolver *solver, void *context);
 ChemLinearSolver chem_doolittle_linear_solver(void);
+ChemLinearSolver chem_mozart_linear_solver(void);
+/* Copy and factor a matrix without modifying the input. Both views must have
+ * the same sparse pattern and distinct value arrays. */
+int chem_linear_factor_copy(const ChemLinearSolver *solver, const ChemLinearSystem *input,
+                            ChemLinearSystem *factors, double alpha, void *context);
 int chem_update_rates(ChemState *state);
 /* Negative Jacobian, in dense row-major form for one cell, and forcing, for
  * diagnostics and tests. The solver itself uses sparse storage. */

@@ -41,6 +41,8 @@ alternative Doolittle implementation. A caller can install a `ChemLinearSolver`
 pair of factor/solve callbacks; the public sparse view exposes the row offsets,
 column indices, lookup table, values, and algebraic-row mask. A factor callback
 receives the diagonal shift and must apply it only to differential rows.
+`chem_linear_factor_copy` provides a separate-factor path that preserves the
+original matrix; the default state solver uses precomputed in-place traversal.
 
 Linear and equilibrium constraints replace designated species rows. The
 Rosenbrock path projects inconsistent initial conditions using weighted Newton

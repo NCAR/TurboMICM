@@ -31,3 +31,8 @@ Absent an explicit air density, rate updates calculate the ideal-gas density
 from the current temperature and pressure. A C caller can override the density
 per cell. The benchmark rejects nonpositive time steps and uses group size 64
 by default; both group size and scheduling can be changed at run time.
+
+Randomized linear-algebra cases use a fixed C random sequence to generate the
+same matrix sizes and distributions as the reference tests. This avoids relying
+on implementation-specific C++ random-engine sequences while checking the same
+factorization and solve residuals at the reference tolerances.

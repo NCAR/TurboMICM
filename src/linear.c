@@ -243,3 +243,65 @@ static int doolittle_solve(const ChemLinearSystem *s, double *rhs, void *context
 
 ChemLinearSolver chem_doolittle_linear_solver(void)
 { return (ChemLinearSolver){doolittle_factor,doolittle_solve}; }
+
+/* The general view implementation exposes Mozart factorization to callers
+ * with their own sparse matrices. Solver states use the precomputed traversal
+ * above, which performs the same elimination without searching the pattern. */
+static int mozart_factor(ChemLinearSystem *s, double alpha, void *context)
+{
+    (void)context;
+    size_t n=s->species_count, cells=s->cells;
+    double *a=s->values;
+    for (size_t i=0;i<n;++i) if (!s->algebraic[i]) {
+        int at=s->lookup[i*n+i]; if (at<0) return CHEM_INVALID;
+        double *diag=a+(size_t)at*cells;
+        #pragma omp simd
+        for (size_t cell=0;cell<cells;++cell) diag[cell]+=alpha;
+    }
+    for (size_t i=0;i<n;++i) {
+        int diagonal=s->lookup[i*n+i]; if (diagonal<0) return CHEM_INVALID;
+        const double *diag=a+(size_t)diagonal*cells;
+        for (size_t cell=0;cell<cells;++cell)
+            if (diag[cell]==0 || !isfinite(diag[cell])) return CHEM_SINGULAR;
+        for (size_t j=i+1;j<n;++j) {
+            int lower=s->lookup[j*n+i]; if (lower<0) continue;
+            double *aji=a+(size_t)lower*cells;
+            #pragma omp simd
+            for (size_t cell=0;cell<cells;++cell) aji[cell]*=1.0/diag[cell];
+        }
+        for (size_t k=i+1;k<n;++k) {
+            int upper=s->lookup[i*n+k]; if (upper<0) continue;
+            const double *aik=a+(size_t)upper*cells;
+            for (size_t j=i+1;j<n;++j) {
+                int lower=s->lookup[j*n+i]; if (lower<0) continue;
+                int target=s->lookup[j*n+k]; if (target<0) return CHEM_INVALID;
+                const double *aji=a+(size_t)lower*cells;
+                double *ajk=a+(size_t)target*cells;
+                #pragma omp simd
+                for (size_t cell=0;cell<cells;++cell) ajk[cell]-=aji[cell]*aik[cell];
+            }
+        }
+    }
+    return CHEM_OK;
+}
+
+ChemLinearSolver chem_mozart_linear_solver(void)
+{ return (ChemLinearSolver){mozart_factor,doolittle_solve}; }
+
+int chem_linear_factor_copy(const ChemLinearSolver *solver, const ChemLinearSystem *input,
+                            ChemLinearSystem *factors, double alpha, void *context)
+{
+    if (!solver || !solver->factor || !input || !factors || !input->values || !factors->values ||
+        !input->cells || !input->row_start || !factors->row_start || !input->columns || !factors->columns ||
+        !factors->lookup || !factors->algebraic ||
+        input->values==factors->values || input->species_count!=factors->species_count ||
+        input->cells!=factors->cells || input->nonzeros!=factors->nonzeros ||
+        input->nonzeros > SIZE_MAX / input->cells ||
+        input->nonzeros*input->cells > SIZE_MAX / sizeof(double)) return CHEM_INVALID;
+    for (size_t i=0;i<=input->species_count;++i)
+        if (input->row_start[i]!=factors->row_start[i]) return CHEM_INVALID;
+    for (size_t i=0;i<input->nonzeros;++i)
+        if (input->columns[i]!=factors->columns[i]) return CHEM_INVALID;
+    memcpy(factors->values,input->values,input->nonzeros*input->cells*sizeof(double));
+    return solver->factor(factors,alpha,context);
+}
