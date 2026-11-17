@@ -1,0 +1,6 @@
+.conda/
+.conda-pkgs/
+bin/
+build/
+__pycache__/
+ts1_final.csv

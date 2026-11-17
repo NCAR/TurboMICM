@@ -1,0 +1,6 @@
+name: micm-c-tools
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12.16
+  - pyyaml=6.0.2
