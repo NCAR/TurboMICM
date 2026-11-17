@@ -19,11 +19,10 @@ void chem_rhs(const ChemMechanism *m, const double *restrict y,
     }
 }
 
-void chem_jacobian(const ChemMechanism *m, const double *restrict y,
-                   const double *restrict k, double *restrict jac)
+void chem_accumulate_jacobian(const ChemMechanism *m, const double *restrict y,
+                              const double *restrict k, double *restrict jac)
 {
     size_t n = m->species_count;
-    memset(jac, 0, n * n * sizeof(*jac));
     for (size_t r = 0; r < m->reaction_count; ++r) {
         const ChemReaction *reaction = &m->reactions[r];
         for (size_t d = 0; d < reaction->reactant_count; ++d) {
@@ -40,6 +39,13 @@ void chem_jacobian(const ChemMechanism *m, const double *restrict y,
             }
         }
     }
+}
+
+void chem_jacobian(const ChemMechanism *m, const double *restrict y,
+                   const double *restrict k, double *restrict jac)
+{
+    memset(jac, 0, m->species_count * m->species_count * sizeof(*jac));
+    chem_accumulate_jacobian(m,y,k,jac);
 }
 
 void chem_add_forcing(const ChemMechanism *m, const double *y, const double *k,

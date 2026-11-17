@@ -19,6 +19,21 @@ void chem_sparse_plan_destroy(ChemSparsePlan *p)
 }
 size_t chem_sparse_plan_size(const ChemSparsePlan *p) { return p ? p->n : 0; }
 
+void chem_sparse_clear(const ChemSparsePlan *p, double *a)
+{
+    for (size_t row=0;row<p->n;++row)
+        for (size_t q=p->row_offsets[row];q<p->row_offsets[row+1];++q)
+            a[row*p->n+p->row_columns[q]]=0;
+}
+void chem_sparse_negate(const ChemSparsePlan *p, double *a)
+{
+    for (size_t row=0;row<p->n;++row)
+        for (size_t q=p->row_offsets[row];q<p->row_offsets[row+1];++q) {
+            size_t index=row*p->n+p->row_columns[q];
+            a[index]=-a[index];
+        }
+}
+
 ChemSparsePlan *chem_sparse_plan_from_pattern(size_t n, const unsigned char *input)
 {
     if (!n || !input || n > SIZE_MAX/n || n >= SIZE_MAX/sizeof(size_t)) return NULL;

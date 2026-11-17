@@ -31,6 +31,9 @@ void chem_rhs(const ChemMechanism *m, const double *restrict y,
 /* Dense row-major Jacobian; its storage has species_count squared entries. */
 void chem_jacobian(const ChemMechanism *m, const double *restrict y,
                    const double *restrict k, double *restrict jac);
+/* Add the positive Jacobian to existing row-major storage. */
+void chem_accumulate_jacobian(const ChemMechanism *m, const double *restrict y,
+                              const double *restrict k, double *restrict jac);
 /* OR the structural derivative positions and used state species into
    caller-zeroed arrays. The mask has one byte per row-major matrix entry. */
 int chem_jacobian_pattern(const ChemMechanism *m, unsigned char *pattern);

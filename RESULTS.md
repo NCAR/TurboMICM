@@ -215,3 +215,9 @@ The solver-configuration tutorial additionally checks all five methods'
 printed trajectories and statistics. Its measured timing fields are validated
 as nonnegative numbers, since elapsed times vary between runs. Both compilers
 pass the TS1 comparison; the case report has 564 passing and 116 unported.
+
+After limiting sparse Jacobian clearing and sign changes to the symbolic
+plan, a single clang run of 1,000 cells and 100 timed steps took 3,574 ms,
+compared with 4,297 ms immediately before the change, using 10 threads and
+seed 2026. These are exploratory single runs, not ranking measurements.
+The 100-cell TS1 comparison and focused checks pass with both compilers.

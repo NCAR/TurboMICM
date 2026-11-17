@@ -21,6 +21,7 @@ extern const double generated_custom_defaults[], generated_initial_concentration
 typedef struct {
     double temperature, pressure;
     double *y, *custom, *rates;
+    const ChemSparsePlan *plan;
     ChemSolverStats stats;
     ChemSolveStatus status;
 } Cell;
@@ -109,7 +110,11 @@ static int read_cells(const char *path, Cell *cells, size_t count)
 static void rhs(void *ctx, const double *y, double *out)
 { chem_rhs(&generated_mechanism, y, ((Cell *)ctx)->rates, out); }
 static void jac(void *ctx, const double *y, double *out)
-{ chem_jacobian(&generated_mechanism, y, ((Cell *)ctx)->rates, out); }
+{
+    Cell *cell=ctx;
+    chem_sparse_clear(cell->plan,out);
+    chem_accumulate_jacobian(&generated_mechanism,y,cell->rates,out);
+}
 static void add_stats(ChemSolverStats *a, const ChemSolverStats *b)
 {
     a->steps += b->steps; a->accepted += b->accepted; a->rejected += b->rejected;
@@ -159,6 +164,7 @@ int main(int argc, char **argv)
     ChemRosenbrockOptions options = chem_rosenbrock_defaults(atol);
     ChemSparsePlan *plan = chem_sparse_plan_create(&generated_mechanism);
     if (!plan) { fprintf(stderr, "cannot create sparse plan\n"); free(cells); free(storage); free(atol); return 1; }
+    for (size_t i=0;i<count;++i) cells[i].plan=plan;
     options.sparse_plan = plan;
     omp_set_num_threads((int)threads);
 #pragma omp parallel for schedule(static)

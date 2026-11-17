@@ -188,7 +188,8 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
         int accepted = 0;
         while (!accepted) {
             jacobian(context, y, matrix); ++stats->jacobian_updates;
-            for (size_t i = 0; i < n*n; ++i) matrix[i] = -matrix[i];
+            if (o->sparse_plan) chem_sparse_negate(o->sparse_plan,matrix);
+            else for (size_t i = 0; i < n*n; ++i) matrix[i] = -matrix[i];
             if (constraints && constraints->count) {
                 for (size_t i=0;i<n;++i) if (algebraic[i]) memset(matrix+i*n,0,n*sizeof(double));
                 chem_constraint_subtract_jacobian(constraints,1,y,&o->constraint_temperature,o->constraint_parameters,matrix);
