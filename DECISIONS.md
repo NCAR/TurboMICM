@@ -17,9 +17,10 @@
   constants already converted to SI; TS1 uses this extension because its C++
   builder already contains converted coefficients. Reaction order determines
   the conversion, including the distinct low- and high-pressure falloff units.
-- A cell is currently the unit of solver state and error control. This makes
-  independently varying conditions straightforward and allows parallel work
-  without shared mutable solver state, at the cost of repeated scalar work.
+- The benchmark uses one cell per solver state and error-control group. This
+  makes independently varying conditions straightforward and allows parallel
+  work without shared mutable solver state, at the cost of repeated scalar
+  work. The library also supports shared control over a multi-cell state.
 - The optional `ChemConditions` air-density override supports mechanisms and
   tests that prescribe density independently of temperature and pressure; when
   it is absent, the ideal-gas density is calculated as in the benchmark.

@@ -62,39 +62,30 @@ int chem_solver_solve(ChemSolver *solver,double dt,ChemState *state,const void *
     for(size_t cell=0;cell<cells;++cell) {
         if(chem_matrix_get_row(&state->variables,cell,y+cell*n,n) || chem_matrix_get_row(&state->rate_constants,cell,rates+cell*nr,nr)){free(data);return CHEM_SOLVE_BAD_ARGUMENT;}
     }
-    int status=0;
+    int status=0;ChemWorkspace **work=NULL;
+    if(cells>1) {
+        work=calloc(cells,sizeof(*work));
+        if(!work){free(data);return CHEM_SOLVE_BAD_ARGUMENT;}
+        work[0]=solver->workspace;
+        for(size_t cell=1;cell<cells;++cell) {
+            work[cell]=chem_workspace_create_external(m,solver->options.constraints,solver->options.constraint_count,solver->options.models,solver->options.model_count);
+            if(!work[cell]){status=CHEM_SOLVE_BAD_ARGUMENT;break;}
+        }
+    }
     if(solver->options.method==CHEM_SOLVER_ROSENBROCK) {
         if(override)solver->options.rosenbrock=*(const ChemRosenbrockParameters *)override;
         ChemRosenbrockParameters p=solver->options.rosenbrock;
         p.absolute_tolerances=state->absolute_tolerances;p.relative_tolerance=state->parameters.relative_tolerance;
-        if(cells==1) status=chem_rosenbrock_solve(m,solver->workspace,&p,state->conditions[0],rates,dt,y,statistics);
-        else {
-            ChemWorkspace **work=calloc(cells,sizeof(*work));
-            if(!work){free(data);return CHEM_SOLVE_BAD_ARGUMENT;}
-            work[0]=solver->workspace;
-            for(size_t cell=1;cell<cells;++cell) {
-                work[cell]=chem_workspace_create_external(m,solver->options.constraints,solver->options.constraint_count,solver->options.models,solver->options.model_count);
-                if(!work[cell]){status=CHEM_SOLVE_BAD_ARGUMENT;break;}
-            }
-            if(!status)status=chem_rosenbrock_solve_group(m,work,cells,&p,state->conditions,rates,dt,y,statistics);
-            for(size_t cell=1;cell<cells;++cell)chem_workspace_free(work[cell]);
-            free(work);
-        }
+        if(!status)status=cells==1?chem_rosenbrock_solve(m,solver->workspace,&p,state->conditions[0],rates,dt,y,statistics):
+                                  chem_rosenbrock_solve_group(m,work,cells,&p,state->conditions,rates,dt,y,statistics);
     } else {
         if(override)solver->options.backward_euler=*(const ChemBackwardEulerParameters *)override;
         ChemBackwardEulerParameters p=solver->options.backward_euler;
         p.absolute_tolerances=state->absolute_tolerances;p.relative_tolerance=state->parameters.relative_tolerance;
-        memset(statistics,0,sizeof(*statistics));
-        for(size_t cell=0;cell<cells;++cell) {
-            ChemStatistics st={0};
-            int cell_status=chem_backward_euler_solve(m,solver->workspace,&p,state->conditions[cell],rates+cell*nr,dt,y+cell*n,&st);
-            statistics->internal_steps+=st.internal_steps;statistics->accepted+=st.accepted;statistics->rejected+=st.rejected;
-            statistics->function_calls+=st.function_calls;statistics->jacobian_updates+=st.jacobian_updates;
-            statistics->decompositions+=st.decompositions;statistics->solves+=st.solves;
-            if(cell==0 || st.final_time<statistics->final_time)statistics->final_time=st.final_time;
-            if(cell_status){status=cell_status;break;}
-        }
+        if(!status)status=cells==1?chem_backward_euler_solve(m,solver->workspace,&p,state->conditions[0],rates,dt,y,statistics):
+                                  chem_backward_euler_solve_group(m,work,cells,&p,state->conditions,rates,dt,y,statistics);
     }
+    if(work){for(size_t cell=1;cell<cells;++cell)chem_workspace_free(work[cell]);free(work);}
     for(size_t cell=0;cell<cells;++cell)chem_matrix_set_row(&state->variables,cell,y+cell*n,n);
     free(data);return status;
 }

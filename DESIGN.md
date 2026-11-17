@@ -34,8 +34,8 @@ corresponding numerical rows.
 The group Rosenbrock interface shares a time step and error norm across cells,
 while retaining a workspace and external context for each cell.
 The solver builder validates configuration and calls model finalizers. Solver
-options can be replaced for a solve; grouped Rosenbrock states share control,
-and backward Euler advances cells independently.
+options can be replaced for a solve. Both grouped Rosenbrock and backward
+Euler states share their step control across all cells in the solve.
 `ChemRosenbrockParameters` contains stage coefficients and control parameters;
 two-, three-, and four-stage ODE parameter sets are provided.
 `chem_rosenbrock_solve` implements the stage loop and error controller. The
@@ -55,7 +55,9 @@ Four- and six-stage DAE parameter sets are available. Constraint and coupled
 kinetics regression cases exercise initialization, integration, and conservation.
 
 Backward Euler uses Newton iterations, nonnegative iterates, and the reference
-step-reduction sequence. Both solvers share the chemistry and linear algebra.
+step-reduction sequence. A grouped step converges only when every cell does;
+a rejected step restores every cell before the common step is reduced. Both
+solvers share the chemistry and linear algebra.
 
 The benchmark uses independent solver state per cell and OpenMP scheduling,
 static by default. `--threads N` controls the thread count; absent the option OpenMP's

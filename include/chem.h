@@ -167,6 +167,11 @@ int chem_backward_euler_converged(size_t cells, size_t species, const double *re
 int chem_backward_euler_solve(const ChemMechanism *, ChemWorkspace *,
                               const ChemBackwardEulerParameters *, ChemConditions,
                               const double *rates, double dt, double *y, ChemStatistics *);
+/* A group shares Newton convergence and time-step reductions across cells.
+ * Workspaces, conditions, rates, and row-major states are per cell. */
+int chem_backward_euler_solve_group(const ChemMechanism *, ChemWorkspace *const *, size_t cells,
+                                    const ChemBackwardEulerParameters *, const ChemConditions *,
+                                    const double *rates, double dt, double *y, ChemStatistics *);
 
 typedef enum { CHEM_LINEAR_CONSTRAINT, CHEM_EQUILIBRIUM_CONSTRAINT } ChemConstraintType;
 struct ChemConstraint {

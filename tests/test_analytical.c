@@ -63,7 +63,7 @@ static int run_case(int kind,int backward,int stiff,int method,int algorithm,siz
     if(stiff) { tolerance=backward?stiff_b[kind]:stiff_r[kind]; if(!backward && kind==4 && method==0) tolerance=1e-4; if(!backward && kind==4 && method==4) tolerance=1e-5; }
     const char *simple_names[]={"A","B","C"},*stiff_names[]={"A1","A2","B","C"},*parameter_names[]={"photoA","photoB"};
     const char **names=stiff?stiff_names:simple_names;
-    ChemReaction rx[5]={0},simple[2];double parameters[2]={0},rates[3][5],expected_rates[3][2];setup_rate(kind,simple,parameters);
+    ChemReaction rx[5]={0},simple[2];double parameters[2]={0},rates[15],expected_rates[3][2];setup_rate(kind,simple,parameters);
     ChemTerm simple_rs[]={{0,1},{1,1}},simple_ps[]={{1,1},{2,1}};
     ChemTerm stiff_rs[]={{0,1},{1,1},{2,1},{0,1},{1,1}},stiff_ps[]={{2,1},{2,1},{3,1},{1,1},{0,1}};
     size_t n=stiff?4:3,nr=stiff?5:2;
@@ -78,7 +78,11 @@ static int run_case(int kind,int backward,int stiff,int method,int algorithm,siz
         .parameter_names=parameter_names,.reactions=rx,.reactants=stiff?stiff_rs:simple_rs,.products=stiff?stiff_ps:simple_ps};
     ChemStateParameters sp={nr,n,kind==1?2u:0u,names,parameter_names,1e-6,NULL}; ChemState state={0};
     if(chem_state_init(&state,&sp,3,width)) return 0;
-    ChemWorkspace *work=chem_workspace_create(&m);if(!work) {chem_state_free(&state);return 0;}
+    ChemWorkspace *work[3]={0};
+    for(size_t cell=0;cell<3;++cell)if(!(work[cell]=chem_workspace_create(&m))) {
+        for(size_t i=0;i<3;++i)chem_workspace_free(work[i]);
+        chem_state_free(&state);return 0;
+    }
     for(size_t cell=0;cell<3;++cell) {
         double gas=1.380649e-23*6.02214076e23;
         state.conditions[cell]=(ChemConditions){temperature[cell],pressure[cell],pressure[cell]/(gas*temperature[cell]),1};
@@ -90,26 +94,32 @@ static int run_case(int kind,int backward,int stiff,int method,int algorithm,siz
     }
     int ok=!chem_state_update_rate_constants(&state,&m,NULL);
     for(size_t cell=0;cell<3;++cell) for(size_t j=0;j<nr;++j) {
-        rates[cell][j]=*chem_matrix_at(&state.rate_constants,cell,j);
+        rates[cell*nr+j]=*chem_matrix_at(&state.rate_constants,cell,j);
         double expected=stiff?(j<2?expected_rates[cell][0]:j==2?expected_rates[cell][1]:j==3?4e10:3.6e10):expected_rates[cell][j];
-        if(fabs(rates[cell][j]-expected)>1e-9*fabs(expected)) ok=0;
+        if(fabs(rates[cell*nr+j]-expected)>1e-9*fabs(expected)) ok=0;
     }
     ChemRosenbrockParameters rp=method==0?chem_rosenbrock_two_stage():method==1?chem_rosenbrock_three_stage():method==2?chem_rosenbrock_four_stage():method==3?chem_rosenbrock_four_stage_dae():chem_rosenbrock_six_stage_dae();
     ChemBackwardEulerParameters bp=chem_backward_euler_defaults();rp.linear_solver=bp.linear_solver=(ChemLUAlgorithm)algorithm;
-    for(int step=1;step<1000 && ok;++step) for(size_t cell=0;cell<3 && ok;++cell) {
-        double y[4]; ChemStatistics stats;chem_matrix_get_row(&state.variables,cell,y,n);
-        int status=backward?chem_backward_euler_solve(&m,work,&bp,state.conditions[cell],rates[cell],1,y,&stats):chem_rosenbrock_solve(&m,work,&rp,state.conditions[cell],rates[cell],1,y,&stats);
-        if(status) {fprintf(stderr,"kind=%d method=%d algorithm=%d width=%zu step=%d cell=%zu status=%d\n",kind,method,algorithm,width,step,cell,status);ok=0;break;} chem_matrix_set_row(&state.variables,cell,y,n);
+    for(int step=1;step<1000 && ok;++step) {
+        double y[12];ChemStatistics stats;
+        for(size_t cell=0;cell<3;++cell)chem_matrix_get_row(&state.variables,cell,y+cell*n,n);
+        int status=backward?chem_backward_euler_solve_group(&m,work,3,&bp,state.conditions,rates,1,y,&stats):
+                            chem_rosenbrock_solve_group(&m,work,3,&rp,state.conditions,rates,1,y,&stats);
+        if(status) {fprintf(stderr,"kind=%d method=%d algorithm=%d width=%zu step=%d status=%d\n",kind,method,algorithm,width,step,status);ok=0;break;}
+        for(size_t cell=0;cell<3 && ok;++cell) {
+        double *cell_y=y+cell*n;chem_matrix_set_row(&state.variables,cell,cell_y,n);
         double k1=expected_rates[cell][0],k2=expected_rates[cell][1],t=step,initial=1-(double)cell/3;
         double e1=exp(-k1*t),e2=exp(-k2*t);
         double exact[]={initial*e1,initial*(k1/(k2-k1))*(e1-e2),initial*(1+(k1*e2-k2*e1)/(k2-k1))};
-        double actual[]={stiff?y[0]+y[1]:y[0],stiff?y[2]:y[1],stiff?y[3]:y[2]};
+        double actual[]={stiff?cell_y[0]+cell_y[1]:cell_y[0],stiff?cell_y[2]:cell_y[1],stiff?cell_y[3]:cell_y[2]};
         for(size_t i=0;i<3;++i) if(!isfinite(actual[i]) || fabs(actual[i]-exact[i])>tolerance) {
             fprintf(stderr,"kind=%d method=%d algorithm=%d width=%zu step=%d cell=%zu species=%zu error=%.4g tolerance=%.4g\n",kind,method,algorithm,width,step,cell,i,fabs(actual[i]-exact[i]),tolerance);
             ok=0;break;
         }
+        }
     }
-    chem_workspace_free(work);chem_state_free(&state);return ok;
+    for(size_t cell=0;cell<3;++cell)chem_workspace_free(work[cell]);
+    chem_state_free(&state);return ok;
 }
 static int robertson_case(int method,int algorithm)
 {

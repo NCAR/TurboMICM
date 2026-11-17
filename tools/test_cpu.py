@@ -14,6 +14,8 @@ for executable in ('test_cases', 'test_matrix_cases', 'test_matrix_function_case
         if case in results:
             raise ValueError(f'duplicate case result: {case}')
         results[case] = passed == '1'
+solver_regression = subprocess.run([str(root / 'build' / 'test_solver')], text=True, capture_output=True)
+results['backward_euler:BackwardEuler.CanCallSolve'] &= solver_regression.returncode == 0
 expected = (root / 'tests/tutorial_expected.txt').read_text()
 for case, executable, args in [
     ('rate_constants_no_user_defined_example_by_hand', 'tutorial_no_user', []),

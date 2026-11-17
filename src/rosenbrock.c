@@ -798,3 +798,63 @@ int chem_backward_euler_solve(const ChemMechanism *m, ChemWorkspace *w,
     }
     return 0;
 }
+
+int chem_backward_euler_solve_group(const ChemMechanism *m, ChemWorkspace *const *work, size_t cells,
+                                    const ChemBackwardEulerParameters *p, const ChemConditions *conditions,
+                                    const double *rates, double dt, double *y, ChemStatistics *stats)
+{
+    if (!m || !work || !cells || !p || !conditions || !rates || !y || !stats || !(dt > 0) ||
+        p->max_iterations < 1 || p->small < 0 || p->relative_tolerance < 0 ||
+        (!p->absolute_tolerances && p->absolute_tolerance < 0)) return CHEM_SOLVE_BAD_ARGUMENT;
+    const size_t n=m->species_count, nr=m->reaction_count;
+    if (!n || cells > SIZE_MAX/n || (nr && cells > SIZE_MAX/nr)) return CHEM_SOLVE_BAD_ARGUMENT;
+    for (size_t cell=0; cell<cells; ++cell)
+        if (!work[cell] || work[cell]->n!=n || work[cell]->algebraic_count) return CHEM_SOLVE_BAD_ARGUMENT;
+    memset(stats,0,sizeof *stats);
+    double h=p->h_start==0?dt:p->h_start, time=0;
+    if (!(h>0)) return CHEM_SOLVE_BAD_ARGUMENT;
+    int successes=0,failures=0;
+    for (size_t cell=0;cell<cells;++cell) memcpy(work[cell]->initial,y+cell*n,n*sizeof(double));
+    while (time<dt) {
+        int converged=0;
+        for (int iteration=0;iteration<p->max_iterations;++iteration) {
+            ++stats->internal_steps;
+            converged=iteration>0;
+            for (size_t cell=0;cell<cells;++cell) {
+                ChemWorkspace *w=work[cell];double *state=y+cell*n;
+                const double *cell_rates=rates+cell*nr;
+                chem_forcing(m,conditions[cell],cell_rates,state,w->trial);
+                if (external_add(w,conditions[cell],state,w->trial,0)) return CHEM_SOLVE_BAD_ARGUMENT;
+                clear_jacobian(w);chem_jacobian_add(m,conditions[cell],cell_rates,state,w->jacobian);
+                if (external_add(w,conditions[cell],state,w->jacobian,1)) return CHEM_SOLVE_BAD_ARGUMENT;
+                if (factor(w,1/h,p->linear_solver)) return CHEM_SOLVE_SINGULAR;
+                for (size_t i=0;i<n;++i) w->trial[i]-=(state[i]-w->initial[i])/h;
+                substitute(w,w->trial);
+                for (size_t i=0;i<n;++i) {
+                    double next=state[i]+w->trial[i];state[i]=0.0>next?0.0:next;
+                    if (iteration>0) {
+                        double atol=p->absolute_tolerances?p->absolute_tolerances[i]:p->absolute_tolerance;
+                        double residual=fabs(w->trial[i]);
+                        if (!isfinite(residual) || (residual>p->small && residual>atol &&
+                                                    residual>p->relative_tolerance*fabs(state[i]))) converged=0;
+                    }
+                }
+            }
+            ++stats->function_calls;++stats->jacobian_updates;++stats->decompositions;++stats->solves;
+            if (converged) break;
+        }
+        if (!converged) {
+            ++stats->rejected;successes=0;
+            if (failures>=5) {stats->final_time=time+h;return CHEM_SOLVE_ACCEPTING_UNCONVERGED;}
+            for (size_t cell=0;cell<cells;++cell) memcpy(y+cell*n,work[cell]->initial,n*sizeof(double));
+            h*=p->reductions[failures++];
+            if (!(h>0) || time+h==time) return CHEM_SOLVE_STEP_TOO_SMALL;
+        } else {
+            ++stats->accepted;time+=h;stats->final_time=time;
+            for (size_t cell=0;cell<cells;++cell) memcpy(work[cell]->initial,y+cell*n,n*sizeof(double));
+            if (++successes>=2) {successes=0;h*=2;}
+        }
+        h=fmin(h,dt-time);
+    }
+    return CHEM_SOLVE_SUCCESS;
+}
