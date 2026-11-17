@@ -252,6 +252,11 @@ algebraic rows and updates temperature-dependent equilibrium constants. Both
 compilers pass the 100-cell TS1 comparison; the case report has 609 passing
 and 71 unported failures.
 
+Typed and const row-view checks now cover integer vectors, captured data,
+temporary vectors, empty sparse matrices, and mixed dense/sparse layouts.
+Both compilers pass the 100-cell TS1 comparison; the case report has 646
+passing and 34 unported failures.
+
 Backward Euler now supports grouped, shared-convergence solves. The four
 single- and multi-cell aerosol trajectory cases pass at the reference
 tolerances with both compilers; the case report has 597 passing and 83

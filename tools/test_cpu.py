@@ -7,6 +7,18 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    "matrix:Matrix.IterateOverMatrix": ("build/test_typed_views", "typed matrix iteration"),
+    **{f"{prefix}:{suite}.{case}": ("build/test_typed_views", "typed and const row views")
+       for prefix,suite in [("matrix","Matrix"),("vector_matrix","VectorMatrix")]
+       for case in ["ConstMatrixFunction", "ConstVector", "MixedVectorColumnViewRowVariable", "IntegerVector",
+                    "FunctionWithConstSignature", "VectorCapture"]},
+    **{f"{prefix}:{suite}.{case}": ("build/test_typed_views", "typed and const sparse views")
+       for prefix,suite in [("sparse_matrix_standard_compressed_column_ordering","SparseCompressedColumnMatrix"),
+                            ("sparse_matrix_standard_compressed_row_ordering","SparseCompressedRowMatrix"),
+                            ("sparse_matrix_vector_compressed_column_ordering","SparseVectorCompressedColumnMatrix"),
+                            ("sparse_matrix_vector_compressed_row_ordering","SparseVectorCompressedRowMatrix")]
+       for case in ["ConstSparseMatrixFunction", "EmptySparseMatrixFunction", "ConstVectorSparse",
+                    "MixedVectorBlockViewBlockVariable", "IntegerVectorSparse", "FunctionWithConstSignatureSparse"]},
     **{f"equilibrium_constraint:EquilibriumIntegration.{case}": ("build/test_constraint_state", "constraint state metadata")
        for case in ["SetConstraintsAPIWorks", "SetConstraintsAPIMultipleConstraints"]},
     "regression:RosenbrockRegression.FlowTube": ("build/test_flow_tube", "flow-tube trajectories"),
