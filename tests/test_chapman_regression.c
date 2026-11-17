@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "chem.h"
-#include "chapman_names.h"
+#include "mechanism_metadata.h"
 #include "matrix.h"
 #include "rates.h"
 #include "rosenbrock.h"
@@ -240,13 +240,21 @@ static void name_checks(void)
 {
     const char *const expected_reactions[]={"O2_1","O3_1","O3_2","N2_O1D_1","O1D_O2_1","O_O3_1","M_O_O2_1"};
     const char *const expected_species[]={"M","Ar","CO2","H2O","N2","O1D","O","O2","O3"};
-    size_t count=0; const char *const *names=chem_chapman_reaction_names(&count);
-    assert(count==7);
-    for (size_t i=0;i<count;++i) assert(!strcmp(names[i],expected_reactions[i]));
-    names=chem_chapman_photolysis_names(&count); assert(count==3);
-    for (size_t i=0;i<count;++i) assert(!strcmp(names[i],expected_reactions[i]));
-    names=chem_chapman_species_names(&count); assert(count==9);
-    for (size_t i=0;i<count;++i) assert(!strcmp(names[i],expected_species[i]));
-    assert(chem_chapman_species_names(NULL)==names);
+    const size_t photolysis[]={0,1,2};
+    ChemMechanismMetadata names={0};
+    assert(chem_mechanism_metadata_init(&names,&mechanism,expected_reactions,expected_species,photolysis,3)==CHEM_METADATA_OK);
+    assert(names.reaction_count==7 && names.photolysis_count==3 && names.species_count==9);
+    for (size_t i=0;i<names.reaction_count;++i) assert(!strcmp(names.reaction_names[i],expected_reactions[i]));
+    for (size_t i=0;i<names.photolysis_count;++i) assert(!strcmp(names.photolysis_names[i],expected_reactions[i]));
+    for (size_t i=0;i<names.species_count;++i) assert(!strcmp(names.species_names[i],expected_species[i]));
+    assert(names.reaction_names[0]!=expected_reactions[0]);
+    size_t bad[]={7};
+    assert(chem_mechanism_metadata_init(&names,&mechanism,expected_reactions,expected_species,bad,1)==CHEM_METADATA_INVALID);
+    assert(names.reaction_count==7 && !strcmp(names.reaction_names[0],"O2_1"));
+    const size_t reordered[]={2,0};
+    assert(chem_mechanism_metadata_init(&names,&mechanism,expected_reactions,expected_species,reordered,2)==CHEM_METADATA_OK);
+    assert(names.photolysis_count==2 && !strcmp(names.photolysis_names[0],"O3_2") &&
+           !strcmp(names.photolysis_names[1],"O2_1"));
+    chem_mechanism_metadata_destroy(&names);
 }
 int main(void) { name_checks(); matrix_checks(); forcing_checks(); solve_checks(); reference_trajectories(); return 0; }

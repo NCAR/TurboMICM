@@ -43,6 +43,9 @@ CASES = {
        for case in ["BuildsChemicalReaction", "ChemicalReactionCopyAssignmentSucceeds"]},
     **{f"solver_builder:SolverBuilder.{case}": ("build/test_process_builder", "mechanism validation")
        for case in ["ThrowsMissingSystem", "ThrowsUnusedSpecies"]},
+    **{f"solver_builder:SolverBuilder.{case}": ("build/test_cpu_solver", "built solver and solve options")
+       for case in ["CanBuildBackwardEuler", "CanBuildRosenbrock", "CanBuildBackwardEulerOverloadedSolverMethod",
+                    "CanBuildRosenbrockOverloadedSolveMethod"]},
     "rosenbrock:RosenbrockSolver.CanSetTolerances": ("build/test_process_builder", "species tolerance propagation"),
     **{f"species:Species.{case}": ("build/test_species", "species properties and copy")
        for case in ["StringConstructor", "StringAndVectorConstructor", "GetProperty", "SetThirdBody", "CopyConstructor", "CopyAssignment"]},

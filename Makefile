@@ -56,9 +56,11 @@ build/composite.o: src/composite.c include/composite.h include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/model.o: src/model.c include/model.h include/composite.h include/state.h include/sparse_matrix.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/chapman_names.o: src/chapman_names.c include/chapman_names.h | build
+build/cpu_solver.o: src/cpu_solver.c include/cpu_solver.h include/process.h include/state.h include/backward_euler.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/chapman_names.o build/typed_sparse_matrix.o build/model.o build/version.o build/typed_matrix.o build/backward_euler_group.o build/process.o build/species.o build/rosenbrock_group.o build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
+build/mechanism_metadata.o: src/mechanism_metadata.c include/mechanism_metadata.h include/chem.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/libchem.a: build/cpu_solver.o build/mechanism_metadata.o build/typed_sparse_matrix.o build/model.o build/version.o build/typed_matrix.o build/backward_euler_group.o build/process.o build/species.o build/rosenbrock_group.o build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
@@ -87,6 +89,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_constraint_state
 	./build/test_species
 	./build/test_process_builder
+	./build/test_cpu_solver
 	./build/test_flow_tube
 	./build/test_openmp
 	./build/test_rosenbrock
@@ -199,7 +202,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/vectorized_matrix_solver build/test_model_composition build/test_version build/test_alpha_jac build/test_dae_terminator build/test_typed_views build/test_constraint_state build/test_flow_tube build/test_openmp build/openmp_tutorial build/test_process_builder build/test_species build/solver_configuration build/README_example build/multiple_grid_cells build/solve_results build/rate_constants_no_user_defined_example_by_hand build/rate_constants_user_defined_example_by_hand build/test_aerosol build/test_aerosol_state build/test_chapman_regression build/test_rate_store build/test_dae_overshoot build/test_grouped_views build/test_sparse_functions build/test_sparse_views build/test_sparse_matrix build/test_matrix_function build/test_matrix_views build/test_matrix build/test_external_composition build/test_external_constraints build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_cpu_solver build/vectorized_matrix_solver build/test_model_composition build/test_version build/test_alpha_jac build/test_dae_terminator build/test_typed_views build/test_constraint_state build/test_flow_tube build/test_openmp build/openmp_tutorial build/test_process_builder build/test_species build/solver_configuration build/README_example build/multiple_grid_cells build/solve_results build/rate_constants_no_user_defined_example_by_hand build/rate_constants_user_defined_example_by_hand build/test_aerosol build/test_aerosol_state build/test_chapman_regression build/test_rate_store build/test_dae_overshoot build/test_grouped_views build/test_sparse_functions build/test_sparse_views build/test_sparse_matrix build/test_matrix_function build/test_matrix_views build/test_matrix build/test_external_composition build/test_external_constraints build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
@@ -366,3 +369,6 @@ check: build/test_openmp build/openmp_tutorial
 build/vectorized_matrix_solver: examples/vectorized_matrix_solver.c build/libchem.a
 	$(CC) $(CFLAGS) examples/vectorized_matrix_solver.c build/libchem.a -lm -o $@
 check: build/vectorized_matrix_solver
+build/test_cpu_solver: tests/test_cpu_solver.c build/libchem.a
+	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
+check: build/test_cpu_solver

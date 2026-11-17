@@ -155,3 +155,11 @@ are pointers, their targets remain owned by the caller. The vectorized matrix
 tutorial uses these blocks to demonstrate standard and grouped string-pointer
 storage. Its reference solve loop starts converged and therefore updates rates
 without advancing the concentrations.
+
+The CPU solver wrapper owns its compiled mechanism and a zero-cell state
+schema. Solver states copy names and tolerances from that schema. Rate updates
+are explicit; solve uses the rates already present in the state. Each solve
+uses one cell or a group with shared acceptance. A group width of zero permits
+unbounded cell counts, while a positive width sets the maximum group size.
+Override options persist in the solver; tolerances come from the current state,
+and other option pointers are borrowed.

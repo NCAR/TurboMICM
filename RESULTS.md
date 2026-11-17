@@ -297,3 +297,10 @@ report has 666 passing, 5 N/A, and 9 unported failures.
 The fixed Chapman reference metadata now exposes and checks all seven reaction
 names, three photolysis names, and nine species names. The CPU case report has
 669 passing, 5 N/A, and 6 unported failures.
+
+Both solver builders now reproduce the reference construction and option
+override checks, including their exact step, forcing, Jacobian, and solve
+counts. Grouped solves with nonzero rates are checked separately. Clang and
+GCC pass the focused suite and TS1 comparison; the CPU report has 673 passing,
+5 N/A, and 2 unported failures. The fixed Chapman names are test data passed
+to a mechanism-generic metadata API rather than specialized library code.

@@ -23,7 +23,7 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently
-669 cases pass, five C++ template-dispatch cases are N/A, and 6 remain
+673 cases pass, five C++ template-dispatch cases are N/A, and 2 remain
 unported, so the target intentionally fails. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
@@ -69,5 +69,10 @@ with optional interleaved cell groups. `include/typed_sparse_matrix.h` provides
 the same layouts for trivially copyable values; pointers stored there remain
 caller-owned.
 
-`include/chapman_names.h` exposes the fixed Chapman reference mechanism’s
-reaction, photolysis, and species names with static lifetime.
+`include/mechanism_metadata.h` stores owned reaction, photolysis, and species
+names for any mechanism.
+
+`include/cpu_solver.h` compiles a system and reactions into an owned solver,
+creates compatible states, updates rate parameters, and solves with either
+Rosenbrock or backward Euler. A positive group width limits cells per solve;
+zero permits arbitrary cell counts. Solve-time option overrides persist.
