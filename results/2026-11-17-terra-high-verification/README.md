@@ -24,8 +24,8 @@ clang 21.0.0) and once with `CC=gcc-15` (GCC 15.2.0), by
   C++ tag types.
 - **How the PASS lines are made.** Unlike terra-max and terra-xhigh, whose test
   programs print one result per case, `tools/test_cpu.py` maps each case id to
-  one of 47 test programs (`tools/test_cpu.py:9-283`) and reports the id PASS
-  when that program exits 0 (`tools/test_cpu.py:306-322`): the 675 PASS ids
+  one of 47 test programs (`tools/test_cpu.py:9-293`) and reports the id PASS
+  when that program exits 0 (`tools/test_cpu.py:316-324`): the 675 PASS ids
   share 47 exit statuses, 579 of them in programs that carry ten or more ids
   (86 from `build/test_sparse_functions`, 42 from `build/test_sparse_views`).
   The file states that "each listed executable must check every assertion in
