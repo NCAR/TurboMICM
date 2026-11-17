@@ -66,3 +66,8 @@ The 100-cell TS1 output also passed with 1 thread, 3 threads, and the default
 thread count. The case inventory contains 680 unique reference IDs: 675 are
 mapped to passing executables and 5 have explicit N/A reasons, with no missing
 or extra IDs.
+As a diagnostic, generating the reactions in the reference's rate-type order
+and using its exact state permutation still left 137 of 211 warm-up values
+outside the tolerance on the all-default photolysis stress input (gcc-15 C
+port versus clang reference). This experiment did not change the production
+ordering and indicates that ordering alone does not explain the divergence.
