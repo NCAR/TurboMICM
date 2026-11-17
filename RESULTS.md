@@ -11,7 +11,7 @@ were 4.18e-14 with clang and 6.04e-14 with gcc-15, against the requested
 values, including the temperature and pressure columns.
 
 A single clang run of the full 10,000-cell, 100-step, 30-second workload with
-seed 2026 and 10 threads took 25,761 ms, compared with 26,408 ms for the MICM
+seed 2026 and 10 threads took 25,408 ms, compared with 26,576 ms for the MICM
 reference built with the same optimization flags. These are single runs, not
 median ranking measurements. The C benchmark advances cells independently;
 the reference uses one group per thread, so their summed statistics count
@@ -76,3 +76,6 @@ Three additional 100-cell inputs from the supplied generator, using seeds 42,
 relative differences were 2.74e-14, 2.54e-14, and 7.66e-14, respectively.
 These used gcc-15 for the C port, with three threads, and the clang reference
 with one thread.
+
+Static, dynamic, guided, and default OpenMP schedules produced identical
+per-cell output in the scheduling check.

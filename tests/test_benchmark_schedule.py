@@ -8,10 +8,13 @@ root = Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory(dir=root / 'build') as directory:
     work = Path(directory)
     outputs = []
-    for threads, schedule in [('1', 'static'), ('3', 'static,2'),
+    for threads, schedule in [('1', 'static'), ('3', None), ('3', 'static,2'),
                               ('3', 'dynamic,1'), ('3', 'guided,2')]:
         environment = os.environ.copy()
-        environment['OMP_SCHEDULE'] = schedule
+        if schedule is None:
+            environment.pop('OMP_SCHEDULE', None)
+        else:
+            environment['OMP_SCHEDULE'] = schedule
         subprocess.run([root / 'bin/ts1_bench_cpu', '--threads', threads, '5', '2', '30',
                         root / '../reference/ts1_cells_100_seed1.csv'], cwd=work,
                        env=environment, check=True, capture_output=True)
