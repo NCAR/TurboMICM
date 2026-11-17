@@ -33,4 +33,5 @@ int chem_state_set_concentrations(ChemState *, const ChemNamedValues *, size_t c
 int chem_state_set_parameter(ChemState *, const char *, const double *values, size_t count);
 int chem_state_set_parameters(ChemState *, const ChemNamedValues *, size_t count);
 int chem_state_set_parameter_rows(ChemState *, const double *const *rows, const size_t *sizes, size_t count);
+int chem_state_update_rate_constants(ChemState *, const ChemMechanism *, const ChemCallback *callbacks);
 #endif

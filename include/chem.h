@@ -54,6 +54,13 @@ int chem_rate_constants_with_callbacks(const ChemMechanism *, ChemConditions, co
                                        const ChemCallback *callbacks, double *rates);
 void chem_forcing(const ChemMechanism *, ChemConditions, const double *rates, const double *y, double *f);
 void chem_jacobian(const ChemMechanism *, ChemConditions, const double *rates, const double *y, double *j);
+/* Add reaction forcing or subtract its Jacobian, leaving masked algebraic
+ * rows untouched. A null mask treats every row as differential. */
+int chem_process_add_forcing(const ChemMechanism *, ChemConditions, const double *rates, const double *y,
+                             const unsigned char *algebraic_rows, double *forcing);
+int chem_process_subtract_jacobian(const ChemMechanism *, ChemConditions, const double *rates, const double *y,
+                                   const unsigned char *algebraic_rows, double *jacobian);
+int chem_process_jacobian_pattern(const ChemMechanism *, unsigned char *pattern);
 
 /* Rosenbrock parameters are data, so the step controller and formula can be
  * changed independently. Arrays use row-wise strictly lower triangular order. */
@@ -176,6 +183,9 @@ typedef struct { const ChemSpecies *species; int has_diffusion; double diffusion
 void chem_phase_species_set_diffusion(ChemPhaseSpecies *, double diffusion);
 typedef struct { const char *name; const ChemPhaseSpecies *species; size_t count; } ChemPhase;
 typedef struct { ChemPhase gas_phase; } ChemSystem;
+/* Reaction term indices refer to the owning mechanism's term arrays; phase
+ * metadata and its species are borrowed. Plain assignment copies the value. */
+typedef struct { ChemReaction reaction; ChemPhase phase; } ChemProcess;
 size_t chem_phase_state_size(ChemPhase);
 /* Returns zero on success; output receives phase.name or the unqualified name. */
 int chem_phase_state_name(ChemPhase, size_t state_index, int qualified, char *output, size_t capacity);

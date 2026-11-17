@@ -2,7 +2,9 @@
 #include "internal.h"
 
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 const char *chem_version(void) { return "0.1.0"; }
@@ -214,4 +216,47 @@ void chem_jacobian_add(const ChemMechanism *m, ChemConditions c, const double *r
             }
         }
     }
+}
+
+int chem_process_add_forcing(const ChemMechanism *m,ChemConditions c,const double *rates,const double *y,
+                             const unsigned char *algebraic,double *forcing)
+{
+    if(!m || !rates || !y || !forcing || m->species_count>SIZE_MAX/sizeof(double)) return 1;
+    double *temp=malloc((m->species_count?m->species_count:1)*sizeof(double)); if(!temp) return 1;
+    chem_forcing(m,c,rates,y,temp);
+    for(size_t i=0;i<m->species_count;++i) if(!algebraic || !algebraic[i]) forcing[i]+=temp[i];
+    free(temp); return 0;
+}
+int chem_process_subtract_jacobian(const ChemMechanism *m,ChemConditions c,const double *rates,const double *y,
+                                   const unsigned char *algebraic,double *jacobian)
+{
+    if(!m || !rates || !y || !jacobian || (m->species_count && m->species_count>SIZE_MAX/m->species_count)) return 1;
+    size_t n=m->species_count, count=n*n; if(count>SIZE_MAX/sizeof(double)) return 1;
+    double *temp=malloc((count?count:1)*sizeof(double)); if(!temp) return 1;
+    chem_jacobian(m,c,rates,y,temp);
+    for(size_t i=0;i<n;++i) if(!algebraic || !algebraic[i]) for(size_t j=0;j<n;++j) jacobian[i*n+j]-=temp[i*n+j];
+    free(temp); return 0;
+}
+int chem_process_jacobian_pattern(const ChemMechanism *m,unsigned char *pattern)
+{
+    if(!m || !pattern || (m->species_count && m->species_count>SIZE_MAX/m->species_count)) return 1;
+    size_t n=m->species_count; memset(pattern,0,n*n);
+    for(size_t i=0;i<m->reaction_count;++i) {
+        const ChemReaction *r=&m->reactions[i];
+        for(size_t j=0;j<r->reactant_count;++j) {
+            int col=m->reactants[r->reactant_begin+j].species;
+            if(col<0) continue;
+            if((size_t)col>=n) return 1;
+            for(size_t k=0;k<r->reactant_count;++k) {
+                int row=m->reactants[r->reactant_begin+k].species;
+                if(row>=0) { if((size_t)row>=n) return 1; pattern[(size_t)row*n+(size_t)col]=1; }
+            }
+            for(size_t k=0;k<r->product_count;++k) {
+                int row=m->products[r->product_begin+k].species;
+                if(row<0 || (size_t)row>=n) return 1;
+                pattern[(size_t)row*n+(size_t)col]=1;
+            }
+        }
+    }
+    return 0;
 }

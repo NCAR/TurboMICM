@@ -21,6 +21,9 @@ count excludes padded entries. Mutable and const views have distinct C types.
 `state.h` stores per-cell conditions, variables, custom parameters, and rate
 constants; names are borrowed while data and tolerances are owned. Bulk
 setters validate all labels and dimensions before changing the state.
+Rate updates use each cell's conditions and custom parameters. Process-set
+operations also expose additive forcing, negative Jacobians, symbolic patterns,
+and optional algebraic-row masks.
 
 Rate constants, forcing, and Jacobian evaluation are separate from the solver.
 `ChemRosenbrockParameters` contains stage coefficients and control parameters;

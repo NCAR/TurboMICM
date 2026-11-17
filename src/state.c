@@ -88,3 +88,17 @@ int chem_state_set_parameter_rows(ChemState *s,const double *const *rows,const s
     for(size_t i=0;i<count;++i) if(chem_matrix_set_row(&s->custom_parameters,i,rows[i],sizes[i])) return 1;
     return 0;
 }
+int chem_state_update_rate_constants(ChemState *s,const ChemMechanism *m,const ChemCallback *callbacks)
+{
+    if(!s || !m || s->parameters.rate_count!=m->reaction_count || s->parameters.parameter_count!=m->parameter_count ||
+       m->parameter_count>SIZE_MAX-m->reaction_count || m->parameter_count+m->reaction_count>SIZE_MAX/sizeof(double)) return 1;
+    size_t n=m->parameter_count+m->reaction_count;
+    double *data=malloc((n?n:1)*sizeof(double)); if(!data) return 1;
+    double *params=data, *rates=data+m->parameter_count; int status=0;
+    for(size_t cell=0;cell<s->cells;++cell) {
+        if(chem_matrix_get_row(&s->custom_parameters,cell,params,m->parameter_count) ||
+           chem_rate_constants_with_callbacks(m,s->conditions[cell],params,callbacks,rates) ||
+           chem_matrix_set_row(&s->rate_constants,cell,rates,m->reaction_count)) { status=1; break; }
+    }
+    free(data); return status;
+}
