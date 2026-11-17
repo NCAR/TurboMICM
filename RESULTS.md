@@ -84,3 +84,10 @@ The latest case report has 180 passing cases and 500 unported failures with
 both compilers. The additional cases cover multi-cell state storage, ownership,
 copy/move behavior, named concentrations and custom rates, and invalid input.
 Both compilers continue to pass the 100-cell TS1 comparison.
+
+The latest case report has 202 passing cases and 478 unported failures on
+both compilers. Additional analytical trajectories exercise all five
+Rosenbrock methods and backward Euler with six rate families, including the
+fast equilibrium variants, for three independently varying cells. Rate values
+and every time step are checked against the reference formulas and tolerances.
+Both compilers still pass the 100-cell TS1 comparison.

@@ -7,6 +7,10 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"{prefix}:AnalyticalExamples.{family}{suffix}": ("build/test_chain_rates", "analytical reaction trajectories")
+       for prefix in ["analytical_rosenbrock_integration", "analytical_backward_euler"]
+       for family in ["Troe", "TernaryChemicalActivation", "Tunneling", "Arrhenius", "Branched", "Photolysis"]
+       for suffix in ["", "SuperStiffButAnalytical"]},
     **{f"state:State.{case}": ("build/test_state", "state ownership and named updates") for case in [
         "DefaultConstructor", "Constructor", "CopyConstructor", "CopyAssignmentOperator", "MoveConstructor", "MoveAssignmentOperator",
         "SettingSingleConcentrationWithInvalidArgumentsThowsException", "SetSingleConcentration", "SetConcentrationByElementSingleValue",
@@ -77,8 +81,6 @@ CASES = {
     **{f'{prefix}:{suite}.{case}': ('tests/test_markowitz.py', 'Markowitz fill reduction')
        for prefix, suite in [('linear_solver', 'LinearSolver'), ('linear_solver_in_place', 'LinearSolverInPlace')]
        for case in ['DiagonalMarkowitzReorder', 'VectorDiagonalMarkowitzReordering']},
-    'analytical_rosenbrock_integration:AnalyticalExamples.Photolysis': ('build/test_analytical_methods', 'analytical trajectories'),
-    'analytical_rosenbrock_integration:AnalyticalExamples.PhotolysisSuperStiffButAnalytical': ('build/test_analytical_methods', 'stiff analytical trajectories'),
     **{f'linear:LinearConstraint.{case}': ('build/test_constraints', 'linear constraint') for case in [
         'Construction', 'AlgebraicSpecies', 'WeightedTerms', 'ZeroConstant', 'FractionalCoefficients',
         'ResidualComputationThroughConstraintSet', 'JacobianComputationThroughConstraintSet',
