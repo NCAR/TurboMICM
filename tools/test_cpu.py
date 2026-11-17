@@ -7,6 +7,10 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"reaction_rate_store:ReactionRateConstantStore.{case}": ("build/test_rate_store", "rate store metadata")
+       for case in ["OffsetsAreContiguousCumulativeSizes", "ArrheniusParametersPreserved", "BranchedDerivedFieldsComputed",
+                    "UserDefinedCustomParamIndex", "SurfaceDataFieldsAndCustomParamIndex", "SurfaceCustomParamIndexAfterUserDefined",
+                    "TotalRateConstantsMatchesProcessCount", "SurfaceMissingDiffusionCoefficientThrows", "SurfaceMissingMolecularWeightThrows"]},
     **{f"dae_constraint_overshoot:DAEConstraintOvershoot.{case}": ("build/test_dae_overshoot", "DAE overshoot")
        for case in ["AlgebraicVariableStaysNonNegative", "EquilibriumPlusConservation", "AllRosenbrockOrdersConstrained"]},
     **{f"dae_algebraic_error_insensitivity:DAEAlgebraicError.{case}": ("build/test_dae_overshoot", "algebraic error control")
