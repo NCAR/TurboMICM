@@ -14,3 +14,9 @@ named rate-parameter defaults. Surface reactions retain a `gas-phase reactant`
 alongside the ordinary reactant and product maps. Stoichiometric multiplicities
 use the examples' `qty` and `yield` fields. These extensions encode data, not
 special cases in the C solver.
+
+The example configurations use molecule cm-3 rate units, as shown by their
+hand-built equivalents. The generator converts rate coefficients to mol m-3
+using reaction order. TS1 is already in molar units, so its configuration sets
+`rate units: mol m-3`. Named user parameters are supplied in the library's
+molar units, including emission parameters.

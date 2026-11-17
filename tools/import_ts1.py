@@ -84,7 +84,7 @@ def extract(source):
     parameters = {name: float(value) for name, value in re.findall(r'parameter\("([^"]+)",\s*(' + NUMBER + r')\)', source)}
     temperature = float(only(r"conditions_\[c\]\.temperature_\s*=\s*(" + NUMBER + r")", source, "temperature"))
     pressure = float(only(r"conditions_\[c\]\.pressure_\s*=\s*(" + NUMBER + r")", source, "pressure"))
-    return {"camp-data": species + [{"name": "TS1", "type": "MECHANISM", "reactions": reactions}],
+    return {"rate units": "mol m-3", "camp-data": species + [{"name": "TS1", "type": "MECHANISM", "reactions": reactions}],
             "initial conditions": {"temperature": temperature, "pressure": pressure, "rate parameters": parameters}}
 
 

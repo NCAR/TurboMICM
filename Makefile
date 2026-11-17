@@ -24,12 +24,60 @@ endif
 CFLAGS := -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMP_CFLAGS) -Iinclude
 LDLIBS := $(OMP_LIBS) -lm
 
-.PHONY: env clean micm-ref
+.PHONY: env clean micm-ref cpu bench test-core FORCE
 env:
 	CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(ENV) --file environment.yml
 
 bin:
 	mkdir -p $@
+
+build:
+	mkdir -p $@
+
+build/.compiler: FORCE | build
+	@printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' | cmp -s - $@ || printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' > $@
+
+SOURCES := src/state.c src/rates.c src/linear.c src/rosenbrock.c
+OBJECTS := $(SOURCES:src/%.c=build/%.o)
+
+build/%.o: src/%.c src/internal.h include/chem.h build/.compiler | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/libchem.a: $(OBJECTS)
+	$(AR) rcs $@ $(OBJECTS)
+
+build/ts1.c: mechanisms/ts1.json tools/config.py tools/generate.py
+	$(PYTHON) tools/generate.py $< $@
+
+build/ts1.o: build/ts1.c include/chem.h build/.compiler
+	$(CC) $(CFLAGS) -c $< -o $@
+
+bin/ts1_bench_cpu: src/ts1_bench.c build/ts1.o build/libchem.a | bin
+	$(CC) $(CFLAGS) $< build/ts1.o build/libchem.a $(LDLIBS) -o $@
+
+bin/test_core: tests/test_core.c build/libchem.a build/.compiler | bin
+	$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+build/tutorial_no_user.c: tests/fixtures/rate_constants_no_user_defined/config.yaml tests/fixtures/rate_constants_no_user_defined/species.yaml tests/fixtures/rate_constants_no_user_defined/reactions.yaml tools/config.py tools/generate.py
+	$(PYTHON) tools/generate.py $< $@ --symbol tutorial_no_user
+
+build/tutorial_user.c: tests/fixtures/rate_constants_user_defined/config.json tests/fixtures/rate_constants_user_defined/species.json tests/fixtures/rate_constants_user_defined/reactions.json tools/config.py tools/generate.py
+	$(PYTHON) tools/generate.py $< $@ --symbol tutorial_user
+
+build/tutorial_robertson.c: tests/fixtures/robertson/config.json tests/fixtures/robertson/species.json tests/fixtures/robertson/reactions.json tools/config.py tools/generate.py
+	$(PYTHON) tools/generate.py $< $@ --symbol tutorial_robertson
+
+build/tutorial_%.o: build/tutorial_%.c include/chem.h build/.compiler
+	$(CC) $(CFLAGS) -c $< -o $@
+
+bin/test_configurations: tests/test_configurations.c build/tutorial_no_user.o build/tutorial_user.o build/tutorial_robertson.o build/libchem.a build/.compiler | bin
+	$(CC) $(CFLAGS) $< build/tutorial_no_user.o build/tutorial_user.o build/tutorial_robertson.o build/libchem.a $(LDLIBS) -o $@
+
+test-core: bin/test_core bin/test_configurations
+	./bin/test_core
+	./bin/test_configurations
+
+cpu bench: bin/ts1_bench_cpu
 
 micm-ref: | bin
 	clang++ -std=c++20 $(OPTFLAGS) -I$(ROOT)/micm/include -I$(ROOT)/micm/test/benchmark $(ROOT)/reference/micm_ts1_ref.cpp -o bin/micm_ts1_ref
