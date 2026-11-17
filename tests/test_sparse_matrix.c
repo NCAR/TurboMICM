@@ -64,17 +64,17 @@ static void run(size_t width,ChemSparseOrdering ordering)
         assert(*chem_sparse_matrix_at(&m,i,0,1)==24 && *chem_sparse_matrix_at(&m,i,2,1)==24 &&
                *chem_sparse_matrix_at(&m,i,2,3)==24 && *chem_sparse_matrix_at(&m,i,3,2)==24);
     }
-    FILE *f=tmpfile(); assert(f && chem_sparse_matrix_print(&m,f,0)==CHEM_MATRIX_OK);
+    FILE *f=fopen("build/test_sparse_print.tmp","w+"); assert(f && chem_sparse_matrix_print(&m,f,0)==CHEM_MATRIX_OK);
     const char *expected="Block 0\n0,24,0,0\n0,8,0,0\n0,24,0,24\n0,0,24,0\n"
                          "Block 1\n0,24,0,0\n0,10,0,0\n0,24,0,24\n0,0,24,0\n"
                          "Block 2\n0,24,0,0\n0,12,0,0\n0,24,0,24\n0,0,24,0\n";
-    check_print(f,expected); fclose(f);
+    check_print(f,expected); assert(fclose(f)==0 && remove("build/test_sparse_print.tmp")==0);
     chem_sparse_matrix_fill(&m,32); for (size_t i=0;i<3;++i) *chem_sparse_matrix_at(&m,i,1,1)=2+2*i;
-    chem_sparse_matrix_add_diagonal(&m,5); f=tmpfile(); assert(f && chem_sparse_matrix_print(&m,f,1)==CHEM_MATRIX_OK);
+    chem_sparse_matrix_add_diagonal(&m,5); f=fopen("build/test_sparse_print.tmp","w+"); assert(f && chem_sparse_matrix_print(&m,f,1)==CHEM_MATRIX_OK);
     expected="Block 0\n0, 1, 32\n1, 1, 7\n2, 1, 32\n2, 3, 32\n3, 2, 32\n"
              "Block 1\n0, 1, 32\n1, 1, 9\n2, 1, 32\n2, 3, 32\n3, 2, 32\n"
              "Block 2\n0, 1, 32\n1, 1, 11\n2, 1, 32\n2, 3, 32\n3, 2, 32\n";
-    check_print(f,expected); fclose(f);
+    check_print(f,expected); assert(fclose(f)==0 && remove("build/test_sparse_print.tmp")==0);
     const ChemSparseEntry invalid[]={{3,0},{2,4},{6,7}};
     for (size_t i=0;i<3;++i) assert(chem_sparse_matrix_init(&m,3,1,width,ordering,invalid+i,1,0)==CHEM_MATRIX_INVALID);
     assert(m.dimension==4 && m.nonzeros==5);

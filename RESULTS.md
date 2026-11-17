@@ -57,3 +57,8 @@ single-thread 1,000-cell, 30-step clang run from 6,263 ms to 4,128 ms in a
 repeat measurement. The before and after outputs were identical in an
 independent run, and the full 10,000-cell comparison above passed. These are
 single-run timings; they are not the experimenter's ranking measurements.
+
+All three tutorial configurations are compared against hand-built C
+mechanisms. The checks cover generated rate constants, forcing, Jacobians,
+and integration trajectories; the two rate-constant tutorials also reproduce
+the reference programs' printed output.

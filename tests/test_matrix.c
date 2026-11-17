@@ -75,8 +75,9 @@ static void run(size_t width)
     chem_matrix_fill(&a,1); *chem_matrix_at(&a,1,1)=3; chem_matrix_min(&a,2);
     for (size_t i=0;i<2;++i) for (size_t j=0;j<3;++j) assert(*chem_matrix_at(&a,i,j)==(i==1 && j==1 ? 2 : 1));
     chem_matrix_fill(&a,0); *chem_matrix_at(&a,1,1)=3;
-    FILE *file=tmpfile(); assert(file && chem_matrix_print(&a,file)==CHEM_MATRIX_OK); rewind(file);
-    char printed[32]={0}; assert(fread(printed,1,12,file)==12); assert(!strcmp(printed,"0,0,0\n0,3,0\n")); fclose(file);
+    FILE *file=fopen("build/test_matrix_print.tmp","w+"); assert(file && chem_matrix_print(&a,file)==CHEM_MATRIX_OK); rewind(file);
+    char printed[32]={0}; assert(fread(printed,1,12,file)==12); assert(!strcmp(printed,"0,0,0\n0,3,0\n"));
+    assert(fclose(file)==0 && remove("build/test_matrix_print.tmp")==0);
     assert(chem_matrix_init(&a,3,2,width,0)==CHEM_MATRIX_OK);
     double vector[]={3.2,4.2,1.3};
     assert(chem_matrix_set_column(&a,1,vector,3)==CHEM_MATRIX_OK);

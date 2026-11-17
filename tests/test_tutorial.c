@@ -15,7 +15,7 @@ extern const size_t generated_custom_count;
 typedef struct { const ChemMechanism *m; double k[10]; } System;
 static void rhs(void *c, const double *y, double *f) { System *s=c; chem_rhs(s->m,y,s->k,f); }
 static void jac(void *c, const double *y, double *j) { System *s=c; chem_jacobian(s->m,y,s->k,j); }
-static void close_value(double a, double b) { assert(fabs(a-b) <= 1e-12 * fmax(1.0, fabs(b))); }
+static void close_value(double a, double b) { assert(fabs(a-b) <= 1e-12 * fabs(b) + 1e-300); }
 
 int main(void)
 {
