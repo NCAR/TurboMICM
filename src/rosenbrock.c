@@ -1,4 +1,5 @@
 #include "rosenbrock.h"
+#include "linear.h"
 #include <float.h>
 #include <math.h>
 #include <stdint.h>
@@ -27,30 +28,6 @@ ChemRosenbrockOptions chem_rosenbrock_defaults(const double *atol)
 {
     ChemRosenbrockOptions p = {1e-6, atol, 0, 0, 0, 0.2, 6, 0.9, 0.1, 1000, NULL};
     return p;
-}
-
-/* Dense form of the no-pivot Mozart elimination: scale a column, then
-   update each trailing column. The factor is stored in place. */
-static int factor(double *a, size_t n)
-{
-    for (size_t i = 0; i < n; ++i) {
-        if (a[i*n+i] == 0 || !isfinite(a[i*n+i])) return 0;
-        double inverse = 1.0 / a[i*n+i];
-        for (size_t j = i+1; j < n; ++j) a[j*n+i] *= inverse;
-        for (size_t k = i+1; k < n; ++k)
-            for (size_t j = i+1; j < n; ++j) a[j*n+k] -= a[j*n+i]*a[i*n+k];
-    }
-    return 1;
-}
-
-static void solve(const double *a, size_t n, double *b)
-{
-    for (size_t i = 0; i < n; ++i)
-        for (size_t j = 0; j < i; ++j) b[i] -= a[i*n+j]*b[j];
-    for (size_t i = n; i-- > 0;) {
-        for (size_t j = i+1; j < n; ++j) b[i] -= a[i*n+j]*b[j];
-        b[i] /= a[i*n+i];
-    }
 }
 
 ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
@@ -100,7 +77,7 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
             for (size_t i = 0; i < n*n; ++i) matrix[i] = -matrix[i];
             for (size_t i = 0; i < n; ++i) matrix[i*n+i] += 1.0/(h*p->gamma0);
             ++stats->decompositions;
-            if (!(o->sparse_plan ? chem_sparse_factor(o->sparse_plan, matrix) : factor(matrix, n))) { status = CHEM_SOLVE_SINGULAR; goto done; }
+            if (!(o->sparse_plan ? chem_sparse_factor(o->sparse_plan, matrix) : chem_dense_factor(matrix, n))) { status = CHEM_SOLVE_SINGULAR; goto done; }
             for (size_t s = 0; s < p->stages; ++s) {
                 double *ks = stage + s*n;
                 size_t offset = s*(s-1)/2;
@@ -116,7 +93,7 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
                 for (size_t j = 0; j < s; ++j)
                     for (size_t i = 0; i < n; ++i) ks[i] += (p->c[offset+j]/h)*stage[j*n+i];
                 if (o->sparse_plan) chem_sparse_solve(o->sparse_plan, matrix, ks);
-                else solve(matrix, n, ks);
+                else chem_dense_solve(matrix, n, ks);
                 ++stats->solves;
             }
             memcpy(next, y, n*sizeof(*next));
@@ -151,6 +128,7 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
         }
     }
 done:
+    stats->final_time = t;
     /* The CPU solver clamps ODE state after each public solve call. */
     for (size_t i = 0; i < n; ++i) y[i] = y[i] > 0.0 ? y[i] : 0.0;
     free(work);

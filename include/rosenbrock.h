@@ -21,11 +21,12 @@ typedef struct {
 typedef struct {
     size_t steps, accepted, rejected, function_calls, jacobian_updates;
     size_t decompositions, solves;
+    double final_time;
 } ChemSolverStats;
 typedef enum {
     CHEM_SOLVE_OK, CHEM_SOLVE_INVALID, CHEM_SOLVE_ALLOCATION,
     CHEM_SOLVE_SINGULAR, CHEM_SOLVE_MAX_STEPS, CHEM_SOLVE_STEP_TOO_SMALL,
-    CHEM_SOLVE_NONFINITE
+    CHEM_SOLVE_NONFINITE, CHEM_SOLVE_UNCONVERGED
 } ChemSolveStatus;
 
 ChemRosenbrockMethod chem_rosenbrock_three_stage(void);

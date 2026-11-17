@@ -20,7 +20,11 @@ build/rates.o: src/rates.c include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/sparse.o: src/sparse.c include/sparse.h include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/chem.o build/rosenbrock.o build/rates.o build/sparse.o
+build/linear.o: src/linear.c include/linear.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/backward_euler.o: src/backward_euler.c include/backward_euler.h include/rosenbrock.h include/linear.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/libchem.a: build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
@@ -37,6 +41,8 @@ build/test_chemical_solver: tests/test_chemical_solver.c build/robertson.c build
 check: build/test_chem build/test_generated build/test_rosenbrock build/test_chemical_solver
 	./build/test_chem
 	./build/test_rosenbrock
+	./build/test_backward_euler
+	./build/test_rates
 	./build/test_sparse
 	./build/test_reordered
 	./build/test_chemical_solver
@@ -93,3 +99,13 @@ build/test_reordered: tests/test_reordered.c build/reordered.c build/libchem.a
 build/test_sparse: tests/test_sparse.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_sparse.c build/libchem.a -lm -o $@
 check: build/test_sparse build/test_reordered
+build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_backward_euler.c build/libchem.a -lm -o $@
+check: build/test_backward_euler
+.PHONY: test-cpu
+test-cpu:
+	@$(MAKE) -s build/test_backward_euler build/test_rates CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@.conda/bin/python tools/test_cpu.py
+build/test_rates: tests/test_rates.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
+check: build/test_rates

@@ -12,7 +12,7 @@ separates the mechanism from the kernel and leaves the choice of solver open.
 functions for forcing and Jacobian, configurable Rosenbrock coefficients, and
 reference step-size defaults. It supports dense or sparse no-pivot Mozart elimination. The solver clamps negative ODE values after each public solve, as the reference
 CPU solver does. The current implementation allocates scratch space per solve; multi-cell scheduling,
-compact sparse matrix storage, other solver families, and constraints are not yet implemented.
+compact sparse matrix storage, additional solver features, and constraints are not yet implemented.
 
 This is a starting point, not the final architecture.
 
@@ -30,3 +30,8 @@ zeros during factorization and triangular solves. Matrix values still occupy
 dense row-major storage. The `--reorder` generator option applies a diagonal
 Markowitz permutation before emitting the mechanism; the tests exercise that
 path with a separate small mechanism.
+
+`src/backward_euler.c` implements the implicit Newton iteration and reference
+step-reduction sequence. Its convergence function supports multiple cell rows,
+while the integration function currently advances one cell. Both solver families
+use the same dense or sparse Mozart factorization functions.

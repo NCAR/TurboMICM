@@ -35,3 +35,8 @@ At the requested scale (10,000 cells, seed 2026, 100 timed steps of 30 s,
 optimization flags took 27,426 ms. All 2,110,000 output values passed the gate;
 the largest relative difference was 1.77e-13. These are single measurements,
 not the specified median-of-five ranking measurements.
+
+The case reporter currently has 10 passing ported cases and reports the other
+670 cases as unported failures on both compilers. Focused checks include the
+backward Euler convergence thresholds, exact implicit decay, failed-step
+reductions, and dense/sparse agreement; they are not the full case suite.
