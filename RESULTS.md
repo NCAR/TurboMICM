@@ -38,3 +38,7 @@ A warm-up-only check of that same input passes at step lengths of 1e-12,
 locates the divergence during integration at larger steps; it does not yet
 identify whether arithmetic conditioning or an implementation difference is
 responsible.
+At a 30-second warm-up, setting just one of the six photolysis defaults to
+1 s-1 while setting the other five to zero produces out-of-tolerance values
+for `jo2_a`, `jh2o_b`, `jh2o_c`, and `jch4_b`; the corresponding `jch4_a` and
+`jhf` trials pass. This narrows the stress case without establishing its cause.
