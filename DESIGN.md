@@ -35,3 +35,9 @@ path with a separate small mechanism.
 step-reduction sequence. Its convergence function supports multiple cell rows,
 while the integration function currently advances one cell. Both solver families
 use the same dense or sparse Mozart factorization functions.
+
+Rate evaluation dispatches through `ChemRateType`; `p` holds parameters in the
+order used by `src/rates.c`, and the Taylor type uses `custom_index` for its
+coefficient count. To add a rate family, add its enum and evaluation formula,
+then add parsing and unit conversion in `tools/generate.py` and exercise both
+the direct and generated paths.

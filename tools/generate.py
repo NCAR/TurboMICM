@@ -90,6 +90,21 @@ def generate(path, reorder=False):
                  float(get('kinf_A', 1))*conversion**(low_order-1), get('kinf_B', 0), get('kinf_C', 0),
                  get('Fc', .6), get('N', 1)]
             emit(reaction, rs, ps, 'TROE' if typ == 'TROE' else 'TERNARY', p)
+        elif typ == 'REVERSIBLE':
+            emit(reaction, rs, ps, 'REVERSIBLE', [float(get('A', 1))*conversion**(order-1), get('C', 0), get('k_r', 0)])
+        elif typ == 'TAYLOR_SERIES':
+            coefficients = get('coefficients', [1])
+            if not isinstance(coefficients, list) or not 1 <= len(coefficients) <= 16:
+                raise ValueError('Taylor series requires 1 to 16 coefficients')
+            p = [float(get('A', 1))*conversion**(order-1), get('B', 0), get('C', 0), get('D', 300), get('E', 0)] + coefficients
+            emit(reaction, rs, ps, 'TAYLOR', p, len(coefficients))
+        elif typ == 'TERNARY_CHEMICAL_ACTIVATION_JPL19':
+            p = []
+            for prefix, scale in [('k0', order), ('kinf', order-1), ('kint', order-1)]:
+                p += [float(get(prefix+'_A', 1))*conversion**scale, get(prefix+'_B', 0),
+                      get(prefix+'_C', 0), get(prefix+'_D', 298)]
+            p += [get('Fc', .6), get('N', 1)]
+            emit(reaction, rs, ps, 'TERNARY_JPL19', p)
         elif typ == 'TUNNELING':
             emit(reaction, rs, ps, 'TUNNELING', [float(get('A', 1))*conversion**(order-1), get('B', 0), get('C', 0)])
         elif typ == 'BRANCHED':

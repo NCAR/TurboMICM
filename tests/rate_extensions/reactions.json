@@ -1,0 +1,5 @@
+{"camp-data":[{"type":"MECHANISM","name":"extended rates","reactions":[
+  {"type":"REVERSIBLE","reactants":{"A":{}},"products":{"B":{}},"A":2,"C":100,"k_r":0.5},
+  {"type":"TAYLOR_SERIES","reactants":{"A":{}},"products":{"B":{}},"A":3,"coefficients":[1,0.01,0.001]},
+  {"type":"TERNARY_CHEMICAL_ACTIVATION_JPL19","rate coefficient units":"SI", "reactants":{"A":{}},"products":{"B":{}},"k0_A":0.003,"k0_B":-2,"kinf_A":1.5,"kinf_B":-1,"kint_A":0}
+]}]}

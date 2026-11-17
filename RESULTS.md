@@ -40,3 +40,8 @@ The case reporter currently has 10 passing ported cases and reports the other
 670 cases as unported failures on both compilers. Focused checks include the
 backward Euler convergence thresholds, exact implicit decay, failed-step
 reductions, and dense/sparse agreement; they are not the full case suite.
+
+The latest case report has 30 passing rate and backward-Euler cases and 650
+unported failures with each compiler. New reversible, Taylor-series, JPL-19,
+branching, falloff, and surface calculations also have direct reference-value
+checks; a separate fixture exercises generation of the added rate families.

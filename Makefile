@@ -43,6 +43,9 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_rosenbrock
 	./build/test_backward_euler
 	./build/test_rates
+	./build/test_rate_extensions
+	./build/test_generated_rate_extensions
+	./build/test_falloff
 	./build/test_sparse
 	./build/test_reordered
 	./build/test_chemical_solver
@@ -104,8 +107,19 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_backward_euler build/test_rates CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
 check: build/test_rates
+build/test_rate_extensions: tests/test_rate_extensions.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_rate_extensions.c build/libchem.a -lm -o $@
+check: build/test_rate_extensions
+build/test_falloff: tests/test_falloff.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_falloff.c build/libchem.a -lm -o $@
+check: build/test_falloff
+build/extended_rates.c: tools/generate.py tools/config.py tests/rate_extensions/config.json tests/rate_extensions/species.json tests/rate_extensions/reactions.json | build
+	.conda/bin/python tools/generate.py tests/rate_extensions/config.json $@
+build/test_generated_rate_extensions: tests/test_generated_rate_extensions.c build/extended_rates.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_generated_rate_extensions.c build/extended_rates.c build/libchem.a -lm -o $@
+check: build/test_generated_rate_extensions

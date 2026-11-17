@@ -5,12 +5,13 @@
 typedef enum {
     CHEM_RATE_ARRHENIUS, CHEM_RATE_TROE, CHEM_RATE_TERNARY,
     CHEM_RATE_TUNNELING, CHEM_RATE_ALKOXY, CHEM_RATE_NITRATE,
-    CHEM_RATE_SURFACE, CHEM_RATE_USER
+    CHEM_RATE_SURFACE, CHEM_RATE_USER, CHEM_RATE_REVERSIBLE,
+    CHEM_RATE_TAYLOR, CHEM_RATE_TERNARY_JPL19
 } ChemRateType;
 typedef struct {
     ChemRateType type;
-    double p[8];
-    size_t custom_index;
+    double p[21];
+    size_t custom_index; /* Taylor uses this as its coefficient count. */
 } ChemRate;
 typedef struct { double temperature, pressure, air_density; } ChemConditions;
 /* custom entries are addressed by the generated custom parameter labels. */
