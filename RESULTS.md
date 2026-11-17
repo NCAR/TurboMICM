@@ -62,3 +62,7 @@ All three tutorial configurations are compared against hand-built C
 mechanisms. The checks cover generated rate constants, forcing, Jacobians,
 and integration trajectories; the two rate-constant tutorials also reproduce
 the reference programs' printed output.
+The 100-cell TS1 output also passed with 1 thread, 3 threads, and the default
+thread count. The case inventory contains 680 unique reference IDs: 675 are
+mapped to passing executables and 5 have explicit N/A reasons, with no missing
+or extra IDs.
