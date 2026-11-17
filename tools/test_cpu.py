@@ -7,6 +7,9 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"rosenbrock:RosenbrockSolver.{case}": ("build/test_alpha_jac", "sparse alpha-minus-Jacobian")
+       for case in ["StandardAlphaMinusJacobian", "VectorAlphaMinusJacobian"]},
+    "linear_constraint:DAESolveWithConstraint.TerminatorAndRobertson": ("build/test_dae_terminator", "coupled DAE trajectories"),
     "matrix:Matrix.IterateOverMatrix": ("build/test_typed_views", "typed matrix iteration"),
     **{f"{prefix}:{suite}.{case}": ("build/test_typed_views", "typed and const row views")
        for prefix,suite in [("matrix","Matrix"),("vector_matrix","VectorMatrix")]
