@@ -1,4 +1,5 @@
 #include "chem.h"
+#include "matrix.h"
 #include <math.h>
 #include <stdio.h>
 
@@ -8,15 +9,22 @@ static ChemRosenbrockParameters method_parameters(int method,int algorithm)
     p.linear_solver=(ChemLUAlgorithm)algorithm;return p;
 }
 static int advance(const ChemMechanism *m,ChemWorkspace *w,const ChemRosenbrockParameters *rp,const ChemBackwardEulerParameters *bp,
-                   const double *rates,double dt,double *y,int backward)
+                   const double *rates,double dt,double *y,int backward,ChemMatrix *view)
 {
     ChemConditions c={298,101325,0,0};double elapsed=0;
-    while(elapsed<dt){ChemStatistics stats;int status=backward?chem_backward_euler_solve(m,w,bp,c,rates,dt-elapsed,y,&stats):chem_rosenbrock_solve(m,w,rp,c,rates,dt-elapsed,y,&stats);
+    while(elapsed<dt){ChemStatistics stats;int status;
+        if(view) {
+            ChemWorkspace *group[]={w};
+            if(chem_matrix_set_row(view,0,y,m->species_count) || chem_matrix_get_row(view,0,y,m->species_count))return 0;
+            status=backward?chem_backward_euler_solve_group(m,group,1,bp,&c,rates,dt-elapsed,y,&stats):
+                            chem_rosenbrock_solve_group(m,group,1,rp,&c,rates,dt-elapsed,y,&stats);
+            if(chem_matrix_set_row(view,0,y,m->species_count) || chem_matrix_get_row(view,0,y,m->species_count))return 0;
+        } else status=backward?chem_backward_euler_solve(m,w,bp,c,rates,dt-elapsed,y,&stats):chem_rosenbrock_solve(m,w,rp,c,rates,dt-elapsed,y,&stats);
         if((status && status!=2) || !(stats.final_time>0) || elapsed+stats.final_time<=elapsed)return 0;
         elapsed+=stats.final_time;}
     return 1;
 }
-static int hires(int backward,int method,int algorithm)
+static int hires(int backward,int method,int algorithm,size_t width)
 {
     const char *names[]={"Y0","Y1","Y2","Y3","Y4","Y5","Y6","Y7"},*params[]={"r1","r2","r3","r4","r5","r6","r7","r8","r9"};
     const ChemTerm r[]={{0,1},{1,1},{2,1},{3,1},{4,1},{5,1},{6,1},{5,1},{7,1}};
@@ -33,15 +41,16 @@ static int hires(int backward,int method,int algorithm)
     };
     double rates[]={1.71,8.75,10.03,.0007,1.12,1.745,.43,1.81,280},y[]={1,0,0,0,0,0,0,.0057};
     ChemWorkspace *w=chem_workspace_create(&m);if(!w)return 0;
+    ChemMatrix matrix={0};if(width && chem_matrix_init(&matrix,1,8,width,1,0)){chem_workspace_free(w);return 0;}
     ChemRosenbrockParameters p=method_parameters(method,algorithm);p.relative_tolerance=1e-6;p.absolute_tolerance=1e-8;
     ChemBackwardEulerParameters b=chem_backward_euler_defaults();b.relative_tolerance=1e-6;b.absolute_tolerance=1e-8;b.linear_solver=(ChemLUAlgorithm)algorithm;
     double tolerance=backward?.1:(method==1 || method==2?1e-7:1e-6),dt=321.8122;int ok=1;
-    for(int i=0;i<2 && ok;++i){if(!advance(&m,w,&p,&b,rates,dt,y,backward))ok=0;
+    for(int i=0;i<2 && ok;++i){if(!advance(&m,w,&p,&b,rates,dt,y,backward,width?&matrix:NULL))ok=0;
         for(int j=0;j<8;++j)if(!isfinite(y[j]) || fabs(y[j]-expected[i][j])>tolerance){fprintf(stderr,"HIRES method %d backward %d step %d species %d got %.9g expected %.9g\n",method,backward,i,j,y[j],expected[i][j]);ok=0;}
         dt+=100;}
-    chem_workspace_free(w);return ok;
+    chem_matrix_free(&matrix);chem_workspace_free(w);return ok;
 }
-static int e5(int method,int algorithm)
+static int e5(int method,int algorithm,size_t width)
 {
     const char *names[]={"A1","A2","A3","A4","A5","A6"},*params[]={"r1","r2","r3","r4"};
     const ChemTerm r[]={{0,1},{1,1},{2,1},{0,1},{2,1},{3,1}},q[]={{1,1},{2,1},{4,1},{3,1},{2,1},{5,1}};
@@ -58,14 +67,15 @@ static int e5(int method,int algorithm)
     };
     double rates[]={7.89e-10,1.13e9,1.1e7,1.13e3},y[]={1.76e-3,0,0,0,0,0},atol[]={1e-7,1e-17,1e-17,1e-17,1e-7,1e-7};
     ChemWorkspace *w=chem_workspace_create(&m);if(!w)return 0;
+    ChemMatrix matrix={0};if(width && chem_matrix_init(&matrix,1,6,width,1,0)){chem_workspace_free(w);return 0;}
     ChemRosenbrockParameters p=method_parameters(method,algorithm);p.relative_tolerance=1e-13;p.absolute_tolerances=atol;
     ChemBackwardEulerParameters b=chem_backward_euler_defaults();double target=10,now=0;int ok=1;
-    for(int i=0;i<7 && ok;++i){if(!advance(&m,w,&p,&b,rates,target-now,y,0))ok=0;
+    for(int i=0;i<7 && ok;++i){if(!advance(&m,w,&p,&b,rates,target-now,y,0,width?&matrix:NULL))ok=0;
         for(int j=0;j<4;++j){double error=fabs(y[j]-expected[i][j]),absolute=j?1e-13:1e-6;if(!isfinite(y[j]) || (error>=absolute && error>=1e-10*fabs(expected[i][j]))){fprintf(stderr,"E5 method %d step %d species %d got %.9g expected %.9g\n",method,i,j,y[j],expected[i][j]);ok=0;}}
         now=target;target*=100;}
-    chem_workspace_free(w);return ok;
+    chem_matrix_free(&matrix);chem_workspace_free(w);return ok;
 }
-static int oregonator(int backward,int method,int algorithm)
+static int oregonator(int backward,int method,int algorithm,size_t width)
 {
     const char *names[]={"X","Y","Z","P","Q"},*params[]={"r1","r2","r3","r4","r5"};
     const ChemTerm r[]={{1,1},{0,1},{1,1},{0,1},{0,1},{0,1},{2,1}},q[]={{0,1},{3,1},{2,1},{0,2},{4,1},{1,1}};
@@ -84,21 +94,22 @@ static int oregonator(int backward,int method,int algorithm)
     double rates[]={1/(s*wconst),k2,s/wconst,s*s*qconst*k2/2,1},y[]={alpha,2*eta,3*rho,0,0};
     double atol[]={alpha*1e-11,eta*1e-11,rho*1e-11,eta,eta};
     ChemWorkspace *work=chem_workspace_create(&m);if(!work)return 0;
+    ChemMatrix matrix={0};if(width && chem_matrix_init(&matrix,1,5,width,1,0)){chem_workspace_free(work);return 0;}
     ChemRosenbrockParameters p=method_parameters(method,algorithm);p.relative_tolerance=1e-9;p.absolute_tolerances=atol;
     ChemBackwardEulerParameters b=chem_backward_euler_defaults();b.relative_tolerance=1e-9;b.absolute_tolerances=atol;b.linear_solver=(ChemLUAlgorithm)algorithm;
     const double dt=30*wconst,scales[]={alpha,eta,rho},tolerance=backward?5e-3:1e-6;int ok=1,substeps=backward?18000:1;
     for(int i=0;i<12 && ok;++i){double elapsed=0;
-        while(elapsed<dt){double step=fmin(dt/substeps,dt-elapsed);if(!advance(&m,work,&p,&b,rates,step,y,backward)){ok=0;break;}if(elapsed+step<=elapsed){ok=0;break;}elapsed+=step;}
+        while(elapsed<dt){double step=fmin(dt/substeps,dt-elapsed);if(!advance(&m,work,&p,&b,rates,step,y,backward,width?&matrix:NULL)){ok=0;break;}if(elapsed+step<=elapsed){ok=0;break;}elapsed+=step;}
         for(int j=0;j<3;++j){double ref=expected[i][j]*scales[j];if(!isfinite(y[j]) || fabs(y[j]-ref)>=tolerance*fabs(ref)){fprintf(stderr,"Oregonator method %d backward %d step %d species %d got %.9g expected %.9g\n",method,backward,i,j,y[j],ref);ok=0;}}
     }
-    chem_workspace_free(work);return ok;
+    chem_matrix_free(&matrix);chem_workspace_free(work);return ok;
 }
 int main(void)
 {
     int hires_r=1,hires_b=1,e5_r=1,oregon_r=1,oregon_b=1;
-    for(int algorithm=0;algorithm<2;++algorithm){
-        hires_b &= hires(1,0,algorithm);oregon_b &= oregonator(1,0,algorithm);
-        for(int method=0;method<5;++method){hires_r &= hires(0,method,algorithm);e5_r &= e5(method,algorithm);oregon_r &= oregonator(0,method,algorithm);}
+    for(int algorithm=0;algorithm<2;++algorithm)for(size_t width=0;width<=4;++width){
+        hires_b &= hires(1,0,algorithm,width);oregon_b &= oregonator(1,0,algorithm,width);
+        for(int method=0;method<5;++method){hires_r &= hires(0,method,algorithm,width);e5_r &= e5(method,algorithm,width);oregon_r &= oregonator(0,method,algorithm,width);}
     }
     printf("analytical_rosenbrock_integration:AnalyticalExamples.HIRES %d\n",hires_r);
     printf("analytical_backward_euler:AnalyticalExamples.HIRES %d\n",hires_b);

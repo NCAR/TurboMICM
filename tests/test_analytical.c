@@ -121,7 +121,7 @@ static int run_case(int kind,int backward,int stiff,int method,int algorithm,siz
     for(size_t cell=0;cell<3;++cell)chem_workspace_free(work[cell]);
     chem_state_free(&state);return ok;
 }
-static int robertson_case(int method,int algorithm)
+static int robertson_case(int method,int algorithm,size_t width)
 {
     const char *names[]={"A","B","C"},*parameters[]={"r1","r2","r3"};
     const ChemTerm r[]={{0,1},{1,1},{1,1},{1,1},{2,1}},q[]={{1,1},{1,1},{2,1},{0,1},{2,1}};
@@ -142,16 +142,21 @@ static int robertson_case(int method,int algorithm)
         {.2083340149701284e-7,.8333360770334744e-13,.9999999791665152}
     };
     ChemWorkspace *w=chem_workspace_create(&m);if(!w)return 0;
+    ChemMatrix matrix={0};if(width && chem_matrix_init(&matrix,1,3,width,1,0)){chem_workspace_free(w);return 0;}
     ChemRosenbrockParameters p=method==0?chem_rosenbrock_two_stage():method==1?chem_rosenbrock_three_stage():method==2?chem_rosenbrock_four_stage():method==3?chem_rosenbrock_four_stage_dae():chem_rosenbrock_six_stage_dae();
     p.relative_tolerance=1e-10;p.absolute_tolerance=1e-12;p.linear_solver=(ChemLUAlgorithm)algorithm;
     ChemConditions c={272.5,101253.3,1e6,1};double rates[]={.04,3e7,1e4},y[]={1,0,0},target=1,now=0;int ok=1;
     for(int i=0;i<12 && ok;++i){double duration=target-now,advanced=0;
-        while(advanced<duration){ChemStatistics stats;int status=chem_rosenbrock_solve(&m,w,&p,c,rates,duration-advanced,y,&stats);
+        while(advanced<duration){ChemStatistics stats;int status;
+            if(width){ChemWorkspace *group[]={w};chem_matrix_set_row(&matrix,0,y,3);chem_matrix_get_row(&matrix,0,y,3);
+                status=chem_rosenbrock_solve_group(&m,group,1,&p,&c,rates,duration-advanced,y,&stats);
+                chem_matrix_set_row(&matrix,0,y,3);chem_matrix_get_row(&matrix,0,y,3);
+            } else status=chem_rosenbrock_solve(&m,w,&p,c,rates,duration-advanced,y,&stats);
             if((status && status!=2) || !(stats.final_time>0)){fprintf(stderr,"Robertson method %d algorithm %d step %d status %d\n",method,algorithm,i,status);ok=0;break;}advanced+=stats.final_time;}
         for(int j=0;j<3;++j)if(fabs(y[j]-expected[i][j])>=.3e-3 && fabs(y[j]-expected[i][j])>=1e-6*fabs(expected[i][j])){fprintf(stderr,"Robertson method %d step %d species %d got %.8g expected %.8g\n",method,i,j,y[j],expected[i][j]);ok=0;}
         now=target;target*=10;
     }
-    chem_workspace_free(w);return ok;
+    chem_matrix_free(&matrix);chem_workspace_free(w);return ok;
 }
 static int surface_case(int backward,int method)
 {
@@ -175,7 +180,8 @@ static int surface_case(int backward,int method)
 }
 int main(void)
 {
-    int robertson=1;for(int method=0;method<5;++method)for(int algorithm=0;algorithm<2;++algorithm)robertson &= robertson_case(method,algorithm);
+    int robertson=1;for(int method=0;method<5;++method)for(int algorithm=0;algorithm<2;++algorithm)
+        for(size_t width=0;width<=4;++width)robertson &= robertson_case(method,algorithm,width);
     printf("analytical_rosenbrock_integration:AnalyticalExamples.Robertson %d\n",robertson);
     int surface=1;for(int method=0;method<5;++method)surface &= surface_case(0,method);
     printf("analytical_rosenbrock_integration:AnalyticalExamples.SurfaceRxn %d\n",surface);
