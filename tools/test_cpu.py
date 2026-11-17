@@ -7,6 +7,12 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"dae_constraint_overshoot:DAEConstraintOvershoot.{case}": ("build/test_dae_overshoot", "DAE overshoot")
+       for case in ["AlgebraicVariableStaysNonNegative", "EquilibriumPlusConservation", "AllRosenbrockOrdersConstrained"]},
+    **{f"dae_algebraic_error_insensitivity:DAEAlgebraicError.{case}": ("build/test_dae_overshoot", "algebraic error control")
+       for case in ["ErrorSensitiveToBalanceAtol", "AlgebraicVariableDoesNotOvershootDeeply"]},
+    **{f"rosenbrock:RosenbrockSolver.{case}": ("build/test_normalized_error", "constraint normalized error")
+       for case in ["StandardNormalizedErrorWithConstraints", "VectorNormalizedErrorWithConstraints"]},
     **{f"grouped_views:GroupedView.{case}": ("build/test_grouped_views", "grouped dense and sparse views") for case in [
         "MatrixColumnViewRoundTrip", "VectorMatrixColumnViewContiguousBlock", "DenseGroupedMatchesRawL1", "DenseGroupedMatchesRawL2",
         "DenseGroupedMatchesRawL4", "DenseGroupedMatchesRawL8", "PlainMatrixGroupedRoundTrip", "SparseStandardBlockViewRoundTrip",

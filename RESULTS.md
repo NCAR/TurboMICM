@@ -170,3 +170,8 @@ The latest case report has 526 passing cases and 154 unported failures on
 both compilers. New grouped-view checks cover dense and sparse lanes, const
 access, mixed views, partial groups, and fill/copy across CSR and CSC layouts.
 Both compilers pass the 100-cell TS1 comparison.
+
+The latest case report has 533 passing cases and 147 unported failures on
+both compilers. The additional DAE checks cover constrained overshoot across
+four Rosenbrock methods, algebraic tolerance sensitivity, and normalized
+error with constraints. Both compilers pass the 100-cell TS1 comparison.

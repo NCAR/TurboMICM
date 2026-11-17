@@ -23,6 +23,20 @@ int main(void)
         double actual=chem_rosenbrock_normalized_error(cells,5,old,next,error,atol,rtol);
         assert(fabs(actual-expected)/fmax(fabs(actual),fabs(expected)) <= 1e-11);
     }
+    for (size_t cells=2;cells<=5;++cells) {
+        double old[15],next[15],error[15],expected=0;
+        for (size_t i=0;i<cells;++i) for (size_t j=0;j<3;++j) {
+            size_t k=3*i+j;
+            old[k]=1.0+i+.1*j; next[k]=.8+.5*i+.2*j; error[k]=.01*(1+i+j);
+            double scale=atol[j]+rtol*fmax(fabs(old[k]),fabs(next[k]));
+            expected+=error[k]*error[k]/(scale*scale);
+        }
+        expected=fmax(sqrt(expected/(3*cells)),1e-10);
+        for (size_t method=0;method<5;++method) {
+            double actual=chem_rosenbrock_normalized_error(cells,3,old,next,error,atol,rtol);
+            assert(fabs(actual-expected)<=1e-12);
+        }
+    }
     puts("Rosenbrock normalized error PASS");
     return 0;
 }
