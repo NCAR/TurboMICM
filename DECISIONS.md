@@ -59,6 +59,7 @@ semantics while allowing C callers to choose layout at runtime.
 The grouped ODE interface reuses the scalar Rosenbrock implementation by
 forming a block-diagonal system, so all cells share the reference error norm
 and step size. It supports dense or block-sparse factorization and separate
-cell callback contexts. This initial implementation allocates a dense global
-Jacobian, making it suitable for small groups; grouped constraints and a
-block-native storage path remain to be implemented.
+cell callback contexts. Constraints are adapted per cell, including custom
+callbacks, per-cell temperatures, and parameter overrides. This initial
+implementation allocates a dense global Jacobian, making it suitable for small
+groups; a block-native storage path remains to be implemented.

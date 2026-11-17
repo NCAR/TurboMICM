@@ -221,3 +221,9 @@ plan, a single clang run of 1,000 cells and 100 timed steps took 3,574 ms,
 compared with 4,297 ms immediately before the change, using 10 threads and
 seed 2026. These are exploratory single runs, not ranking measurements.
 The 100-cell TS1 comparison and focused checks pass with both compilers.
+
+Grouped constrained solves now have focused coverage for linear, equilibrium,
+and custom constraints, including cell-specific temperatures and parameter
+overrides, both LU algorithms, dense and sparse plans, and invalid temperatures.
+Both compilers pass these checks and the TS1 comparison. The case report
+remains 564 passing and 116 unported failures.

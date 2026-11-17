@@ -76,6 +76,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_external_constraints
 	./build/test_external_composition
 	./build/test_aerosol
+	./build/test_grouped_constraints
 	./build/test_chapman_regression
 	./build/test_constraint_set
 	./build/test_constraint_init
@@ -297,3 +298,6 @@ check: build/test_rate_store
 build/test_chapman_regression: tests/test_chapman_regression.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
 check: build/test_chapman_regression
+build/test_grouped_constraints: tests/test_grouped_constraints.c build/libchem.a
+	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
+check: build/test_grouped_constraints
