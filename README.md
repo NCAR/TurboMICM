@@ -23,8 +23,8 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently only
-92 cases have been ported, so the target intentionally fails and labels the
-other 588 as unported. The focused `make check` tests cover additional behavior
+107 cases have been ported, so the target intentionally fails and labels the
+other 573 as unported. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
 The single-cell backward Euler API is declared in `include/backward_euler.h`.
@@ -33,4 +33,6 @@ the Rosenbrock solver.
 
 `include/constraint.h` provides indexed linear and equilibrium constraints,
 validation, residuals, Jacobians, sparsity, and algebraic error estimates.
-These operations are not yet connected to the Rosenbrock DAE integration.
+Rosenbrock options accept a constraint set and per-cell equilibrium parameters
+or temperature for index-one DAE integration. Sparse plans for constrained
+systems must include both kinetic and constraint Jacobian structure.

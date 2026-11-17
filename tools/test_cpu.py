@@ -72,6 +72,16 @@ CASES = {
         'ThreeDStateOneConstraint', 'FourDStateTwoConstraints', 'CoupledConstraintsSharedSpecies',
         'VectorizedMatricesRespectGridCellIndexing', 'VectorMatrix1', 'VectorMatrix2', 'VectorMatrix3',
     ]},
+    **{f'constraint_initialization:ConstraintInitialization.{case}': ('build/test_constraint_init', 'constraint projection') for case in [
+        'ConsistentICsUnchanged', 'MildlyInconsistentICsCorrected', 'SeverelyInconsistentICsConverge',
+        'ScaledConstraintRowsSolveIdenticallyThroughSolve', 'PureODESystemUnaffected', 'MultiCellSystems',
+        'SubsequentSolveCallsReinitialize', 'SolverStateToStringNewValue',
+        'FailedInitializationRestoresCallerState', 'SuccessfulInitializationKeepsTheCorrection',
+        'WeightedCorrectionIsInvariantToConstraintRowScaling', 'WeightedCorrectionUsesStateTolerances',
+    ]},
+    **{f'equilibrium_constraint:EquilibriumIntegration.{case}': ('build/test_dae', 'DAE integration') for case in [
+        'DAESolveWithConstraint', 'DAESolveWithTwoCoupledConstraints', 'DAESolveWithNonUnitStoichiometry',
+    ]},
     'rosenbrock:RosenbrockSolver.StandardNormalizedError': ('build/test_normalized_error', 'normalized error'),
     'rosenbrock:RosenbrockSolver.VectorNormalizedError': ('build/test_normalized_error', 'normalized error'),
     'backward_euler:BackwardEuler.CanCallSolve': ('build/test_backward_euler', 'chain solve'),

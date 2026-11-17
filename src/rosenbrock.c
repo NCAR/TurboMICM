@@ -6,6 +6,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char *chem_solve_status_string(ChemSolveStatus status)
+{
+    switch (status) {
+    case CHEM_SOLVE_OK: return "Converged";
+    case CHEM_SOLVE_INVALID: return "Invalid Input";
+    case CHEM_SOLVE_ALLOCATION: return "Allocation Failed";
+    case CHEM_SOLVE_SINGULAR: return "Repeatedly Singular Matrix";
+    case CHEM_SOLVE_MAX_STEPS: return "Convergence Exceeded Max Steps";
+    case CHEM_SOLVE_STEP_TOO_SMALL: return "Step Size Too Small";
+    case CHEM_SOLVE_NONFINITE: return "Nonfinite Value";
+    case CHEM_SOLVE_UNCONVERGED: return "AcceptingUnconvergedIntegration";
+    case CHEM_SOLVE_CONSTRAINT_INIT: return "Constraint Initialization Failed";
+    }
+    return "Unknown";
+}
+
 ChemRosenbrockMethod chem_rosenbrock_two_stage(void)
 {
     ChemRosenbrockMethod p = {0};
@@ -108,7 +124,13 @@ double chem_rosenbrock_normalized_error(size_t cells, size_t variables,
 
 ChemRosenbrockOptions chem_rosenbrock_defaults(const double *atol)
 {
-    ChemRosenbrockOptions p = {1e-6, atol, 0, 0, 0, 0.2, 6, 0.9, 0.1, 1000, NULL, CHEM_LU_MOZART};
+    ChemRosenbrockOptions p = {0};
+    p.relative_tolerance=1e-6; p.absolute_tolerance=atol;
+    p.factor_min=.2; p.factor_max=6; p.safety=.9; p.rejection_factor=.1;
+    p.max_steps=1000; p.lu_algorithm=CHEM_LU_MOZART;
+    p.constraint_temperature=298.15; p.constraint_init_max_iterations=10;
+    p.constraint_init_max_backtracks=24; p.constraint_init_tolerance=.1;
+    p.constraint_init_backtrack_factor=.5; p.constraint_init_sufficient_decrease=1e-4;
     return p;
 }
 
@@ -136,8 +158,14 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
         if (!isfinite(o->absolute_tolerance[i]) || !(o->absolute_tolerance[i] > 0)) return CHEM_SOLVE_INVALID;
     if (n > SIZE_MAX / n || n*n > SIZE_MAX/sizeof(double) ||
         n > (SIZE_MAX/sizeof(double) - n*n)/10) return CHEM_SOLVE_ALLOCATION;
+    const ChemConstraintSet *constraints = o->constraints;
+    if (constraints && constraints->count && (constraints->variables != n || chem_constraint_validate(constraints) != CHEM_CONSTRAINT_OK))
+        return CHEM_SOLVE_INVALID;
+    unsigned char *algebraic = calloc(n,1);
+    if (!algebraic) return CHEM_SOLVE_ALLOCATION;
+    if (constraints) for (size_t i=0;i<constraints->count;++i) algebraic[constraints->constraints[i].row]=1;
     double *work = calloc(n*n + 10*n, sizeof(*work));
-    if (!work) return CHEM_SOLVE_ALLOCATION;
+    if (!work) { free(algebraic); return CHEM_SOLVE_ALLOCATION; }
     double *matrix = work, *initial = matrix+n*n, *next = initial+n;
     double *stage = next+n, *forcing = stage+6*n, *err = forcing+n;
     double hmin = o->h_min == 0 ? 1e-15*duration : o->h_min;
@@ -146,7 +174,8 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
     double h = fmin(fmax(hmin, fabs(hstart)), fabs(hmax));
     double t = 0;
     int rejected_last = 0, rejected_more = 0;
-    ChemSolveStatus status = CHEM_SOLVE_OK;
+    ChemSolveStatus status = chem_rosenbrock_initialize_constraints(n,y,o,stats);
+    if (status != CHEM_SOLVE_OK) goto done;
     while ((t - duration + DBL_EPSILON) <= 0) {
         if (stats->steps > o->max_steps) { status = CHEM_SOLVE_MAX_STEPS; break; }
         if (t + 0.1*h == t || h <= fmin(DBL_EPSILON, hmin)) {
@@ -154,11 +183,17 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
         }
         h = fmin(h, fabs(duration-t));
         rhs(context, y, initial); ++stats->function_calls;
+        if (constraints && constraints->count)
+            chem_constraint_residuals(constraints,1,y,&o->constraint_temperature,o->constraint_parameters,initial);
         int accepted = 0;
         while (!accepted) {
             jacobian(context, y, matrix); ++stats->jacobian_updates;
             for (size_t i = 0; i < n*n; ++i) matrix[i] = -matrix[i];
-            for (size_t i = 0; i < n; ++i) matrix[i*n+i] += 1.0/(h*p->gamma0);
+            if (constraints && constraints->count) {
+                for (size_t i=0;i<n;++i) if (algebraic[i]) memset(matrix+i*n,0,n*sizeof(double));
+                chem_constraint_subtract_jacobian(constraints,1,y,&o->constraint_temperature,o->constraint_parameters,matrix);
+            }
+            for (size_t i = 0; i < n; ++i) if (!algebraic[i]) matrix[i*n+i] += 1.0/(h*p->gamma0);
             ++stats->decompositions;
             int factored;
             if (o->sparse_plan)
@@ -175,11 +210,13 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
                     for (size_t j = 0; j < s; ++j)
                         for (size_t i = 0; i < n; ++i) next[i] += p->a[offset+j]*stage[j*n+i];
                     rhs(context, next, ks); ++stats->function_calls;
+                    if (constraints && constraints->count)
+                        chem_constraint_residuals(constraints,1,next,&o->constraint_temperature,o->constraint_parameters,ks);
                 }
                 if (s+1 < p->stages && !p->new_function[s+1])
                     memcpy(stage+(s+1)*n, ks, n*sizeof(*ks));
                 for (size_t j = 0; j < s; ++j)
-                    for (size_t i = 0; i < n; ++i) ks[i] += (p->c[offset+j]/h)*stage[j*n+i];
+                    for (size_t i = 0; i < n; ++i) if (!algebraic[i]) ks[i] += (p->c[offset+j]/h)*stage[j*n+i];
                 if (o->sparse_plan) chem_sparse_solve(o->sparse_plan, matrix, ks);
                 else chem_dense_solve(matrix, n, ks);
                 ++stats->solves;
@@ -191,6 +228,7 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
                     next[i] += p->m[s]*stage[s*n+i];
                     err[i] += p->e[s]*stage[s*n+i];
                 }
+            if (constraints && constraints->count) chem_constraint_step_errors(constraints,1,y,next,err);
             double error = chem_rosenbrock_normalized_error(1,n,y,next,err,o->absolute_tolerance,o->relative_tolerance);
             ++stats->steps;
             if (!isfinite(error)) { status = CHEM_SOLVE_NONFINITE; goto done; }
@@ -212,7 +250,7 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
 done:
     stats->final_time = t;
     /* The CPU solver clamps ODE state after each public solve call. */
-    for (size_t i = 0; i < n; ++i) y[i] = y[i] > 0.0 ? y[i] : 0.0;
-    free(work);
+    for (size_t i = 0; i < n; ++i) if (!algebraic[i]) y[i] = y[i] > 0.0 ? y[i] : 0.0;
+    free(algebraic); free(work);
     return status;
 }

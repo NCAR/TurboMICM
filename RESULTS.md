@@ -60,3 +60,8 @@ The latest case report has 92 passing cases and 588 unported failures with both
 compilers. The additional cases cover linear, equilibrium, and constraint-set
 validation, residuals, Jacobians, sparsity, and multi-cell indexing. The DAE
 integration cases are still unported.
+
+The current case report has 107 passing cases and 573 unported failures on
+both compilers. Additional checks cover consistent initialization, transactional
+rollback, damping, row scaling, and single- and coupled-equilibrium DAE solves
+with both linear algorithms. The 100-cell TS1 comparison remains passing.

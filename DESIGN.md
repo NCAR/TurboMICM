@@ -8,14 +8,15 @@ forcing and its dense Jacobian. The derivative is formed by products excluding
 one factor, so zero concentrations are handled without division. The interface
 separates the mechanism from the kernel and leaves the choice of solver open.
 
-`src/rosenbrock.c` provides a single-cell autonomous ODE solver using callback
+`src/rosenbrock.c` provides a single-cell autonomous ODE/DAE solver using callback
 functions for forcing and Jacobian, five reference Rosenbrock parameter sets,
 and reference step-size defaults. To add a parameter set, construct a
 `ChemRosenbrockMethod` with stage coefficients, evaluation flags, gamma, and
-error order; the existing integrator consumes it. The two DA parameter sets are
-currently usable only for ODEs because algebraic constraints are not implemented. It supports dense or sparse no-pivot Mozart and Doolittle elimination. The solver clamps negative ODE values after each public solve, as the reference
-CPU solver does. The current implementation allocates scratch space per solve; multi-cell scheduling,
-compact sparse matrix storage, additional solver features, and DAE integration are not yet implemented.
+error order; the existing integrator consumes it. The parameter sets can use
+algebraic constraints. It supports dense or sparse no-pivot Mozart and Doolittle
+elimination. The solver clamps negative ODE values after each public solve, as
+the reference CPU solver does. It allocates scratch space per solve; multi-cell scheduling,
+compact sparse matrix storage and additional solver features are not yet implemented.
 
 This is a starting point, not the final architecture.
 
@@ -28,7 +29,8 @@ the configuration extensions.
 The preliminary benchmark schedules individual cells with OpenMP static
 scheduling; `--threads` sets the thread count (default: OpenMP maximum). Each
 cell currently owns independent solver state and error control. Timings exclude
-input, rate setup, warm-up, and output. A mechanism-generic symbolic plan calculates fill once, then skips structural
+input, rate setup, warm-up, and output. A mechanism-generic symbolic plan
+calculates fill once, then skips structural
 zeros during factorization and triangular solves. Matrix values still occupy
 dense row-major storage. The `--reorder` generator option applies a diagonal
 Markowitz permutation before emitting the mechanism; the tests exercise that
@@ -56,6 +58,10 @@ Constraints are borrowed indexed descriptions validated by `chem_constraint_vali
 `chem_constraint_residuals` replaces algebraic forcing rows, while
 `chem_constraint_subtract_jacobian` adds the negative constraint derivatives
 to the supplied matrix. Equilibrium constants can be supplied per cell or
-evaluated using the Van’t Hoff parameters. The sparsity and step-error helpers
-are intended for the DAE solver; that connection and consistent initialization
-remain to be implemented.
+evaluated using the Van’t Hoff parameters. The Rosenbrock solver projects
+inconsistent algebraic state with a damped
+Newton iteration, then replaces algebraic forcing and Jacobian rows, suppresses
+those rows in the mass matrix, and uses algebraic step changes in error control.
+The projection rolls back on failure. A caller-supplied sparse plan must include
+the union of kinetic and constraint structure; `chem_constraint_sparsity` can
+add constraint positions to an existing pattern.
