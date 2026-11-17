@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "backward_euler.h"
+#include "rates.h"
 
 extern const ChemMechanism generated_mechanism;
 typedef struct { const ChemMechanism *m; const double *k; } System;
@@ -178,4 +179,93 @@ static void oregonator(void)
     }
     chem_sparse_plan_destroy(plan);
 }
-int main(void) { robertson(); hires(); e5(); oregonator(); puts("nonlinear benchmark trajectories PASS"); return 0; }
+static void surface(void)
+{
+    const double pi=3.14159265358979323846, gmd=1e-6, gsd=.1, mw=.04607, diffusion=.95e-5, gamma=.02;
+    const double radius=gmd/2*exp(2.5*log(gsd)*log(gsd));
+    const double number=6/(pi*pow(gmd,3)*exp(4.5*log(gsd)*log(gsd)))*(.002/1000+.003/1000);
+    const double temperature=272.5, gas=1.380649e-23*6.02214076e23;
+    const double speed=sqrt(8*gas*temperature/(pi*mw));
+    const double reference_rate=4*number*pi*radius*radius/(radius/diffusion+4/(speed*gamma));
+    const double custom[]={radius,number};
+    const ChemRate rate={CHEM_RATE_SURFACE,{diffusion,mw,gamma},0};
+    const ChemConditions conditions={temperature,101253.3,0};
+    const double k[]={chem_rate(&rate,conditions,custom)};
+    assert(fabs(k[0]-reference_rate)<=1e-8);
+    const size_t reactants[]={0};
+    const ChemProduct products[]={{1,1},{2,.4}};
+    const ChemReaction reactions[]={{0,1,0,2}};
+    const ChemMechanism mechanism={3,1,reactions,reactants,products};
+    const double atol[]={1e-3,1e-3,1e-3};
+    const double tolerance[]={1e-2,1e-5,1e-6,1e-5,1e-7,.05};
+    ChemRosenbrockMethod methods[]={chem_rosenbrock_two_stage(),chem_rosenbrock_three_stage(),
+        chem_rosenbrock_four_stage(),chem_rosenbrock_four_stage_da(),chem_rosenbrock_six_stage_da()};
+    System sys={&mechanism,k}; ChemSparsePlan *plan=chem_sparse_plan_create(&mechanism); assert(plan);
+    for (size_t m=0;m<6;++m) for (size_t sparse=0;sparse<2;++sparse) for (size_t lu=0;lu<2;++lu) {
+        ChemRosenbrockOptions ro=chem_rosenbrock_defaults(atol);
+        ChemBackwardEulerOptions be=chem_backward_euler_defaults(atol);
+        ro.sparse_plan=be.sparse_plan=sparse ? plan : NULL;
+        ro.lu_algorithm=be.lu_algorithm=(ChemLuAlgorithm)lu;
+        double y[]={1,0,0},dt=.1/reference_rate;
+        for (size_t t=1;t<=10;++t) {
+            ChemSolveStatus status=m<5 ? chem_rosenbrock_solve(3,y,dt,rhs,jac,&sys,&methods[m],&ro,NULL) :
+                chem_backward_euler_solve(3,y,dt,rhs,jac,&sys,&be,NULL);
+            assert(status==CHEM_SOLVE_OK);
+            double first=exp(-reference_rate*t*dt), expected[]={first,1-first,.4*(1-first)};
+            for (size_t i=0;i<3;++i) {
+                double rel=fabs(y[i]-expected[i])/fabs(expected[i]);
+                if (!(rel<=tolerance[m])) fprintf(stderr,"surface method=%zu step=%zu i=%zu rel=%g\n",m,t,i,rel);
+                assert(rel<=tolerance[m]);
+            }
+        }
+    }
+    chem_sparse_plan_destroy(plan);
+}
+static void terminator(void)
+{
+    const double pi=3.14159265358979323846,atol[]={1e-20,1e-20};
+    const size_t reactants[]={0,1,1};
+    const ChemProduct products[]={{1,2},{0,1}};
+    const ChemReaction reactions[]={{0,1,0,1},{1,2,1,1}};
+    const ChemMechanism mechanism={2,2,reactions,reactants,products};
+    ChemRosenbrockMethod method=chem_rosenbrock_three_stage();
+    ChemSparsePlan *plan=chem_sparse_plan_create(&mechanism); assert(plan);
+    for (size_t cells=1;cells<=4;++cells) for (size_t step=0;step<20;++step)
+        for (size_t cell=0;cell<cells;++cell) {
+            double lat=pi/180*(cell*(90.0/cells)),lon=step*.3;
+            double k1=fmax(0,sin(lat)*sin(pi*20/180)+cos(lat)*cos(pi*20/180)*cos(lon-pi*300/180));
+            double k[]={k1,1}, cl2_i=(.13+cell*.17)*1e-6, cl_i=(.1+cell*.08)*1e-10;
+            double y[]={cl2_i,cl_i}; System sys={&mechanism,k};
+            ChemRosenbrockOptions opts=chem_rosenbrock_defaults(atol); opts.relative_tolerance=1e-8;
+            opts.max_steps=100000; opts.sparse_plan=plan;
+            assert(chem_rosenbrock_solve(2,y,30,rhs,jac,&sys,&method,&opts,NULL)==CHEM_SOLVE_OK);
+            double r=k1/4,cly=cl_i+2*cl2_i,det=sqrt(r*r+2*r*cly),e=exp(-4*det*30);
+            double l=det*30>1e-16 ? (1-e)/det/30 : 4;
+            double cl_f=-l*(cl_i-det+r)*(cl_i+det+r)/(1+e+30*l*(cl_i+r));
+            double cl=cl_i+30*cl_f, cl2=cl2_i-15*cl_f;
+            assert(fabs(y[1]-cl)<=fabs(cl)*1e-6+1e-14);
+            assert(fabs(y[0]-cl2)<=fabs(cl2)*1e-6+1e-14);
+        }
+    chem_sparse_plan_destroy(plan);
+}
+static void integrated_rates(void)
+{
+    const size_t reactants[]={0,1};
+    const ChemProduct products[]={{1,1},{3,1},{2,1},{4,1}};
+    const ChemReaction reactions[]={{0,1,0,2},{1,1,2,2}};
+    const ChemMechanism mechanism={5,2,reactions,reactants,products};
+    const ChemRate rate={CHEM_RATE_ARRHENIUS,{2.15e-11,0,110,300,0},0};
+    const ChemConditions conditions={273,1000,0};
+    double k[]={chem_rate(&rate,conditions,NULL),1};
+    const double atol[]={1e-3,1e-3,1e-3,1e-3,1e-3};
+    double y[]={1,0,0,0,0}; System sys={&mechanism,k};
+    ChemRosenbrockMethod method=chem_rosenbrock_three_stage();
+    ChemRosenbrockOptions opts=chem_rosenbrock_defaults(atol);
+    for (size_t t=0;t<100;++t) {
+        if (t>50) k[1]=0;
+        double prev1=y[3],prev2=y[4];
+        assert(chem_rosenbrock_solve(5,y,30,rhs,jac,&sys,&method,&opts,NULL)==CHEM_SOLVE_OK);
+        assert(y[3]>=prev1 && y[4]>=prev2);
+    }
+}
+int main(void) { robertson(); hires(); e5(); oregonator(); surface(); terminator(); integrated_rates(); puts("nonlinear benchmark trajectories PASS"); return 0; }

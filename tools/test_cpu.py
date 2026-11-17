@@ -7,6 +7,10 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    "integrated_reaction_rates:ChapmanIntegration.CanBuildChapmanSystem": ("build/test_nonlinear", "integrated reaction rates"),
+    **{f"terminator:RosenbrockSolver.{name}": ("build/test_nonlinear", "terminator trajectories") for name in ["Terminator", "VectorTerminator"]},
+    "analytical_rosenbrock_integration:AnalyticalExamples.SurfaceRxn": ("build/test_nonlinear", "surface reaction trajectories"),
+    "analytical_backward_euler:AnalyticalExamples.SurfaceRxn": ("build/test_nonlinear", "surface reaction trajectories"),
     "analytical_rosenbrock_integration:AnalyticalExamples.E5": ("build/test_nonlinear", "E5 trajectories"),
     "analytical_rosenbrock_integration:AnalyticalExamples.Oregonator": ("build/test_nonlinear", "Oregonator trajectories"),
     "analytical_backward_euler:AnalyticalExamples.Oregonator": ("build/test_nonlinear", "Oregonator trajectories"),

@@ -114,3 +114,8 @@ The latest case report has 211 passing cases and 469 unported failures on
 both compilers. New checks cover all E5 and Oregonator reference output times
 for the Rosenbrock methods and both LU algorithms, plus the 18,000-substep
 backward Euler Oregonator checks. Both compilers pass the 100-cell TS1 check.
+
+The latest case report has 216 passing cases and 464 unported failures on
+both compilers. Added checks cover the surface reaction trajectory, the
+terminator mechanism across changing illumination and cells, and monotonic
+integrated reaction rates. Both compilers pass the 100-cell TS1 check.
