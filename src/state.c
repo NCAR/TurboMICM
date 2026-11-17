@@ -1,4 +1,5 @@
 #include "state.h"
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,7 +10,7 @@ void chem_state_destroy(ChemState *s)
     if (s->species_names) for (size_t i=0; i<s->species_count; ++i) free(s->species_names[i]);
     if (s->parameter_names) for (size_t i=0; i<s->parameter_count; ++i) free(s->parameter_names[i]);
     free(s->species_names); free(s->parameter_names); free(s->conditions);
-    free(s->concentrations); free(s->parameters); free(s->rates); free(s->absolute_tolerances);
+    free(s->concentrations); free(s->parameters); free(s->rates); free(s->absolute_tolerances); free(s->algebraic);
     *s = (ChemState){0};
 }
 static ChemStateStatus copy_names(char ***out, const char *const *names, size_t n)
@@ -117,6 +118,32 @@ ChemStateStatus chem_state_init_composed(ChemState *state, const ChemStateConfig
     free(species); free(parameters); free(atol);
     return result;
 }
+ChemStateStatus chem_state_init_constrained(ChemState *state,const ChemStateConfig *base,
+    size_t fragment_count,const ChemStateFragment *fragments,const ChemConstraintSet *constraints)
+{
+    if (!state || !base || !constraints || (fragment_count && !fragments) ||
+        chem_constraint_validate(constraints)!=CHEM_CONSTRAINT_OK) return CHEM_STATE_INVALID;
+    if (fragment_count==SIZE_MAX || fragment_count+1>SIZE_MAX/sizeof(ChemStateFragment) ||
+        constraints->count>SIZE_MAX/sizeof(char *)) return CHEM_STATE_SIZE;
+    ChemStateFragment *all=malloc((fragment_count+1)*sizeof(*all));
+    const char **names=constraints->count ? malloc(constraints->count*sizeof(*names)) : NULL;
+    if (!all || (constraints->count && !names)) { free(all); free(names); return CHEM_STATE_NO_MEMORY; }
+    if (fragment_count) memcpy(all,fragments,fragment_count*sizeof(*all));
+    for (size_t i=0;i<constraints->count;++i) names[i]=constraints->constraints[i].name;
+    all[fragment_count]=(ChemStateFragment){0,constraints->count,NULL,names,NULL};
+    ChemState temporary={0};
+    ChemStateStatus status=chem_state_init_composed(&temporary,base,fragment_count+1,all);
+    free(all); free(names);
+    if (status!=CHEM_STATE_OK) return status;
+    if (temporary.species_count!=constraints->variables) { chem_state_destroy(&temporary); return CHEM_STATE_SIZE; }
+    if (constraints->count) {
+        temporary.algebraic=calloc(temporary.species_count,1);
+        if (!temporary.algebraic) { chem_state_destroy(&temporary); return CHEM_STATE_NO_MEMORY; }
+        temporary.constraint_count=constraints->count;
+        for (size_t i=0;i<constraints->count;++i) temporary.algebraic[constraints->constraints[i].row]=1;
+    }
+    chem_state_destroy(state); *state=temporary; return CHEM_STATE_OK;
+}
 ChemStateStatus chem_state_clone(ChemState *destination, const ChemState *source)
 {
     if (!destination || !source) return CHEM_STATE_INVALID;
@@ -131,6 +158,12 @@ ChemStateStatus chem_state_clone(ChemState *destination, const ChemState *source
     if (source->cells && source->species_count) memcpy(copy.concentrations,source->concentrations,source->cells*source->species_count*sizeof(double));
     if (source->cells && source->parameter_count) memcpy(copy.parameters,source->parameters,source->cells*source->parameter_count*sizeof(double));
     if (source->cells && source->rate_count) memcpy(copy.rates,source->rates,source->cells*source->rate_count*sizeof(double));
+    if (source->constraint_count) {
+        copy.algebraic=malloc(source->species_count);
+        if (!copy.algebraic) { chem_state_destroy(&copy); return CHEM_STATE_NO_MEMORY; }
+        memcpy(copy.algebraic,source->algebraic,source->species_count);
+        copy.constraint_count=source->constraint_count;
+    }
     chem_state_destroy(destination); *destination=copy;
     return CHEM_STATE_OK;
 }
@@ -148,6 +181,31 @@ size_t chem_state_species_index(const ChemState *s,const char *name)
 { return s ? find_name(s->species_names,s->species_count,name) : 0; }
 size_t chem_state_parameter_index(const ChemState *s,const char *name)
 { return s ? find_name(s->parameter_names,s->parameter_count,name) : 0; }
+ChemStateStatus chem_state_update_constraint_parameters(ChemState *s,const ChemConstraintSet *set)
+{
+    if (!s || !set || set->variables!=s->species_count || set->count!=s->constraint_count ||
+        chem_constraint_validate(set)!=CHEM_CONSTRAINT_OK) return CHEM_STATE_INVALID;
+    for (size_t i=0;i<set->count;++i) {
+        const ChemConstraint *c=set->constraints+i;
+        if (find_name(s->parameter_names,s->parameter_count,c->name)==s->parameter_count ||
+            !s->algebraic || !s->algebraic[c->row]) return CHEM_STATE_INVALID;
+        if (c->type==CHEM_CONSTRAINT_EQUILIBRIUM)
+            for (size_t cell=0;cell<s->cells;++cell)
+                if (!isfinite(s->conditions[cell].temperature) || s->conditions[cell].temperature<=0)
+                    return CHEM_STATE_INVALID;
+    }
+    for (size_t i=0;i<set->count;++i) {
+        const ChemConstraint *c=set->constraints+i;
+        if (c->type!=CHEM_CONSTRAINT_EQUILIBRIUM) continue;
+        size_t index=find_name(s->parameter_names,s->parameter_count,c->name);
+        for (size_t cell=0;cell<s->cells;++cell) {
+            double temperature=s->conditions[cell].temperature;
+            s->parameters[cell*s->parameter_count+index]=c->constant*
+                exp(c->enthalpy/c->gas_constant*(1/temperature-1/c->reference_temperature));
+        }
+    }
+    return CHEM_STATE_OK;
+}
 static ChemStateStatus set_column(size_t cells, size_t columns, char *const *names, double *matrix,
                                   const char *name, const double *values, size_t count)
 {

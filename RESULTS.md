@@ -247,6 +247,11 @@ runs 3,600 steps for each solver, and checks the reference CSV assertions.
 Both compilers pass the 100-cell TS1 comparison; the case report has 607
 passing and 73 unported failures.
 
+Constrained state construction now registers named constraint parameters and
+algebraic rows and updates temperature-dependent equilibrium constants. Both
+compilers pass the 100-cell TS1 comparison; the case report has 609 passing
+and 71 unported failures.
+
 Backward Euler now supports grouped, shared-convergence solves. The four
 single- and multi-cell aerosol trajectory cases pass at the reference
 tolerances with both compilers; the case report has 597 passing and 83

@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"equilibrium_constraint:EquilibriumIntegration.{case}": ("build/test_constraint_state", "constraint state metadata")
+       for case in ["SetConstraintsAPIWorks", "SetConstraintsAPIMultipleConstraints"]},
     "regression:RosenbrockRegression.FlowTube": ("build/test_flow_tube", "flow-tube trajectories"),
     "regression:BackwardEulerRegression.FlowTube": ("build/test_flow_tube", "flow-tube trajectories"),
     **{f"regression_test_solve:RegressionRosenbrock.{case}": ("build/test_chapman_regression", "multi-cell Chapman trajectories")

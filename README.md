@@ -23,8 +23,8 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently
-607 cases have been ported, so the target intentionally fails and labels the
-other 73 as unported. The focused `make check` tests cover additional behavior
+609 cases have been ported, so the target intentionally fails and labels the
+other 71 as unported. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
 The backward Euler API is declared in `include/backward_euler.h`. It supports
@@ -42,7 +42,9 @@ concentration and custom parameter updates. Its arrays can be passed to the
 existing rate and integration APIs. Initialize states to zero before use and
 release them with `chem_state_destroy`. External models can contribute names
 and tolerances through `chem_state_init_composed` and resolve their indices
-through the state lookup functions.
+through the state lookup functions. `chem_state_init_constrained` registers
+constraint names and algebraic rows; its temperature update evaluates the
+equilibrium parameters for each cell.
 
 `include/species.h` provides owned species, typed properties, phase metadata,
 parameterizations, diffusion coefficients, and gas-system name queries. These

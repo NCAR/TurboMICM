@@ -2,6 +2,7 @@
 #define CHEM_STATE_H
 #include <stddef.h>
 #include "rates.h"
+#include "constraint.h"
 
 typedef enum {
     CHEM_STATE_OK, CHEM_STATE_INVALID, CHEM_STATE_SIZE, CHEM_STATE_UNKNOWN_NAME,
@@ -14,6 +15,8 @@ typedef struct {
     ChemConditions *conditions;
     double *concentrations, *parameters, *rates;
     double relative_tolerance, *absolute_tolerances;
+    size_t constraint_count;
+    unsigned char *algebraic; /* one flag per species, or NULL when unconstrained */
 } ChemState;
 
 typedef struct {
@@ -37,6 +40,14 @@ ChemStateStatus chem_state_init(ChemState *state, const ChemStateConfig *config)
    tolerances. Duplicate names or other errors leave the original state intact. */
 ChemStateStatus chem_state_init_composed(ChemState *state, const ChemStateConfig *base,
                                          size_t fragment_count, const ChemStateFragment *fragments);
+/* Add named constraints to the state parameter map and mark their algebraic
+   rows. The set is borrowed; initialize the parameter values after conditions
+   are set. Failure leaves the destination unchanged. */
+ChemStateStatus chem_state_init_constrained(ChemState *state, const ChemStateConfig *base,
+    size_t fragment_count, const ChemStateFragment *fragments, const ChemConstraintSet *constraints);
+/* Update equilibrium constants from each cell's temperature. Non-equilibrium
+   parameters are left unchanged. */
+ChemStateStatus chem_state_update_constraint_parameters(ChemState *state, const ChemConstraintSet *constraints);
 ChemStateStatus chem_state_clone(ChemState *destination, const ChemState *source);
 void chem_state_move(ChemState *destination, ChemState *source);
 void chem_state_destroy(ChemState *state);
