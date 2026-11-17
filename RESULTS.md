@@ -91,3 +91,10 @@ Rosenbrock methods and backward Euler with six rate families, including the
 fast equilibrium variants, for three independently varying cells. Rate values
 and every time step are checked against the reference formulas and tolerances.
 Both compilers still pass the 100-cell TS1 comparison.
+
+The latest case report has 203 passing cases and 477 unported failures on
+both compilers. The random process-set case now covers the reference system
+sizes, with additional forcing, Jacobian, and structural checks. A fixed
+process fixture also checks the reference forcing and Jacobian, but its full
+case remains unported because parameterized-species name enumeration is not
+yet represented in the C mechanism. TS1 still passes with both compilers.

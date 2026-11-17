@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    "process_set:RandomProcessSet.Matrix": ("build/test_process_random", "random process systems"),
     **{f"{prefix}:AnalyticalExamples.{family}{suffix}": ("build/test_chain_rates", "analytical reaction trajectories")
        for prefix in ["analytical_rosenbrock_integration", "analytical_backward_euler"]
        for family in ["Troe", "TernaryChemicalActivation", "Tunneling", "Arrhenius", "Branched", "Photolysis"]

@@ -83,3 +83,49 @@ void chem_subtract_jacobian(const ChemMechanism *m, const double *y, const doubl
         }
     }
 }
+
+int chem_used_species(const ChemMechanism *m, unsigned char *used)
+{
+    if (!m || !used || (m->reaction_count && !m->reactions)) return 0;
+    for (size_t r=0;r<m->reaction_count;++r) {
+        const ChemReaction *reaction=&m->reactions[r];
+        if ((reaction->reactant_count && !m->reactants) || (reaction->product_count && !m->products)) return 0;
+        for (size_t i=0;i<reaction->reactant_count;++i) {
+            size_t row=m->reactants[reaction->reactant_begin+i];
+            if (row>=m->species_count) return 0;
+            used[row]=1;
+        }
+        for (size_t i=0;i<reaction->product_count;++i) {
+            size_t row=m->products[reaction->product_begin+i].species;
+            if (row>=m->species_count) return 0;
+            used[row]=1;
+        }
+    }
+    return 1;
+}
+
+int chem_jacobian_pattern(const ChemMechanism *m, unsigned char *pattern)
+{
+    if (!m || !pattern || (m->reaction_count && !m->reactions)) return 0;
+    const size_t n=m->species_count;
+    if (n && n > (size_t)-1/n) return 0;
+    for (size_t r=0;r<m->reaction_count;++r) {
+        const ChemReaction *reaction=&m->reactions[r];
+        if ((reaction->reactant_count && !m->reactants) || (reaction->product_count && !m->products)) return 0;
+        for (size_t c=0;c<reaction->reactant_count;++c) {
+            size_t col=m->reactants[reaction->reactant_begin+c];
+            if (col>=n) return 0;
+            for (size_t i=0;i<reaction->reactant_count;++i) {
+                size_t row=m->reactants[reaction->reactant_begin+i];
+                if (row>=n) return 0;
+                pattern[row*n+col]=1;
+            }
+            for (size_t i=0;i<reaction->product_count;++i) {
+                size_t row=m->products[reaction->product_begin+i].species;
+                if (row>=n) return 0;
+                pattern[row*n+col]=1;
+            }
+        }
+    }
+    return 1;
+}

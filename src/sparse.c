@@ -62,23 +62,7 @@ ChemSparsePlan *chem_sparse_plan_create(const ChemMechanism *m)
     size_t n=m->species_count;
     unsigned char *pattern=calloc(n*n,1);
     if (!pattern) return NULL;
-    for (size_t r=0; r<m->reaction_count; ++r) {
-        const ChemReaction *reaction=m->reactions+r;
-        for (size_t c=0; c<reaction->reactant_count; ++c) {
-            size_t col=m->reactants[reaction->reactant_begin+c];
-            if (col >= n) { free(pattern); return NULL; }
-            for (size_t j=0; j<reaction->reactant_count; ++j) {
-                size_t row=m->reactants[reaction->reactant_begin+j];
-                if (row >= n) { free(pattern); return NULL; }
-                pattern[row*n+col]=1;
-            }
-            for (size_t j=0; j<reaction->product_count; ++j) {
-                size_t row=m->products[reaction->product_begin+j].species;
-                if (row >= n) { free(pattern); return NULL; }
-                pattern[row*n+col]=1;
-            }
-        }
-    }
+    if (!chem_jacobian_pattern(m,pattern)) { free(pattern); return NULL; }
     ChemSparsePlan *p=chem_sparse_plan_from_pattern(n,pattern);
     free(pattern); return p;
 }

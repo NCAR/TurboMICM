@@ -78,3 +78,8 @@ parameter arrays, conditions, names, and tolerances. Deep clone and explicit
 move functions make ownership visible in C. Bulk named updates validate every
 column before changing the state; the solver interfaces can also use the arrays
 directly without allocating a `ChemState`.
+
+`chem_jacobian_pattern` and `chem_used_species` OR structural information for
+state species into caller-owned masks. Sparse plan construction shares the
+same Jacobian pattern operation. Parameterized species are represented through
+rate multipliers and are not included in the state-species mask.
