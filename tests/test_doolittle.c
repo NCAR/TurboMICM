@@ -17,18 +17,21 @@ static void check_matrix(size_t n, const double *original, double tolerance)
     ChemSparsePlan *plan=chem_sparse_plan_from_pattern(n,pattern);
     assert(plan);
     const double initial_values[] = {-INFINITY,-1,0,1,INFINITY};
-    for (size_t sparse=0;sparse<2;++sparse)
+    for (size_t algorithm=0;algorithm<2;++algorithm)
+      for (size_t sparse=0;sparse<2;++sparse)
         for (size_t separate=0;separate<2;++separate)
             for (size_t init=0;init<5;++init) {
                 double a[100], original_copy[100];
                 memcpy(original_copy,original,n*n*sizeof(double));
                 for (size_t i=0;i<n*n;++i) a[i]=initial_values[init];
                 int ok;
-                if (separate)
-                    ok=sparse ? chem_sparse_factor_doolittle_copy(plan,original,a) : chem_dense_factor_doolittle_copy(original,a,n);
-                else {
+                if (separate) {
+                    if (algorithm) ok=sparse ? chem_sparse_factor_doolittle_copy(plan,original,a) : chem_dense_factor_doolittle_copy(original,a,n);
+                    else ok=sparse ? chem_sparse_factor_copy(plan,original,a) : chem_dense_factor_copy(original,a,n);
+                } else {
                     memcpy(a,original,n*n*sizeof(double));
-                    ok=sparse ? chem_sparse_factor_doolittle(plan,a) : chem_dense_factor_doolittle(a,n);
+                    if (algorithm) ok=sparse ? chem_sparse_factor_doolittle(plan,a) : chem_dense_factor_doolittle(a,n);
+                    else ok=sparse ? chem_sparse_factor(plan,a) : chem_dense_factor(a,n);
                 }
                 assert(ok);
                 assert(!memcmp(original,original_copy,n*n*sizeof(double)));
@@ -71,6 +74,6 @@ int main(void)
             }
         check_matrix(5,small,1e-12);
     }
-    puts("Doolittle decomposition checks PASS");
+    puts("Mozart and Doolittle decomposition checks PASS");
     return 0;
 }

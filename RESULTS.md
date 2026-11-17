@@ -65,3 +65,7 @@ The current case report has 107 passing cases and 573 unported failures on
 both compilers. Additional checks cover consistent initialization, transactional
 rollback, damping, row scaling, and single- and coupled-equilibrium DAE solves
 with both linear algorithms. The 100-cell TS1 comparison remains passing.
+
+The latest case report has 143 passing cases and 537 unported failures with
+both compilers. New checks cover Mozart decomposition, dense and sparse linear
+solves, and Markowitz fill reduction. The 100-cell TS1 comparison still passes.

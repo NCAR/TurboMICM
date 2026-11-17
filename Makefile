@@ -58,6 +58,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_falloff
 	./build/test_sparse
 	./build/test_doolittle
+	./build/test_linear_solve
 	./build/test_reordered
 	./build/test_chemical_solver
 	./build/test_tutorial
@@ -66,6 +67,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_generated
 	.conda/bin/python tests/test_config.py
 	.conda/bin/python tests/test_ts1_config.py
+	.conda/bin/python tests/test_markowitz.py
 build/tutorial.c: tools/generate.py tools/config.py | build
 	.conda/bin/python tools/generate.py ../micm/test/tutorial/configs/rate_constants_no_user_defined/config.yaml $@
 build/tutorial_custom.c: tools/generate.py tools/config.py | build
@@ -118,7 +120,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
@@ -155,3 +157,6 @@ check: build/test_constraint_init
 build/test_dae: tests/test_dae.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_dae.c build/libchem.a -lm -o $@
 check: build/test_dae
+build/test_linear_solve: tests/test_linear_solve.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_linear_solve.c build/libchem.a -lm -o $@
+check: build/test_linear_solve

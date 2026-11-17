@@ -15,6 +15,13 @@ def markowitz_order(count, rows, reactants, products):
         outputs = inputs | {species for species, _ in products[pb:pb+pn]}
         for row in outputs:
             edges[row].update(inputs)
+    return markowitz_pattern(edges)
+
+
+def markowitz_pattern(pattern):
+    """Return a symmetric permutation of a structural adjacency list."""
+    count = len(pattern)
+    edges = [set(row) | {i} for i, row in enumerate(pattern)]
     active = set(range(count))
     order = []
     while active:

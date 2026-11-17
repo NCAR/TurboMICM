@@ -45,12 +45,22 @@ CASES = {
        for prefix, suite in [
            ('lu_decomposition_doolittle', 'LuDecompositionDoolittle'),
            ('lu_decomposition_doolittle_in_place', 'LuDecompositionDoolittleInPlace'),
+           ('lu_decomposition_mozart', 'LuDecompositionMozart'),
+           ('lu_decomposition_mozart_in_place', 'LuDecompositionMozartInPlace'),
        ] for case in [
            'DenseMatrixStandardOrdering', 'RandomMatrixStandardOrdering',
            'DiagonalMatrixStandardOrdering', 'AgnosticToInitialValueStandardOrdering',
            'DenseMatrixVectorOrdering', 'RandomMatrixVectorOrdering',
            'DiagonalMatrixVectorOrdering', 'AgnosticToInitialValueVectorOrdering',
        ]},
+    **{f'{prefix}:{suite}.{case}': ('build/test_linear_solve', 'linear solve')
+       for prefix, suite in [('linear_solver', 'LinearSolver'), ('linear_solver_in_place', 'LinearSolverInPlace')]
+       for case in ['DenseMatrixStandardOrdering', 'RandomMatrixStandardOrdering', 'DiagonalMatrixStandardOrdering',
+                    'StandardOrderingAgnosticToInitialValue', 'DenseMatrixVectorOrdering', 'RandomMatrixVectorOrdering',
+                    'VectorOrderingAgnosticToInitialValue', 'DiagonalMatrixVectorOrdering']},
+    **{f'{prefix}:{suite}.{case}': ('tests/test_markowitz.py', 'Markowitz fill reduction')
+       for prefix, suite in [('linear_solver', 'LinearSolver'), ('linear_solver_in_place', 'LinearSolverInPlace')]
+       for case in ['DiagonalMarkowitzReorder', 'VectorDiagonalMarkowitzReordering']},
     'analytical_rosenbrock_integration:AnalyticalExamples.Photolysis': ('build/test_analytical_methods', 'analytical trajectories'),
     'analytical_rosenbrock_integration:AnalyticalExamples.PhotolysisSuperStiffButAnalytical': ('build/test_analytical_methods', 'stiff analytical trajectories'),
     **{f'linear:LinearConstraint.{case}': ('build/test_constraints', 'linear constraint') for case in [
@@ -101,7 +111,10 @@ def main():
         else:
             executable, reason = CASES[case]
             if executable not in results:
-                results[executable] = subprocess.run([str(ROOT / executable)],
+                command = [str(ROOT / executable)]
+                if executable.endswith('.py'):
+                    command.insert(0, str(ROOT / '.conda/bin/python'))
+                results[executable] = subprocess.run(command,
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True).returncode
             status = 'PASS' if results[executable] == 0 else 'FAIL'
             if status == 'FAIL': reason = 'ported check failed'

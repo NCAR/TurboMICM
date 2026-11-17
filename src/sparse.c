@@ -105,6 +105,12 @@ int chem_sparse_factor(const ChemSparsePlan *p, double *a)
     }
     return 1;
 }
+int chem_sparse_factor_copy(const ChemSparsePlan *p, const double *a, double *factors)
+{
+    if (!p || !a || !factors || p->n > SIZE_MAX/p->n || p->n*p->n > SIZE_MAX/sizeof(double)) return 0;
+    memcpy(factors,a,p->n*p->n*sizeof(double));
+    return chem_sparse_factor(p,factors);
+}
 /* Intersect a factored row and column up to the current pivot. */
 static double subtract_products(const ChemSparsePlan *p, const double *a,
                                 size_t row, size_t col, size_t pivot, double value)

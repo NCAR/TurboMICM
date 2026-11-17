@@ -48,3 +48,10 @@ int chem_dense_factor_doolittle_copy(const double *matrix, double *factors, size
     memcpy(factors,matrix,n*n*sizeof(double));
     return chem_dense_factor_doolittle(factors,n);
 }
+
+int chem_dense_factor_copy(const double *matrix, double *factors, size_t n)
+{
+    if (!matrix || !factors || !n || n > SIZE_MAX/n || n*n > SIZE_MAX/sizeof(double)) return 0;
+    memcpy(factors,matrix,n*n*sizeof(double));
+    return chem_dense_factor(factors,n);
+}
