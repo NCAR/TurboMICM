@@ -22,6 +22,7 @@ const char *chem_solver_status_string(ChemSolverStatus status)
 
 struct ChemWorkspace {
     size_t n;
+    int linear_factor_valid;
     unsigned char *pattern, *mass;
     const ChemConstraint *constraints;
     size_t constraint_count;
@@ -109,22 +110,15 @@ ChemRosenbrockParameters chem_rosenbrock_six_stage_dae(void)
     return p;
 }
 
-ChemWorkspace *chem_workspace_create(const ChemMechanism *m)
+static ChemWorkspace *allocate_workspace(size_t n)
 {
-    return chem_workspace_create_constrained(m, NULL, 0);
-}
-
-ChemWorkspace *chem_workspace_create_constrained(const ChemMechanism *m, const ChemConstraint *constraints, size_t count)
-{
-    if (!m || chem_validate_mechanism(m, NULL, 0) != CHEM_VALID || m->species_count > SIZE_MAX / m->species_count) return NULL;
-    size_t n = m->species_count, nn = n*n;
+    if (!n || n > SIZE_MAX / n) return NULL;
+    size_t nn = n*n;
     if (nn > SIZE_MAX/sizeof(double) || nn > SIZE_MAX/sizeof(size_t) || n > SIZE_MAX/(6*sizeof(double))) return NULL;
     ChemWorkspace *w = calloc(1, sizeof *w);
     if (!w) return NULL;
     w->n = n;
-    w->constraints = constraints; w->constraint_count = count;
     w->mass = malloc(n);
-    if (count) w->constraint_jacobian = calloc(nn, sizeof(double));
     w->pattern = calloc(nn, 1);
     w->lower_offset = calloc(n+1, sizeof(size_t)); w->upper_offset = calloc(n+1, sizeof(size_t));
     w->lower_rows = malloc(nn*sizeof(size_t)); w->upper_cols = malloc(nn*sizeof(size_t));
@@ -133,11 +127,53 @@ ChemWorkspace *chem_workspace_create_constrained(const ChemMechanism *m, const C
     w->matrix = calloc(nn, sizeof(double)); w->jacobian = calloc(nn, sizeof(double));
     w->initial = calloc(n, sizeof(double)); w->trial = calloc(n, sizeof(double));
     w->error = calloc(n, sizeof(double)); w->stage = calloc(6*n, sizeof(double));
-    if (!w->mass || (count && (!constraints || !w->constraint_jacobian)) || !w->pattern || !w->lower_offset || !w->upper_offset || !w->lower_rows || !w->upper_cols || !w->row_lower_offset || !w->row_upper_offset ||
+    if (!w->mass || !w->pattern || !w->lower_offset || !w->upper_offset || !w->lower_rows || !w->upper_cols || !w->row_lower_offset || !w->row_upper_offset ||
         !w->row_lower_cols || !w->row_upper_cols || !w->matrix || !w->jacobian || !w->initial || !w->trial || !w->error || !w->stage) {
         chem_workspace_free(w); return NULL;
     }
     memset(w->mass, 1, n);
+    return w;
+}
+
+static void finalize_pattern(ChemWorkspace *w)
+{
+    size_t n = w->n;
+    /* Symbolic fill for the in-place Mozart elimination. */
+    for (size_t i = 0; i < n; ++i)
+        for (size_t j = i+1; j < n; ++j) if (w->pattern[j*n+i])
+            for (size_t k = i+1; k < n; ++k) if (w->pattern[i*n+k]) w->pattern[j*n+k] = 1;
+    size_t nl = 0, nu = 0;
+    for (size_t i = 0; i < n; ++i) {
+        w->lower_offset[i] = nl; w->upper_offset[i] = nu;
+        for (size_t j = i+1; j < n; ++j) if (w->pattern[j*n+i]) w->lower_rows[nl++] = j;
+        for (size_t k = i+1; k < n; ++k) if (w->pattern[i*n+k]) w->upper_cols[nu++] = k;
+    }
+    w->lower_offset[n] = nl; w->upper_offset[n] = nu;
+    nl = nu = 0;
+    for (size_t i = 0; i < n; ++i) {
+        w->row_lower_offset[i] = nl; w->row_upper_offset[i] = nu;
+        for (size_t j = 0; j < i; ++j) if (w->pattern[i*n+j]) w->row_lower_cols[nl++] = j;
+        for (size_t j = i+1; j < n; ++j) if (w->pattern[i*n+j]) w->row_upper_cols[nu++] = j;
+    }
+    w->row_lower_offset[n] = nl; w->row_upper_offset[n] = nu;
+}
+
+ChemWorkspace *chem_workspace_create(const ChemMechanism *m)
+{
+    return chem_workspace_create_constrained(m, NULL, 0);
+}
+
+ChemWorkspace *chem_workspace_create_constrained(const ChemMechanism *m, const ChemConstraint *constraints, size_t count)
+{
+    if (!m || chem_validate_mechanism(m, NULL, 0) != CHEM_VALID || (count && !constraints)) return NULL;
+    size_t n = m->species_count;
+    ChemWorkspace *w = allocate_workspace(n);
+    if (!w) return NULL;
+    w->constraints = constraints; w->constraint_count = count;
+    if (count) {
+        w->constraint_jacobian = calloc(n*n, sizeof(double));
+        if (!w->constraint_jacobian) { chem_workspace_free(w); return NULL; }
+    }
     for (size_t i = 0; i < n; ++i) w->pattern[i*n+i] = 1;
     for (size_t r = 0; r < m->reaction_count; ++r) {
         const ChemReaction *rx = &m->reactions[r];
@@ -168,24 +204,7 @@ ChemWorkspace *chem_workspace_create_constrained(const ChemMechanism *m, const C
         for (size_t j = 0; j < constraint->product_count; ++j)
             w->pattern[row*n+(size_t)constraint->products[j].species] = 1;
     }
-    /* Symbolic fill for the in-place Mozart elimination. */
-    for (size_t i = 0; i < n; ++i)
-        for (size_t j = i+1; j < n; ++j) if (w->pattern[j*n+i])
-            for (size_t k = i+1; k < n; ++k) if (w->pattern[i*n+k]) w->pattern[j*n+k] = 1;
-    size_t nl = 0, nu = 0;
-    for (size_t i = 0; i < n; ++i) {
-        w->lower_offset[i] = nl; w->upper_offset[i] = nu;
-        for (size_t j = i+1; j < n; ++j) if (w->pattern[j*n+i]) w->lower_rows[nl++] = j;
-        for (size_t k = i+1; k < n; ++k) if (w->pattern[i*n+k]) w->upper_cols[nu++] = k;
-    }
-    w->lower_offset[n] = nl; w->upper_offset[n] = nu;
-    nl = nu = 0;
-    for (size_t i = 0; i < n; ++i) {
-        w->row_lower_offset[i] = nl; w->row_upper_offset[i] = nu;
-        for (size_t j = 0; j < i; ++j) if (w->pattern[i*n+j]) w->row_lower_cols[nl++] = j;
-        for (size_t j = i+1; j < n; ++j) if (w->pattern[i*n+j]) w->row_upper_cols[nu++] = j;
-    }
-    w->row_lower_offset[n] = nl; w->row_upper_offset[n] = nu;
+    finalize_pattern(w);
     return w;
 }
 
@@ -211,6 +230,7 @@ static void clear_jacobian(ChemWorkspace *w)
 
 static int factor(ChemWorkspace *w, double alpha, ChemLUAlgorithm algorithm)
 {
+    w->linear_factor_valid = 0;
     size_t n = w->n;
     double *a = w->matrix;
     for (size_t i = 0; i < n; ++i) {
@@ -268,6 +288,93 @@ static void substitute(const ChemWorkspace *w, double *x)
         }
         x[i] /= a[i*n+i];
     }
+}
+
+ChemWorkspace *chem_linear_workspace_create(size_t n, const unsigned char *pattern)
+{
+    return chem_linear_workspace_create_with_initial(n, pattern, 0);
+}
+
+ChemWorkspace *chem_linear_workspace_create_with_initial(size_t n, const unsigned char *pattern, double initial)
+{
+    if (!pattern) return NULL;
+    ChemWorkspace *w = allocate_workspace(n);
+    if (!w) return NULL;
+    for (size_t i = 0; i < n*n; ++i) { w->pattern[i] = pattern[i] != 0; w->matrix[i] = initial; }
+    for (size_t i = 0; i < n; ++i) w->pattern[i*n+i] = 1;
+    finalize_pattern(w);
+    return w;
+}
+
+int chem_linear_factor(ChemWorkspace *w, const double *matrix, ChemLUAlgorithm algorithm)
+{
+    if (!w || !matrix) return 1;
+    w->linear_factor_valid = 0;
+    size_t nn = w->n*w->n;
+    for (size_t i = 0; i < nn; ++i) {
+        if (!w->pattern[i] && matrix[i] != 0) return 1;
+        w->jacobian[i] = -matrix[i];
+    }
+    if (factor(w, 0, algorithm)) return 1;
+    w->linear_factor_valid = 1;
+    return 0;
+}
+
+int chem_linear_factors(const ChemWorkspace *w, double *lower, double *upper)
+{
+    if (!w || !lower || !upper || !w->linear_factor_valid) return 1;
+    size_t n = w->n;
+    for (size_t i = 0; i < n; ++i) for (size_t j = 0; j < n; ++j) {
+        lower[i*n+j] = i == j ? 1 : i > j && w->pattern[i*n+j] ? w->matrix[i*n+j] : 0;
+        upper[i*n+j] = i <= j && w->pattern[i*n+j] ? w->matrix[i*n+j] : 0;
+    }
+    return 0;
+}
+
+int chem_linear_factor_in_place(ChemWorkspace *w, double *matrix, ChemLUAlgorithm algorithm)
+{
+    if (chem_linear_factor(w, matrix, algorithm)) return 1;
+    for (size_t i = 0; i < w->n*w->n; ++i) matrix[i] = w->pattern[i] ? w->matrix[i] : 0;
+    return 0;
+}
+
+int chem_linear_solve(const ChemWorkspace *w, double *rhs)
+{
+    if (!w || !rhs || !w->linear_factor_valid) return 1;
+    substitute(w, rhs);
+    return 0;
+}
+
+size_t chem_linear_symbolic_nonzeros(const ChemWorkspace *w)
+{
+    if (!w) return 0;
+    size_t count = w->n; /* diagonal occurs in both factors */
+    for (size_t i = 0; i < w->n*w->n; ++i) count += w->pattern[i] != 0;
+    return count;
+}
+
+int chem_diagonal_markowitz_order(size_t n, const unsigned char *pattern, size_t *order)
+{
+    if (!n || !pattern || !order || n > SIZE_MAX/n) return 1;
+    unsigned char *rows = malloc(n*n), *live = malloc(n);
+    if (!rows || !live) { free(rows); free(live); return 1; }
+    for (size_t i = 0; i < n*n; ++i) rows[i] = pattern[i] != 0;
+    memset(live, 1, n);
+    for (size_t i = 0; i < n; ++i) rows[i*n+i] = 1;
+    for (size_t step = 0; step < n; ++step) {
+        size_t pivot = n, best = SIZE_MAX;
+        for (size_t i = 0; i < n; ++i) if (live[i]) {
+            size_t row = 0, col = 0;
+            for (size_t j = 0; j < n; ++j) if (live[j] && j != i) {
+                row += rows[i*n+j] != 0; col += rows[j*n+i] != 0;
+            }
+            if (row*col < best) { best = row*col; pivot = i; }
+        }
+        order[step] = pivot; live[pivot] = 0;
+        for (size_t i = 0; i < n; ++i) if (live[i] && rows[i*n+pivot])
+            for (size_t j = 0; j < n; ++j) if (live[j] && rows[pivot*n+j]) rows[i*n+j] = 1;
+    }
+    free(rows); free(live); return 0;
 }
 
 /* Replace algebraic rows of a forcing vector and optionally the positive

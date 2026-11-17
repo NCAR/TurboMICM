@@ -1,5 +1,9 @@
 # Design (work in progress)
 
+The generic linear workspace can also be constructed directly from a matrix
+pattern. It exposes the same symbolic fill, Mozart and Doolittle numeric
+factorizations, and triangular solves used by the integration workspace.
+
 `tools/mechanism.py` reads and validates the configuration, then
 `tools/generate.py` emits immutable C tables. `chem.h` also exposes the table
 format for mechanisms constructed directly in C. The tables list repeated

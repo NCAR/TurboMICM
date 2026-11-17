@@ -91,6 +91,19 @@ ChemWorkspace *chem_workspace_create(const ChemMechanism *);
 /* Constraints and their term arrays must outlive the workspace. */
 ChemWorkspace *chem_workspace_create_constrained(const ChemMechanism *, const ChemConstraint *, size_t);
 void chem_workspace_free(ChemWorkspace *);
+/* Generic sparse-pattern linear algebra using the same LU kernels as the
+ * integrators. Pattern and matrices are row-major n-by-n arrays. Diagonal
+ * entries are included automatically; zero pattern entries represent zeros. */
+ChemWorkspace *chem_linear_workspace_create(size_t n, const unsigned char *pattern);
+ChemWorkspace *chem_linear_workspace_create_with_initial(size_t n, const unsigned char *pattern, double initial);
+int chem_linear_factor(ChemWorkspace *, const double *matrix, ChemLUAlgorithm);
+/* Overwrite matrix with L below the diagonal and U on and above it. */
+int chem_linear_factor_in_place(ChemWorkspace *, double *matrix, ChemLUAlgorithm);
+int chem_linear_factors(const ChemWorkspace *, double *lower, double *upper);
+int chem_linear_solve(const ChemWorkspace *, double *rhs);
+/* Symmetric diagonal Markowitz ordering and symbolic L+U storage count. */
+int chem_diagonal_markowitz_order(size_t n, const unsigned char *pattern, size_t *order);
+size_t chem_linear_symbolic_nonzeros(const ChemWorkspace *);
 /* Initialize algebraic rows transactionally; accumulates statistics. */
 int chem_initialize_constraints(ChemWorkspace *, const ChemRosenbrockParameters *,
                                 ChemConditions, double *y, ChemStatistics *);
