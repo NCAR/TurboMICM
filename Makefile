@@ -42,7 +42,10 @@ build/ts1.o: build/ts1.c include/chem.h
 build/rosenbrock.o: src/rosenbrock.c include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/libchem.a: build/chem.o build/rosenbrock.o
+build/constraint.o: src/constraint.c include/chem.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/libchem.a: build/chem.o build/rosenbrock.o build/constraint.o
 	ar rcs $@ $^
 
 cpu: bin/ts1_bench_cpu

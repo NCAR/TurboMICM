@@ -169,6 +169,119 @@ static int backward_solve(void)
     return ok;
 }
 
+static int linear_case(int which)
+{
+    ChemTerm terms[] = {{0,1},{1,1},{2,1}};
+    ChemConstraint c = {"conservation", CHEM_LINEAR_CONSTRAINT, 1, terms, NULL, 2, 0, 1, 0, 0, 0};
+    double y[] = {.3,.7,0}, forcing[] = {7,7,7}, jac[9] = {0};
+    size_t n = 2;
+    if (which == 0) return !strcmp(c.name,"conservation") && c.constant == 1 && c.reactant_count == 2 && terms[0].species == 0 && terms[1].species == 1 && chem_constraint_validate(&c,n) == CHEM_CONSTRAINT_OK;
+    if (which == 1) { c.row = 2; c.reactant_count = 3; c.constant = 10; return c.row == 2 && chem_constraint_validate(&c,3) == CHEM_CONSTRAINT_OK; }
+    if (which == 2 || which == 7 || which == 13) {
+        n=3; c.row=2; c.reactant_count=3; c.constant=5;
+        terms[0].yield=2; terms[1].yield=3; terms[2].yield=-1;
+        y[0]=1; y[1]=2; y[2]=3;
+        if (which == 2) return c.constant == 5 && c.reactant_count == 3 && terms[0].yield == 2 && terms[1].yield == 3 && terms[2].yield == -1;
+    }
+    if (which == 3 || which == 9) { c.constant=0; terms[1].yield=-1; y[0]=y[1]=.5; if (which == 3) return c.constant == 0 && c.reactant_count == 2; }
+    if (which == 4 || which == 10) { c.constant=2; terms[0].yield=.5; terms[1].yield=1.5; y[0]=y[1]=1; if (which == 4) return terms[0].yield == .5 && terms[1].yield == 1.5 && c.constant == 2; }
+    if (which == 8) { n=3; c.row=2; c.reactant_count=3; c.constant=10; y[0]=2; y[1]=3; y[2]=5; }
+    if (which == 11) { terms[0].yield=2; terms[1].yield=3; y[0]=.1; y[1]=.2; }
+    if (which == 13) { y[0]=1.5; y[1]=.8; y[2]=2; }
+    if (chem_constraint_apply(&c,n,300,y,forcing,jac) != CHEM_CONSTRAINT_OK) return 0;
+    if (which == 5) {
+        if (fabs(forcing[1]) > 1e-10) return 0;
+        y[0]=.5; y[1]=.6;
+        return !chem_constraint_apply(&c,n,300,y,forcing,jac) && fabs(forcing[1]-.1) < 1e-10;
+    }
+    if (which == 6) return fabs(jac[2]+1)<1e-10 && fabs(jac[3]+1)<1e-10;
+    if (which == 7) return fabs(forcing[2]) < 1e-10 && fabs(jac[6]+2)<1e-10 && fabs(jac[7]+3)<1e-10 && fabs(jac[8]-1)<1e-10;
+    if (which == 8) {
+        if (fabs(forcing[2])>1e-10) return 0;
+        y[2]=6; return !chem_constraint_apply(&c,n,300,y,forcing,jac) && fabs(forcing[2]-1)<1e-10;
+    }
+    if (which == 9) {
+        if (fabs(forcing[1])>1e-10) return 0;
+        y[0]=.6; return !chem_constraint_apply(&c,n,300,y,forcing,jac) && fabs(forcing[1]-.1)<1e-10;
+    }
+    if (which == 10) return fabs(forcing[1])<1e-10 && fabs(jac[2]+.5)<1e-10 && fabs(jac[3]+1.5)<1e-10;
+    if (which == 11) {
+        if (fabs(jac[2]+2)>1e-10 || fabs(jac[3]+3)>1e-10) return 0;
+        y[0]=10; y[1]=20;
+        return !chem_constraint_apply(&c,n,300,y,forcing,jac) && fabs(jac[2]+2)<1e-10 && fabs(jac[3]+3)<1e-10;
+    }
+    if (which == 12 || which == 13) {
+        int cells = which == 12 ? 2 : 1;
+        for (int cell=0; cell<cells; ++cell) {
+            if (which == 12 && cell == 1) { y[0]=.8; y[1]=.2; }
+            if (chem_constraint_apply(&c,n,300,y,forcing,jac)) return 0;
+            double base = forcing[c.row];
+            for (size_t col=0; col<n; ++col) {
+                double old=y[col], f[3]={0}, j[9]={0}, h=1e-6;
+                y[col] += h;
+                if (chem_constraint_apply(&c,n,300,y,f,j)) return 0;
+                y[col] = old;
+                if (fabs((f[c.row]-base)/h + jac[c.row*n+col]) > 1e-8) return 0;
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
+static int equilibrium_case(int which)
+{
+    ChemTerm reactants[] = {{0,1},{1,1}}, products[] = {{2,1},{2,1}};
+    ChemConstraint c = {"A_B_equilibrium", CHEM_EQUILIBRIUM_CONSTRAINT, 2, reactants, products, 2, 1, 1000, -2400, 8.31446261815324, 298.15};
+    if (which == 0) return !strcmp(c.name,"A_B_equilibrium") && c.reactant_count == 2 && c.product_count == 1 && reactants[0].species == 0 && reactants[1].species == 1 && products[0].species == 2 && chem_constraint_validate(&c,3) == CHEM_CONSTRAINT_OK;
+    if (which == 1) return c.row == 2 && chem_constraint_validate(&c,3) == CHEM_CONSTRAINT_OK;
+    if (which == 2) { c.name="A_B_simple"; c.row=1; c.reactant_count=1; products[0].species=1; c.constant=10;
+        return !strcmp(c.name,"A_B_simple") && c.row==1 && c.reactant_count==1 && c.product_count==1 && reactants[0].species==0 && products[0].species==1 && chem_constraint_validate(&c,2)==CHEM_CONSTRAINT_OK; }
+    if (which == 3 || which == 10 || which == 12) {
+        c.name="dissociation"; c.row=1; c.reactant_count=1; c.product_count=2;
+        reactants[0].yield=2; products[0].species=1; products[1].species=2; c.constant=100;
+        if (which == 3) return !strcmp(c.name,"dissociation") && c.row==1 && c.reactant_count==1 && c.product_count==2 && reactants[0].yield==2 && reactants[0].species==0 && products[0].species==1 && products[1].species==2 && chem_constraint_validate(&c,3)==CHEM_CONSTRAINT_OK;
+    }
+    if (which == 4) { c.constant=-1; if (chem_constraint_validate(&c,3)!=CHEM_CONSTRAINT_BAD_EQUILIBRIUM) return 0; c.constant=0; return chem_constraint_validate(&c,3)==CHEM_CONSTRAINT_BAD_EQUILIBRIUM; }
+    if (which == 5) { c.reactant_count=0; return chem_constraint_validate(&c,3)==CHEM_CONSTRAINT_EMPTY_REACTANTS; }
+    if (which == 6) { c.product_count=0; return chem_constraint_validate(&c,3)==CHEM_CONSTRAINT_EMPTY_PRODUCTS; }
+    if (which == 7) {
+        reactants[0].yield=0; if (chem_constraint_validate(&c,3)!=CHEM_CONSTRAINT_BAD_STOICHIOMETRY) return 0;
+        reactants[0].yield=-1; if (chem_constraint_validate(&c,3)!=CHEM_CONSTRAINT_BAD_STOICHIOMETRY) return 0;
+        reactants[0].yield=1; products[0].yield=0; if (chem_constraint_validate(&c,3)!=CHEM_CONSTRAINT_BAD_STOICHIOMETRY) return 0;
+        products[0].yield=-2; return chem_constraint_validate(&c,3)==CHEM_CONSTRAINT_BAD_STOICHIOMETRY;
+    }
+    double y[3]={.001,.001,.001}, f[3]={0}, j[9]={0};
+    if (which == 9) { y[0]=.01; y[1]=.02; y[2]=.05; }
+    if (which == 10) { y[0]=.1; y[1]=.5; y[2]=2; }
+    if (which == 11) { y[0]=.02; y[1]=.03; y[2]=.05; }
+    if (which == 12) { y[0]=.15; y[1]=.8; y[2]=1.5; }
+    if (chem_constraint_apply(&c,3,298.15,y,f,j)) return 0;
+    if (which == 8) {
+        if (fabs(f[2])>1e-10) return 0;
+        y[0]=.02; y[1]=.03; y[2]=.05;
+        return !chem_constraint_apply(&c,3,298.15,y,f,j) && fabs(f[2]-.55)<1e-10;
+    }
+    if (which == 9) return fabs(j[6]+20)<1e-8 && fabs(j[7]+10)<1e-8 && fabs(j[8]-1)<1e-8;
+    if (which == 10) return fabs(f[1])<1e-10;
+    if (which == 11 || which == 12) {
+        int cells=which==11 ? 2 : 1;
+        for (int cell=0; cell<cells; ++cell) {
+            if (cell) { y[0]=.1; y[1]=.2; y[2]=5; }
+            if (chem_constraint_apply(&c,3,298.15,y,f,j)) return 0;
+            for (int col=0; col<3; ++col) {
+                double old=y[col], fp[3]={0}, fm[3]={0}, unused[9]={0}, h=1e-6;
+                y[col]=old+h; if (chem_constraint_apply(&c,3,298.15,y,fp,unused)) return 0;
+                y[col]=old-h; if (chem_constraint_apply(&c,3,298.15,y,fm,unused)) return 0;
+                y[col]=old;
+                if (fabs((fp[c.row]-fm[c.row])/(2*h)+j[c.row*3+col]) > 1e-7) return 0;
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
 static int arrhenius(void)
 {
     double p[] = {1, 0, 0, 300, 0};
@@ -229,5 +342,32 @@ int main(void)
     printf("reaction_rate_store:ReactionRateConstantStore.SurfaceMissingMolecularWeightThrows %d\n", missing_surface(1));
     printf("backward_euler:BackwardEuler.CanCallSolve %d\n", backward_solve());
     printf("backward_euler:BackwardEuler.IsConverged %d\n", backward_convergence());
+    printf("linear:LinearConstraint.Construction %d\n", linear_case(0));
+    printf("linear:LinearConstraint.AlgebraicSpecies %d\n", linear_case(1));
+    printf("linear:LinearConstraint.WeightedTerms %d\n", linear_case(2));
+    printf("linear:LinearConstraint.ZeroConstant %d\n", linear_case(3));
+    printf("linear:LinearConstraint.FractionalCoefficients %d\n", linear_case(4));
+    printf("linear:LinearConstraint.ResidualComputationThroughConstraintSet %d\n", linear_case(5));
+    printf("linear:LinearConstraint.JacobianComputationThroughConstraintSet %d\n", linear_case(6));
+    printf("linear:LinearConstraint.WeightedSumResidualAndJacobian %d\n", linear_case(7));
+    printf("linear:LinearConstraint.ThreeSpeciesConservationResidual %d\n", linear_case(8));
+    printf("linear:LinearConstraint.ZeroConstantResidual %d\n", linear_case(9));
+    printf("linear:LinearConstraint.FractionalCoefficientsResidualAndJacobian %d\n", linear_case(10));
+    printf("linear:LinearConstraint.JacobianIndependentOfConcentrations %d\n", linear_case(11));
+    printf("linear:LinearConstraint.FiniteDifferenceJacobianSimpleConservation %d\n", linear_case(12));
+    printf("linear:LinearConstraint.FiniteDifferenceJacobianWeightedSum %d\n", linear_case(13));
+    printf("equilibrium:EquilibriumConstraint.Construction %d\n", equilibrium_case(0));
+    printf("equilibrium:EquilibriumConstraint.AlgebraicSpecies %d\n", equilibrium_case(1));
+    printf("equilibrium:EquilibriumConstraint.SingleReactantSingleProduct %d\n", equilibrium_case(2));
+    printf("equilibrium:EquilibriumConstraint.MultipleReactantsAndProducts %d\n", equilibrium_case(3));
+    printf("equilibrium:EquilibriumConstraint.InvalidEquilibriumConstant %d\n", equilibrium_case(4));
+    printf("equilibrium:EquilibriumConstraint.EmptyReactantsThrows %d\n", equilibrium_case(5));
+    printf("equilibrium:EquilibriumConstraint.EmptyProductsThrows %d\n", equilibrium_case(6));
+    printf("equilibrium:EquilibriumConstraint.InvalidStoichiometryThrows %d\n", equilibrium_case(7));
+    printf("equilibrium:EquilibriumConstraint.ResidualComputationThroughConstraintSet %d\n", equilibrium_case(8));
+    printf("equilibrium:EquilibriumConstraint.JacobianComputationThroughConstraintSet %d\n", equilibrium_case(9));
+    printf("equilibrium:EquilibriumConstraint.ComplexStoichiometryResidual %d\n", equilibrium_case(10));
+    printf("equilibrium:EquilibriumConstraint.FiniteDifferenceJacobianSimple %d\n", equilibrium_case(11));
+    printf("equilibrium:EquilibriumConstraint.FiniteDifferenceJacobianComplexStoichiometry %d\n", equilibrium_case(12));
     return 0;
 }

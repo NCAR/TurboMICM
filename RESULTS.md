@@ -2,9 +2,9 @@
 
 With `-O3 -DNDEBUG`, the reader tests, TS1 finite-difference Jacobian check,
 single-cell Rosenbrock and backward Euler decay checks, and a generated TS1
-step with both LU methods passed with Apple clang and gcc-15. Thirty-six
+step with both LU methods passed with Apple clang and gcc-15. Sixty-three
 of the 680 named reference cases have been individually ported; the remaining
-644 are reported as `FAIL` by `make test-cpu` rather than treated as passes.
+617 are reported as `FAIL` by `make test-cpu` rather than treated as passes.
 
 For the supplied 100-cell seed-1 input, 100 timed 30-second steps after warm-up,
 the clang build agreed with the supplied MICM final state in all 21,100 values

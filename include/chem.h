@@ -79,4 +79,25 @@ int chem_backward_euler_solve(const ChemMechanism *, ChemWorkspace *,
                               const ChemBackwardEulerParameters *, ChemConditions,
                               const double *rates, double dt, double *y, ChemStatistics *);
 
+typedef enum { CHEM_LINEAR_CONSTRAINT, CHEM_EQUILIBRIUM_CONSTRAINT } ChemConstraintType;
+typedef struct {
+    const char *name;
+    ChemConstraintType type;
+    size_t row;
+    const ChemTerm *reactants, *products;
+    size_t reactant_count, product_count;
+    double constant; /* linear constant, or equilibrium constant at reference temperature */
+    double enthalpy, gas_constant, reference_temperature;
+} ChemConstraint;
+typedef enum {
+    CHEM_CONSTRAINT_OK, CHEM_CONSTRAINT_BAD_ROW, CHEM_CONSTRAINT_EMPTY_REACTANTS,
+    CHEM_CONSTRAINT_EMPTY_PRODUCTS, CHEM_CONSTRAINT_BAD_SPECIES,
+    CHEM_CONSTRAINT_BAD_STOICHIOMETRY, CHEM_CONSTRAINT_BAD_EQUILIBRIUM
+} ChemConstraintStatus;
+ChemConstraintStatus chem_constraint_validate(const ChemConstraint *, size_t species_count);
+/* Overwrite forcing[row] and the negative-Jacobian row; other rows are unchanged. */
+ChemConstraintStatus chem_constraint_apply(const ChemConstraint *, size_t species_count,
+                                          double temperature, const double *y,
+                                          double *forcing, double *negative_jacobian);
+
 #endif

@@ -18,6 +18,9 @@ stage interfaces, though the interface should be made pluggable before swapping
 it. A new rate type requires an enum member, parameter interpretation in the
 rate calculation, generator mapping, and tests.
 
+Linear and equilibrium constraints expose validation, residuals, and negative
+Jacobian rows independently. They are not yet integrated with the time solver.
+
 Backward Euler uses Newton iterations, nonnegative iterates, and the reference
 step-reduction sequence. Both solvers share the chemistry and linear algebra.
 
