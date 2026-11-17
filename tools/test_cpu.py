@@ -7,6 +7,9 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"aerosol_model_rosenbrock:AerosolModelIntegration.{case}": ("build/test_aerosol", "grouped aerosol solves")
+       for case in ["CanSolveSingleGridCellWithStubAerosolModel1", "CanSolveSingleGridCellWithTwoStubAerosolModels",
+                    "CanSolveMultiGridCellWithStubAerosolModel1", "CanSolveMultiGridCellWithTwoStubAerosolModels"]},
     **{f"chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.{case}": ("build/test_chapman_regression", "Chapman mechanism regression")
        for case in ["DefaultConstructor", "lin_solve", "simple_force", "smaller_force", "factored_alpha_minus_jac",
                     "dforce_dy_times_vector", "Solve", "solve_10_times_larger", "solve_with_random_number_densities"]},

@@ -59,4 +59,15 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
     ChemOdeFunction rhs, ChemOdeFunction jacobian, void *context,
     const ChemRosenbrockMethod *method, const ChemRosenbrockOptions *options,
     ChemSolverStats *stats);
+/* Integrate independent cells with a shared adaptive step and error norm.
+   contexts contains one callback context per cell. The cell pattern, if
+   supplied, is a variables-by-variables row-major Jacobian mask and enables
+   block-sparse factorization; NULL selects dense factorization. Options use
+   per-variable tolerances and must not contain a sparse plan or constraints.
+   State is contiguous cell-major. */
+ChemSolveStatus chem_rosenbrock_solve_grouped(size_t cells, size_t variables,
+    double *y, double duration, ChemOdeFunction rhs, ChemOdeFunction jacobian,
+    void *const *contexts, const unsigned char *cell_pattern,
+    const ChemRosenbrockMethod *method, const ChemRosenbrockOptions *options,
+    ChemSolverStats *stats);
 #endif

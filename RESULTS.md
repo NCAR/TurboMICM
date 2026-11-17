@@ -187,11 +187,15 @@ error with constraints. Both compilers pass the 100-cell TS1 comparison.
 
 An additional aerosol-style composition check exercises additive forcing,
 Jacobians, condition updates and independent cell solves with tighter solver
-absolute tolerances. It is not credited as a port of the reference aerosol
-cases: the reference groups cells for error control, while an independent
-six-stage solve can miss the reference assertion at default tolerances.
+absolute tolerances. Independently solved cells can miss a six-stage reference
+assertion at default tolerances; grouped solving addresses that test separately.
 
 The latest case report has 542 passing cases and 138 unported failures on
 both compilers. Rate-store tests now cover type offsets, preserved parameters,
 branch and surface derived data, custom slots, and missing surface properties.
 Both compilers pass the 100-cell TS1 comparison.
+
+Grouped Rosenbrock solves share error control over cells and pass the four
+single- and multi-cell aerosol trajectory cases with reference tolerances.
+The latest case report has 558 passing and 122 unported failures for both
+compilers. Both also pass the 100-cell TS1 comparison.

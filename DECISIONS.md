@@ -55,3 +55,10 @@ column functions operate only on logical cells.
 Compressed sparse storage is represented as a shared CSR or CSC pattern plus
 a configurable grouped value matrix. This preserves the reference indexing
 semantics while allowing C callers to choose layout at runtime.
+
+The grouped ODE interface reuses the scalar Rosenbrock implementation by
+forming a block-diagonal system, so all cells share the reference error norm
+and step size. It supports dense or block-sparse factorization and separate
+cell callback contexts. This initial implementation allocates a dense global
+Jacobian, making it suitable for small groups; grouped constraints and a
+block-native storage path remain to be implemented.

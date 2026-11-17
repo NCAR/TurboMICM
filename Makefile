@@ -16,6 +16,8 @@ build/chem.o: src/chem.c include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/rosenbrock.o: src/rosenbrock.c include/rosenbrock.h include/sparse.h include/constraint.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
+build/rosenbrock_group.o: src/rosenbrock_group.c include/rosenbrock.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
 build/rates.o: src/rates.c include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/rate_store.o: src/rate_store.c include/rate_store.h include/rates.h | build
@@ -40,7 +42,7 @@ build/sparse_matrix.o: src/sparse_matrix.c include/sparse_matrix.h include/matri
 	$(CC) $(CFLAGS) -c $< -o $@
 build/composite.o: src/composite.c include/composite.h include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
+build/libchem.a: build/rosenbrock_group.o build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
@@ -153,7 +155,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_chapman_regression build/test_rate_store build/test_dae_overshoot build/test_grouped_views build/test_sparse_functions build/test_sparse_views build/test_sparse_matrix build/test_matrix_function build/test_matrix_views build/test_matrix build/test_external_composition build/test_external_constraints build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_aerosol build/test_chapman_regression build/test_rate_store build/test_dae_overshoot build/test_grouped_views build/test_sparse_functions build/test_sparse_views build/test_sparse_matrix build/test_matrix_function build/test_matrix_views build/test_matrix build/test_external_composition build/test_external_constraints build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
