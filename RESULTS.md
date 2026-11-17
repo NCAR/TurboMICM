@@ -109,3 +109,8 @@ both compilers. The additional checks cover every published Robertson and
 HIRES output time in the reference, using each available Rosenbrock method
 and both LU algorithms; HIRES also checks backward Euler. The 100-cell TS1
 comparison remains passing with both compilers.
+
+The latest case report has 211 passing cases and 469 unported failures on
+both compilers. New checks cover all E5 and Oregonator reference output times
+for the Rosenbrock methods and both LU algorithms, plus the 18,000-substep
+backward Euler Oregonator checks. Both compilers pass the 100-cell TS1 check.
