@@ -7,6 +7,9 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"version:Version.{case}": ("build/test_version", "compatibility version")
+       for case in ["FullVersion", "VersionMajor", "VersionMinor", "VersionPatch", "VersionTweak"]},
+    "view_category_sfinae:ViewCategorySFINAE.RuntimeVectorUse": ("build/test_typed_views", "typed vector access"),
     **{f"rosenbrock:RosenbrockSolver.{case}": ("build/test_alpha_jac", "sparse alpha-minus-Jacobian")
        for case in ["StandardAlphaMinusJacobian", "VectorAlphaMinusJacobian"]},
     "linear_constraint:DAESolveWithConstraint.TerminatorAndRobertson": ("build/test_dae_terminator", "coupled DAE trajectories"),
@@ -277,6 +280,14 @@ CASES = {
     'backward_euler:BackwardEuler.IsConverged': ('build/test_backward_euler', 'convergence thresholds'),
 }
 
+NOT_APPLICABLE = {
+    **{f"view_category_sfinae:ViewCategorySFINAE.{case}":
+       "C has no template concepts or SFINAE; row views use explicit descriptors"
+       for case in ["VectorTypes", "MatrixViews", "SparseMatrixViews", "MatrixTypesExcluded"]},
+    "grouped_views:GroupedView.CategoryTagsAreDistinct":
+       "C row and group spans use explicit functions rather than template tag dispatch",
+}
+
 
 def main():
     results = {}
@@ -285,7 +296,9 @@ def main():
         if not line or line.startswith('#'):
             continue
         case, _kind = line.split()
-        if case not in CASES:
+        if case in NOT_APPLICABLE:
+            status, reason = 'N/A', NOT_APPLICABLE[case]
+        elif case not in CASES:
             status, reason = 'FAIL', 'not yet ported'
         else:
             executable, reason = CASES[case]

@@ -63,3 +63,9 @@ cell callback contexts. Constraints are adapted per cell, including custom
 callbacks, per-cell temperatures, and parameter overrides. This initial
 implementation allocates a dense global Jacobian, making it suitable for small
 groups; a block-native storage path remains to be implemented.
+
+The reference's compile-time view-category and SFINAE tests have no direct C
+template dispatch equivalent. C uses explicit row-view and group-span APIs;
+the reporter marks those five cases N/A and separately checks runtime vector
+use. The compatibility version functions return the version reported by the
+reference checkout's version header; they do not claim this port is complete.

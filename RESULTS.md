@@ -262,6 +262,11 @@ nonnegativity, evolution, and long-time endpoints. Sparse alpha-minus-Jacobian
 checks cover both layouts and grouped widths. Both compilers pass the 100-cell
 TS1 comparison; the case report has 649 passing and 31 unported failures.
 
+Compatibility-version queries and the runtime vector example now pass. Five
+C++ template-category tests are N/A because the C API uses explicit views
+rather than template dispatch. Both compilers pass the 100-cell TS1
+comparison; the case report has 655 passing, 5 N/A, and 20 unported failures.
+
 Backward Euler now supports grouped, shared-convergence solves. The four
 single- and multi-cell aerosol trajectory cases pass at the reference
 tolerances with both compilers; the case report has 597 passing and 83

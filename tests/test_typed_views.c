@@ -125,6 +125,9 @@ static void sparse(size_t width,ChemSparseOrdering ordering)
 }
 int main(void)
 {
+    const double values[]={1,2,3,4,5}; double total=0;
+    ChemConstRowView view=chem_const_vector_view(values,5,sizeof(double));
+    assert(chem_typed_rows_apply(5,&view,1,NULL,0,accumulate,&total)==CHEM_MATRIX_OK && total==15);
     ChemTypedMatrix matrix={0}; int zero=0;
     assert(chem_typed_matrix_init(&matrix,3,4,0,sizeof(int),&zero)==CHEM_MATRIX_OK);
     for (size_t col=0;col<4;++col) *(int *)chem_typed_matrix_at(&matrix,1,col)=42+(int)col;
