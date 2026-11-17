@@ -3,6 +3,16 @@
 #include <stdint.h>
 #include <string.h>
 
+void chem_dense_matvec(size_t rows, size_t columns, const double *matrix,
+                       const double *vector, double *output)
+{
+    for (size_t i=0;i<rows;++i) {
+        double sum=0;
+        for (size_t j=0;j<columns;++j) sum+=matrix[i*columns+j]*vector[j];
+        output[i]=sum;
+    }
+}
+
 /* Dense form of the no-pivot Mozart elimination: scale a column, then
    update each trailing column. The factor is stored in place. */
 int chem_dense_factor(double *a, size_t n)

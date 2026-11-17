@@ -160,6 +160,11 @@ Surface-property diagnostics additionally report the failing descriptor and
 species/property text. The case report is now 544 passing and 136 unported
 failures on both compilers.
 
+Chapman regression checks now exercise the generic mechanism's forcing,
+linear solve and factorization, Jacobian-vector product, and four solve inputs
+at the reference tolerances. Both compilers pass the 100-cell TS1 comparison;
+the case report has 554 passing and 126 unported failures.
+
 The latest case report has 419 passing cases and 261 unported failures on
 both compilers. New sparse tests cover reusable block views, row callbacks,
 multiple structures, dense and vector interoperability, index lookup, fill,
