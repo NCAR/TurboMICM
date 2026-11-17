@@ -108,3 +108,8 @@ Borrowed column views can refer to a matrix column or a caller-owned vector.
 `chem_columns_apply` checks row counts before invoking a reusable row callback.
 `chem_column_reduce` supports either logical rows or padded group storage,
 letting callers choose the identity values used in padded reductions.
+
+`ChemMatrixFunction` records the column counts and number of matrix and
+vector arguments at creation. Calls may use a different row count, but all
+arguments must agree on it; validation completes before the callback runs.
+The caller owns the function and destroys it when it is no longer needed.

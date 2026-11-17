@@ -164,6 +164,46 @@ ChemMatrixStatus chem_columns_apply(const ChemColumnView *views,size_t count,Che
     }
     free(values); return CHEM_MATRIX_OK;
 }
+void chem_matrix_function_destroy(ChemMatrixFunction *function)
+{
+    if (function) { free(function->columns); *function=(ChemMatrixFunction){0}; }
+}
+ChemMatrixStatus chem_matrix_function_init(ChemMatrixFunction *function,ChemMatrix *const *matrices,
+        size_t matrix_count,size_t vector_count,ChemMatrixFunctionCallback callback,void *context)
+{
+    if (!function || !callback || (matrix_count && !matrices)) return CHEM_MATRIX_INVALID;
+    if (matrix_count>SIZE_MAX/sizeof(size_t)) return CHEM_MATRIX_SIZE;
+    size_t *columns=matrix_count ? malloc(matrix_count*sizeof(*columns)) : NULL;
+    if (matrix_count && !columns) return CHEM_MATRIX_ALLOCATION;
+    for (size_t i=0;i<matrix_count;++i) {
+        if (!matrices[i]) { free(columns); return CHEM_MATRIX_INVALID; }
+        columns[i]=matrices[i]->columns;
+    }
+    chem_matrix_function_destroy(function);
+    *function=(ChemMatrixFunction){matrix_count,vector_count,columns,callback,context};
+    return CHEM_MATRIX_OK;
+}
+ChemMatrixStatus chem_matrix_function_call(const ChemMatrixFunction *function,ChemMatrix *const *matrices,
+        size_t matrix_count,const ChemVector *vectors,size_t vector_count)
+{
+    if (!function || !function->callback || (matrix_count && !matrices) || (vector_count && !vectors))
+        return CHEM_MATRIX_INVALID;
+    if (matrix_count!=function->matrix_count || vector_count!=function->vector_count) return CHEM_MATRIX_SIZE;
+    size_t rows=0; int have_rows=0;
+    for (size_t i=0;i<matrix_count;++i) {
+        if (!matrices[i]) return CHEM_MATRIX_INVALID;
+        if (matrices[i]->columns!=function->columns[i]) return CHEM_MATRIX_SIZE;
+        if (have_rows && matrices[i]->rows!=rows) return CHEM_MATRIX_SIZE;
+        rows=matrices[i]->rows; have_rows=1;
+    }
+    for (size_t i=0;i<vector_count;++i) {
+        if (vectors[i].length && !vectors[i].data) return CHEM_MATRIX_INVALID;
+        if (have_rows && vectors[i].length!=rows) return CHEM_MATRIX_SIZE;
+        rows=vectors[i].length; have_rows=1;
+    }
+    function->callback(matrices,vectors,rows,function->context);
+    return CHEM_MATRIX_OK;
+}
 ChemMatrixStatus chem_column_reduce(const ChemColumnView *view,int padded,ChemReduceFunction function,
                                      void *accumulator,void *context)
 {

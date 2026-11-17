@@ -7,6 +7,12 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"{prefix}:{suite}.{case}": ("build/test_matrix_function", "matrix function validation")
+       for prefix, suite in [("matrix", "Matrix"), ("vector_matrix", "VectorMatrix")]
+       for case in ["MismatchedRowDimensions", "MismatchedColumnDimensions", "WrongMatrixDimensions", "WrongColumnCountAtInvocation",
+                    "VectorTooSmall", "VectorTooLarge", "EmptyVectorNonEmptyMatrix", "NonEmptyVectorEmptyMatrix", "EmptyVectorEmptyMatrix",
+                    "MultipleVectorsDifferentSizes", "MultipleVectorsSameSize", "MultipleMatricesOneVector", "MultipleMatricesDifferentRowsVector",
+                    "VectorSizeMatchesOneMatrixOnly", "MutableVector", "FunctionReusabilityWithVectors", "FunctionInvocationWithWrongSizedVector"]},
     **{f"{prefix}:{suite}.{case}": ("build/test_matrix_views", "matrix column views and reductions")
        for prefix, suite in [("matrix", "Matrix"), ("vector_matrix", "VectorMatrix")]
        for case in ["ArrayFunction", "MultiMatrixArrayFunction", "MultiMatrixDifferentRowsFromCreation",

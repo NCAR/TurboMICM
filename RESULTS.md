@@ -145,3 +145,8 @@ The latest case report has 305 passing cases and 375 unported failures on
 both compilers. New checks cover reusable row callbacks, multiple matrices,
 temporary vectors, size errors, and strict and padded reductions for matrix
 layouts. Both compilers pass the 100-cell TS1 comparison.
+
+The latest case report has 339 passing cases and 341 unported failures on
+both compilers. Additional matrix tests cover reusable signatures, matrix
+column checks, vector and row-count mismatches, empty arguments, and mutable
+vectors. Both compilers pass the 100-cell TS1 comparison.
