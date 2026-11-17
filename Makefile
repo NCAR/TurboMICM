@@ -36,7 +36,9 @@ build/matrix.o: src/matrix.c include/matrix.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/sparse_matrix.o: src/sparse_matrix.c include/sparse_matrix.h include/matrix.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
+build/composite.o: src/composite.c include/composite.h include/rates.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/libchem.a: build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
@@ -69,6 +71,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_constraints
 	./build/test_external_constraints
 	./build/test_external_composition
+	./build/test_aerosol
 	./build/test_constraint_set
 	./build/test_constraint_init
 	./build/test_dae
@@ -262,3 +265,7 @@ check: build/test_grouped_views
 build/test_dae_overshoot: tests/test_dae_overshoot.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
 check: build/test_dae_overshoot
+
+build/test_aerosol: tests/test_aerosol.c build/libchem.a
+	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
+check: build/test_aerosol

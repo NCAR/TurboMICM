@@ -175,3 +175,9 @@ The latest case report has 533 passing cases and 147 unported failures on
 both compilers. The additional DAE checks cover constrained overshoot across
 four Rosenbrock methods, algebraic tolerance sensitivity, and normalized
 error with constraints. Both compilers pass the 100-cell TS1 comparison.
+
+An additional aerosol-style composition check exercises additive forcing,
+Jacobians, condition updates and independent cell solves with tighter solver
+absolute tolerances. It is not credited as a port of the reference aerosol
+cases: the reference groups cells for error control, while an independent
+six-stage solve can miss the reference assertion at default tolerances.
