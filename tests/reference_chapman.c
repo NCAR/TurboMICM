@@ -223,6 +223,30 @@ static int regression_solve(int method,size_t cells)
     if (!ok) fprintf(stderr,"Chapman method=%d cells=%zu final_time=%g steps=%lu\n",method,cells,stats.final_time,stats.internal_steps);
     chem_state_free(c.state); return ok;
 }
+static int integration(void)
+{
+    Chapman c; if (!init(&c,1,0)) return 0;
+    /* The integration fixture uses C=2.4 for the fourth Arrhenius rate. */
+    c.reactions[3].rate.b=0; c.reactions[3].rate.c=2.4;
+    const double initial[]={.2,.2,.3,.3,.3,.1,.1,.1,.2};
+    for (size_t i=0;i<9;++i) chem_species_values(c.state,i)[0]=initial[i];
+    const double photo[]={.1,.2,.3};
+    for (size_t i=0;i<3;++i) chem_parameter_values(c.state,i)[0]=photo[i];
+    chem_temperatures(c.state)[0]=2; chem_pressures(c.state)[0]=3;
+    const double oxygen=initial[5]+initial[6]+2*initial[7]+3*initial[8];
+    ChemRosenbrock p=chem_rosenbrock_three_stage(); int ok=1;
+    for (size_t step=0;step<100 && ok;++step) {
+        ChemStats stats; ok=chem_update_rates(c.state)==CHEM_OK && chem_solve(c.state,&p,30,&stats)==CHEM_OK;
+        double total=chem_species_values(c.state,5)[0]+chem_species_values(c.state,6)[0]+
+                     2*chem_species_values(c.state,7)[0]+3*chem_species_values(c.state,8)[0];
+        ok &= fabs(total-oxygen)<=1e-8*oxygen;
+        for (size_t i=0;i<9;++i) ok &= isfinite(chem_species_values(c.state,i)[0]) && chem_species_values(c.state,i)[0]>=0;
+        for (size_t i=0;i<5;++i) ok &= fabs(chem_species_values(c.state,i)[0]-initial[i])<=1e-8*initial[i];
+    }
+    ok &= chem_species_values(c.state,7)[0]<.5*initial[7] && chem_species_values(c.state,6)[0]>initial[6] &&
+          chem_species_values(c.state,6)[0]>.5*oxygen;
+    chem_state_free(c.state); return ok;
+}
 static int failures;
 static void report(const char *id,int ok)
 { printf("%s %s %s\n",id,ok ? "PASS" : "FAIL",ok ? "reference Chapman quantities matched" : "Chapman quantity differed"); failures+=!ok; }
@@ -254,5 +278,6 @@ int main(void)
     report("regression_test_solve:RegressionRosenbrock.FourStageDASolve",regression_solve(3,3));
     report("regression_test_solve:RegressionRosenbrock.SixStageDASolve",regression_solve(4,3));
     report("regression_test_solve:RegressionRosenbrock.VectorSolve",regression_solve(1,1) && regression_solve(1,2) && regression_solve(1,3));
+    report("chapman_integration:ChapmanIntegration.CanBuildChapmanSystem",integration());
     return failures ? 1 : 0;
 }

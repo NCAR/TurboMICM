@@ -1,9 +1,9 @@
 # CPU chemistry port
 
 This repository contains a C11 chemistry library, build-time configuration
-reader, and TS1 benchmark. The port is **in progress**: `make test-cpu`
-reports unported reference cases as failures. See [RESULTS.md](RESULTS.md) for
-the current coverage and benchmark measurements.
+reader, and TS1 benchmark. `make test-cpu` checks the reference cases with
+either supported compiler; see [RESULTS.md](RESULTS.md) for coverage and
+benchmark measurements.
 
 ## Build and test
 
@@ -26,7 +26,7 @@ adding optimization or target flags. On macOS it selects the SDK using
 
 `make test-core` runs the independent analytic, configuration, constraint,
 and linear-algebra checks. `make test-cpu` prints one result for each ID in
-`tests/cases.txt` and exits unsuccessfully while any case is unported or fails.
+`tests/cases.txt` and exits unsuccessfully if any applicable case fails.
 It also runs the core checks. Both commands use the local Python environment
 only for build and test orchestration.
 

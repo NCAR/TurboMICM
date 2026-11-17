@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run ported cases and report every reference ID, including unported cases."""
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -13,7 +14,7 @@ results = {}
 unexpected_failure = False
 
 providers = [(name, [ROOT / "bin" / name]) for name in
-             ("reference_rates", "reference_rate_store", "reference_solver", "reference_rosenbrock", "reference_constraints", "reference_constraint_set", "reference_equilibrium_integration", "reference_stiff_constraints", "reference_analytical", "reference_nonlinear_integration", "reference_state", "reference_matrix", "reference_matrix_functions", "reference_sparse", "reference_sparse_functions", "reference_grouped_views", "reference_jacobian", "reference_aerosol", "reference_external", "reference_system", "reference_builder", "reference_process", "reference_chapman", "reference_version", "reference_initialization", "reference_lu")]
+             ("reference_rates", "reference_rate_store", "reference_solver", "reference_rosenbrock", "reference_constraints", "reference_constraint_set", "reference_equilibrium_integration", "reference_stiff_constraints", "reference_analytical", "reference_nonlinear_integration", "reference_state", "reference_matrix", "reference_matrix_functions", "reference_sparse", "reference_sparse_functions", "reference_grouped_views", "reference_jacobian", "reference_aerosol", "reference_external", "reference_system", "reference_builder", "reference_process", "reference_chapman", "reference_integration", "reference_version", "reference_initialization", "reference_lu")]
 providers.append(("reference_ordering", [sys.executable, ROOT / "tests" / "reference_ordering.py"]))
 for executable, command in providers:
     process = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
@@ -30,6 +31,24 @@ for argument, case in (("no_user", "rate_constants_no_user_defined_example_by_ha
                        ("user", "rate_constants_user_defined_example_by_hand")):
     process = subprocess.run([ROOT / "bin" / "tutorial_program", argument], cwd=ROOT, capture_output=True, text=True)
     ok = process.returncode == 0 and process.stdout == (EXPECTED / f"{argument}.txt").read_text()
+    results[case] = ("PASS", "printed reference output matched") if ok else ("FAIL", "printed output or program status differed")
+
+for case in ("README_example", "solve_results", "multiple_grid_cells", "solver_configuration",
+             "vectorized_matrix_solver", "openmp_tutorial"):
+    process = subprocess.run([ROOT / "bin" / "tutorial_more", case], cwd=ROOT, capture_output=True, text=True)
+    actual = process.stdout
+    expected = (EXPECTED / f"{case}.txt").read_text()
+    extra_ok = True
+    if case == "solver_configuration":
+        timing = re.compile(r"(?m)^Total solve time: ([0-9.eE+-]+) nanoseconds$")
+        extra_ok = len(timing.findall(actual)) == 5 and len(timing.findall(expected)) == 5
+        actual = timing.sub("Total solve time: <elapsed> nanoseconds", actual)
+        expected = timing.sub("Total solve time: <elapsed> nanoseconds", expected)
+    elif case == "openmp_tutorial":
+        thread = re.compile(r"(?m)^Running solver on thread ([0-9]+)\n")
+        extra_ok = sorted(thread.findall(actual)) == ["0", "1", "2"]
+        actual = thread.sub("", actual)
+    ok = process.returncode == 0 and extra_ok and actual == expected
     results[case] = ("PASS", "printed reference output matched") if ok else ("FAIL", "printed output or program status differed")
 
 for executable in ("test_core", "test_configurations", "test_constraints", "test_linear"):

@@ -69,3 +69,10 @@ and system objects are borrowed views; an export operation creates the state
 species array, preserving property values needed by the runtime. Strict
 unused-species validation is an opt-in check of native reactions, because an
 external callback can also use a species without a native reaction.
+
+The executable tutorial comparisons use captured reference output. Elapsed
+times are normalized because they vary on every run; OpenMP's thread-start
+messages are checked for the same thread IDs without requiring a particular
+interleaving. All printed numerical values and solver statistics are compared.
+The four C++ template-concept and SFINAE cases have no meaningful C equivalent;
+the C matrix and view interfaces are checked by the applicable runtime cases.

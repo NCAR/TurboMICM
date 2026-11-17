@@ -114,6 +114,3 @@ condition-dependent C function may instead be supplied as a callback rate.
   as `dynamic,1` are accepted.
 - SIMD width: chosen by the compiler for `omp simd`; there is no fixed or
   machine-specific vector length.
-
-The case runner does not classify remaining reference cases as passing until
-their checks exist.

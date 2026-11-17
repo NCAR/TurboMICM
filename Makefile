@@ -128,6 +128,9 @@ bin/reference_process: tests/reference_process.c build/libchem.a build/.compiler
 bin/reference_chapman: tests/reference_chapman.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
+bin/reference_integration: tests/reference_integration.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
 bin/reference_version: tests/reference_version.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
@@ -179,13 +182,16 @@ bin/test_configurations: tests/test_configurations.c build/tutorial_no_user.o bu
 bin/tutorial_program: tests/tutorial_program.c build/tutorial_no_user.o build/tutorial_user.o build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/tutorial_no_user.o build/tutorial_user.o build/libchem.a $(LDLIBS) -o $@
 
+bin/tutorial_more: tests/tutorial_more.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
 test-core: bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
 	./bin/test_core
 	./bin/test_configurations
 	./bin/test_constraints
 	./bin/test_linear
 
-test-cpu: bin/reference_rates bin/reference_rate_store bin/reference_solver bin/reference_rosenbrock bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_stiff_constraints bin/reference_analytical bin/reference_nonlinear_integration bin/reference_state bin/reference_matrix bin/reference_matrix_functions bin/reference_sparse bin/reference_sparse_functions bin/reference_grouped_views bin/reference_jacobian bin/reference_aerosol bin/reference_external bin/reference_system bin/reference_builder bin/reference_process bin/reference_chapman bin/reference_version bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
+test-cpu: bin/reference_rates bin/reference_rate_store bin/reference_solver bin/reference_rosenbrock bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_stiff_constraints bin/reference_analytical bin/reference_nonlinear_integration bin/reference_state bin/reference_matrix bin/reference_matrix_functions bin/reference_sparse bin/reference_sparse_functions bin/reference_grouped_views bin/reference_jacobian bin/reference_aerosol bin/reference_external bin/reference_system bin/reference_builder bin/reference_process bin/reference_chapman bin/reference_integration bin/reference_version bin/reference_initialization bin/reference_lu bin/tutorial_program bin/tutorial_more bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
 	@$(PYTHON) tests/run_cases.py
 
 cpu bench: bin/ts1_bench_cpu
