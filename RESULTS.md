@@ -69,3 +69,8 @@ with both linear algorithms. The 100-cell TS1 comparison remains passing.
 The latest case report has 143 passing cases and 537 unported failures with
 both compilers. New checks cover Mozart decomposition, dense and sparse linear
 solves, and Markowitz fill reduction. The 100-cell TS1 comparison still passes.
+
+The latest case report has 149 passing cases and 531 unported failures with
+both compilers. New checks cover parameterized reactants and callback rates,
+including runtime rebinding and generated mechanisms. The 100-cell TS1 check
+continues to pass through the generalized multiplier path.

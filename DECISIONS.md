@@ -23,3 +23,10 @@ Additional configuration extensions use `REVERSIBLE` (`A`, `C`, `k_r`),
 fields plus Fc and N). Their coefficient unit conversion follows reaction
 order, with the low-pressure JPL19 term having one additional concentration
 order. `rate coefficient units: SI` disables conversion.
+
+A species may use a `parameterization` object with `constant`, `temperature`,
+`pressure`, and `air density` coefficients. Its concentration is the linear
+combination of those conditions and it is excluded from state. Each occurrence
+as a reactant multiplies the reaction rate; a parameterized product has no state
+contribution. As in the reference, a reaction may have at most four such
+reactants. The `CALLBACK` rate type binds a named C callback at runtime.

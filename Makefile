@@ -53,6 +53,8 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_constraint_init
 	./build/test_dae
 	./build/test_rates
+	./build/test_parameterized
+	./build/test_callback
 	./build/test_rate_extensions
 	./build/test_generated_rate_extensions
 	./build/test_falloff
@@ -120,7 +122,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
@@ -160,3 +162,13 @@ check: build/test_dae
 build/test_linear_solve: tests/test_linear_solve.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_linear_solve.c build/libchem.a -lm -o $@
 check: build/test_linear_solve
+build/parameterized.c: tools/generate.py tools/config.py tests/parameterized/config.json tests/parameterized/species.json tests/parameterized/reactions.json | build
+	.conda/bin/python tools/generate.py tests/parameterized/config.json $@
+build/test_parameterized: tests/test_parameterized.c build/parameterized.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_parameterized.c build/parameterized.c build/libchem.a -lm -o $@
+check: build/test_parameterized
+build/callback.c: tools/generate.py tools/config.py tests/callback/config.json tests/callback/species.json tests/callback/reactions.json | build
+	.conda/bin/python tools/generate.py tests/callback/config.json $@
+build/test_callback: tests/test_callback.c build/callback.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_callback.c build/callback.c build/libchem.a -lm -o $@
+check: build/test_callback

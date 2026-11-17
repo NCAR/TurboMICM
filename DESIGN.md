@@ -21,8 +21,9 @@ compact sparse matrix storage and additional solver features are not yet impleme
 This is a starting point, not the final architecture.
 
 `tools/import_ts1.py` translates the reference generated C++ into the checked-in
-CAMP-style JSON files. The generator excludes third bodies from the state and
-outputs their powers; `chem_rates_with_air` applies these to reaction constants.
+CAMP-style JSON files. The generator excludes parameterized species from the state and emits their
+condition-dependent functions; `chem_rates_parameterized` applies their product
+to reaction constants. A third body is the special case equal to air density.
 Species and custom defaults are also emitted as C arrays. See DECISIONS.md for
 the configuration extensions.
 
@@ -46,7 +47,8 @@ Rate evaluation dispatches through `ChemRateType`; `p` holds parameters in the
 order used by `src/rates.c`, and the Taylor type uses `custom_index` for its
 coefficient count. To add a rate family, add its enum and evaluation formula,
 then add parsing and unit conversion in `tools/generate.py` and exercise both
-the direct and generated paths.
+the direct and generated paths. Callback rates use a caller-owned binding table
+indexed by generated callback labels; rebinding does not require regeneration.
 
 The sparse plan can be built from a mechanism or an arbitrary structural
 pattern. The plan holds fill and row/column index lists; it is immutable and

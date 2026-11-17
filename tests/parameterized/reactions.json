@@ -1,0 +1,7 @@
+{"camp-data":[{"type":"MECHANISM","name":"parameterized","reactions":[
+  {"type":"ARRHENIUS","rate coefficient units":"SI","reactants":{"foo":{},"bar":{}},"products":{},"A":12.2,"C":300},
+  {"type":"USER_DEFINED","reactants":{"bar":{}},"products":{},"MUSICA name":"bar_user"},
+  {"type":"SURFACE","gas-phase reactant":"foo","gas-phase products":{},"surface parameter label":"foo_surf"},
+  {"type":"ARRHENIUS","rate coefficient units":"SI","reactants":{"probe":{}},"products":{"foo":{}}},
+  {"type":"ARRHENIUS","rate coefficient units":"SI","reactants":{"foo":{},"Q":{"qty":2}},"products":{"Q":{}}}
+]}]}

@@ -92,6 +92,15 @@ CASES = {
     **{f'equilibrium_constraint:EquilibriumIntegration.{case}': ('build/test_dae', 'DAE integration') for case in [
         'DAESolveWithConstraint', 'DAESolveWithTwoCoupledConstraints', 'DAESolveWithNonUnitStoichiometry',
     ]},
+    **{case: ('build/test_parameterized', 'parameterized reaction rates') for case in [
+        'process:Process.Matrix', 'process:Process.VectorMatrix',
+        'reaction_rate_store:ReactionRateConstantStore.ParameterizedMultipliers',
+    ]},
+    **{case: ('build/test_callback', 'callback rate') for case in [
+        'lambda_rate_constant:LambdaRateConstant.CalculateWithSystem',
+        'reaction_rate_store:ReactionRateConstantStore.LambdaEntriesRcIndex',
+        'solver_lambda_rate_constant:Solver.GetLambdaRateConstantByNameCanOverrideLambda',
+    ]},
     'rosenbrock:RosenbrockSolver.StandardNormalizedError': ('build/test_normalized_error', 'normalized error'),
     'rosenbrock:RosenbrockSolver.VectorNormalizedError': ('build/test_normalized_error', 'normalized error'),
     'backward_euler:BackwardEuler.CanCallSolve': ('build/test_backward_euler', 'chain solve'),

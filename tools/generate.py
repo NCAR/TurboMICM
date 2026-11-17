@@ -41,11 +41,24 @@ def markowitz_pattern(pattern):
 def generate(path, reorder=False):
     species, source_reactions = read_mechanism(path)
     root = read_document(path)
-    third_bodies = {s['name'] for s in species if s.get('third body', False)}
-    species = [s for s in species if s['name'] not in third_bodies]
+    parameterized = {}
+    third_bodies = set()
+    for s in species:
+        if s.get('third body', False):
+            if 'parameterization' in s:
+                raise ValueError('third body cannot also specify a parameterization')
+            third_bodies.add(s['name'])
+            parameterized[s['name']] = {'air density': 1}
+        elif 'parameterization' in s:
+            p = s['parameterization']
+            if not isinstance(p, dict) or set(p) - {'constant', 'temperature', 'pressure', 'air density'}:
+                raise ValueError('invalid parameterization')
+            parameterized[s['name']] = p
+    species = [s for s in species if s['name'] not in parameterized]
     indices = {s['name']: i for i, s in enumerate(species)}
     species_by_name = {s['name']: s for s in species}
     reactants, products, rows, rate_rows, labels, air_orders = [], [], [], [], [], []
+    multiplier_rows, functions, callback_labels = [], [], []
 
     def label(name):
         if name not in labels:
@@ -55,21 +68,28 @@ def generate(path, reorder=False):
     def emit(reaction, reactant_map, product_map, kind, params, custom=0):
         rb, pb = len(reactants), len(products)
         air_order = 0
+        multiplier_begin = len(functions)
         for name, properties in reactant_map.items():
             qty = properties.get('qty', 1)
             if not isinstance(qty, int) or isinstance(qty, bool) or qty < 1:
                 raise ValueError('reactant qty must be a positive integer')
-            if name in third_bodies:
-                air_order += qty
+            if name in parameterized:
+                if name in third_bodies:
+                    air_order += qty
+                functions.extend([parameterized[name]] * qty)
             else:
                 reactants.extend([indices[name]] * qty)
         for name, properties in product_map.items():
-            if name in third_bodies:
+            if name in parameterized:
                 continue
             products.append((indices[name], float(properties.get('yield', 1))))
         rows.append((rb, len(reactants)-rb, pb, len(products)-pb))
         rate_rows.append((kind, params, custom))
         air_orders.append(air_order)
+        multiplier_count = len(functions)-multiplier_begin
+        if multiplier_count > 4:
+            raise ValueError('more than four parameterized reactants in one reaction')
+        multiplier_rows.append((multiplier_begin, multiplier_count))
 
     for reaction in source_reactions:
         typ = reaction['type']
@@ -125,6 +145,11 @@ def generate(path, reorder=False):
             if label(surface_label + '.particle number concentration [# m-3]') != custom+1:
                 raise ValueError('surface parameters must be consecutive')
             emit(reaction, rs, ps, 'SURFACE', [sp['diffusion coefficient [m2 s-1]'], sp['molecular weight [kg mol-1]'], get('reaction probability', 1)], custom)
+        elif typ == 'CALLBACK':
+            callback = reaction['MUSICA name']
+            if callback not in callback_labels:
+                callback_labels.append(callback)
+            emit(reaction, rs, ps, 'CALLBACK', [], callback_labels.index(callback))
         elif typ in ('PHOTOLYSIS', 'FIRST_ORDER_LOSS', 'EMISSION', 'USER_DEFINED'):
             emit(reaction, rs, ps, 'USER', [get('scaling factor', 1)], label(reaction['MUSICA name']))
         else:
@@ -148,14 +173,20 @@ def generate(path, reorder=False):
     lines.append('const char *const generated_species[] = {' + strings(s['name'] for s in species) + '};')
     lines.append('const char *const generated_custom_labels[] = {' + strings(labels) + '};')
     lines.append(f'const size_t generated_custom_count = {len(labels)};')
+    lines.append('const char *const generated_callback_labels[] = {' + strings(callback_labels) + '};')
+    lines.append(f'const size_t generated_callback_count = {len(callback_labels)};')
     custom_defaults = root.get('custom parameter defaults', {})
     lines.append('const double generated_custom_defaults[] = {' + ', '.join(number(custom_defaults.get(name, 0)) for name in labels or ['']) + '};')
     lines.append('const double generated_initial_concentrations[] = {' + ', '.join(number(s.get('initial concentration [mol m-3]', 0)) for s in species) + '};')
     lines.append('const unsigned generated_air_orders[] = {' + ', '.join(map(str, air_orders or [0])) + '};')
+    lines.append('const ChemRateMultiplier generated_multipliers[] = {' + ', '.join('{%d, %d}' % row for row in (multiplier_rows or [(0, 0)])) + '};')
+    lines.append('const ChemParameterizedSpecies generated_multiplier_functions[] = {' + ', '.join(
+        '{%s}' % ', '.join(number(p.get(key, 0)) for key in ('constant', 'temperature', 'pressure', 'air density'))
+        for p in (functions or [{}])) + '};')
     lines.append('static const size_t reactants[] = {' + ', '.join(map(str, reactants or [0])) + '};')
     lines.append('static const ChemProduct products[] = {' + ', '.join('{%d, %s}' % (i, number(y)) for i, y in (products or [(0, 0)])) + '};')
     lines.append('static const ChemReaction reactions[] = {' + ', '.join('{%d, %d, %d, %d}' % row for row in (rows or [(0, 0, 0, 0)])) + '};')
-    lines.append('const ChemRate generated_rates[] = {' + ', '.join('{CHEM_RATE_%s, {%s}, %d}' % (kind, ', '.join(number(x) for x in p), custom) for kind, p, custom in rate_rows) + '};')
+    lines.append('const ChemRate generated_rates[] = {' + ', '.join('{CHEM_RATE_%s, {%s}, %d}' % (kind, ', '.join(number(x) for x in p or [0]), custom) for kind, p, custom in rate_rows) + '};')
     lines.append('const ChemMechanism generated_mechanism = {%d, %d, reactions, reactants, products};' % (len(species), len(rows)))
     return '\n'.join(lines) + '\n'
 

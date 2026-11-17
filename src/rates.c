@@ -61,6 +61,8 @@ double chem_rate(const ChemRate *rate, ChemConditions c, const double *custom)
     }
     case CHEM_RATE_USER:
         return custom[rate->custom_index]*p[0];
+    case CHEM_RATE_CALLBACK:
+        return NAN; /* Callback bindings are supplied to the batch evaluator. */
     }
     return NAN;
 }
@@ -79,4 +81,33 @@ void chem_rates_with_air(size_t count, const ChemRate *rates, const unsigned *ai
         for (unsigned j = 0; j < air_orders[i]; ++j) rate *= conditions.air_density;
         out[i] = rate;
     }
+}
+
+void chem_rates_parameterized_with_callbacks(size_t count, const ChemRate *rates,
+    const ChemRateMultiplier *multipliers, const ChemParameterizedSpecies *functions,
+    const ChemRateBinding *bindings, size_t binding_count,
+    ChemConditions conditions, const double *custom, double *out)
+{
+    for (size_t i=0;i<count;++i) {
+        double rate;
+        if (rates[i].type==CHEM_RATE_CALLBACK) {
+            size_t index=rates[i].custom_index;
+            rate=bindings && index<binding_count && bindings[index].function ?
+                bindings[index].function(conditions,bindings[index].context) : NAN;
+        } else rate=chem_rate(&rates[i],conditions,custom);
+        double multiplier=1;
+        for (size_t j=0;j<multipliers[i].count;++j) {
+            const ChemParameterizedSpecies *p=functions+multipliers[i].begin+j;
+            multiplier *= p->constant + p->temperature*conditions.temperature +
+                          p->pressure*conditions.pressure + p->air_density*conditions.air_density;
+        }
+        out[i]=rate*multiplier;
+    }
+}
+
+void chem_rates_parameterized(size_t count, const ChemRate *rates,
+    const ChemRateMultiplier *multipliers, const ChemParameterizedSpecies *functions,
+    ChemConditions conditions, const double *custom, double *out)
+{
+    chem_rates_parameterized_with_callbacks(count,rates,multipliers,functions,NULL,0,conditions,custom,out);
 }

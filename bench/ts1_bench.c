@@ -14,7 +14,8 @@ extern const ChemMechanism generated_mechanism;
 extern const char *const generated_species[], *const generated_custom_labels[];
 extern const size_t generated_custom_count;
 extern const ChemRate generated_rates[];
-extern const unsigned generated_air_orders[];
+extern const ChemRateMultiplier generated_multipliers[];
+extern const ChemParameterizedSpecies generated_multiplier_functions[];
 extern const double generated_custom_defaults[], generated_initial_concentrations[];
 
 typedef struct {
@@ -164,7 +165,7 @@ int main(int argc, char **argv)
     for (size_t i = 0; i < count; ++i) {
         ChemConditions c = {cells[i].temperature, cells[i].pressure,
             cells[i].pressure/(1.380649e-23*6.02214076e23*cells[i].temperature)};
-        chem_rates_with_air(nr, generated_rates, generated_air_orders, c, cells[i].custom, cells[i].rates);
+        chem_rates_parameterized(nr, generated_rates, generated_multipliers, generated_multiplier_functions, c, cells[i].custom, cells[i].rates);
         cells[i].status = chem_rosenbrock_solve(n,cells[i].y,dt,rhs,jac,&cells[i],&method,&options,NULL);
     }
     double start = omp_get_wtime();

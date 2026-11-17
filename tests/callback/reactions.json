@@ -1,0 +1,4 @@
+{"camp-data":[{"type":"MECHANISM","name":"callback","reactions":[
+  {"type":"ARRHENIUS","reactants":{"A":{}},"products":{"B":{}}},
+  {"type":"CALLBACK","MUSICA name":"lambda_rc","reactants":{"A":{}},"products":{"B":{}}}
+]}]}
