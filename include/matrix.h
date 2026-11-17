@@ -8,6 +8,10 @@ typedef struct {
     int grouped;
     double *data;
 } ChemMatrix;
+typedef struct { double *base; size_t count; } ChemDenseGroup;
+typedef struct { const double *base; size_t count; } ChemConstDenseGroup;
+int chem_matrix_group_column(ChemMatrix *, size_t group, size_t column, ChemDenseGroup *);
+int chem_matrix_const_group_column(const ChemMatrix *, size_t group, size_t column, ChemConstDenseGroup *);
 typedef void (*ChemElementFunction)(double *out, const double *a, const double *b, void *context);
 
 int chem_matrix_init(ChemMatrix *, size_t rows, size_t columns, size_t width, int grouped, double initial);

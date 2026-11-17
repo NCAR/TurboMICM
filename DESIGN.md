@@ -16,6 +16,8 @@ mapping back to the input.
 width, row functions, column operations, and reductions. `sparse.h` provides
 compressed row and column layouts, grouped blocks, and block functions. Function objects retain
 expected column shapes and validate row and vector sizes on each invocation.
+Dense and sparse group views expose contiguous active entries; a partial group's
+count excludes padded entries. Mutable and const views have distinct C types.
 
 Rate constants, forcing, and Jacobian evaluation are separate from the solver.
 `ChemRosenbrockParameters` contains stage coefficients and control parameters;

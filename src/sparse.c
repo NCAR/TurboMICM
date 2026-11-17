@@ -85,6 +85,34 @@ const double *chem_sparse_const_at(const ChemSparseMatrix *m,size_t block,size_t
 {
     size_t i; return chem_sparse_index(m,block,row,column,&i) ? NULL : &m->data[i];
 }
+int chem_sparse_group_block(ChemSparseMatrix *m,size_t group,size_t row,size_t column,ChemSparseGroup *view)
+{
+    if (!m || !view || group>=m->groups) return 1;
+    size_t first=group*m->width, count=m->blocks-first;
+    if(count>m->width) count=m->width;
+    double *base=chem_sparse_at(m,first,row,column);
+    if(!base) return 1;
+    *view=(ChemSparseGroup){base,count}; return 0;
+}
+int chem_sparse_const_group_block(const ChemSparseMatrix *m,size_t group,size_t row,size_t column,ChemConstSparseGroup *view)
+{
+    if (!m || !view || group>=m->groups) return 1;
+    size_t first=group*m->width, count=m->blocks-first;
+    if(count>m->width) count=m->width;
+    const double *base=chem_sparse_const_at(m,first,row,column);
+    if(!base) return 1;
+    *view=(ChemConstSparseGroup){base,count}; return 0;
+}
+void chem_sparse_group_fill(ChemSparseGroup view,double value)
+{
+    for(size_t i=0;i<view.count;++i) view.base[i]=value;
+}
+int chem_sparse_group_copy(ChemSparseGroup out,ChemConstSparseGroup in)
+{
+    if(out.count!=in.count || (out.count && (!out.base || !in.base))) return 1;
+    for(size_t i=0;i<out.count;++i) out.base[i]=in.base[i];
+    return 0;
+}
 void chem_sparse_fill(ChemSparseMatrix *m,double value)
 {
     for(size_t i=0;i<m->storage_size;++i) m->data[i]=value;

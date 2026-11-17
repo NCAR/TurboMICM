@@ -11,6 +11,12 @@ typedef struct {
     size_t *indices;
     double *data;
 } ChemSparseMatrix;
+typedef struct { double *base; size_t count; } ChemSparseGroup;
+typedef struct { const double *base; size_t count; } ChemConstSparseGroup;
+int chem_sparse_group_block(ChemSparseMatrix *, size_t group, size_t row, size_t column, ChemSparseGroup *);
+int chem_sparse_const_group_block(const ChemSparseMatrix *, size_t group, size_t row, size_t column, ChemConstSparseGroup *);
+void chem_sparse_group_fill(ChemSparseGroup, double);
+int chem_sparse_group_copy(ChemSparseGroup, ChemConstSparseGroup);
 int chem_sparse_builder_init(ChemSparseBuilder *, size_t order);
 void chem_sparse_builder_free(ChemSparseBuilder *);
 int chem_sparse_builder_add(ChemSparseBuilder *, size_t row, size_t column);

@@ -45,6 +45,20 @@ const double *chem_matrix_const_at(const ChemMatrix *m, size_t row, size_t colum
 {
     return m && row<m->rows && column<m->columns ? &m->data[offset(m,row,column)] : NULL;
 }
+int chem_matrix_group_column(ChemMatrix *m, size_t group, size_t column, ChemDenseGroup *view)
+{
+    if (!m || !view || group >= m->groups || column >= m->columns) return 1;
+    size_t first = group*m->width, count = m->rows-first;
+    if (count > m->width) count=m->width;
+    *view=(ChemDenseGroup){chem_matrix_at(m,first,column),count}; return 0;
+}
+int chem_matrix_const_group_column(const ChemMatrix *m, size_t group, size_t column, ChemConstDenseGroup *view)
+{
+    if (!m || !view || group >= m->groups || column >= m->columns) return 1;
+    size_t first = group*m->width, count = m->rows-first;
+    if (count > m->width) count=m->width;
+    *view=(ChemConstDenseGroup){chem_matrix_const_at(m,first,column),count}; return 0;
+}
 size_t chem_matrix_row_stride(const ChemMatrix *m) { return m->grouped ? 1 : m->columns; }
 size_t chem_matrix_column_stride(const ChemMatrix *m) { return m->grouped ? m->width : 1; }
 int chem_matrix_get_row(const ChemMatrix *m, size_t row, double *values, size_t count)
