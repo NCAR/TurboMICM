@@ -26,6 +26,7 @@ struct ChemWorkspace {
     unsigned char *pattern, *mass;
     const ChemConstraint *constraints;
     size_t constraint_count;
+    size_t algebraic_count;
     const ChemExternalModel *external_models;
     size_t external_count;
     double *constraint_jacobian;
@@ -195,11 +196,8 @@ ChemWorkspace *chem_workspace_create_external(const ChemMechanism *m, const Chem
     ChemWorkspace *w = allocate_workspace(n);
     if (!w) return NULL;
     w->constraints = constraints; w->constraint_count = count;
+    w->algebraic_count = count;
     w->external_models = models; w->external_count = model_count;
-    if (count) {
-        w->constraint_jacobian = calloc(n*n, sizeof(double));
-        if (!w->constraint_jacobian) { chem_workspace_free(w); return NULL; }
-    }
     for (size_t i = 0; i < n; ++i) w->pattern[i*n+i] = 1;
     for (size_t r = 0; r < m->reaction_count; ++r) {
         const ChemReaction *rx = &m->reactions[r];
@@ -217,8 +215,12 @@ ChemWorkspace *chem_workspace_create_external(const ChemMechanism *m, const Chem
         }
     }
     for (size_t i=0;i<model_count;++i) {
-        if(!models[i].jacobian_pattern || !models[i].add_forcing || !models[i].add_jacobian) { chem_workspace_free(w); return NULL; }
-        for(size_t j=0;j<n*n;++j) if(models[i].jacobian_pattern[j]) w->pattern[j]=1;
+        int kinetic=models[i].add_forcing || models[i].add_jacobian || models[i].jacobian_pattern;
+        int algebraic=models[i].constraint_rows || models[i].constraint_pattern || models[i].constraint_residual || models[i].constraint_jacobian;
+        if((kinetic && (!models[i].jacobian_pattern || !models[i].add_forcing || !models[i].add_jacobian)) ||
+           (algebraic && (!models[i].constraint_rows || !models[i].constraint_pattern || !models[i].constraint_residual || !models[i].constraint_jacobian)) ||
+           (!kinetic && !algebraic)) { chem_workspace_free(w); return NULL; }
+        if(kinetic) for(size_t j=0;j<n*n;++j) if(models[i].jacobian_pattern[j]) w->pattern[j]=1;
     }
     for (size_t i = 0; i < count; ++i) {
         const ChemConstraint *constraint = &constraints[i];
@@ -233,6 +235,20 @@ ChemWorkspace *chem_workspace_create_external(const ChemMechanism *m, const Chem
             w->pattern[row*n+(size_t)constraint->reactants[j].species] = 1;
         for (size_t j = 0; j < constraint->product_count; ++j)
             w->pattern[row*n+(size_t)constraint->products[j].species] = 1;
+    }
+    for(size_t k=0;k<model_count;++k) if(models[k].constraint_rows) for(size_t i=0;i<n;++i) if(models[k].constraint_rows[i]) {
+        if(!w->mass[i]) {chem_workspace_free(w);return NULL;}
+        w->mass[i]=0;++w->algebraic_count;
+        for(size_t j=0;j<n;++j) w->pattern[i*n+j]=models[k].constraint_pattern[i*n+j]!=0;
+        w->pattern[i*n+i]=1;
+    }
+    /* External process callbacks may write to an algebraic row before the
+     * constraint overwrites it, so retain their declared structural slots. */
+    for(size_t k=0;k<model_count;++k) if(models[k].jacobian_pattern)
+        for(size_t i=0;i<n*n;++i) if(models[k].jacobian_pattern[i]) w->pattern[i]=1;
+    if(w->algebraic_count) {
+        w->constraint_jacobian=calloc(n*n,sizeof(double));
+        if(!w->constraint_jacobian) {chem_workspace_free(w);return NULL;}
     }
     finalize_pattern(w);
     return w;
@@ -262,7 +278,8 @@ static int external_add(const ChemWorkspace *w,ChemConditions conditions,const d
 {
     for(size_t i=0;i<w->external_count;++i) {
         const ChemExternalModel *model=&w->external_models[i];
-        if((jacobian?model->add_jacobian:model->add_forcing)(model->context,conditions,y,out)) return 1;
+        ChemExternalFunction fn=jacobian?model->add_jacobian:model->add_forcing;
+        if(fn && fn(model->context,conditions,y,out)) return 1;
     }
     return 0;
 }
@@ -427,6 +444,39 @@ static int apply_constraints(ChemWorkspace *w, ChemConditions cond, const double
         if (jacobian) for (size_t j = 0; j < n; ++j)
             jacobian[c->row*n+j] = -w->constraint_jacobian[c->row*n+j];
     }
+    for(size_t k=0;k<w->external_count;++k) {
+        const ChemExternalModel *model=&w->external_models[k];
+        if(!model->constraint_rows) continue;
+        for(size_t i=0;i<n;++i) if(model->constraint_rows[i]) {
+            forcing[i]=0;
+            if(jacobian) memset(jacobian+i*n,0,n*sizeof(double));
+        }
+        if(model->constraint_residual(model->context,cond,y,forcing)) return 1;
+        if(jacobian && model->constraint_jacobian(model->context,cond,y,jacobian)) return 1;
+    }
+    return 0;
+}
+
+int chem_workspace_mass_diagonal(const ChemWorkspace *w,unsigned char *diagonal,size_t count)
+{
+    if(!w || !diagonal || count<w->n) return 1;
+    memcpy(diagonal,w->mass,w->n);return 0;
+}
+
+int chem_workspace_jacobian_pattern(const ChemWorkspace *w,unsigned char *pattern,size_t count)
+{
+    if(!w || !pattern || count<w->n*w->n) return 1;
+    memcpy(pattern,w->pattern,w->n*w->n);return 0;
+}
+
+int chem_workspace_evaluate(ChemWorkspace *w,const ChemMechanism *m,ChemConditions c,const double *rates,
+                            const double *y,double *forcing,double *negative_jacobian)
+{
+    if(!w || !m || !rates || !y || !forcing || !negative_jacobian || m->species_count!=w->n) return 1;
+    chem_forcing(m,c,rates,y,forcing);clear_jacobian(w);chem_jacobian_add(m,c,rates,y,w->jacobian);
+    if(external_add(w,c,y,forcing,0) || external_add(w,c,y,w->jacobian,1) ||
+       (w->algebraic_count && apply_constraints(w,c,y,forcing,w->jacobian))) return 1;
+    for(size_t i=0;i<w->n*w->n;++i) negative_jacobian[i]=-w->jacobian[i];
     return 0;
 }
 
@@ -448,7 +498,7 @@ int chem_initialize_constraints(ChemWorkspace *w, const ChemRosenbrockParameters
                                   ChemConditions cond, double *y, ChemStatistics *stats)
 {
     if (!w || !p || !y || !stats) return 1;
-    if (!w->constraint_count) return 0;
+    if (!w->algebraic_count) return 0;
     size_t n = w->n;
     double *snapshot = w->stage + 5*n;
     memcpy(snapshot, y, n*sizeof(double));
@@ -518,7 +568,7 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
     memset(stats, 0, sizeof *stats);
     size_t n = w->n;
     if (p->absolute_tolerances) for (size_t i=0;i<n;++i) if (!(p->absolute_tolerances[i]>0)) return 1;
-    if (w->constraint_count && chem_initialize_constraints(w,p,cond,y,stats)) return 5;
+    if (w->algebraic_count && chem_initialize_constraints(w,p,cond,y,stats)) return 5;
     double hmin = p->h_min == 0 ? 1e-15*dt : p->h_min;
     double hmax = p->h_max == 0 ? dt : fmin(dt, p->h_max);
     double h = p->h_start == 0 ? 1e-6*dt : fmin(hmax, p->h_start);
@@ -532,7 +582,7 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
         if (external_add(w,cond,y,w->initial,0)) return 1;
         clear_jacobian(w); chem_jacobian_add(m, cond, rates, y, w->jacobian); ++stats->jacobian_updates;
         if (external_add(w,cond,y,w->jacobian,1)) return 1;
-        if (w->constraint_count && apply_constraints(w,cond,y,w->initial,w->jacobian)) return 5;
+        if (w->algebraic_count && apply_constraints(w,cond,y,w->initial,w->jacobian)) return 5;
         int accepted = 0;
         while (!accepted) {
             if (factor(w, 1.0/(h*p->gamma), p->linear_solver)) return 3;
@@ -547,7 +597,7 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
                         for (size_t i = 0; i < n; ++i) w->trial[i] += p->a[offset+j]*w->stage[(size_t)j*n+i];
                     chem_forcing(m, cond, rates, w->trial, ks); ++stats->function_calls;
                     if (external_add(w,cond,w->trial,ks,0)) return 1;
-                    if (w->constraint_count && apply_constraints(w,cond,w->trial,ks,NULL)) return 5;
+                    if (w->algebraic_count && apply_constraints(w,cond,w->trial,ks,NULL)) return 5;
                 }
                 if (stage+1 < p->stages && !p->new_function[stage+1]) memcpy(ks+n, ks, n*sizeof(double));
                 for (int j = 0; j < stage; ++j)
@@ -599,7 +649,7 @@ int chem_rosenbrock_solve_group(const ChemMechanism *m,ChemWorkspace *const *wor
     double *buffer=malloc(2*cells*n*sizeof(double)); if(!buffer) return 1;
     double *next_state=buffer,*errors=buffer+cells*n;
     memset(stats,0,sizeof *stats);int status=0;
-    for(size_t cell=0;cell<cells;++cell) if(work[cell]->constraint_count &&
+    for(size_t cell=0;cell<cells;++cell) if(work[cell]->algebraic_count &&
         chem_initialize_constraints(work[cell],p,conditions[cell],y+cell*n,stats)) {status=5;goto done;}
     double hmin=p->h_min==0?1e-15*dt:p->h_min;
     double hmax=p->h_max==0?dt:fmin(dt,p->h_max);
@@ -615,7 +665,7 @@ int chem_rosenbrock_solve_group(const ChemMechanism *m,ChemWorkspace *const *wor
             if(external_add(w,conditions[cell],state,w->initial,0)) {status=1;goto done;}
             clear_jacobian(w);chem_jacobian_add(m,conditions[cell],cell_rates,state,w->jacobian);
             if(external_add(w,conditions[cell],state,w->jacobian,1)) {status=1;goto done;}
-            if(w->constraint_count && apply_constraints(w,conditions[cell],state,w->initial,w->jacobian)) {status=5;goto done;}
+            if(w->algebraic_count && apply_constraints(w,conditions[cell],state,w->initial,w->jacobian)) {status=5;goto done;}
         }
         ++stats->function_calls;++stats->jacobian_updates;
         int accepted=0;
@@ -633,7 +683,7 @@ int chem_rosenbrock_solve_group(const ChemMechanism *m,ChemWorkspace *const *wor
                         for(int j=0;j<stage;++j) for(size_t i=0;i<n;++i) w->trial[i]+=p->a[offset+j]*w->stage[(size_t)j*n+i];
                         chem_forcing(m,conditions[cell],cell_rates,w->trial,ks);
                         if(external_add(w,conditions[cell],w->trial,ks,0)) {status=1;goto done;}
-                        if(w->constraint_count && apply_constraints(w,conditions[cell],w->trial,ks,NULL)) {status=5;goto done;}
+                        if(w->algebraic_count && apply_constraints(w,conditions[cell],w->trial,ks,NULL)) {status=5;goto done;}
                     }
                     if(stage+1<p->stages && !p->new_function[stage+1]) memcpy(ks+n,ks,n*sizeof(double));
                     for(int j=0;j<stage;++j) for(size_t i=0;i<n;++i) if(w->mass[i]) ks[i]+=(p->c[offset+j]/h)*w->stage[(size_t)j*n+i];
@@ -699,7 +749,7 @@ int chem_backward_euler_solve(const ChemMechanism *m, ChemWorkspace *w,
 {
     if (!m || !w || !p || !rates || !y || !stats || w->n != m->species_count ||
         !(dt > 0) || p->max_iterations < 1 || p->small < 0 || p->relative_tolerance < 0 ||
-        (!p->absolute_tolerances && p->absolute_tolerance < 0) || w->constraint_count) return 1;
+        (!p->absolute_tolerances && p->absolute_tolerance < 0) || w->algebraic_count) return 1;
     memset(stats, 0, sizeof *stats);
     size_t n = w->n;
     double h = p->h_start == 0 ? dt : p->h_start, time = 0;

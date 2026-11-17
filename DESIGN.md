@@ -27,7 +27,10 @@ and optional algebraic-row masks.
 
 Rate constants, forcing, and Jacobian evaluation are separate from the solver.
 External models can add forcing and Jacobian entries through callbacks and
-declare their symbolic pattern; they may also update per-cell parameters.
+declare their symbolic pattern; they may also update per-cell parameters and
+provide algebraic residuals and Jacobians in named rows. External process
+entries remain represented in the pattern even when constraints replace the
+corresponding numerical rows.
 The group Rosenbrock interface shares a time step and error norm across cells,
 while retaining a workspace and external context for each cell.
 `ChemRosenbrockParameters` contains stage coefficients and control parameters;

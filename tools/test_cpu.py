@@ -6,7 +6,7 @@ import sys
 
 root = Path(__file__).resolve().parents[1]
 results = {}
-for executable in ('test_cases', 'test_matrix_cases', 'test_matrix_function_cases', 'test_matrix_remaining', 'test_sparse_cases', 'test_sparse_function_cases', 'test_sparse_remaining', 'test_lu_cases', 'test_grouped_views', 'test_state_cases', 'test_jacobian_verify', 'test_process_cases', 'test_process_set_cases', 'test_analytical', 'test_rosenbrock_cases', 'test_equilibrium_integration', 'test_dae_regressions', 'test_external_aerosol'):
+for executable in ('test_cases', 'test_matrix_cases', 'test_matrix_function_cases', 'test_matrix_remaining', 'test_sparse_cases', 'test_sparse_function_cases', 'test_sparse_remaining', 'test_lu_cases', 'test_grouped_views', 'test_state_cases', 'test_jacobian_verify', 'test_process_cases', 'test_process_set_cases', 'test_analytical', 'test_rosenbrock_cases', 'test_equilibrium_integration', 'test_dae_regressions', 'test_external_aerosol', 'test_external_constraints'):
     run = subprocess.run([str(root / 'build' / executable)], text=True, capture_output=True, check=True)
     for line in run.stdout.splitlines():
         case, passed = line.split()

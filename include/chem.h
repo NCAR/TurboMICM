@@ -100,6 +100,8 @@ typedef struct {
     const char *const *variable_names, *const *parameter_names;
     size_t variable_count, parameter_count;
     ChemExternalUpdate update_parameters;
+    const unsigned char *constraint_rows, *constraint_pattern;
+    ChemExternalFunction constraint_residual, constraint_jacobian;
 } ChemExternalModel;
 
 ChemRosenbrockParameters chem_rosenbrock_two_stage(void);
@@ -116,6 +118,12 @@ ChemWorkspace *chem_workspace_create(const ChemMechanism *);
 ChemWorkspace *chem_workspace_create_constrained(const ChemMechanism *, const ChemConstraint *, size_t);
 ChemWorkspace *chem_workspace_create_external(const ChemMechanism *, const ChemConstraint *, size_t,
                                                const ChemExternalModel *, size_t);
+int chem_workspace_mass_diagonal(const ChemWorkspace *, unsigned char *diagonal, size_t count);
+int chem_workspace_jacobian_pattern(const ChemWorkspace *, unsigned char *pattern, size_t count);
+/* Evaluate forcing and the negative Jacobian, replacing algebraic rows with
+ * the corresponding constraint residual and negative derivative. */
+int chem_workspace_evaluate(ChemWorkspace *, const ChemMechanism *, ChemConditions, const double *rates,
+                            const double *y, double *forcing, double *negative_jacobian);
 void chem_workspace_free(ChemWorkspace *);
 /* Generic sparse-pattern linear algebra using the same LU kernels as the
  * integrators. Pattern and matrices are row-major n-by-n arrays. Diagonal
