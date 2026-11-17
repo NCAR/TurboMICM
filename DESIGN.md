@@ -172,3 +172,10 @@ The permutation remaps owned mechanism tables and linear or equilibrium
 constraint terms; callers use its inverse mapping to construct state names
 and values. Custom constraint callbacks receive full state arrays and require
 a caller-provided adapter when their indices are permuted.
+
+The Rosenbrock step-size controller is the error normalization and
+accept/reject block in `chem_rosenbrock_solve`: it computes the safety factor,
+limits the next step, and applies the repeated-rejection factor. To replace it,
+change that block while preserving the solver's accepted-state and retry
+semantics; the method's `error_order` and the option fields provide its inputs.
+The controller is shared by single-cell and grouped solves.
