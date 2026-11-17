@@ -72,6 +72,24 @@ algebraic variables unclamped after solving. Equilibrium constants are updated
 from temperature alongside rate constants. The current backward-Euler entry
 point rejects constrained states.
 
+External models can add species, parameters, process forcing, Jacobian
+entries, and algebraic constraints. `chem_mechanism_compose` appends declared
+species and parameters to a base mechanism; the resulting names can then be
+resolved to indices for the models' sparse patterns. `chem_state_create_extended`
+combines those patterns with the built-in reaction and constraint patterns,
+then calls each model's finalizer with the resulting sparse view. Its update
+callback runs with rate updates, and its forcing and negative-Jacobian callbacks
+run during either integrator. Constraint callbacks supply a residual and its
+gradient for a declared algebraic row. Process entries in algebraic rows remain
+in the sparse pattern for model finalizers, but their numeric values are cleared
+before the constraints are applied. Projection uses the same callbacks.
+
+The composition, model descriptors, callbacks, and contexts are borrowed by
+states and must remain alive while those states are used. A model finalizer may
+cache sparse entry indices; a context that caches indices must not be shared
+between different symbolic plans. States created with `chem_state_create_like`
+share their original symbolic plan, while owning separate numeric workspaces.
+
 To add a Rosenbrock method, populate a new `ChemRosenbrock` parameter set. To
 change the controller or linear solver, install the respective callback. To add
 a rate type, add a `ChemRateKind`, implement its calculation and validation in
@@ -89,6 +107,5 @@ condition-dependent C function may instead be supplied as a callback rate.
 - SIMD width: chosen by the compiler for `omp simd`; there is no fixed or
   machine-specific vector length.
 
-The matrix, vector, external-model, and remaining reference-case interfaces are
-still being ported; the case runner does not classify them as passing until
+The case runner does not classify remaining reference cases as passing until
 their checks exist.

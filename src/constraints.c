@@ -113,7 +113,7 @@ int chem_constraints_apply(const ChemState *s, size_t cell, const double *y,
                            double *forcing, double *negative_jacobian)
 {
     if (!s || cell>=s->cells || !y || !forcing || !negative_jacobian) return CHEM_INVALID;
-    if (!s->constraint_count) return CHEM_OK;
+    if (!s->constraint_count && !s->external_constraint_count) return CHEM_OK;
     size_t n=s->mechanism->species_count;
     double *gradient=malloc(n*sizeof(*gradient));
     if (!gradient) return CHEM_MEMORY;
@@ -122,6 +122,16 @@ int chem_constraints_apply(const ChemState *s, size_t cell, const double *y,
         size_t row=(size_t)c->algebraic_species;
         forcing[row]=chem_constraint_value(c,y,1,0,s->constraint_constants[i*s->cells+cell],gradient,n);
         for (size_t col=0;col<n;++col) negative_jacobian[row*n+col]-=gradient[col];
+    }
+    for (size_t i=0;i<s->external_model_count;++i) {
+        const ChemExternalModel *model=&s->external_models[i];
+        for (size_t j=0;j<model->constraint_count;++j) {
+            const ChemExternalConstraint *c=&model->constraints[j];
+            size_t row=(size_t)c->algebraic_species;
+            memset(gradient,0,n*sizeof(*gradient));
+            forcing[row]=c->evaluate(s,cell,y,1,gradient,c->context);
+            for (size_t col=0;col<n;++col) negative_jacobian[row*n+col]-=gradient[col];
+        }
     }
     free(gradient);
     return CHEM_OK;
@@ -148,6 +158,15 @@ void chem_constraint_residuals(const ChemState *s, const double *y, double *out)
             out[(size_t)c->algebraic_species*cells+cell]=
                 chem_constraint_value(c,y,cells,cell,s->constraint_constants[i*cells+cell],NULL,n);
     }
+    for (size_t i=0;i<s->external_model_count;++i) {
+        const ChemExternalModel *model=&s->external_models[i];
+        for (size_t j=0;j<model->constraint_count;++j) {
+            const ChemExternalConstraint *c=&model->constraints[j];
+            for (size_t cell=0;cell<cells;++cell)
+                out[(size_t)c->algebraic_species*cells+cell]=
+                    c->evaluate(s,cell,y+cell,cells,NULL,c->context);
+        }
+    }
 }
 
 void chem_constraint_jacobian(ChemState *s, const double *y)
@@ -160,6 +179,19 @@ void chem_constraint_jacobian(ChemState *s, const double *y)
             chem_constraint_value(c,y,cells,cell,s->constraint_constants[i*cells+cell],s->constraint_gradient,n);
             for (size_t col=0; col<n; ++col) if (s->index[row*n+col]>=0)
                 s->matrix[(size_t)s->index[row*n+col]*cells+cell] -= s->constraint_gradient[col];
+        }
+    }
+    for (size_t i=0;i<s->external_model_count;++i) {
+        const ChemExternalModel *model=&s->external_models[i];
+        for (size_t j=0;j<model->constraint_count;++j) {
+            const ChemExternalConstraint *c=&model->constraints[j];
+            size_t row=(size_t)c->algebraic_species;
+            for (size_t cell=0;cell<cells;++cell) {
+                memset(s->constraint_gradient,0,n*sizeof(*s->constraint_gradient));
+                c->evaluate(s,cell,y+cell,cells,s->constraint_gradient,c->context);
+                for (size_t col=0;col<n;++col) if (s->index[row*n+col]>=0)
+                    s->matrix[(size_t)s->index[row*n+col]*cells+cell]-=s->constraint_gradient[col];
+            }
         }
     }
 }

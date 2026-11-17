@@ -93,5 +93,5 @@ int chem_initialize_constraints(ChemState *s, const ChemRosenbrock *p, ChemStats
         p->constraint_backtrack_factor <= 0 || p->constraint_backtrack_factor >= 1 ||
         p->constraint_sufficient_decrease < 0 || p->relative_tolerance < 0) return CHEM_INVALID;
     memset(stats,0,sizeof(*stats));
-    return s->constraint_count ? chem_project_constraints(s,p,stats) : CHEM_OK;
+    return (s->constraint_count || s->external_constraint_count) ? chem_project_constraints(s,p,stats) : CHEM_OK;
 }

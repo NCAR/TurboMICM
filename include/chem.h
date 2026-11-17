@@ -134,6 +134,56 @@ typedef struct {
     int (*solve)(const ChemLinearSystem *system, double *rhs, void *context);
 } ChemLinearSolver;
 
+/* Extension callbacks operate on the same species-major arrays as the solver.
+ * The mechanism must include all species and parameters used by the models.
+ * Descriptors, dependencies, and callback contexts are borrowed and must outlive
+ * all states created from them. Finalize may cache sparse entry indices (not
+ * cell-dependent value offsets); use a separate context for different plans.
+ * A constraint callback receives a pointer to the selected cell and reads
+ * values[species * stride]; its gradient, when non-NULL, is a zero-filled
+ * species_count-element array. Declare every species with a possible nonzero
+ * gradient in dependencies. */
+typedef struct { size_t row, column; } ChemJacobianEntry;
+typedef struct {
+    const char *name;
+    int algebraic_species;
+    const int *dependencies;
+    size_t dependency_count;
+    double (*evaluate)(const ChemState *state, size_t cell, const double *values,
+                       size_t stride, double *gradient, void *context);
+    void *context;
+} ChemExternalConstraint;
+typedef struct {
+    const ChemJacobianEntry *jacobian_pattern;
+    size_t jacobian_count;
+    const ChemExternalConstraint *constraints;
+    size_t constraint_count;
+    int (*finalize)(const ChemMechanism *mechanism, const ChemLinearSystem *pattern, void *context);
+    int (*update)(ChemState *state, void *context);
+    void (*add_forcing)(const ChemState *state, const double *values, double *forcing, void *context);
+    void (*subtract_jacobian)(const ChemState *state, const double *values,
+                              ChemLinearSystem *negative_jacobian, void *context);
+    void *context;
+    /* Optional additions for chem_mechanism_compose. */
+    const ChemSpecies *species;
+    size_t species_count;
+    const char *const *parameter_names;
+    const double *parameter_defaults;
+    size_t parameter_count;
+} ChemExternalModel;
+typedef struct {
+    ChemMechanism mechanism;
+    ChemSpecies *species_storage;
+    const char **parameter_name_storage;
+    double *parameter_default_storage;
+} ChemMechanismComposition;
+/* Copy base metadata and append model-owned declarations into an empty result.
+ * String data, reactions and contexts are borrowed; destroy after every
+ * associated state. The result is unchanged on failure. */
+int chem_mechanism_compose(ChemMechanismComposition *result, const ChemMechanism *base,
+                           const ChemExternalModel *models, size_t model_count);
+void chem_mechanism_composition_destroy(ChemMechanismComposition *composition);
+
 ChemRosenbrock chem_rosenbrock_three_stage(void);
 ChemRosenbrock chem_rosenbrock_two_stage(void);
 ChemRosenbrock chem_rosenbrock_four_stage(void);
@@ -147,6 +197,9 @@ int chem_rate_calculate(const ChemRate *rate, double temperature, double pressur
 ChemState *chem_state_create(const ChemMechanism *mechanism, size_t cells);
 ChemState *chem_state_create_constrained(const ChemMechanism *mechanism, const ChemConstraint *constraints,
                                          size_t constraint_count, size_t cells);
+ChemState *chem_state_create_extended(const ChemMechanism *mechanism, const ChemConstraint *constraints,
+                                     size_t constraint_count, const ChemExternalModel *models,
+                                     size_t model_count, size_t cells);
 int chem_validate_constraints(const ChemMechanism *mechanism, const ChemConstraint *constraints, size_t count);
 /* pattern is a zeroed-or-overwritten species_count-square row-major byte array. */
 int chem_constraint_pattern(const ChemMechanism *mechanism, const ChemConstraint *constraints,
@@ -166,6 +219,7 @@ size_t chem_cell_count(const ChemState *state);
 double *chem_species_values(ChemState *state, size_t species);
 const double *chem_species_values_const(const ChemState *state, size_t species);
 double *chem_parameter_values(ChemState *state, size_t parameter);
+const double *chem_parameter_values_const(const ChemState *state, size_t parameter);
 double *chem_temperatures(ChemState *state);
 double *chem_pressures(ChemState *state);
 double *chem_absolute_tolerances(ChemState *state);

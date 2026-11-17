@@ -55,3 +55,11 @@ deep clone, while transferring ownership of a state uses an ordinary pointer
 assignment. Named setters return errors instead of throwing exceptions.
 The version accessor reports the compatibility version in the reference
 source's version header, rather than a separate version for this C port.
+
+External models declare their possible Jacobian entries explicitly and may
+provide residual and gradient callbacks for algebraic constraints. The C API
+uses separate model and constraint descriptors in place of C++ templates.
+Optional model species and parameters are appended by a composition step;
+duplicate names are rejected. Model callbacks and their contexts are borrowed,
+so callers control their lifetime and can use independent contexts for different
+symbolic plans.

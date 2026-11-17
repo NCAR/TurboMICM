@@ -13,7 +13,7 @@ results = {}
 unexpected_failure = False
 
 providers = [(name, [ROOT / "bin" / name]) for name in
-             ("reference_rates", "reference_rate_store", "reference_solver", "reference_rosenbrock", "reference_constraints", "reference_constraint_set", "reference_equilibrium_integration", "reference_stiff_constraints", "reference_analytical", "reference_nonlinear_integration", "reference_state", "reference_matrix", "reference_matrix_functions", "reference_sparse", "reference_sparse_functions", "reference_grouped_views", "reference_jacobian", "reference_version", "reference_initialization", "reference_lu")]
+             ("reference_rates", "reference_rate_store", "reference_solver", "reference_rosenbrock", "reference_constraints", "reference_constraint_set", "reference_equilibrium_integration", "reference_stiff_constraints", "reference_analytical", "reference_nonlinear_integration", "reference_state", "reference_matrix", "reference_matrix_functions", "reference_sparse", "reference_sparse_functions", "reference_grouped_views", "reference_jacobian", "reference_aerosol", "reference_external", "reference_version", "reference_initialization", "reference_lu")]
 providers.append(("reference_ordering", [sys.executable, ROOT / "tests" / "reference_ordering.py"]))
 for executable, command in providers:
     process = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)

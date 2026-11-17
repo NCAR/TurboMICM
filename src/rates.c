@@ -162,6 +162,13 @@ int chem_rate_calculate(const ChemRate *rate, double temperature, double pressur
 int chem_update_rates(ChemState *s)
 {
     if (!s) return CHEM_INVALID;
+    for (size_t i=0;i<s->external_model_count;++i) {
+        const ChemExternalModel *model=&s->external_models[i];
+        if (model->update) {
+            int status=model->update(s,model->context);
+            if (status) return status;
+        }
+    }
     const ChemMechanism *m = s->mechanism;
     size_t cells = s->cells;
     for (size_t r = 0; r < m->reaction_count; ++r) {
@@ -217,6 +224,10 @@ void chem_forcing(const ChemState *s, const double *y, double *out, double *scra
             for (size_t c = 0; c < cells; ++c) v[c] += yield*scratch[c];
         }
     }
+    for (size_t i=0;i<s->external_model_count;++i) {
+        const ChemExternalModel *model=&s->external_models[i];
+        if (model->add_forcing) model->add_forcing(s,y,out,model->context);
+    }
     chem_constraint_residuals(s,y,out);
 }
 
@@ -254,6 +265,15 @@ void chem_negative_jacobian(ChemState *s, const double *y)
             }
         }
     }
+    ChemLinearSystem view={n,cells,s->nonzeros,s->row_start,s->columns,s->index,s->algebraic,jac};
+    for (size_t i=0;i<s->external_model_count;++i) {
+        const ChemExternalModel *model=&s->external_models[i];
+        if (model->subtract_jacobian) model->subtract_jacobian(s,y,&view,model->context);
+    }
+    if (s->external_model_count && (s->constraint_count || s->external_constraint_count))
+        for (size_t row=0;row<n;++row) if (s->algebraic[row])
+            for (size_t k=s->row_start[row];k<s->row_start[row+1];++k)
+                memset(jac+k*cells,0,cells*sizeof(*jac));
     chem_constraint_jacobian(s,y);
 }
 
@@ -292,12 +312,41 @@ int chem_evaluate(const ChemState *s, size_t cell, double *forcing, double *jaco
             }
         }
     }
+    if (s->external_model_count) {
+        double *external_forcing=calloc(n*cells,sizeof(*external_forcing));
+        double *external_jacobian=calloc(s->nonzeros*cells,sizeof(*external_jacobian));
+        if (!external_forcing || !external_jacobian) {
+            free(external_forcing); free(external_jacobian); return CHEM_MEMORY;
+        }
+        ChemLinearSystem view={n,cells,s->nonzeros,s->row_start,s->columns,s->index,s->algebraic,external_jacobian};
+        for (size_t i=0;i<s->external_model_count;++i) {
+            const ChemExternalModel *model=&s->external_models[i];
+            if (model->add_forcing) model->add_forcing(s,s->values,external_forcing,model->context);
+            if (model->subtract_jacobian) model->subtract_jacobian(s,s->values,&view,model->context);
+        }
+        for (size_t row=0;row<n;++row) if (!s->algebraic[row]) {
+            forcing[row]+=external_forcing[row*cells+cell];
+            for (size_t k=s->row_start[row];k<s->row_start[row+1];++k)
+                jacobian[row*n+(size_t)s->columns[k]]+=external_jacobian[k*cells+cell];
+        }
+        free(external_forcing); free(external_jacobian);
+    }
     for (size_t i=0; i<s->constraint_count; ++i) {
         const ChemConstraint *constraint=&s->constraints[i];
         size_t row=(size_t)constraint->algebraic_species;
         forcing[row]=chem_constraint_value(constraint,s->values,cells,cell,s->constraint_constants[i*cells+cell],
                                            jacobian+row*n,n);
         for (size_t col=0; col<n; ++col) jacobian[row*n+col] = -jacobian[row*n+col];
+    }
+    for (size_t i=0;i<s->external_model_count;++i) {
+        const ChemExternalModel *model=&s->external_models[i];
+        for (size_t j=0;j<model->constraint_count;++j) {
+            const ChemExternalConstraint *c=&model->constraints[j];
+            size_t row=(size_t)c->algebraic_species;
+            memset(jacobian+row*n,0,n*sizeof(*jacobian));
+            forcing[row]=c->evaluate(s,cell,s->values+cell,cells,jacobian+row*n,c->context);
+            for (size_t col=0;col<n;++col) jacobian[row*n+col]=-jacobian[row*n+col];
+        }
     }
     return CHEM_OK;
 }

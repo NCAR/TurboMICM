@@ -148,7 +148,7 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
         return CHEM_INVALID;
     memset(result, 0, sizeof(*result));
     size_t ny = s->mechanism->species_count * s->cells;
-    if (s->constraint_count) {
+    if (s->constraint_count || s->external_constraint_count) {
         int status=chem_project_constraints(s,p,result);
         if (status) return status;
     }
@@ -193,7 +193,7 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
                     memcpy(s->stages+(stage+1)*ny, k, ny*sizeof(*k));
                 for (size_t j = 0; j < stage; ++j) {
                     double factor=p->c[first+j]/h;
-                    if (!s->constraint_count) axpy(ny,k,s->stages+j*ny,factor);
+                    if (!s->constraint_count && !s->external_constraint_count) axpy(ny,k,s->stages+j*ny,factor);
                     else for (size_t i=0; i<s->mechanism->species_count; ++i) if (!s->algebraic[i])
                         axpy(s->cells,k+i*s->cells,s->stages+j*ny+i*s->cells,factor);
                 }

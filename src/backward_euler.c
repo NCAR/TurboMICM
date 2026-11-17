@@ -23,7 +23,7 @@ int chem_backward_euler_converged(size_t n, size_t cells, const double *residual
 
 int chem_solve_backward_euler(ChemState *s, const ChemBackwardEuler *p, double dt, ChemStats *stats)
 {
-    if (!s || !p || !stats || s->constraint_count || !isfinite(dt) || dt < 0 || !isfinite(p->h_start) || p->h_start < 0 ||
+    if (!s || !p || !stats || s->constraint_count || s->external_constraint_count || !isfinite(dt) || dt < 0 || !isfinite(p->h_start) || p->h_start < 0 ||
         p->relative_tolerance < 0 || p->small < 0 || !p->max_iterations) return CHEM_INVALID;
     for (size_t i = 0; i < 5; ++i)
         if (p->time_step_reductions[i] <= 0 || p->time_step_reductions[i] >= 1) return CHEM_INVALID;

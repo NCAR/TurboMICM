@@ -15,6 +15,8 @@ struct ChemState {
     const ChemMechanism *mechanism;
     const ChemConstraint *constraints;
     size_t constraint_count;
+    const ChemExternalModel *external_models;
+    size_t external_model_count, external_constraint_count;
     size_t cells, nonzeros;
     double *values, *parameters, *temperatures, *pressures, *air_densities, *absolute_tolerances, *rates;
     unsigned char *explicit_air_density;

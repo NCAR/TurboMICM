@@ -1,7 +1,7 @@
 # Results
 
 The work is incomplete. At the latest full case audit, `make test-cpu` emitted
-680 case lines under both clang and gcc-15: 569 PASS, 107 FAIL because the case
+680 case lines under both clang and gcc-15: 607 PASS, 69 FAIL because the case
 has not yet been ported, and 4 N/A for C++ template-concept/SFINAE checks with
 no C equivalent. The analytic, configuration, constraint, and Doolittle core
 checks also passed under both compilers. A failing case report exits nonzero.
@@ -12,6 +12,11 @@ reference after the branched-rate trajectory exposed transcription errors.
 The Robertson, E5, HIRES, and Oregonator trajectories also match the
 reference checks, including backward Euler's 18,000 substeps per Oregonator
 output interval.
+
+The external-model cases exercise two independently declared aerosol models,
+both integrators, multiple cells, callback-defined constraints, composed
+equilibria, temperature-dependent constraint parameters, model ordering, and
+finite-difference checks of the process and constraint Jacobians.
 
 With `-O3 -DNDEBUG`, TS1, seed 2026, 10,000 cells, 100 timed 30-second steps,
 64-cell groups, and 10 threads, one local measurement was:

@@ -70,6 +70,18 @@ int chem_make_symbolic(ChemState *s)
         for (size_t i=0; i<constraint->product_count; ++i)
             pattern[row*n+(size_t)constraint->products[i].species] = 1;
     }
+    for (size_t i=0;i<s->external_model_count;++i) {
+        const ChemExternalModel *model=&s->external_models[i];
+        for (size_t j=0;j<model->jacobian_count;++j) {
+            ChemJacobianEntry e=model->jacobian_pattern[j];
+            pattern[e.row*n+e.column]=1;
+        }
+        for (size_t j=0;j<model->constraint_count;++j) {
+            const ChemExternalConstraint *c=&model->constraints[j];
+            for (size_t k=0;k<c->dependency_count;++k)
+                pattern[(size_t)c->algebraic_species*n+(size_t)c->dependencies[k]]=1;
+        }
+    }
     for (size_t i = 0; i < n; ++i)
         for (size_t k = i+1; k < n; ++k)
             if (pattern[i*n+k])

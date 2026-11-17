@@ -38,7 +38,7 @@ build:
 build/.compiler: FORCE | build
 	@printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' | cmp -s - $@ || printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' > $@
 
-SOURCES := src/state.c src/rates.c src/linear.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/projection.c src/matrix.c src/sparse.c src/jacobian.c src/version.c
+SOURCES := src/state.c src/model.c src/rates.c src/linear.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/projection.c src/matrix.c src/sparse.c src/jacobian.c src/version.c
 OBJECTS := $(SOURCES:src/%.c=build/%.o)
 
 build/%.o: src/%.c src/internal.h include/chem.h include/chem_matrix.h include/chem_sparse.h include/chem_jacobian.h build/.compiler | build
@@ -110,6 +110,12 @@ bin/reference_grouped_views: tests/reference_grouped_views.c build/libchem.a bui
 bin/reference_jacobian: tests/reference_jacobian.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
+bin/reference_aerosol: tests/reference_aerosol.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/reference_external: tests/reference_external.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
 bin/reference_version: tests/reference_version.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
@@ -167,7 +173,7 @@ test-core: bin/test_core bin/test_configurations bin/test_constraints bin/test_l
 	./bin/test_constraints
 	./bin/test_linear
 
-test-cpu: bin/reference_rates bin/reference_rate_store bin/reference_solver bin/reference_rosenbrock bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_stiff_constraints bin/reference_analytical bin/reference_nonlinear_integration bin/reference_state bin/reference_matrix bin/reference_matrix_functions bin/reference_sparse bin/reference_sparse_functions bin/reference_grouped_views bin/reference_jacobian bin/reference_version bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
+test-cpu: bin/reference_rates bin/reference_rate_store bin/reference_solver bin/reference_rosenbrock bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_stiff_constraints bin/reference_analytical bin/reference_nonlinear_integration bin/reference_state bin/reference_matrix bin/reference_matrix_functions bin/reference_sparse bin/reference_sparse_functions bin/reference_grouped_views bin/reference_jacobian bin/reference_aerosol bin/reference_external bin/reference_version bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
 	@$(PYTHON) tests/run_cases.py
 
 cpu bench: bin/ts1_bench_cpu

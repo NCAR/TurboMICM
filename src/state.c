@@ -11,22 +11,59 @@ static void *array(size_t n, size_t size)
     return calloc(n ? n : 1, size);
 }
 
+static int validate_external(const ChemMechanism *m, const ChemConstraint *constraints, size_t constraint_count,
+                             const ChemExternalModel *models, size_t model_count, size_t *external_count)
+{
+    *external_count=0;
+    if (model_count && !models) return CHEM_INVALID;
+    for (size_t i=0;i<model_count;++i) {
+        const ChemExternalModel *model=&models[i];
+        if ((model->jacobian_count && !model->jacobian_pattern) ||
+            (model->constraint_count && !model->constraints) ||
+            model->constraint_count > SIZE_MAX-*external_count) return CHEM_INVALID;
+        *external_count+=model->constraint_count;
+        for (size_t j=0;j<model->jacobian_count;++j)
+            if (model->jacobian_pattern[j].row>=m->species_count ||
+                model->jacobian_pattern[j].column>=m->species_count) return CHEM_INVALID;
+        for (size_t j=0;j<model->constraint_count;++j) {
+            const ChemExternalConstraint *c=&model->constraints[j];
+            if (c->algebraic_species<0 || (size_t)c->algebraic_species>=m->species_count ||
+                !c->evaluate || (c->dependency_count && !c->dependencies)) return CHEM_INVALID;
+            for (size_t k=0;k<c->dependency_count;++k)
+                if (c->dependencies[k]<0 || (size_t)c->dependencies[k]>=m->species_count) return CHEM_INVALID;
+            for (size_t k=0;k<constraint_count;++k)
+                if (constraints[k].algebraic_species==c->algebraic_species) return CHEM_INVALID;
+            for (size_t k=0;k<=i;++k) {
+                size_t limit=k==i ? j : models[k].constraint_count;
+                for (size_t l=0;l<limit;++l)
+                    if (models[k].constraints[l].algebraic_species==c->algebraic_species) return CHEM_INVALID;
+            }
+        }
+    }
+    return CHEM_OK;
+}
+
 static ChemState *create_state(const ChemMechanism *m, size_t cells, const ChemConstraint *constraints,
-                               size_t constraint_count, const ChemState *model)
+                               size_t constraint_count, const ChemExternalModel *models,
+                               size_t model_count, const ChemState *model)
 {
     if (!m || !cells || !m->species_count || !m->species ||
         (m->reaction_count && !m->reactions) ||
         (m->parameter_count && (!m->parameter_names || !m->parameter_defaults))) return NULL;
+    size_t external_count=0;
     if (m->species_count > SIZE_MAX / cells || m->reaction_count > SIZE_MAX / cells ||
         m->parameter_count > SIZE_MAX / cells || constraint_count > SIZE_MAX / cells ||
         m->species_count * cells > SIZE_MAX / 6 ||
-        (!model && chem_validate_constraints(m, constraints, constraint_count) != CHEM_OK)) return NULL;
+        (!model && (chem_validate_constraints(m, constraints, constraint_count) != CHEM_OK ||
+                    validate_external(m,constraints,constraint_count,models,model_count,&external_count)))) return NULL;
     ChemState *s = calloc(1, sizeof(*s));
     if (!s) return NULL;
     s->mechanism = m;
     s->cells = cells;
     if (model) {
         s->constraints = model->constraints; s->constraint_count = model->constraint_count;
+        s->external_models=model->external_models; s->external_model_count=model->external_model_count;
+        s->external_constraint_count=model->external_constraint_count;
         s->nonzeros = model->nonzeros;
         s->index = model->index; s->columns = model->columns; s->row_start = model->row_start;
         s->pivots = model->pivots; s->lower = model->lower;
@@ -35,12 +72,16 @@ static ChemState *create_state(const ChemMechanism *m, size_t cells, const ChemC
         atomic_fetch_add(s->symbolic_references, 1);
     } else {
         s->constraints = constraints; s->constraint_count = constraint_count;
+        s->external_models=models; s->external_model_count=model_count; s->external_constraint_count=external_count;
         s->symbolic_references = array(1, sizeof(*s->symbolic_references));
         if (!s->symbolic_references) { free(s); return NULL; }
         atomic_init(s->symbolic_references, 1);
         s->algebraic = array(m->species_count, sizeof(*s->algebraic));
         if (!s->algebraic) { chem_state_free(s); return NULL; }
         for (size_t i=0; i<constraint_count; ++i) s->algebraic[constraints[i].algebraic_species] = 1;
+        for (size_t i=0;i<model_count;++i)
+            for (size_t j=0;j<models[i].constraint_count;++j)
+                s->algebraic[models[i].constraints[j].algebraic_species]=1;
         if (chem_make_symbolic(s) != CHEM_OK) { chem_state_free(s); return NULL; }
     }
     size_t ny = m->species_count * cells;
@@ -85,18 +126,29 @@ static ChemState *create_state(const ChemMechanism *m, size_t cells, const ChemC
         s->rate_functions[i] = m->reactions[i].rate.function;
         s->rate_contexts[i] = m->reactions[i].rate.context;
     }
+    if (!model) {
+        ChemLinearSystem view={m->species_count,cells,s->nonzeros,s->row_start,s->columns,s->index,s->algebraic,s->matrix};
+        for (size_t i=0;i<model_count;++i)
+            if (models[i].finalize && models[i].finalize(m,&view,models[i].context)!=CHEM_OK) {
+                chem_state_free(s); return NULL;
+            }
+    }
     return s;
 }
 
 ChemState *chem_state_create(const ChemMechanism *m, size_t cells)
-{ return create_state(m, cells, NULL, 0, NULL); }
+{ return create_state(m, cells, NULL, 0, NULL, 0, NULL); }
 
 ChemState *chem_state_create_constrained(const ChemMechanism *m, const ChemConstraint *constraints,
                                          size_t count, size_t cells)
-{ return create_state(m, cells, constraints, count, NULL); }
+{ return create_state(m, cells, constraints, count, NULL, 0, NULL); }
+
+ChemState *chem_state_create_extended(const ChemMechanism *m, const ChemConstraint *constraints,
+                                     size_t count, const ChemExternalModel *models, size_t model_count, size_t cells)
+{ return create_state(m,cells,constraints,count,models,model_count,NULL); }
 
 ChemState *chem_state_create_like(const ChemState *s, size_t cells)
-{ return s ? create_state(s->mechanism, cells, NULL, s->constraint_count, s) : NULL; }
+{ return s ? create_state(s->mechanism, cells, NULL, s->constraint_count, NULL, 0, s) : NULL; }
 
 ChemState *chem_state_clone(const ChemState *s)
 {
@@ -142,6 +194,8 @@ const double *chem_species_values_const(const ChemState *s, size_t i)
 { return s && i < s->mechanism->species_count ? s->values + i*s->cells : NULL; }
 double *chem_parameter_values(ChemState *s, size_t i)
 { return s && i < s->mechanism->parameter_count ? s->parameters + i*s->cells : NULL; }
+const double *chem_parameter_values_const(const ChemState *s, size_t i)
+{ return s && i < s->mechanism->parameter_count ? s->parameters + i*s->cells : NULL; }
 double *chem_temperatures(ChemState *s) { return s ? s->temperatures : NULL; }
 double *chem_pressures(ChemState *s) { return s ? s->pressures : NULL; }
 double *chem_absolute_tolerances(ChemState *s) { return s ? s->absolute_tolerances : NULL; }
@@ -154,6 +208,13 @@ int chem_find_constraint(const ChemState *s, const char *name)
     if (!s || !name) return -1;
     for (size_t i=0;i<s->constraint_count;++i)
         if (s->constraints[i].name && !strcmp(s->constraints[i].name,name)) return (int)i;
+    size_t offset=s->constraint_count;
+    for (size_t i=0;i<s->external_model_count;++i) {
+        const ChemExternalModel *model=&s->external_models[i];
+        for (size_t j=0;j<model->constraint_count;++j,++offset)
+            if (model->constraints[j].name && !strcmp(model->constraints[j].name,name))
+                return offset<=INT32_MAX ? (int)offset : -1;
+    }
     return -1;
 }
 int chem_is_algebraic(const ChemState *s, size_t species)
