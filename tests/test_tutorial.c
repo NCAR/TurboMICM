@@ -1,6 +1,9 @@
 #include "chem.h"
 #include "rates.h"
 #include "rosenbrock.h"
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>

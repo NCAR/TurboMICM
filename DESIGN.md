@@ -21,3 +21,9 @@ CAMP-style JSON files. The generator excludes third bodies from the state and
 outputs their powers; `chem_rates_with_air` applies these to reaction constants.
 Species and custom defaults are also emitted as C arrays. See DECISIONS.md for
 the configuration extensions.
+
+The preliminary benchmark schedules individual cells with OpenMP static
+scheduling; `--threads` sets the thread count (default: OpenMP maximum). Each
+cell currently owns independent solver state and error control. Timings exclude
+input, rate setup, warm-up, and output. Dense factorization is a known scaling
+limitation and should be replaced by a mechanism-generic sparse implementation.

@@ -14,3 +14,10 @@ Regenerate the TS1 configuration from the reference source with
 `.conda/bin/python tools/import_ts1.py ../micm/test/benchmark/ts1_mechanism.hpp configs/ts1`.
 The current checks compare the translation's initial values with the reference
 defaults CSV and exercise generated TS1 rate and forcing evaluation.
+
+Build the preliminary TS1 driver with `make bench`, then run
+`bin/ts1_bench_cpu [--threads N] CELLS STEPS DT CELLS_CSV`. It writes
+`ts1_final.csv`. `make check-ts1` compares 100 cells and 100 steps with the
+supplied reference, and `make micm-ref` builds the independent timing reference.
+The current solver uses independent dense factorizations per cell; it is not yet
+optimized for the requested benchmark scale.

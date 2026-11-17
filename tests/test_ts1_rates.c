@@ -1,5 +1,8 @@
 #include "chem.h"
 #include "rates.h"
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>

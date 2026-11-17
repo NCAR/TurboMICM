@@ -15,3 +15,12 @@ The TS1 translation contains 210 species (209 state variables) and 547 reactions
 Its initial values match the reference defaults CSV exactly, and generated rates,
 forcing, and Jacobian are finite at those defaults. Numerical TS1 integration has
 not yet been validated against the reference.
+
+A clang `-O3 -DNDEBUG` build on the supplied 100-cell, 100-step, 30-second
+input passed the final-state gate: largest relative difference 4.2e-14. With
+10 threads, one preliminary run took 15,406 ms; the reference built with the
+same flags took 219 ms. These are single runs, not ranking measurements. The
+large gap reflects the current dense, independent-cell implementation.
+
+The same 100-cell gate also passed with gcc-15; largest relative difference
+was 3.59e-14 and one preliminary timed run took 19,356 ms.
