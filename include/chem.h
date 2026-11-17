@@ -47,20 +47,36 @@ typedef struct {
     double a[15], c[15], m[6], e[6], gamma, order;
     double factor_min, factor_max, rejection_factor, safety;
     double h_min, h_max, h_start, relative_tolerance, absolute_tolerance;
+    int constraint_init_max_iterations, constraint_init_max_backtracks;
+    double constraint_init_tolerance, constraint_init_backtrack_factor, constraint_init_sufficient_decrease;
     const double *absolute_tolerances; /* optional per-species override */
 } ChemRosenbrockParameters;
 typedef struct {
     unsigned long internal_steps, accepted, rejected, function_calls;
-    unsigned long jacobian_updates, decompositions, solves;
+    unsigned long jacobian_updates, decompositions, solves, constraint_init_iterations;
     double final_time;
 } ChemStatistics;
+typedef enum {
+    CHEM_SOLVE_SUCCESS = 0, CHEM_SOLVE_BAD_ARGUMENT = 1, CHEM_SOLVE_STEP_TOO_SMALL = 2,
+    CHEM_SOLVE_SINGULAR = 3, CHEM_SOLVE_NONFINITE = 4, CHEM_SOLVE_CONSTRAINT_INITIALIZATION_FAILED = 5,
+    CHEM_SOLVE_ACCEPTING_UNCONVERGED = 6
+} ChemSolverStatus;
+const char *chem_solver_status_string(ChemSolverStatus);
 typedef struct ChemWorkspace ChemWorkspace;
+typedef struct ChemConstraint ChemConstraint;
 
 ChemRosenbrockParameters chem_rosenbrock_two_stage(void);
 ChemRosenbrockParameters chem_rosenbrock_three_stage(void);
 ChemRosenbrockParameters chem_rosenbrock_four_stage(void);
+ChemRosenbrockParameters chem_rosenbrock_four_stage_dae(void);
+ChemRosenbrockParameters chem_rosenbrock_six_stage_dae(void);
 ChemWorkspace *chem_workspace_create(const ChemMechanism *);
+/* Constraints and their term arrays must outlive the workspace. */
+ChemWorkspace *chem_workspace_create_constrained(const ChemMechanism *, const ChemConstraint *, size_t);
 void chem_workspace_free(ChemWorkspace *);
+/* Initialize algebraic rows transactionally; accumulates statistics. */
+int chem_initialize_constraints(ChemWorkspace *, const ChemRosenbrockParameters *,
+                                ChemConditions, double *y, ChemStatistics *);
 /* On failure returns nonzero; y contains the most recently accepted state. */
 int chem_rosenbrock_solve(const ChemMechanism *, ChemWorkspace *,
                           const ChemRosenbrockParameters *, ChemConditions,
@@ -80,7 +96,7 @@ int chem_backward_euler_solve(const ChemMechanism *, ChemWorkspace *,
                               const double *rates, double dt, double *y, ChemStatistics *);
 
 typedef enum { CHEM_LINEAR_CONSTRAINT, CHEM_EQUILIBRIUM_CONSTRAINT } ChemConstraintType;
-typedef struct {
+struct ChemConstraint {
     const char *name;
     ChemConstraintType type;
     size_t row;
@@ -88,7 +104,7 @@ typedef struct {
     size_t reactant_count, product_count;
     double constant; /* linear constant, or equilibrium constant at reference temperature */
     double enthalpy, gas_constant, reference_temperature;
-} ChemConstraint;
+};
 typedef enum {
     CHEM_CONSTRAINT_OK, CHEM_CONSTRAINT_BAD_ROW, CHEM_CONSTRAINT_EMPTY_REACTANTS,
     CHEM_CONSTRAINT_EMPTY_PRODUCTS, CHEM_CONSTRAINT_BAD_SPECIES,

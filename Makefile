@@ -71,11 +71,15 @@ test-cpu:
 	@$(MAKE) --no-print-directory -s build/test_cases build/tutorial_no_user build/tutorial_user
 	@$(PYTHON) tools/test_cpu.py
 
-test-reader: build/test_chem build/test_solver build/test_robertson_config
+build/test_dae: tests/test_dae.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
+test-reader: build/test_chem build/test_solver build/test_robertson_config build/test_dae
 	$(PYTHON) -m unittest discover -s tests -v
 	./build/test_chem
 	./build/test_solver
 	./build/test_robertson_config
+	./build/test_dae
 
 clean:
 	rm -rf build bin

@@ -1,6 +1,8 @@
 #include "chem.h"
 #include <errno.h>
 #include <math.h>
+#include <limits.h>
+#include <stdint.h>
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -139,13 +141,25 @@ static int write_cells(const Cell *cells, size_t count, const ChemMechanism *m)
 int main(int argc, char **argv)
 {
     int arg = 1, threads = omp_get_max_threads();
-    if (argc > 2 && !strcmp(argv[1], "--threads")) { threads = atoi(argv[2]); arg += 2; }
+    if (argc > 2 && !strcmp(argv[1], "--threads")) {
+        char *thread_end;
+        errno = 0;
+        long value = strtol(argv[2], &thread_end, 10);
+        if (errno || *thread_end || thread_end == argv[2] || value < 1 || value > INT_MAX) return 1;
+        threads = (int)value; arg += 2;
+    }
     if (argc != arg+4 || threads < 1) { fprintf(stderr, "usage: %s [--threads N] CELLS STEPS DT CELLS_CSV\n", argv[0]); return 1; }
     char *end;
-    unsigned long count = strtoul(argv[arg], &end, 10); if (*end || !count) return 1;
-    unsigned long steps = strtoul(argv[arg+1], &end, 10); if (*end) return 1;
+    errno = 0;
+    if (argv[arg][0] == '-') return 1;
+    unsigned long count = strtoul(argv[arg], &end, 10); if (errno || end == argv[arg] || *end || !count) return 1;
+    errno = 0;
+    if (argv[arg+1][0] == '-') return 1;
+    unsigned long steps = strtoul(argv[arg+1], &end, 10); if (errno || end == argv[arg+1] || *end) return 1;
     double dt = strtod(argv[arg+2], &end); if (*end || !(dt > 0) || !isfinite(dt)) return 1;
     const ChemMechanism *m = &generated_mechanism;
+    if (count > SIZE_MAX/sizeof(Cell) || count > SIZE_MAX/sizeof(double)/m->species_count ||
+        count > SIZE_MAX/sizeof(double)/m->reaction_count) return 1;
     Cell *cells = calloc(count, sizeof(*cells));
     double *ys = calloc(count*m->species_count, sizeof(*ys));
     double *rates = calloc(count*m->reaction_count, sizeof(*rates));

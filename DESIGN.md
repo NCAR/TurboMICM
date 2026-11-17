@@ -19,7 +19,12 @@ it. A new rate type requires an enum member, parameter interpretation in the
 rate calculation, generator mapping, and tests.
 
 Linear and equilibrium constraints expose validation, residuals, and negative
-Jacobian rows independently. They are not yet integrated with the time solver.
+Jacobian rows independently. A constrained workspace borrows the constraint
+and term arrays, adds their dependencies to the sparse pattern, and replaces
+algebraic rows during Rosenbrock stages. Initialization uses weighted Newton
+corrections with a backtracking line search and restores the input on failure.
+Four- and six-stage DAE parameter sets are available. This path has preliminary
+coverage and does not yet satisfy the full constraint test inventory.
 
 Backward Euler uses Newton iterations, nonnegative iterates, and the reference
 step-reduction sequence. Both solvers share the chemistry and linear algebra.

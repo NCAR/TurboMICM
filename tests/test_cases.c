@@ -282,6 +282,100 @@ static int equilibrium_case(int which)
     return 0;
 }
 
+static int initialization_case(int which)
+{
+    const char *names[] = {"A","B","C"};
+    const ChemTerm react[] = {{0,1}}, prod[] = {{1,1}}, eqreact[] = {{1,1}}, eqprod[] = {{2,1}};
+    const ChemReaction reaction = {CHEM_ARRHENIUS,0,1,0,1,-1,{.5,0,0,300,0}};
+    const ChemMechanism m = {3,1,0,names,NULL,NULL,NULL,&reaction,react,prod};
+    ChemConstraint constraint = {"B_C_eq",CHEM_EQUILIBRIUM_CONSTRAINT,2,eqreact,eqprod,1,1,2,0,8.31446261815324,298.15};
+    ChemConditions conditions = {298.15,101325,0,0};
+    ChemRosenbrockParameters p = chem_rosenbrock_three_stage();
+    double rates[1];
+    if (chem_rate_constants(&m,conditions,NULL,rates)) return 0;
+    if (which <= 2) {
+        double y[] = {1,.5,which == 0 ? 1 : which == 1 ? 5 : 1000};
+        ChemWorkspace *w=chem_workspace_create_constrained(&m,&constraint,1); ChemStatistics stats;
+        int status = w ? chem_rosenbrock_solve(&m,w,&p,conditions,rates,.001,y,&stats) : 1;
+        chem_workspace_free(w);
+        return status==0 && (which != 0 || stats.constraint_init_iterations<=1) &&
+            (which == 0 || stats.constraint_init_iterations>0) && fabs(2*y[1]-y[2])<=1e-6;
+    }
+    if (which == 3 || which == 4) {
+        ChemTerm nonlinear_products[] = {{2,2}}; constraint.products=nonlinear_products;
+        ChemWorkspace *w=chem_workspace_create_constrained(&m,&constraint,1); if (!w) return 0;
+        ChemStatistics stats={0}; double y[] = {0,.5,which == 3 ? 100 : 1e-6};
+        if (which == 3) p.constraint_init_max_iterations=1;
+        int status=chem_initialize_constraints(w,&p,conditions,y,&stats);
+        if (which == 3) { chem_workspace_free(w); return status != 0 && y[1]==.5 && y[2]==100; }
+        if (status || fabs(y[2]-1)>1e-3) { chem_workspace_free(w); return 0; }
+        for (int backtracks=0; backtracks<=2; backtracks+=2) {
+            y[1]=.5; y[2]=1e-6; p.constraint_init_max_backtracks=backtracks; memset(&stats,0,sizeof stats);
+            status=chem_initialize_constraints(w,&p,conditions,y,&stats);
+            if (!status || y[1]!=.5 || y[2]!=1e-6) { chem_workspace_free(w); return 0; }
+        }
+        chem_workspace_free(w); return 1;
+    }
+    if (which == 5 || which == 6) {
+        double scales[] = {1e-12,1,1e12};
+        for (int i=0; i<(which == 5 ? 3 : 2); ++i) {
+            double scale=which==5 ? scales[i] : 1;
+            ChemTerm terms[] = {{0,scale},{2,-scale}};
+            ChemConstraint linear={"scaled_copy",CHEM_LINEAR_CONSTRAINT,2,terms,NULL,2,0,0,0,0,0};
+            ChemWorkspace *w=chem_workspace_create_constrained(&m,&linear,1); if (!w) return 0;
+            double y[] = {1,0,which==5 ? 4 : 1+5e-8};
+            p.relative_tolerance = which==5 || i==1 ? 1e-8 : 1e-6;
+            p.absolute_tolerance = which==5 || i==1 ? 1e-12 : 1e-8;
+            ChemStatistics stats={0};
+            int status=chem_initialize_constraints(w,&p,conditions,y,&stats); chem_workspace_free(w);
+            if (status) return 0;
+            if (which == 5 && fabs(y[2]-1)>1e-12) return 0;
+            if (which == 6 && i == 0 && (y[2] != 1+5e-8 || stats.constraint_init_iterations!=1)) return 0;
+            if (which == 6 && i == 1 && (fabs(y[2]-1)>1e-12 || stats.constraint_init_iterations!=2)) return 0;
+        }
+        return 1;
+    }
+    if (which == 7) {
+        double scales[] = {1,1e-12,1e12}, reference=0, consistent=1.3-.7-.15;
+        p=chem_rosenbrock_four_stage_dae();
+        for (int i=0;i<3;++i) {
+            double scale=scales[i], y[] = {.7,.15,5};
+            ChemTerm terms[] = {{0,scale},{1,scale},{2,scale}};
+            ChemConstraint linear={"mass",CHEM_LINEAR_CONSTRAINT,2,terms,NULL,3,0,scale*1.3,0,0,0};
+            ChemWorkspace *w=chem_workspace_create_constrained(&m,&linear,1); if (!w) return 0;
+            ChemStatistics stats; int status=chem_rosenbrock_solve(&m,w,&p,conditions,rates,.001,y,&stats); chem_workspace_free(w);
+            if (status || fabs(y[2]-consistent)>1e-5*consistent) return 0;
+            if (i==0) reference=y[2]; else if (fabs(y[2]-reference)>1e-5*consistent) return 0;
+        }
+        return 1;
+    }
+    if (which == 8) {
+        ChemMechanism ode=m; ode.species_count=2;
+        ChemWorkspace *w=chem_workspace_create(&ode); double y[]={1,0}; ChemStatistics stats;
+        if (!w) return 0;
+        int status=chem_rosenbrock_solve(&ode,w,&p,conditions,rates,.01,y,&stats); chem_workspace_free(w);
+        return !status && stats.constraint_init_iterations==0;
+    }
+    if (which == 9) {
+        double states[][3]={{1,.5,1},{2,.3,5},{.5,.1,100}};
+        ChemWorkspace *w=chem_workspace_create_constrained(&m,&constraint,1); if (!w) return 0;
+        for (int i=0;i<3;++i) {
+            ChemStatistics stats;
+            if (chem_rosenbrock_solve(&m,w,&p,conditions,rates,.001,states[i],&stats) || fabs(2*states[i][1]-states[i][2])>1e-5) { chem_workspace_free(w); return 0; }
+        }
+        chem_workspace_free(w); return 1;
+    }
+    if (which == 10) {
+        double y[]={1,.5,1}; ChemStatistics stats;
+        ChemWorkspace *w=chem_workspace_create_constrained(&m,&constraint,1); if (!w) return 0;
+        if (chem_rosenbrock_solve(&m,w,&p,conditions,rates,.001,y,&stats)) { chem_workspace_free(w); return 0; }
+        y[2]=999;
+        int status=chem_rosenbrock_solve(&m,w,&p,conditions,rates,.001,y,&stats); chem_workspace_free(w);
+        return !status && fabs(2*y[1]-y[2])<=1e-6;
+    }
+    return 0;
+}
+
 static int arrhenius(void)
 {
     double p[] = {1, 0, 0, 300, 0};
@@ -369,5 +463,17 @@ int main(void)
     printf("equilibrium:EquilibriumConstraint.ComplexStoichiometryResidual %d\n", equilibrium_case(10));
     printf("equilibrium:EquilibriumConstraint.FiniteDifferenceJacobianSimple %d\n", equilibrium_case(11));
     printf("equilibrium:EquilibriumConstraint.FiniteDifferenceJacobianComplexStoichiometry %d\n", equilibrium_case(12));
+    printf("constraint_initialization:ConstraintInitialization.ConsistentICsUnchanged %d\n", initialization_case(0));
+    printf("constraint_initialization:ConstraintInitialization.MildlyInconsistentICsCorrected %d\n", initialization_case(1));
+    printf("constraint_initialization:ConstraintInitialization.SeverelyInconsistentICsConverge %d\n", initialization_case(2));
+    printf("constraint_initialization:ConstraintInitialization.FailedInitializationRestoresCallerState %d\n", initialization_case(3));
+    printf("constraint_initialization:ConstraintInitialization.SuccessfulInitializationKeepsTheCorrection %d\n", initialization_case(4));
+    printf("constraint_initialization:ConstraintInitialization.WeightedCorrectionIsInvariantToConstraintRowScaling %d\n", initialization_case(5));
+    printf("constraint_initialization:ConstraintInitialization.WeightedCorrectionUsesStateTolerances %d\n", initialization_case(6));
+    printf("constraint_initialization:ConstraintInitialization.ScaledConstraintRowsSolveIdenticallyThroughSolve %d\n", initialization_case(7));
+    printf("constraint_initialization:ConstraintInitialization.PureODESystemUnaffected %d\n", initialization_case(8));
+    printf("constraint_initialization:ConstraintInitialization.MultiCellSystems %d\n", initialization_case(9));
+    printf("constraint_initialization:ConstraintInitialization.SubsequentSolveCallsReinitialize %d\n", initialization_case(10));
+    printf("constraint_initialization:ConstraintInitialization.SolverStateToStringNewValue %d\n", !strcmp(chem_solver_status_string(CHEM_SOLVE_CONSTRAINT_INITIALIZATION_FAILED), "Constraint Initialization Failed"));
     return 0;
 }
