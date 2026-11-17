@@ -1,5 +1,11 @@
 # Design (in progress)
 
+For mechanisms constructed in C, `ChemProcess` owns copied reactants,
+products, phase metadata, and a rate descriptor. `chem_build_mechanism`
+resolves names against a gas system, constructs indexed reaction tables,
+carries species tolerances into state metadata, and turns parameterized
+reactants into condition-dependent multipliers.
+
 `tools/config.py` reads CAMP configuration manifests and their JSON or YAML data.
 `tools/generate.py` emits static C tables for tutorial reaction types,
 including rate parameters and labels for caller-supplied values. `src/rates.c`

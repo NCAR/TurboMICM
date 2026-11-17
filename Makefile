@@ -38,13 +38,15 @@ build/state.o: src/state.c include/state.h include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/species.o: src/species.c include/species.h include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
+build/process.o: src/process.c include/process.h include/species.h include/chem.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
 build/matrix.o: src/matrix.c include/matrix.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/sparse_matrix.o: src/sparse_matrix.c include/sparse_matrix.h include/matrix.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/composite.o: src/composite.c include/composite.h include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/species.o build/rosenbrock_group.o build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
+build/libchem.a: build/process.o build/species.o build/rosenbrock_group.o build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
@@ -69,6 +71,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_process_random
 	./build/test_state
 	./build/test_species
+	./build/test_process_builder
 	./build/test_rosenbrock
 	./build/test_normalized_error
 	./build/test_analytical_methods
@@ -176,7 +179,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_species build/solver_configuration build/README_example build/multiple_grid_cells build/solve_results build/rate_constants_no_user_defined_example_by_hand build/rate_constants_user_defined_example_by_hand build/test_aerosol build/test_aerosol_state build/test_chapman_regression build/test_rate_store build/test_dae_overshoot build/test_grouped_views build/test_sparse_functions build/test_sparse_views build/test_sparse_matrix build/test_matrix_function build/test_matrix_views build/test_matrix build/test_external_composition build/test_external_constraints build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_process_builder build/test_species build/solver_configuration build/README_example build/multiple_grid_cells build/solve_results build/rate_constants_no_user_defined_example_by_hand build/rate_constants_user_defined_example_by_hand build/test_aerosol build/test_aerosol_state build/test_chapman_regression build/test_rate_store build/test_dae_overshoot build/test_grouped_views build/test_sparse_functions build/test_sparse_views build/test_sparse_matrix build/test_matrix_function build/test_matrix_views build/test_matrix build/test_external_composition build/test_external_constraints build/test_nonlinear build/test_process_random build/test_chain_rates build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
@@ -311,3 +314,6 @@ check: build/test_aerosol_state
 build/test_species: tests/test_species.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
 check: build/test_species
+build/test_process_builder: tests/test_process_builder.c build/libchem.a
+	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
+check: build/test_process_builder

@@ -7,6 +7,11 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"process:Process.{case}": ("build/test_process_builder", "owned reaction construction")
+       for case in ["BuildsChemicalReaction", "ChemicalReactionCopyAssignmentSucceeds"]},
+    **{f"solver_builder:SolverBuilder.{case}": ("build/test_process_builder", "mechanism validation")
+       for case in ["ThrowsMissingSystem", "ThrowsUnusedSpecies"]},
+    "rosenbrock:RosenbrockSolver.CanSetTolerances": ("build/test_process_builder", "species tolerance propagation"),
     **{f"species:Species.{case}": ("build/test_species", "species properties and copy")
        for case in ["StringConstructor", "StringAndVectorConstructor", "GetProperty", "SetThirdBody", "CopyConstructor", "CopyAssignment"]},
     **{f"phase:PhaseSpecies.{case}": ("build/test_species", "phase species metadata")
