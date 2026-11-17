@@ -245,7 +245,7 @@ CASES = {
        for case in ['DenseMatrixStandardOrdering', 'RandomMatrixStandardOrdering', 'DiagonalMatrixStandardOrdering',
                     'StandardOrderingAgnosticToInitialValue', 'DenseMatrixVectorOrdering', 'RandomMatrixVectorOrdering',
                     'VectorOrderingAgnosticToInitialValue', 'DiagonalMatrixVectorOrdering']},
-    **{f'{prefix}:{suite}.{case}': ('tests/test_markowitz.py', 'Markowitz fill reduction')
+    **{f'{prefix}:{suite}.{case}': ('build/test_reorder', 'runtime Markowitz fill reduction')
        for prefix, suite in [('linear_solver', 'LinearSolver'), ('linear_solver_in_place', 'LinearSolverInPlace')]
        for case in ['DiagonalMarkowitzReorder', 'VectorDiagonalMarkowitzReordering']},
     **{f'linear:LinearConstraint.{case}': ('build/test_constraints', 'linear constraint') for case in [
