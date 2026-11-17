@@ -157,7 +157,8 @@ Transcripts
 | luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14-21:05 | `da2d722`, 21:05 (5 commits) | finished |
 | luna-xhigh | gpt-6-luna | xhigh | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-20 09:31-12:20 | `ada55d5`, 12:20 (28 commits) | finished |
 | luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code (rerun) | 2026-10-20 14:27-18:20 | `d3c2480`, 18:20 (128 commits) | finished |
-| terra-max | gpt-6.1-terra | max | Codex CLI 0.169.0, interactive, launched by Claude Code | 2026-11-16 22:52- | | running |
+| terra-max | gpt-6.1-terra | max | Codex CLI 0.169.0, interactive, launched by Claude Code | 2026-11-16 22:52-2026-11-17 01:25 | `9071941`, 01:25 (22 commits) | finished |
+| terra-xhigh | gpt-6.1-terra | xhigh | Codex CLI 0.169.0, interactive, launched by Claude Code | 2026-11-17 01:39- | | running |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -491,6 +492,52 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Other load at the start: the SSE's own Codex session (pid 1370, started 22:42
   in a Terminal window, in `~/NSF-NCAR/TurboMICM`, idle, with its shared
   daemon), allowed alongside; the throwaway session of 22:47 had ended.
+- Progress, from Claude Code's checks every 20 minutes: TS1 translated at 3
+  minutes; the benchmark through the C solver, matching the 100-cell reference
+  (9.7e-13), at 14; 76 cases passing at 43, 155 at 63, 244 at 84, 538 at 104,
+  569 at 124, 663 at 144. No sign of floundering at any check.
+- Session end: one turn, ended at 01:25:48 with DONE: 676 PASS and 4 N/A with
+  both compilers, the TS1 gate passing (2.51e-13), and its own single runs at
+  9.63 s against MICM's 23.84 s with the same 64-cell grouping. Codex showed
+  "Goal achieved (2h 33m)". The record was idle 10 minutes by 01:36; Claude Code
+  quit Codex (`/quit`) and closed the tmux session.
+- Final commit `9071941` (01:25), 22 commits; collected as `runs/terra/max`.
+- Tokens: 1,285,617 total; input 893,209 (plus 148,847,872 cached); output
+  392,408 (106,071 reasoning). Codex's weekly usage window went from 17 % to
+  20 %.
+- Other load during the session: the SSE's idle Codex session in Terminal,
+  closed before the end; Claude Code's read-only progress checks, its edits to
+  the run log, CLAUDE.md, the wiki, and `admin/scan_commands.py`, and reading
+  three earlier session records. No builds, tests, or timing by the
+  experimenter.
+- Compliance (`admin/scan_commands.py`): 600 commands, none outside the run
+  directory and its inputs, none naming another run or a private folder, no
+  installs or downloads, no connector, MCP, or web-search calls, no subagents;
+  all 167 file edits inside the run directory.
+- Transcript archived as `transcripts/terra-max.jsonl.gz` (the account
+  identifiers redacted; none left elsewhere). The credential scan's only
+  matches (10, of the `sk-` pattern) were inside encrypted content. Like
+  earlier transcripts (luna-high, luna-max, astra-max), it holds the SSE's
+  approved-command list from Codex's configuration, which names a work email
+  address and a token file, not a token.
+- Verified, 01:37, with `admin/verify_tier3.py --stages build,tests,ts1,audit`
+  (`results/2026-11-17-terra-max-verification`): 676 PASS, 0 FAIL, 4 N/A with
+  each compiler, every id once; the TS1 gate passes (2.51e-13 with clang,
+  1.57e-13 with gcc-15); the audit finds nothing outside the rules; no
+  warnings. 64-cell groups by default, with MICM's solver work per group (9
+  steps per interval).
+
+## terra-xhigh
+
+- Session start: 2026-11-17 01:39:44 MST, launched by Claude Code with
+  `admin/launch_codex_run.sh terra-xhigh gpt-6.1-terra xhigh`, in a detached
+  tmux session (socket `turbomicm`, session `terra-xhigh`); the goal was sent
+  at 01:39:48. The session record shows gpt-6.1-terra at xhigh, base
+  instructions from gpt-6.1-terra, Codex 0.169.0, approval `never` with full
+  access, no model switch, and no memories; the process's environment holds no
+  Claude Code variables besides `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`. No other
+  Codex session was running.
+- Codex session `01a1e8a9-860d-70b0-9ccf-575dc30d07d5`.
 
 # Tier 2
 
