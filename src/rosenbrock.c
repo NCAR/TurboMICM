@@ -59,7 +59,7 @@ ChemRosenbrockParameters chem_rosenbrock_four_stage(void)
 
 ChemWorkspace *chem_workspace_create(const ChemMechanism *m)
 {
-    if (!m || !m->species_count || m->species_count > (size_t)-1 / m->species_count) return NULL;
+    if (!m || chem_validate_mechanism(m, NULL, 0) != CHEM_VALID || m->species_count > (size_t)-1 / m->species_count) return NULL;
     size_t n = m->species_count, nn = n*n;
     ChemWorkspace *w = calloc(1, sizeof *w);
     if (!w) return NULL;

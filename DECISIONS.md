@@ -20,3 +20,9 @@
 - A cell is currently the unit of solver state and error control. This makes
   independently varying conditions straightforward and allows parallel work
   without shared mutable solver state, at the cost of repeated scalar work.
+- The optional `ChemConditions` air-density override supports mechanisms and
+  tests that prescribe density independently of temperature and pressure; when
+  it is absent, the ideal-gas density is calculated as in the benchmark.
+- The JPL-19 falloff, reversible, and Taylor-series rate types use explicit
+  configuration type names `TERNARY_JPL19`, `REVERSIBLE`, and `TAYLOR`.
+  Taylor coefficients are a list of one to sixteen numbers.

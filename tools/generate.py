@@ -84,6 +84,11 @@ def compile_mechanism(mech):
             elif kind in ('TROE', 'TERNARY_CHEMICAL_ACTIVATION'):
                 enum = 'TERNARY' if kind.startswith('TERNARY') else kind
                 values = [r.get(k, d) for k, d in zip(('k0_A','k0_B','k0_C','kinf_A','kinf_B','kinf_C','Fc','N'), (1,0,0,1,0,0,.6,1))]
+            elif kind == 'TERNARY_JPL19':
+                enum = kind
+                keys = ('k0_A','k0_B','k0_C','k0_D','kinf_A','kinf_B','kinf_C','kinf_D','kint_A','kint_B','kint_C','kint_D','Fc','N')
+                defaults = (1,0,0,298,1,0,0,298,1,0,0,298,.6,1)
+                values = [r.get(k, d) for k, d in zip(keys, defaults)]
             elif kind == 'REVERSIBLE':
                 enum, values = kind, [r.get('A', 1), r.get('C', 0), r.get('k_r', 0)]
             elif kind == 'TAYLOR':
@@ -103,6 +108,9 @@ def compile_mechanism(mech):
                 if param(name + '.particle number concentration [# m-3]') != idx + 1:
                     raise MechanismError('surface parameter pair must be contiguous')
                 sp = properties[r['gas-phase reactant']]
+                for key in ('diffusion coefficient [m2 s-1]', 'molecular weight [kg mol-1]'):
+                    if key not in sp or float(sp[key]) <= 0:
+                        raise MechanismError(f"species {sp['name']}: missing or invalid {key}")
                 values = [sp['diffusion coefficient [m2 s-1]'], sp['molecular weight [kg mol-1]'], r.get('reaction probability', 1)]
             elif kind.startswith('BRANCH_'):
                 enum, values = kind, [r[k] for k in ('X','Y','a0','n')]
@@ -118,6 +126,10 @@ def compile_mechanism(mech):
                 elif enum == 'TROE':
                     values[0] *= conversion ** order
                     values[3] *= conversion ** (order-1)
+                elif enum == 'TERNARY_JPL19':
+                    values[0] *= conversion ** order
+                    values[4] *= conversion ** (order-1)
+                    values[8] *= conversion ** (order-1)
                 elif enum == 'TERNARY':
                     values[0] *= conversion ** (order-1)
                     values[3] *= conversion ** (order-2)

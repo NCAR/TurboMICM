@@ -17,7 +17,7 @@ int main(void)
     double *fm = calloc(m->species_count, sizeof *fm);
     double *j = calloc(m->species_count * m->species_count, sizeof *j);
     if (!rates || !y || !f || !fp || !fm || !j) return 1;
-    ChemConditions c = { 287.45, 101319.9 };
+    ChemConditions c = { 287.45, 101319.9, 0, 0 };
     if (chem_rate_constants(m, c, m->initial_parameters, rates)) return 2;
     for (size_t i = 0; i < m->species_count; ++i) y[i] = 0.1 + i * 0.001;
     chem_forcing(m, c, rates, y, f);

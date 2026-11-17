@@ -31,7 +31,7 @@ static ChemMechanism hand_mechanism(int user)
 
 static int run(const ChemMechanism *m, int user, double output[11][7])
 {
-    ChemConditions cond = {287.45, 101319.9};
+    ChemConditions cond = {287.45, 101319.9, 0, 0};
     ChemRosenbrockParameters p = chem_rosenbrock_three_stage();
     ChemWorkspace *work = chem_workspace_create(m);
     double *rates = calloc(m->reaction_count, sizeof(double));

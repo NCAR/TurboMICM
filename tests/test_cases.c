@@ -1,6 +1,7 @@
 #include "chem.h"
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 static double rate_at(ChemRateType type, const double *p, size_t n, double temperature)
 {
@@ -10,7 +11,7 @@ static double rate_at(ChemRateType type, const double *p, size_t n, double tempe
     ChemMechanism m = {0};
     m.reaction_count = 1; m.reactions = &r;
     double value;
-    if (chem_rate_constants(&m, (ChemConditions){temperature, 0}, NULL, &value)) return NAN;
+    if (chem_rate_constants(&m, (ChemConditions){temperature, 0, 0, 0}, NULL, &value)) return NAN;
     return value;
 }
 
@@ -31,7 +32,7 @@ static int user_rate(double value, double scale)
     ChemReaction reaction = {0}; reaction.type = CHEM_USER; reaction.parameter = 0; reaction.p[0] = scale;
     ChemMechanism m = {0}; m.reaction_count = 1; m.parameter_count = 1; m.reactions = &reaction;
     double result;
-    return !chem_rate_constants(&m, (ChemConditions){301.24, 0}, &value, &result) && result == value*scale;
+    return !chem_rate_constants(&m, (ChemConditions){301.24, 0, 0, 0}, &value, &result) && result == value*scale;
 }
 
 static int taylor(void)
@@ -48,6 +49,85 @@ static int taylor(void)
     p[0] = 2.6e-12; p[2] = -350; p[6] = 1; p[7] = 4.3e-1; p[8] = 7.3e-3;
     expected = p[0]*exp(p[2]/301.24)*(p[6]+p[7]*301.24+p[8]*pow(301.24,2));
     return fabs(rate(CHEM_TAYLOR, p, 22)-expected) <= 1e-13*expected;
+}
+
+static double rate_density(ChemRateType type, const double *p, size_t n, double t, double air)
+{
+    ChemReaction reaction = {0}; reaction.type = type;
+    for (size_t i = 0; i < n; ++i) reaction.p[i] = p[i];
+    ChemMechanism mechanism = {0}; mechanism.reaction_count = 1; mechanism.reactions = &reaction;
+    double result;
+    if (chem_rate_constants(&mechanism, (ChemConditions){t, 0, air, 1}, NULL, &result)) return NAN;
+    return result;
+}
+
+static int falloff(ChemRateType type, int mode)
+{
+    double p[] = {1,0,0,1,0,0,.6,1};
+    if (mode == 1) { double q[] = {1.2,2.3,302.3,2.6,-3.1,402.1,.9,1.2}; memcpy(p,q,sizeof p); }
+    if (mode == 2) p[0] = 4e-18;
+    if (mode == 3) { double q[] = {1.2e-12,167,3,136,5,24,.9,.8}; memcpy(p,q,sizeof p); }
+    double t = 301.24, air = 42.2;
+    double k0 = p[0]*exp(p[2]/t)*pow(t/300,p[1]);
+    double ki = p[3]*exp(p[5]/t)*pow(t/300,p[4]);
+    double expected = k0*(type == CHEM_TROE ? air : 1.0)/(1+k0*air/ki)
+        * pow(p[6],1.0/(1.0+(1.0/p[7])*pow(log10(k0*air/ki),2)));
+    double actual = rate_density(type,p,8,t,air);
+    if (mode == 3) return fabs(actual-expected)/fmax(fabs(actual),fabs(expected)) <= 1e-14;
+    return actual == expected;
+}
+
+static int jpl(int zero)
+{
+    double t = zero ? 250 : 301.24, air = zero ? 30 : 42.2;
+    double p[] = {1.2,2.3,302.3,298,2.6,-3.1,402.1,310,.7,.5,120,290,.9,1.2};
+    if (zero) { double q[] = {.003,-2,0,298,1.5,-1,0,298,0,0,0,298,.6,1}; memcpy(p,q,sizeof p); }
+    double k0 = p[0]*exp(p[2]/t)*pow(t/p[3],p[1]);
+    double ki = p[4]*exp(p[6]/t)*pow(t/p[7],p[5]);
+    double kint = p[8]*exp(p[10]/t)*pow(t/p[11],p[9]);
+    double ratio = k0*air/ki;
+    double expected = k0*air/(1+ratio)*pow(p[12],p[13]/(p[13]+pow(log10(ratio),2)));
+    expected += kint*(1-expected/ki);
+    return fabs(rate_density(CHEM_TERNARY_JPL19,p,14,t,air)-expected) <= (zero ? 1e-30 : 0);
+}
+
+static int branched(int nitrate)
+{
+    double p[] = {1.2,204.3,1e-3,2}, t = 301.24, air = 42.2;
+    double a = 2e-22*exp(2)*2.45e19, b = .43*pow(293.0/298,-8);
+    double z = a/(1+a/b)*pow(.41,1/(1+pow(log10(a/b),2)))*(1-1e-3)/1e-3;
+    a = 2e-22*exp(2)*(air*6.02214076e23*1e-6); b = .43*pow(t/298,-8);
+    double af = a/(1+a/b)*pow(.41,1/(1+pow(log10(a/b),2)));
+    double expected = 1.2*exp(-204.3/t)*(nitrate ? af/(z+af) : z/(z+af));
+    double actual = rate_density(nitrate ? CHEM_BRANCH_NITRATE : CHEM_BRANCH_ALKOXY,p,4,t,air);
+    return fabs(actual-expected) <= 1e-13*expected;
+}
+
+static int surface(double probability)
+{
+    ChemReaction reaction = {0}; reaction.type = CHEM_SURFACE; reaction.parameter = 0;
+    reaction.p[0] = 230; reaction.p[1] = .025; reaction.p[2] = probability;
+    ChemMechanism m = {0}; m.reaction_count = 1; m.parameter_count = 2; m.reactions = &reaction;
+    double custom[] = {1e-7, 2.5e6}, actual;
+    double gas = 1.380649e-23 * 6.02214076e23, pi = 3.14159265358979323846;
+    double expected = 4*2.5e6*pi*pow(1e-7,2) /
+        (1e-7/230 + 4/(sqrt(8*gas*273.65/(pi*.025))*probability));
+    return !chem_rate_constants(&m, (ChemConditions){273.65, 0, 0, 0}, custom, &actual)
+        && fabs(actual-expected) <= 1e-13*expected;
+}
+
+static int missing_surface(int weight)
+{
+    const char *names[] = {"foo"};
+    ChemTerm reactant[] = {{0, 1}};
+    ChemReaction reaction = {0}; reaction.type = CHEM_SURFACE; reaction.reactant_count = 1;
+    reaction.p[0] = weight ? 230 : 0; reaction.p[1] = weight ? 0 : .025;
+    ChemMechanism m = {0}; m.species_count = 1; m.species_names = names;
+    m.reaction_count = 1; m.reactions = &reaction; m.reactants = reactant;
+    char message[128];
+    ChemValidation result = chem_validate_mechanism(&m, message, sizeof message);
+    return result == (weight ? CHEM_MISSING_MOLECULAR_WEIGHT : CHEM_MISSING_DIFFUSION)
+        && strstr(message, "foo") && strstr(message, weight ? "molecular weight" : "Diffusion coefficient");
 }
 
 static int arrhenius(void)
@@ -92,5 +172,21 @@ int main(void)
     printf("reversible_rate_constant:ReversibleRateConstant.EquilibriumConstantOnly %d\n", reversible(3.5,1800,1,298.15));
     printf("taylor_series_rate_constant:TaylorSeriesRateConstant.CalculateWithSystem %d\n", taylor());
     printf("taylor_series_rate_constant:TaylorSeriesRateConstant.CalculateWithPrescribedArguments %d\n", taylor());
+    printf("troe_rate_constant:TroeRateConstant.CalculateWithMinimalArguments %d\n", falloff(CHEM_TROE,0));
+    printf("troe_rate_constant:TroeRateConstant.CalculateWithAllArguments %d\n", falloff(CHEM_TROE,1));
+    printf("troe_rate_constant:TroeRateConstant.AnalyticalTroeExampleAB %d\n", falloff(CHEM_TROE,2));
+    printf("troe_rate_constant:TroeRateConstant.AnalyticalTroeExampleBC %d\n", falloff(CHEM_TROE,3));
+    printf("ternary_chemical_activation_rate_constant:TernaryChemicalActivationRateConstant.CalculateWithMinimalArguments %d\n", falloff(CHEM_TERNARY,0));
+    printf("ternary_chemical_activation_rate_constant:TernaryChemicalActivationRateConstant.CalculateWithAllArguments %d\n", falloff(CHEM_TERNARY,1));
+    printf("ternary_chemical_activation_rate_constant:TernaryChemicalActivationJPL19RateConstant.CalculateWithAllArguments %d\n", jpl(0));
+    printf("ternary_chemical_activation_rate_constant:TernaryChemicalActivationJPL19RateConstant.ZeroKintReducesToTroe %d\n", jpl(1));
+    printf("branched_rate_constant:BranchedRateConstant.CalculateAlkoxyBranchWithAllArguments %d\n", branched(0));
+    printf("branched_rate_constant:BranchedRateConstant.CalculateNitrateBranchWithAllArguments %d\n", branched(1));
+    printf("surface_rate_constant:SurfaceRateConstant.CalculateDefaultProbability %d\n", surface(1));
+    printf("surface_rate_constant:SurfaceRateConstant.CalculateSpecifiedProbability %d\n", surface(.74));
+    printf("surface_rate_constant:SurfaceRateConstant.DiffusionCoefficientIsMissing %d\n", missing_surface(0));
+    printf("surface_rate_constant:SurfaceRateConstant.MolecularWeightIsMissing %d\n", missing_surface(1));
+    printf("reaction_rate_store:ReactionRateConstantStore.SurfaceMissingDiffusionCoefficientThrows %d\n", missing_surface(0));
+    printf("reaction_rate_store:ReactionRateConstantStore.SurfaceMissingMolecularWeightThrows %d\n", missing_surface(1));
     return 0;
 }

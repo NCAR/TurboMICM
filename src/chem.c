@@ -1,11 +1,39 @@
 #include "chem.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
 
 static const double gas_constant = (1.380649e-23 * 6.02214076e23);
 static const double avogadro = 6.02214076e23;
 static const double pi = 3.14159265358979323846;
+
+ChemValidation chem_validate_mechanism(const ChemMechanism *m, char *message, size_t capacity)
+{
+    if (message && capacity) message[0] = '\0';
+    if (!m || !m->species_count || !m->species_names || (m->reaction_count && !m->reactions)) return CHEM_INVALID_MECHANISM;
+    for (size_t i = 0; i < m->reaction_count; ++i) {
+        const ChemReaction *r = &m->reactions[i];
+        if (r->type == CHEM_SURFACE) {
+            int index = r->reactant_count && m->reactants ? m->reactants[r->reactant_begin].species : -1;
+            const char *name = index >= 0 && (size_t)index < m->species_count ? m->species_names[index] : "?";
+            if (!(r->p[0] > 0)) {
+                if (message && capacity) snprintf(message, capacity, "Diffusion coefficient for species '%s' is not defined", name);
+                return CHEM_MISSING_DIFFUSION;
+            }
+            if (!(r->p[1] > 0)) {
+                if (message && capacity) snprintf(message, capacity, "Species '%s' molecular weight is not defined", name);
+                return CHEM_MISSING_MOLECULAR_WEIGHT;
+            }
+        }
+    }
+    return CHEM_VALID;
+}
+
+static double density(ChemConditions c)
+{
+    return c.has_air_density ? c.air_density : c.pressure / (gas_constant * c.temperature);
+}
 
 static double branch_factor(double a, double b)
 {
@@ -17,7 +45,8 @@ static double branch_factor(double a, double b)
 int chem_rate_constants(const ChemMechanism *m, ChemConditions c, const double *parameters, double *rates)
 {
     if (!m || !rates || (m->parameter_count && !parameters) || !(c.temperature > 0) || !(c.pressure >= 0)) return 1;
-    double t = c.temperature, air = c.pressure / (gas_constant * t);
+    double t = c.temperature, air = density(c);
+    if (air < 0 || !isfinite(air)) return 1;
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemReaction *r = &m->reactions[i];
         const double *p = r->p;
@@ -34,6 +63,15 @@ int chem_rate_constants(const ChemMechanism *m, ChemConditions c, const double *
             double log_ratio = log10(ratio);
             k = k0 * (r->type == CHEM_TROE ? air : 1.0) / (1.0 + ratio)
                 * pow(p[6], p[7] / (p[7] + log_ratio * log_ratio));
+            break;
+        }
+        case CHEM_TERNARY_JPL19: {
+            double k0 = p[0]*exp(p[2]/t)*pow(t/p[3],p[1]);
+            double ki = p[4]*exp(p[6]/t)*pow(t/p[7],p[5]);
+            double kint = p[8]*exp(p[10]/t)*pow(t/p[11],p[9]);
+            double ratio = k0*air/ki, log_ratio = log10(ratio);
+            double kf = k0*air/(1.0+ratio)*pow(p[12],p[13]/(p[13]+log_ratio*log_ratio));
+            k = kf + kint*(1.0-kf/ki);
             break;
         }
         case CHEM_TUNNELING:
@@ -79,7 +117,7 @@ int chem_rate_constants(const ChemMechanism *m, ChemConditions c, const double *
 
 void chem_forcing(const ChemMechanism *m, ChemConditions c, const double *rates, const double *y, double *f)
 {
-    double air = c.pressure / (gas_constant * c.temperature);
+    double air = density(c);
     memset(f, 0, m->species_count * sizeof(*f));
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemReaction *r = &m->reactions[i];
@@ -102,7 +140,7 @@ void chem_forcing(const ChemMechanism *m, ChemConditions c, const double *rates,
 void chem_jacobian(const ChemMechanism *m, ChemConditions c, const double *rates, const double *y, double *j)
 {
     size_t n = m->species_count;
-    double air = c.pressure / (gas_constant * c.temperature);
+    double air = density(c);
     memset(j, 0, n * n * sizeof(*j));
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemReaction *r = &m->reactions[i];

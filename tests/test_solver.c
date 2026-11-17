@@ -10,7 +10,7 @@ int main(void)
     const ChemTerm reactants[] = {{0, 1}}, products[] = {{1, 1}};
     const ChemReaction reactions[] = {{CHEM_ARRHENIUS, 0, 1, 0, 1, -1, {2, 0, 0, 300, 0}}};
     const ChemMechanism mechanism = {2, 1, 0, names, NULL, init, NULL, reactions, reactants, products};
-    ChemConditions conditions = {300, 100000};
+    ChemConditions conditions = {300, 100000, 0, 0};
     ChemWorkspace *w = chem_workspace_create(&mechanism);
     double rates[1];
     if (!w || chem_rate_constants(&mechanism, conditions, NULL, rates)) return 1;

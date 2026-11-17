@@ -9,7 +9,7 @@ typedef struct { int species; double yield; } ChemTerm;
 typedef enum {
     CHEM_ARRHENIUS, CHEM_TROE, CHEM_TERNARY, CHEM_TUNNELING,
     CHEM_USER, CHEM_SURFACE, CHEM_BRANCH_ALKOXY, CHEM_BRANCH_NITRATE,
-    CHEM_REVERSIBLE, CHEM_TAYLOR
+    CHEM_REVERSIBLE, CHEM_TAYLOR, CHEM_TERNARY_JPL19
 } ChemRateType;
 typedef struct {
     ChemRateType type;
@@ -24,7 +24,14 @@ typedef struct {
     const ChemReaction *reactions;
     const ChemTerm *reactants, *products;
 } ChemMechanism;
-typedef struct { double temperature, pressure; } ChemConditions;
+typedef struct {
+    double temperature, pressure;
+    double air_density; /* used when has_air_density is nonzero */
+    int has_air_density;
+} ChemConditions;
+
+typedef enum { CHEM_VALID, CHEM_INVALID_MECHANISM, CHEM_MISSING_DIFFUSION, CHEM_MISSING_MOLECULAR_WEIGHT } ChemValidation;
+ChemValidation chem_validate_mechanism(const ChemMechanism *, char *message, size_t message_size);
 
 /* Return nonzero for invalid conditions, arguments, or non-finite results. */
 int chem_rate_constants(const ChemMechanism *, ChemConditions, const double *parameters, double *rates);

@@ -68,10 +68,11 @@ test-cpu:
 	@$(MAKE) --no-print-directory -s build/test_cases build/tutorial_no_user build/tutorial_user
 	@$(PYTHON) tools/test_cpu.py
 
-test-reader: build/test_chem build/test_solver
+test-reader: build/test_chem build/test_solver build/test_robertson_config
 	$(PYTHON) -m unittest discover -s tests -v
 	./build/test_chem
 	./build/test_solver
+	./build/test_robertson_config
 
 clean:
 	rm -rf build bin
@@ -86,4 +87,10 @@ build/tutorial_no_user: tests/test_tutorial.c build/tutorial_no_user.c build/lib
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
 build/tutorial_user: tests/test_tutorial.c build/tutorial_user.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
+build/robertson.c: ../micm/test/tutorial/configs/robertson/config.json ../micm/test/tutorial/configs/robertson/species.json ../micm/test/tutorial/configs/robertson/reactions.json tools/generate.py tools/mechanism.py | build
+	$(PYTHON) tools/generate.py $< $@
+
+build/test_robertson_config: tests/test_robertson_config.c build/robertson.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
