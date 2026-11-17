@@ -79,3 +79,8 @@ The latest case report has 158 passing cases and 522 unported failures on
 both compilers. New checks cover process-set algebraic row masking and
 finite-difference Jacobian comparison and sparsity verification. Both
 compilers pass the 100-cell TS1 comparison.
+
+The latest case report has 180 passing cases and 500 unported failures with
+both compilers. The additional cases cover multi-cell state storage, ownership,
+copy/move behavior, named concentrations and custom rates, and invalid input.
+Both compilers continue to pass the 100-cell TS1 comparison.

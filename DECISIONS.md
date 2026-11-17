@@ -30,3 +30,9 @@ combination of those conditions and it is excluded from state. Each occurrence
 as a reactant multiplies the reaction rate; a parameterized product has no state
 contribution. As in the reference, a reaction may have at most four such
 reactants. The `CALLBACK` rate type binds a named C callback at runtime.
+
+The C state interface uses explicit error codes, clone, move, and destruction
+in place of exceptions and C++ special members. A bulk named update checks all
+names and lengths before applying any column, avoiding partial updates after an
+invalid input. Direct row-major arrays remain available for integrations and
+callers that do not need name lookup.

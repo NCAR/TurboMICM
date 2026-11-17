@@ -72,3 +72,9 @@ The additive process APIs preserve existing forcing and negative Jacobian
 entries and can suppress algebraic output rows without suppressing their
 reactant columns. `include/jacobian_check.h` provides finite-difference
 Jacobian generation and comparison against a declared sparsity pattern.
+
+The optional `ChemState` owns cell-major concentration, rate, and custom
+parameter arrays, conditions, names, and tolerances. Deep clone and explicit
+move functions make ownership visible in C. Bulk named updates validate every
+column before changing the state; the solver interfaces can also use the arrays
+directly without allocating a `ChemState`.

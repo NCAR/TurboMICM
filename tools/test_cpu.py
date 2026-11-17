@@ -7,6 +7,15 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"state:State.{case}": ("build/test_state", "state ownership and named updates") for case in [
+        "DefaultConstructor", "Constructor", "CopyConstructor", "CopyAssignmentOperator", "MoveConstructor", "MoveAssignmentOperator",
+        "SettingSingleConcentrationWithInvalidArgumentsThowsException", "SetSingleConcentration", "SetConcentrationByElementSingleValue",
+        "SetConcentrationByElementVector", "SettingConcentrationsWithInvalidArguementsThrowsException", "SetConcentrations",
+        "SetStateWithSquareBracketOperator", "SetMultiCellStateWithSquareBrackets", "SettingCustomRateParameterWithInvalidVectorSizeThrowsException",
+        "SettingCustomRateParameterWithInvalidLabelThrowsException", "SetCustomRateParameter", "SetCustomRateParameters",
+        "UnsafelySetCustomRateParameterOneCell", "UnsafelySetCustomRateParameterMultiCell",
+        "UnsafelySetCustomRateParameterCatchesTooFewGridCells", "UnsafelySetCustomRateParameterCatchesTooParameters",
+    ]},
     "process_set:ProcessSetAlgebraicVariables.CudaMatrix": ("build/test_process_set", "algebraic masking"),
     "process_set:ProcessSetFiniteDifferenceJacobian.Matrix": ("build/test_process_set", "process Jacobian"),
     **{f"jacobian_verification:JacobianVerification.{case}": ("build/test_jacobian_check", "Jacobian verification") for case in [

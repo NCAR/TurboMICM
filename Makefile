@@ -30,7 +30,9 @@ build/constraint_init.o: src/constraint_init.c include/rosenbrock.h include/cons
 	$(CC) $(CFLAGS) -c $< -o $@
 build/jacobian_check.o: src/jacobian_check.c include/jacobian_check.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
+build/state.o: src/state.c include/state.h include/rates.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/libchem.a: build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
@@ -48,6 +50,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_chem
 	./build/test_jacobian_check
 	./build/test_process_set
+	./build/test_state
 	./build/test_rosenbrock
 	./build/test_normalized_error
 	./build/test_analytical_methods
@@ -126,7 +129,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_state build/test_process_set build/test_jacobian_check build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set build/test_constraint_init build/test_dae build/test_linear_solve build/test_parameterized build/test_callback CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
@@ -184,3 +187,7 @@ check: build/test_jacobian_check
 build/test_process_set: tests/test_process_set.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
 check: build/test_process_set
+
+build/test_state: tests/test_state.c build/libchem.a
+	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
+check: build/test_state
