@@ -626,7 +626,14 @@ Token counts are as Codex reports them: total = uncached input + output.
 - Timing: the session for all entries was armed at 08:49 in tmux
   `tier1-timing` (`~/NSF-NCAR/tier1-work/time-when-idle.sh terra luna-max
   luna-xhigh luna-high terra-max terra-xhigh terra-high`), waiting for an idle
-  machine.
+  machine. It waited two hours: two macOS daemons, `suggestd` (CoreSuggestions,
+  about 65 % of a core) and `maild` (about 41 %, Mail.app not open), kept the
+  total near 1.1 cores (median 111 % over 120 checks), above the gate's one-core
+  limit. At 10:52 the SSE chose to relax the gate and run now: the gate's limit
+  became a setting (`IDLE_CPU_LIMIT`, default 100 %), and the session was
+  re-armed at 10:53 with 200 %, the daemons' load to be recorded in the load
+  audit. Times from this session at 10 threads may run slower than in earlier
+  sessions by that load; comparisons within the session are unaffected.
 
 # Tier 2
 
