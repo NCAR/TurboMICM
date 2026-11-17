@@ -114,6 +114,16 @@ static double normalized_error(const ChemState *s, const ChemRosenbrock *p)
     return error < 1e-10 ? 1e-10 : error;
 }
 
+/* Preserve both the partial solution and the time reached when integration
+ * stops early, so callers can resume after a step-limit return. */
+static int finish_solve(ChemState *s, ChemStats *result, size_t ny, double time, int status)
+{
+    result->final_time = time;
+    for (size_t i = 0; i < ny; ++i)
+        if (!s->algebraic[i/s->cells] && s->values[i] < 0) s->values[i] = 0;
+    return status;
+}
+
 int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *result)
 {
     if (!s || !p || !result || !isfinite(dt) || dt < 0 || p->stages < 1 || p->stages > 6 ||
@@ -140,8 +150,10 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
     double time = 0;
     int reject_last = 0, reject_more = 0;
     while (time - dt + DBL_EPSILON <= 0) {
-        if (result->internal_steps > p->max_steps) return CHEM_TOO_MANY_STEPS;
-        if (time + 0.1*h == time || h <= fmin(DBL_EPSILON, h_min)) return CHEM_STEP_TOO_SMALL;
+        if (result->internal_steps > p->max_steps)
+            return finish_solve(s, result, ny, time, CHEM_TOO_MANY_STEPS);
+        if (time + 0.1*h == time || h <= fmin(DBL_EPSILON, h_min))
+            return finish_solve(s, result, ny, time, CHEM_STEP_TOO_SMALL);
         h = fmin(h, fabs(dt-time));
         chem_forcing(s, s->values, s->forcing, s->scratch);
         ++result->function_calls;
@@ -151,7 +163,7 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
         while (!accepted) {
             int status = chem_linear_factor(s, 1.0 / (h*p->gamma[0]));
             ++result->decompositions;
-            if (status != CHEM_OK) return status;
+            if (status != CHEM_OK) return finish_solve(s, result, ny, time, status);
             for (size_t stage = 0; stage < p->stages; ++stage) {
                 size_t first = stage ? stage*(stage-1)/2 : 0;
                 double *k = s->stages + stage*ny;
@@ -174,7 +186,7 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
                 }
                 status = chem_linear_solve(s, k);
                 ++result->solves;
-                if (status != CHEM_OK) return status;
+                if (status != CHEM_OK) return finish_solve(s, result, ny, time, status);
             }
             memcpy(s->candidate, s->values, ny*sizeof(*s->candidate));
             memset(s->error, 0, ny*sizeof(*s->error));
@@ -188,10 +200,10 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
                     s->error[at]=s->candidate[at]-s->values[at];
                 }
             double error = normalized_error(s, p);
-            if (!isfinite(error)) return CHEM_NONFINITE;
+            if (!isfinite(error)) return finish_solve(s, result, ny, time, CHEM_NONFINITE);
             double factor = p->step_controller ? p->step_controller(error,h,p,p->step_controller_context) :
                 fmin(p->factor_max, fmax(p->factor_min, p->safety / pow(error, 1.0/p->order)));
-            if (!isfinite(factor) || factor <= 0) return CHEM_INVALID;
+            if (!isfinite(factor) || factor <= 0) return finish_solve(s, result, ny, time, CHEM_INVALID);
             double h_new = h*factor;
             ++result->internal_steps;
             if (error < 1 || h < h_min) {
@@ -214,7 +226,5 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
             }
         }
     }
-    result->final_time = time;
-    for (size_t i = 0; i < ny; ++i) if (!s->algebraic[i/s->cells] && s->values[i] < 0) s->values[i] = 0;
-    return CHEM_OK;
+    return finish_solve(s, result, ny, time, CHEM_OK);
 }

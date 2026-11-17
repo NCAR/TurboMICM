@@ -71,6 +71,31 @@ int main(void)
     CHECK(chem_solve(s,&p,1,&stats)==CHEM_OK);
     for (size_t c=0;c<3;++c) CHECK(fabs(chem_species_values(s,0)[c]-exp(-.1))<1e-7);
     CHECK(chem_set_linear_solver(s,NULL,NULL)==CHEM_OK);
+
+    /* A step limit returns a resumable partial solution and its elapsed time. */
+    for (size_t c=0;c<3;++c) { chem_species_values(s,0)[c]=1; chem_species_values(s,1)[c]=0; }
+    p=chem_rosenbrock_three_stage(); p.max_steps=1; p.h_start=.01; p.h_max=.01;
+    double elapsed=0;
+    int interrupted=0;
+    while (elapsed < .1) {
+        int status=chem_solve(s,&p,.1-elapsed,&stats);
+        CHECK((status==CHEM_OK || status==CHEM_TOO_MANY_STEPS) && stats.final_time>0);
+        interrupted |= status==CHEM_TOO_MANY_STEPS;
+        elapsed+=stats.final_time;
+    }
+    CHECK(interrupted);
+    for (size_t c=0;c<3;++c) CHECK(fabs(chem_species_values(s,0)[c]-exp(-.01))<1e-7);
+    chem_state_free(s);
+
+    /* Constant sources need no reactant array; invalid product indices are rejected. */
+    const ChemReaction source={0,0,0,1,0,{.kind=CHEM_ARRHENIUS,.a=.1,.d=300}};
+    const ChemProduct bad_product[]={{2,1}};
+    ChemMechanism source_mechanism={2,1,0,species,&source,NULL,bad_product,NULL,NULL,300,101325};
+    CHECK(!chem_state_create(&source_mechanism,1));
+    source_mechanism.products=products;
+    s=chem_state_create(&source_mechanism,1);
+    CHECK(s && chem_update_rates(s)==CHEM_OK && chem_evaluate(s,0,f,j)==CHEM_OK);
+    CHECK(f[0]==0 && fabs(f[1]-.1)<1e-15);
     chem_state_free(s);
     puts("core analytic decay and Jacobian: PASS");
     return 0;

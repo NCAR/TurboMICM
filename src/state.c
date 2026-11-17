@@ -15,7 +15,7 @@ static ChemState *create_state(const ChemMechanism *m, size_t cells, const ChemC
                                size_t constraint_count, const ChemState *model)
 {
     if (!m || !cells || !m->species_count || !m->species ||
-        (m->reaction_count && (!m->reactions || !m->reactants || !m->products)) ||
+        (m->reaction_count && !m->reactions) ||
         (m->parameter_count && (!m->parameter_names || !m->parameter_defaults))) return NULL;
     if (m->species_count > SIZE_MAX / cells || m->reaction_count > SIZE_MAX / cells ||
         m->parameter_count > SIZE_MAX / cells || constraint_count > SIZE_MAX / cells ||

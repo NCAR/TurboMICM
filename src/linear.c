@@ -24,6 +24,14 @@ int chem_make_symbolic(ChemState *s)
     for (size_t i = 0; i < n; ++i) pattern[i*n+i] = 1;
     for (size_t r = 0; r < m->reaction_count; ++r) {
         const ChemReaction *reaction = &m->reactions[r];
+        if ((reaction->reactant_count && !m->reactants) || (reaction->product_count && !m->products)) {
+            free(pattern); return CHEM_INVALID;
+        }
+        /* Source-only reactions still need their product indices validated. */
+        for (size_t j = 0; j < reaction->product_count; ++j) {
+            int row = m->products[reaction->product_start+j].species;
+            if (row < 0 || (size_t)row >= n) { free(pattern); return CHEM_INVALID; }
+        }
         for (size_t k = 0; k < reaction->reactant_count; ++k) {
             int col = m->reactants[reaction->reactant_start+k];
             if (col < 0 || (size_t)col >= n) { free(pattern); return CHEM_INVALID; }

@@ -74,6 +74,9 @@ bin/reference_constraint_set: tests/reference_constraint_set.c build/libchem.a b
 bin/reference_equilibrium_integration: tests/reference_equilibrium_integration.c build/constrained_original.o build/constrained_ordered.o build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/constrained_original.o build/constrained_ordered.o build/libchem.a $(LDLIBS) -o $@
 
+bin/reference_stiff_constraints: tests/reference_stiff_constraints.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
 bin/reference_initialization: tests/reference_initialization.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
@@ -125,7 +128,7 @@ test-core: bin/test_core bin/test_configurations bin/test_constraints bin/test_l
 	./bin/test_constraints
 	./bin/test_linear
 
-test-cpu: bin/reference_rates bin/reference_solver bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
+test-cpu: bin/reference_rates bin/reference_solver bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_stiff_constraints bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
 	@$(PYTHON) tests/run_cases.py
 
 cpu bench: bin/ts1_bench_cpu
