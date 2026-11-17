@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include <string.h>
 
+const char *chem_version(void) { return "0.1.0"; }
+unsigned chem_version_major(void) { return 0; }
+unsigned chem_version_minor(void) { return 1; }
+unsigned chem_version_patch(void) { return 0; }
+unsigned chem_version_tweak(void) { return 0; }
+
 static const double gas_constant = (1.380649e-23 * 6.02214076e23);
 static const double avogadro = 6.02214076e23;
 static const double pi = 3.14159265358979323846;

@@ -19,12 +19,20 @@ for case, executable, args in [
 ]:
     result = subprocess.run([str(root / 'build' / executable), *args], text=True, capture_output=True)
     results[case] = result.returncode == 0 and result.stdout == expected
+not_applicable = {
+    'view_category_sfinae:ViewCategorySFINAE.VectorTypes': 'C has no C++ concepts or SFINAE',
+    'view_category_sfinae:ViewCategorySFINAE.MatrixViews': 'C has no template view-category traits',
+    'view_category_sfinae:ViewCategorySFINAE.SparseMatrixViews': 'C has no template view-category traits',
+    'view_category_sfinae:ViewCategorySFINAE.MatrixTypesExcluded': 'C has no C++ concepts or SFINAE',
+}
 failed = False
 for line in (root / 'tests/micm_cases.txt').read_text().splitlines():
     if not line or line.startswith('#'):
         continue
     case, kind = line.split()
-    if case in results:
+    if case in not_applicable:
+        status, reason = 'N/A', not_applicable.pop(case)
+    elif case in results:
         ok = results.pop(case)
         status, reason = ('PASS', 'ported assertions') if ok else ('FAIL', 'ported assertion failed')
         failed |= not ok
@@ -32,6 +40,6 @@ for line in (root / 'tests/micm_cases.txt').read_text().splitlines():
         status, reason = 'FAIL', 'case not yet ported'
         failed = True
     print(f'{case} {status} {reason}')
-if results:
-    raise ValueError(f'unknown case results: {list(results)}')
+if results or not_applicable:
+    raise ValueError(f'unknown case results: {list(results)}, {list(not_applicable)}')
 sys.exit(int(failed))

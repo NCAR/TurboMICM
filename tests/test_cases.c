@@ -420,6 +420,86 @@ static int parameterized_multiplier(void)
     return fabs(f[0]-10)<=1e-14;
 }
 
+static int constraint_set_case(int which)
+{
+    ChemTerm ab[]={{0,1},{1,1}}, ab_product[]={{2,1}}, bc[]={{1,1}}, cd[]={{3,1}}, d[]={{4,1}};
+    ChemConstraint constraints[] = {
+        {"A_B_eq",CHEM_EQUILIBRIUM_CONSTRAINT,2,ab,ab_product,2,1,.033,0,8.31446261815324,298.15},
+        {"C_D_eq",CHEM_EQUILIBRIUM_CONSTRAINT,4,cd,d,1,1,.033,0,8.31446261815324,298.15}
+    };
+    ChemConstraintSet set={constraints,1}; unsigned char pattern[25]={0};
+    if (which==0) return set.count==1 && chem_constraint_set_validate(set,3)==CHEM_CONSTRAINT_OK;
+    if (which==1) { constraints[0].reactants=bc; constraints[0].reactant_count=1; }
+    if (which==3) set.count=2;
+    size_t n=which==3 ? 5 : 3;
+    if (which==1 || which==2 || which==3) {
+        if (chem_constraint_set_pattern(set,n,pattern)) return 0;
+        int total=0; for (size_t i=0;i<n*n;++i) total+=pattern[i]!=0;
+        if (which==1) return total==2 && pattern[2*n+1] && pattern[2*n+2] && constraints[0].row==2;
+        if (which==2) return total==3 && pattern[6] && pattern[7] && pattern[8];
+        return total==5 && pattern[10] && pattern[11] && pattern[12] && pattern[23] && pattern[24];
+    }
+    if (which==6) {
+        ChemConstraintSet empty={NULL,0}; double f[]={1,1,1,1}, j[16]={0}, y[4]={0}, temp=298.15;
+        unsigned char sparsity[16];
+        if (empty.count || chem_constraint_set_pattern(empty,4,sparsity) || chem_constraint_set_apply(empty,4,1,&temp,y,f,j)) return 0;
+        for (int i=0;i<16;++i) if (sparsity[i]) return 0;
+        for (int i=0;i<4;++i) if (f[i]!=1) return 0;
+        return 1;
+    }
+    if (which==7) { ab[0].species=9; return chem_constraint_set_validate(set,3)==CHEM_CONSTRAINT_BAD_SPECIES; }
+    if (which==8) {
+        constraints[0].row=1; constraints[0].reactant_count=1; ab_product[0].species=1;
+        if (chem_constraint_set_pattern(set,3,pattern) || !pattern[3] || !pattern[4] || pattern[5]) return 0;
+        int total=0; for (int i=0;i<9;++i) total+=pattern[i]!=0;
+        if (total!=2 || set.count!=1) return 0;
+        double y[]={10,.2,.5,10,.33,.3}, f[6]={0}, j[18]={0}, t[]={298.15,298.15};
+        if (chem_constraint_set_apply(set,3,2,t,y,f,j)) return 0;
+        return fabs(f[1]-.13)<1e-10 && fabs(f[4])<1e-10 && fabs(j[3]+.033)<1e-10 && fabs(j[4]-1)<1e-10 && fabs(j[12]+.033)<1e-10 && fabs(j[13]-1)<1e-10 && j[8]==0 && j[17]==0;
+    }
+    if (which==9) {
+        ChemTerm a[]={{0,1}}, b[]={{1,1}}, cd2[]={{2,1},{3,1}}, ap[]={{0,1}};
+        constraints[0].row=1; constraints[0].reactants=a; constraints[0].reactant_count=1; constraints[0].products=b;
+        constraints[1].row=0; constraints[1].reactants=cd2; constraints[1].reactant_count=2; constraints[1].products=ap; set.count=2;
+        if (chem_constraint_set_pattern(set,4,pattern)) return 0;
+        int total=0; for(int i=0;i<16;++i) total+=pattern[i]!=0;
+        if (total!=5 || !pattern[4] || !pattern[5] || !pattern[2] || !pattern[3] || !pattern[0]) return 0;
+        double y[]={.33,.01089,10,1,.33,.01089,5,1,.33,.02,5,1}, f[12]={0}, j[48]={0}, t[]={298.15,298.15,298.15};
+        if (chem_constraint_set_apply(set,4,3,t,y,f,j)) return 0;
+        if (fabs(f[1])>1e-5 || fabs(f[0])>1e-10 || fabs(f[5])>1e-5 || fabs(f[4]+.165)>1e-10 || fabs(f[9]+.00911)>1e-5 || fabs(f[8]+.165)>1e-10) return 0;
+        for (int cell=0;cell<3;++cell) { double *x=y+4*cell,*v=j+16*cell;
+            if (fabs(v[4]+.033)>1e-10 || fabs(v[5]-1)>1e-10 || fabs(v[2]+.033*x[3])>1e-10 || fabs(v[3]+.033*x[2])>1e-10 || fabs(v[0]-1)>1e-10) return 0; }
+        return 1;
+    }
+    if (which==10) {
+        ChemTerm a[]={{0,1}}, b[]={{1,1}}, cp[]={{2,1}};
+        constraints[0].row=1; constraints[0].reactants=a; constraints[0].reactant_count=1; constraints[0].products=b;
+        constraints[1].row=2; constraints[1].reactants=a; constraints[1].reactant_count=1; constraints[1].products=cp; set.count=2;
+        if (chem_constraint_set_pattern(set,3,pattern)) return 0;
+        int total=0; for(int i=0;i<9;++i) total+=pattern[i]!=0;
+        if (total!=4 || !pattern[3] || !pattern[4] || !pattern[6] || !pattern[8]) return 0;
+        double y[]={.1,.0033,.0033}, f[3]={0}, j[9]={0}, t=298.15;
+        if (chem_constraint_set_apply(set,3,1,&t,y,f,j)) return 0;
+        return fabs(f[1])<1e-10 && fabs(f[2])<1e-10 && fabs(j[3]+.033)<1e-10 && fabs(j[4]-1)<1e-10 && fabs(j[6]+.033)<1e-10 && fabs(j[8]-1)<1e-10;
+    }
+    if (which==11) {
+        double y[]={.01,.02,.05,.03,.01,.2,.001,.002,.004}, f[9]={0}, j[27]={0}, t[]={298.15,298.15,298.15};
+        if (chem_constraint_set_apply(set,3,3,t,y,f,j)) return 0;
+        for(int cell=0;cell<3;++cell) { double *x=y+3*cell,*v=j+9*cell;
+            if (fabs(f[3*cell+2]-(.033*x[0]*x[1]-x[2]))>1e-9 || fabs(v[6]+.033*x[1])>1e-12 || fabs(v[7]+.033*x[0])>1e-12 || fabs(v[8]-1)>1e-12) return 0; }
+        return 1;
+    }
+    if (which==4) {
+        double y[]={.2,.4,.6,.1,.3,.7}, f[6]={0}, j[18]={0}, t[]={298.15,298.15};
+        return !chem_constraint_set_apply(set,3,2,t,y,f,j) && fabs(f[2]+.59736)<1e-5 && fabs(f[5]+.69901)<1e-5;
+    }
+    if (which==5) {
+        double y[]={.01,.02,.05}, f[3]={0}, j[9]={0}, t=298.15;
+        return !chem_constraint_set_apply(set,3,1,&t,y,f,j) && fabs(j[6]+.00066)<1e-10 && fabs(j[7]+.00033)<1e-10 && fabs(j[8]-1)<1e-10;
+    }
+    return 0;
+}
+
 static int arrhenius(void)
 {
     double p[] = {1, 0, 0, 300, 0};
@@ -522,5 +602,28 @@ int main(void)
     printf("lambda_rate_constant:LambdaRateConstant.CalculateWithSystem %d\n", lambda_case(0));
     printf("solver_lambda_rate_constant:Solver.GetLambdaRateConstantByNameCanOverrideLambda %d\n", lambda_case(1));
     printf("reaction_rate_store:ReactionRateConstantStore.ParameterizedMultipliers %d\n", parameterized_multiplier());
+    double vector[] = {1,2,3,4,5}, sum=0;
+    for (size_t i=0; i<5; ++i) sum += vector[i];
+    printf("view_category_sfinae:ViewCategorySFINAE.RuntimeVectorUse %d\n", sum==15);
+    printf("version:Version.FullVersion %d\n", chem_version()!=NULL);
+    printf("version:Version.VersionMajor %d\n", chem_version_major()==0);
+    printf("version:Version.VersionMinor %d\n", chem_version_minor()==1);
+    printf("version:Version.VersionPatch %d\n", chem_version_patch()==0);
+    printf("version:Version.VersionTweak %d\n", chem_version_tweak()==0);
+    printf("constraint_set:ConstraintSet.Construction %d\n", constraint_set_case(0));
+    printf("constraint_set:ConstraintSet.ReplaceStateRowsMapsToAlgebraicSpecies %d\n", constraint_set_case(1));
+    printf("constraint_set:ConstraintSet.NonZeroJacobianElements %d\n", constraint_set_case(2));
+    printf("constraint_set:ConstraintSet.MultipleConstraints %d\n", constraint_set_case(3));
+    printf("constraint_set:ConstraintSet.AddForcingTerms %d\n", constraint_set_case(4));
+    printf("constraint_set:ConstraintSet.SubtractJacobianTerms %d\n", constraint_set_case(5));
+    printf("constraint_set:ConstraintSet.EmptyConstraintSet %d\n", constraint_set_case(6));
+    printf("constraint_set:ConstraintSet.UnknownSpeciesThrows %d\n", constraint_set_case(7));
+    printf("constraint_set:ConstraintSet.ThreeDStateOneConstraint %d\n", constraint_set_case(8));
+    printf("constraint_set:ConstraintSet.FourDStateTwoConstraints %d\n", constraint_set_case(9));
+    printf("constraint_set:ConstraintSet.CoupledConstraintsSharedSpecies %d\n", constraint_set_case(10));
+    printf("constraint_set:ConstraintSet.VectorizedMatricesRespectGridCellIndexing %d\n", constraint_set_case(11));
+    printf("constraint_set:ConstraintSet.VectorMatrix1 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_set_case(4) && constraint_set_case(5));
+    printf("constraint_set:ConstraintSet.VectorMatrix2 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_set_case(4) && constraint_set_case(5));
+    printf("constraint_set:ConstraintSet.VectorMatrix3 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_set_case(4) && constraint_set_case(5));
     return 0;
 }

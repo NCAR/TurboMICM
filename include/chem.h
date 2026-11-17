@@ -3,6 +3,12 @@
 
 #include <stddef.h>
 
+const char *chem_version(void);
+unsigned chem_version_major(void);
+unsigned chem_version_minor(void);
+unsigned chem_version_patch(void);
+unsigned chem_version_tweak(void);
+
 /* Terms are ordered; repeated reactants have separate entries.  A reactant
  * index of -1 denotes air density; lower values index parameterized species. */
 typedef struct { int species; double yield; } ChemTerm;
@@ -119,9 +125,16 @@ struct ChemConstraint {
 typedef enum {
     CHEM_CONSTRAINT_OK, CHEM_CONSTRAINT_BAD_ROW, CHEM_CONSTRAINT_EMPTY_REACTANTS,
     CHEM_CONSTRAINT_EMPTY_PRODUCTS, CHEM_CONSTRAINT_BAD_SPECIES,
-    CHEM_CONSTRAINT_BAD_STOICHIOMETRY, CHEM_CONSTRAINT_BAD_EQUILIBRIUM
+    CHEM_CONSTRAINT_BAD_STOICHIOMETRY, CHEM_CONSTRAINT_BAD_EQUILIBRIUM, CHEM_CONSTRAINT_DUPLICATE_ROW
 } ChemConstraintStatus;
+typedef struct { const ChemConstraint *items; size_t count; } ChemConstraintSet;
 ChemConstraintStatus chem_constraint_validate(const ChemConstraint *, size_t species_count);
+ChemConstraintStatus chem_constraint_set_validate(ChemConstraintSet, size_t species_count);
+ChemConstraintStatus chem_constraint_set_pattern(ChemConstraintSet, size_t species_count, unsigned char *pattern);
+/* Cells are contiguous; temperatures, forcing, and Jacobians have one entry/block per cell. */
+ChemConstraintStatus chem_constraint_set_apply(ChemConstraintSet, size_t species_count, size_t cells,
+                                               const double *temperatures, const double *y,
+                                               double *forcing, double *negative_jacobians);
 /* Overwrite forcing[row] and the negative-Jacobian row; other rows are unchanged. */
 ChemConstraintStatus chem_constraint_apply(const ChemConstraint *, size_t species_count,
                                           double temperature, const double *y,

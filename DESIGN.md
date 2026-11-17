@@ -20,7 +20,7 @@ rate calculation, generator mapping, and tests. C callers may also install
 named rate callbacks and replace them between rate updates.
 
 Linear and equilibrium constraints expose validation, residuals, and negative
-Jacobian rows independently. A constrained workspace borrows the constraint
+Jacobian rows independently or over a set of cells. A constrained workspace borrows the constraint
 and term arrays, adds their dependencies to the sparse pattern, and replaces
 algebraic rows during Rosenbrock stages. Initialization uses weighted Newton
 corrections with a backtracking line search and restores the input on failure.
