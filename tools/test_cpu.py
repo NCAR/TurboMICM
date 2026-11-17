@@ -7,6 +7,10 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"external_model_constraints:ExternalModelConstraints.{case}": ("build/test_external_composition", "composed constraints")
+       for case in ["KineticVsConservativeConstraintConvergence", "SimpleConstraintPreservesRatioNotMass",
+                    "BuiltInVsExternalModelConstraintStepByStep", "MultiEquilibriumKineticVsComposedConstraints",
+                    "TemperatureDependentConstraintParameter"]},
     **{f"external_model_constraints:ExternalModelFiniteDifferenceJacobian.{case}": ("build/test_external_constraints", "external model Jacobian")
        for case in ["ProcessForcingJacobian", "ConstraintResidualJacobian", "EquilibriumConstraintModelJacobian"]},
     **{f"external_model_constraints:ExternalModelConstraints.{case}": ("build/test_external_constraints", "external model constraints")

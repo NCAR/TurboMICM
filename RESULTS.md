@@ -130,3 +130,8 @@ both compilers. New external constraint checks cover residual/Jacobian finite
 differences, conservation, row replacement, and multiple cells. Custom
 nonlinear projection and composition with built-in constraints are also
 exercised. Both compilers pass the 100-cell TS1 comparison.
+
+The latest case report has 235 passing cases and 445 unported failures on
+both compilers. New checks compare kinetic and composed DAE systems, built-in
+and callback constraints at each step, multiple equilibria, and temperature-
+dependent parameter updates. Both compilers pass the 100-cell TS1 comparison.
