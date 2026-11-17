@@ -1,7 +1,8 @@
 # Run log
 
-Launch record for the MICM-to-C runs. Times are local: MDT for Tier 1 and Tier 3,
-EDT for Tier 2, which runs on another machine. Tier 1 comes first; the Tier 2 runs
+Launch record for the MICM-to-C runs. Times are local: MDT for Tier 1 and Tier 3
+(MST from November 2026, for the Terra runs), EDT for Tier 2, which runs on another
+machine. Tier 1 comes first; the Tier 2 runs
 follow, under [Tier 2](#tier-2), and the Tier 3 runs, under [Tier 3](#tier-3).
 
 Each run is an interactive session started in its run directory,
@@ -17,6 +18,16 @@ on the TurboMICM branch `runs/<model>/<effort>`, or `runs/<model>/<effort>-<n>`
 for a repeat.
 
 Contestant changes
+- 2026-11-16: Terra joins, as gpt-6.1-terra ("GPT-6.1 Terra" in Codex's model
+  list, with high, xhigh, and max effort levels), at the SSE's request ("Terra is
+  back"): the 6.1 release Terra lacked on 2026-10-15. The runs are terra-max,
+  terra-xhigh, and terra-high, in that order (the SSE's choice, 2026-11-16, Luna's
+  order), one at a time; each is collected and verified before the next
+  launches, and the three are timed together at the end, with luna-high's
+  deferred timing and every other entry, in one session (the SSE's choice).
+  Whether Terra enters Tiers 2 and 3 is decided after Tier 1. The prompts differ
+  from Luna's only in the name and run directory; `prompts/make_prompts.py`
+  gained Terra in its model list.
 - 2026-10-16: the contestants are OpenAI's models only (Luna, Sol, Astra), for
   practical reasons given usage plans. Anthropic's Claude Opus and Claude Fable,
   at max reasoning effort, design the experiment, orchestrate the runs, and
@@ -40,6 +51,9 @@ Prompt changes
   experimenter judged immaterial to their solutions.
 
 Launch changes
+- 2026-11-16, for Terra: the 2026-10-19 authorization to stop a floundering run
+  was given for the Luna runs; for Terra, Claude Code keeps the 20-minute
+  read-only checks and asks the SSE before stopping a run.
 - 2026-10-16, from luna-high on: at the SSE's request, Claude Code launches the
   runs with `admin/launch_codex_run.sh`. It is the same interactive Codex session,
   command, and goal, typed into a detached tmux session started from an empty
@@ -62,6 +76,35 @@ Harness changes
   0.162.1 to 0.163.0 (Homebrew cask, 21:14), and the experimenter chose to keep
   it. The Sol runs and astra-high ran on 0.162.1; astra-xhigh and later runs use
   0.163.0. Codex's instructions to gpt-6-astra are the same text in both versions.
+- 2026-11-16, before the Terra runs: Codex CLI is 0.169.0 (Homebrew cask,
+  installed 2026-11-14), and the SSE chose to keep it; every earlier Tier 1 run
+  used 0.162.1 or 0.163.0. What changed for a contest run, from a throwaway
+  session at 22:47 (one message to gpt-6.1-terra at low effort, in a scratch
+  directory since deleted; Codex session `01a1e80b-dfc1-74a1-86c3-5aa3c9dfe9d1`)
+  and the luna-high record:
+  - Interactive sessions now share a background app-server daemon, started by
+    the first session. A session started with command-line overrides (`-c`,
+    `--enable`, `--disable`, `--search`) runs instead in embedded mode, as its
+    own process, with the warning "Running without the shared background server:
+    command-line configuration overrides ... requires embedded mode". The launch
+    always passes `-c`, so each run is still a process of its own, as before;
+    terra-max's holds no connection to the daemon's socket.
+  - The SSE's `config.toml` now enables Codex's memories (`[features] memories =
+    true`), which add a "## Memory" developer message pointing the agent to
+    `~/.codex/memories/`, where 17 files mention MICM or TurboMICM. The launch's
+    `-c features.memories=false` keeps it out (none in the throwaway session's
+    record); `admin/launch_codex_run.sh` now fails the launch if the record holds
+    one. No contest session appears in the memories.
+  - ChatGPT's app connectors (GitHub, Gmail, Google Drive, ChatGPT Space, and
+    others) are now listed by name in a `<tools>` developer section; under
+    0.163.0 they were available too, loaded on demand through `tool_search`
+    (luna-high's record describes them). They stay on, as before; the compliance
+    scan checks each Terra transcript for calls to them.
+  - The base instructions also arrive as a developer message; the skills,
+    permissions, collaboration-mode, and multi-agent sections are as under
+    0.163.0.
+  - The status line names the model by its display name, "GPT-6.1 Terra", with
+    a space, so the launcher's screen check now accepts a space for a hyphen.
 
 Verification
 - 2026-10-15: the three Sol entries were rebuilt from their branches with clang
@@ -112,6 +155,7 @@ Transcripts
 | luna-max | gpt-6-luna | max | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-19 19:14-21:05 | `da2d722`, 21:05 (5 commits) | finished |
 | luna-xhigh | gpt-6-luna | xhigh | Codex CLI 0.163.0, interactive, launched by Claude Code | 2026-10-20 09:31-12:20 | `ada55d5`, 12:20 (28 commits) | finished |
 | luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code (rerun) | 2026-10-20 14:27-18:20 | `d3c2480`, 18:20 (128 commits) | finished |
+| terra-max | gpt-6.1-terra | max | Codex CLI 0.169.0, interactive, launched by Claude Code | 2026-11-16 22:52- | | running |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -425,6 +469,26 @@ Token counts are as Codex reports them: total = uncached input + output.
   One group per thread, with MICM's default solver work at ten threads.
 - Not yet timed: at 18:33 the SSE deferred the timing session, all nine entries
   with MICM's three programs, to a follow-on session.
+
+## terra-max
+
+- Order: on 2026-11-16 the SSE chose to run Terra's three entries one at a time,
+  at max, then xhigh, then high, each collected and verified before the next
+  launches, and to time all three in one session at the end (with luna-high's
+  deferred timing).
+- Session start: 2026-11-16 22:52:11 MST, launched by Claude Code with
+  `ALLOW_CODEX_PIDS=1370 admin/launch_codex_run.sh terra-max gpt-6.1-terra max`,
+  in a detached tmux session (socket `turbomicm`, session `terra-max`); the goal
+  was sent at 22:52:14. The session record shows gpt-6.1-terra at max, base
+  instructions from gpt-6.1-terra, Codex 0.169.0, approval `never` with full
+  access, no model switch, and no memories; the process's environment holds no
+  Claude Code variables besides the SSE's own
+  `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`. Codex runs it in embedded mode (pid
+  2847).
+- Codex session `01a1e810-1f16-76c0-999a-bac528e716f2`.
+- Other load at the start: the SSE's own Codex session (pid 1370, started 22:42
+  in a Terminal window, in `~/NSF-NCAR/TurboMICM`, idle, with its shared
+  daemon), allowed alongside; the throwaway session of 22:47 had ended.
 
 # Tier 2
 

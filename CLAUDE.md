@@ -44,9 +44,11 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   `ODE/benchmarks/tier3` (`git ls-files benchmarks/tier3` in ODE); its README.md,
   HANDOFF.md, `heldout/`, and `review/` are this repo's only.
 - **Contestants:**
-  - Codex CLI: gpt-6.1-sol, gpt-6-astra, and gpt-6-luna. Luna replaced
-    gpt-5.6-terra on 2026-10-15. Codex was 0.162.1 through astra-high and is
-    0.163.0 from astra-xhigh on; the SSE upgraded it and chose not to revert.
+  - Codex CLI: gpt-6.1-sol, gpt-6-astra, gpt-6-luna, and gpt-6.1-terra. Luna
+    replaced gpt-5.6-terra on 2026-10-15; Terra joined as gpt-6.1-terra on
+    2026-11-16. Codex was 0.162.1 through astra-high, 0.163.0 from astra-xhigh
+    through the Luna runs, and 0.169.0 for Terra; the SSE upgraded it each time
+    and chose not to revert.
   - No Claude model competes (the SSE's decision, 2026-10-16, given usage plans):
     Opus and Fable design, orchestrate, and judge. The run root's sonnet-*, opus-*,
     and fable-* directories and prompts are unused.
@@ -85,6 +87,13 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   - The launcher stops if another Codex session runs; `ALLOW_CODEX_PIDS="<pid>"`
     lets the SSE's own sessions run alongside (the SSE's choice, 2026-10-22),
     recorded as other load.
+  - Codex 0.169.0: sessions share a background daemon, except one started with
+    `-c`, `--enable`, `--disable`, or `--search`, which runs embedded, as its own
+    process; every launch passes `-c`. The SSE's `config.toml` enables memories
+    (a "## Memory" developer message pointing to `~/.codex/memories/`, which
+    mentions TurboMICM); `-c features.memories=false` keeps them out, and the
+    launcher fails if the record holds one. The status line shows the display
+    name ("GPT-6.1 Terra").
 - **Monitor:** follow the session record read-only, in the background:
   `until admin/run_state.py <rollout.jsonl> <codex pid>; do sleep 60; done`.
   - A run is done when its last event is `task_complete` and the record has been
@@ -402,6 +411,13 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   - Add each entry's grouping to `ENTRY_GROUPING` in `admin/leaderboard.py`.
   - When building in parallel, make the `micm/` and `reference/` links first, or
     with `ln -sn`: a racing `ln -s` writes a link inside the run root.
+- Terra (gpt-6.1-terra, Tier 1, from 2026-11-16): terra-max, terra-xhigh,
+  then terra-high (the SSE's order), one at a time, each collected, archived,
+  and verified before the next launches; then one timing session with all
+  entries and luna-high's deferred timing (the SSE's choice). Tiers 2 and 3 are
+  decided after Tier 1. Stopping a floundering Terra run needs the SSE's word
+  (the 2026-10-19 authorization covered Luna). terra-max launched 22:52 MST,
+  2026-11-16 (`admin/runs.md`).
 - Luna: run all three fresh, one after another, at max, xhigh, then high (the
   SSE's order, 2026-10-19), each verified and timed with all entries before the
   next starts. luna-max is done: finished 21:05, verified, and timed overnight

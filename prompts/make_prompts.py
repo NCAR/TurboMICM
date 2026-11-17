@@ -12,7 +12,7 @@ the prompts into the run directories.
 import argparse
 from pathlib import Path
 
-MODELS = ["Sonnet", "Opus", "Fable", "Luna", "Sol", "Astra"]
+MODELS = ["Sonnet", "Opus", "Fable", "Luna", "Sol", "Astra", "Terra"]
 EFFORTS = ["high", "xhigh", "max"]
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent

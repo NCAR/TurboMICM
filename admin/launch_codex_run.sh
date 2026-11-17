@@ -135,7 +135,9 @@ if wait_for 'Trust this folder?' 30; then
 fi
 wait_for 'Ask Codex to do anything' 30 || stop "the composer did not appear" show
 i=0  # the status line, which names the model, can be drawn a moment after the composer
-until screen | command grep -q -i -F -- "$model"; do
+# by its display name, whose hyphens may be spaces: gpt-6.1-terra is "GPT-6.1 Terra"
+model_pattern=$(print -r -- $model | sed -e 's/\./\\./g' -e 's/-/[- ]/g')
+until screen | command grep -q -i -E -- "$model_pattern"; do
   (( ++i > 15 )) && stop "$model is not on the status line" show
   sleep 1
 done
@@ -166,7 +168,7 @@ import json, sys
 path, cwd, model, effort = sys.argv[1:]
 lines = [json.loads(l) for l in open(path)]
 meta = lines[0]['payload']
-settings, access, goal, switch = set(), set(), None, False
+settings, access, goal, switch, memory = set(), set(), None, False, False
 for d in lines:
     p = d.get('payload') if isinstance(d.get('payload'), dict) else {}
     if p.get('type') == 'thread_settings_applied':
@@ -177,12 +179,17 @@ for d in lines:
     if p.get('type') == 'thread_goal_updated' and goal is None:
         goal = p['goal'].get('objective')
     switch = switch or '<model_switch>' in json.dumps(p)
+    # Codex's memories (on in config.toml) add a "## Memory" developer message;
+    # -c features.memories=false, which needs Codex's embedded mode, keeps it out
+    if p.get('role') == 'developer':
+        memory = memory or any('## Memory' in c.get('text', '') for c in p.get('content', []))
 base = meta['base_instructions']['provenance'].get('model')
 ok = meta['cwd'] == cwd and base == model and settings == {(model, effort)} and not switch \
-     and access == {('never', 'danger-full-access')} and goal == 'read PROMPT.md and work until done, commit'
+     and access == {('never', 'danger-full-access')} and goal == 'read PROMPT.md and work until done, commit' \
+     and not memory
 print(f"verify: cwd {meta['cwd']}; Codex {meta['cli_version']}; base instructions {base}; "
       f"model and effort {sorted(settings)}; approval and sandbox {sorted(access)}; model switch {switch}; "
-      f"goal {goal!r}: {'OK' if ok else 'MISMATCH'}")
+      f"memories {'IN CONTEXT' if memory else 'off'}; goal {goal!r}: {'OK' if ok else 'MISMATCH'}")
 sys.exit(0 if ok else 1)
 EOF
 verified=$?
