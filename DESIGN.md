@@ -15,7 +15,7 @@ and reference step-size defaults. To add a parameter set, construct a
 error order; the existing integrator consumes it. The two DA parameter sets are
 currently usable only for ODEs because algebraic constraints are not implemented. It supports dense or sparse no-pivot Mozart and Doolittle elimination. The solver clamps negative ODE values after each public solve, as the reference
 CPU solver does. The current implementation allocates scratch space per solve; multi-cell scheduling,
-compact sparse matrix storage, additional solver features, and constraints are not yet implemented.
+compact sparse matrix storage, additional solver features, and DAE integration are not yet implemented.
 
 This is a starting point, not the final architecture.
 
@@ -51,3 +51,11 @@ pattern. The plan holds fill and row/column index lists; it is immutable and
 may be shared by threads. To replace the linear solver, implement the factor
 and solve operations for that plan, add an algorithm choice to `ChemLuAlgorithm`,
 and connect it at the factor/solve calls in both integrators.
+
+Constraints are borrowed indexed descriptions validated by `chem_constraint_validate`.
+`chem_constraint_residuals` replaces algebraic forcing rows, while
+`chem_constraint_subtract_jacobian` adds the negative constraint derivatives
+to the supplied matrix. Equilibrium constants can be supplied per cell or
+evaluated using the Van’t Hoff parameters. The sparsity and step-error helpers
+are intended for the DAE solver; that connection and consistent initialization
+remain to be implemented.

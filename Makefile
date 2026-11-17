@@ -24,7 +24,9 @@ build/linear.o: src/linear.c include/linear.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/backward_euler.o: src/backward_euler.c include/backward_euler.h include/rosenbrock.h include/linear.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o
+build/constraint.o: src/constraint.c include/constraint.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/libchem.a: build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
@@ -44,6 +46,8 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_normalized_error
 	./build/test_analytical_methods
 	./build/test_backward_euler
+	./build/test_constraints
+	./build/test_constraint_set
 	./build/test_rates
 	./build/test_rate_extensions
 	./build/test_generated_rate_extensions
@@ -110,7 +114,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods build/test_constraints build/test_constraint_set CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
@@ -135,3 +139,9 @@ check: build/test_normalized_error
 build/test_doolittle: tests/test_doolittle.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_doolittle.c build/libchem.a -lm -o $@
 check: build/test_doolittle
+build/test_constraints: tests/test_constraints.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_constraints.c build/libchem.a -lm -o $@
+check: build/test_constraints
+build/test_constraint_set: tests/test_constraint_set.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_constraint_set.c build/libchem.a -lm -o $@
+check: build/test_constraint_set

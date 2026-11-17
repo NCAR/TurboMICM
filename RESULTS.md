@@ -55,3 +55,8 @@ The case report now has 50 passing cases and 630 unported failures for both
 compilers. Doolittle reconstruction checks cover dense, random sparse, diagonal,
 and extreme initial scratch values, and both LU algorithms pass the analytical
 photolysis trajectories. The 100-cell TS1 comparison remains passing.
+
+The latest case report has 92 passing cases and 588 unported failures with both
+compilers. The additional cases cover linear, equilibrium, and constraint-set
+validation, residuals, Jacobians, sparsity, and multi-cell indexing. The DAE
+integration cases are still unported.
