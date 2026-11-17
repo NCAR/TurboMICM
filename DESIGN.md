@@ -67,3 +67,8 @@ those rows in the mass matrix, and uses algebraic step changes in error control.
 The projection rolls back on failure. A caller-supplied sparse plan must include
 the union of kinetic and constraint structure; `chem_constraint_sparsity` can
 add constraint positions to an existing pattern.
+
+The additive process APIs preserve existing forcing and negative Jacobian
+entries and can suppress algebraic output rows without suppressing their
+reactant columns. `include/jacobian_check.h` provides finite-difference
+Jacobian generation and comparison against a declared sparsity pattern.

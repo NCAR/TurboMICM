@@ -7,6 +7,13 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    "process_set:ProcessSetAlgebraicVariables.CudaMatrix": ("build/test_process_set", "algebraic masking"),
+    "process_set:ProcessSetFiniteDifferenceJacobian.Matrix": ("build/test_process_set", "process Jacobian"),
+    **{f"jacobian_verification:JacobianVerification.{case}": ("build/test_jacobian_check", "Jacobian verification") for case in [
+        "FiniteDifferenceMatchesAnalytical", "MultiBlockFiniteDifference", "ComparePassesForCorrectJacobian",
+        "CompareFailsForWrongJacobian", "SparsityCompletenessPassesWhenComplete",
+        "SparsityCompletenessFailsWhenMissingEntry", "NearZeroVariableHandled",
+    ]},
     **{case: ('build/test_rates', 'rate calculation') for case in [
         'arrhenius_rate_constant:ArrheniusRateConstant.CalculateWithSystem',
         'arrhenius_rate_constant:ArrheniusRateConstant.CalculateWithPrescribedArguments',

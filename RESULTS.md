@@ -74,3 +74,8 @@ The latest case report has 149 passing cases and 531 unported failures with
 both compilers. New checks cover parameterized reactants and callback rates,
 including runtime rebinding and generated mechanisms. The 100-cell TS1 check
 continues to pass through the generalized multiplier path.
+
+The latest case report has 158 passing cases and 522 unported failures on
+both compilers. New checks cover process-set algebraic row masking and
+finite-difference Jacobian comparison and sparsity verification. Both
+compilers pass the 100-cell TS1 comparison.

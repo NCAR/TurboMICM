@@ -21,4 +21,10 @@ void chem_rhs(const ChemMechanism *m, const double *restrict y,
 /* Dense row-major Jacobian; its storage has species_count squared entries. */
 void chem_jacobian(const ChemMechanism *m, const double *restrict y,
                    const double *restrict k, double *restrict jac);
+/* Add kinetics to existing outputs, optionally leaving algebraic rows untouched.
+   The Jacobian operation adds -df/dy, matching the solver convention. */
+void chem_add_forcing(const ChemMechanism *m, const double *y, const double *k,
+                      const unsigned char *algebraic, double *forcing);
+void chem_subtract_jacobian(const ChemMechanism *m, const double *y, const double *k,
+                            const unsigned char *algebraic, double *jac);
 #endif

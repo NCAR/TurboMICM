@@ -41,3 +41,45 @@ void chem_jacobian(const ChemMechanism *m, const double *restrict y,
         }
     }
 }
+
+void chem_add_forcing(const ChemMechanism *m, const double *y, const double *k,
+                      const unsigned char *algebraic, double *forcing)
+{
+    for (size_t r = 0; r < m->reaction_count; ++r) {
+        const ChemReaction *reaction = &m->reactions[r];
+        double rate = k[r];
+        for (size_t i = 0; i < reaction->reactant_count; ++i)
+            rate *= y[m->reactants[reaction->reactant_begin + i]];
+        for (size_t i = 0; i < reaction->reactant_count; ++i) {
+            size_t row = m->reactants[reaction->reactant_begin + i];
+            if (!algebraic || !algebraic[row]) forcing[row] -= rate;
+        }
+        for (size_t i = 0; i < reaction->product_count; ++i) {
+            const ChemProduct *p = &m->products[reaction->product_begin + i];
+            if (!algebraic || !algebraic[p->species]) forcing[p->species] += p->yield * rate;
+        }
+    }
+}
+
+void chem_subtract_jacobian(const ChemMechanism *m, const double *y, const double *k,
+                            const unsigned char *algebraic, double *jac)
+{
+    size_t n = m->species_count;
+    for (size_t r = 0; r < m->reaction_count; ++r) {
+        const ChemReaction *reaction = &m->reactions[r];
+        for (size_t d = 0; d < reaction->reactant_count; ++d) {
+            size_t col = m->reactants[reaction->reactant_begin + d];
+            double derivative = k[r];
+            for (size_t i = 0; i < reaction->reactant_count; ++i)
+                if (i != d) derivative *= y[m->reactants[reaction->reactant_begin + i]];
+            for (size_t i = 0; i < reaction->reactant_count; ++i) {
+                size_t row = m->reactants[reaction->reactant_begin + i];
+                if (!algebraic || !algebraic[row]) jac[row * n + col] += derivative;
+            }
+            for (size_t i = 0; i < reaction->product_count; ++i) {
+                const ChemProduct *p = &m->products[reaction->product_begin + i];
+                if (!algebraic || !algebraic[p->species]) jac[p->species * n + col] -= p->yield * derivative;
+            }
+        }
+    }
+}
