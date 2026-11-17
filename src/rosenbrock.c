@@ -2,6 +2,7 @@
 
 #include <float.h>
 #include <math.h>
+#include <stdint.h>
 #include <string.h>
 
 static ChemRosenbrock defaults(void)
@@ -99,21 +100,31 @@ static void axpy(size_t n, double *restrict dst, const double *restrict src, dou
     for (size_t i = 0; i < n; ++i) dst[i] += a*src[i];
 }
 
-static double normalized_error(const ChemState *s, const ChemRosenbrock *p)
+int chem_rosenbrock_normalized_error(size_t species, size_t cells, const double *old_values,
+                                     const double *new_values, const double *errors,
+                                     const double *atol, double rtol, double *result)
 {
-    const ChemMechanism *m = s->mechanism;
-    size_t cells = s->cells;
+    if (!species || !cells || species>SIZE_MAX/cells || !old_values || !new_values || !errors || !atol ||
+        !result || !isfinite(rtol) || rtol<0) return CHEM_INVALID;
     double sum = 0;
-    for (size_t i = 0; i < m->species_count; ++i)
+    for (size_t i = 0; i < species; ++i)
         for (size_t c = 0; c < cells; ++c) {
             size_t at = i*cells+c;
-            double scale = s->absolute_tolerances[i] +
-                p->relative_tolerance * fmax(fabs(s->values[at]), fabs(s->candidate[at]));
-            double ratio = s->error[at] / scale;
+            double scale = atol[i] + rtol * fmax(fabs(old_values[at]), fabs(new_values[at]));
+            double ratio = errors[at] / scale;
             sum += ratio*ratio;
         }
-    double error = sqrt(sum / (m->species_count*cells));
-    return error < 1e-10 ? 1e-10 : error;
+    double error = sqrt(sum / (species*cells));
+    *result=error < 1e-10 ? 1e-10 : error;
+    return CHEM_OK;
+}
+
+static double normalized_error(const ChemState *s, const ChemRosenbrock *p)
+{
+    double result;
+    int status=chem_rosenbrock_normalized_error(s->mechanism->species_count,s->cells,s->values,
+        s->candidate,s->error,s->absolute_tolerances,p->relative_tolerance,&result);
+    return status==CHEM_OK ? result : NAN;
 }
 
 /* Preserve both the partial solution and the time reached when integration

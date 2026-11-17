@@ -53,3 +53,5 @@ The C API keeps relative tolerances in the selected solver parameters and
 per-species absolute tolerances in the state. C state copies use an explicit
 deep clone, while transferring ownership of a state uses an ordinary pointer
 assignment. Named setters return errors instead of throwing exceptions.
+The version accessor reports the compatibility version in the reference
+source's version header, rather than a separate version for this C port.

@@ -52,6 +52,8 @@ coefficients, tolerances, controller bounds, and projection controls. Its
 optional step-controller callback supplies the next step-size factor; a null
 callback uses the default formula. Backward Euler has its own parameters and
 entry point. Both methods use the same forcing and linear-solver interfaces.
+The Jacobian diagnostics expose finite differences, numerical comparisons, and
+sparsity checks for independently supplied forcing functions.
 
 The default linear solver performs an in-place sparse Mozart factorization and
 triangular substitutions. `chem_doolittle_linear_solver` supplies an

@@ -38,10 +38,10 @@ build:
 build/.compiler: FORCE | build
 	@printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' | cmp -s - $@ || printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' > $@
 
-SOURCES := src/state.c src/rates.c src/linear.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/projection.c src/matrix.c src/sparse.c
+SOURCES := src/state.c src/rates.c src/linear.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/projection.c src/matrix.c src/sparse.c src/jacobian.c src/version.c
 OBJECTS := $(SOURCES:src/%.c=build/%.o)
 
-build/%.o: src/%.c src/internal.h include/chem.h include/chem_matrix.h include/chem_sparse.h build/.compiler | build
+build/%.o: src/%.c src/internal.h include/chem.h include/chem_matrix.h include/chem_sparse.h include/chem_jacobian.h build/.compiler | build
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 build/libchem.a: $(OBJECTS)
@@ -66,6 +66,9 @@ bin/reference_rate_store: tests/reference_rate_store.c build/libchem.a build/.co
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
 bin/reference_solver: tests/reference_solver.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/reference_rosenbrock: tests/reference_rosenbrock.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
 bin/reference_constraints: tests/reference_constraints.c build/libchem.a build/.compiler | bin
@@ -102,6 +105,12 @@ bin/reference_sparse_functions: tests/reference_sparse_functions.c build/libchem
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
 bin/reference_grouped_views: tests/reference_grouped_views.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/reference_jacobian: tests/reference_jacobian.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/reference_version: tests/reference_version.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
 bin/reference_initialization: tests/reference_initialization.c build/libchem.a build/.compiler | bin
@@ -158,7 +167,7 @@ test-core: bin/test_core bin/test_configurations bin/test_constraints bin/test_l
 	./bin/test_constraints
 	./bin/test_linear
 
-test-cpu: bin/reference_rates bin/reference_rate_store bin/reference_solver bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_stiff_constraints bin/reference_analytical bin/reference_nonlinear_integration bin/reference_state bin/reference_matrix bin/reference_matrix_functions bin/reference_sparse bin/reference_sparse_functions bin/reference_grouped_views bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
+test-cpu: bin/reference_rates bin/reference_rate_store bin/reference_solver bin/reference_rosenbrock bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_stiff_constraints bin/reference_analytical bin/reference_nonlinear_integration bin/reference_state bin/reference_matrix bin/reference_matrix_functions bin/reference_sparse bin/reference_sparse_functions bin/reference_grouped_views bin/reference_jacobian bin/reference_version bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
 	@$(PYTHON) tests/run_cases.py
 
 cpu bench: bin/ts1_bench_cpu

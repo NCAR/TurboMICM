@@ -12,6 +12,21 @@ static void *allocate(size_t n, size_t size)
     return calloc(n ? n : 1, size);
 }
 
+int chem_linear_add_alpha(ChemLinearSystem *s, double alpha)
+{
+    if (!s || !s->values || !s->lookup || !s->algebraic || !s->cells || !s->species_count ||
+        s->species_count>SIZE_MAX/s->species_count || s->nonzeros>SIZE_MAX/s->cells || !isfinite(alpha)) return CHEM_INVALID;
+    size_t n=s->species_count;
+    for (size_t i=0;i<n;++i) if (!s->algebraic[i]) {
+        int position=s->lookup[i*n+i];
+        if (position<0 || (size_t)position>=s->nonzeros) return CHEM_INVALID;
+        double *diag=s->values+(size_t)position*s->cells;
+        #pragma omp simd
+        for (size_t c=0;c<s->cells;++c) diag[c]+=alpha;
+    }
+    return CHEM_OK;
+}
+
 /* Symbolic elimination is independent of the concentrations. It is kept
  * separate from numeric factorization so another linear solver can replace it. */
 int chem_make_symbolic(ChemState *s)
@@ -117,12 +132,9 @@ int chem_factor(ChemState *s, double alpha)
 {
     size_t n = s->mechanism->species_count, cells = s->cells;
     double *a = s->matrix, *inverse = s->scratch;
-    for (size_t i = 0; i < n; ++i) {
-        if (s->algebraic[i]) continue;
-        double *diag = a + (size_t)s->pivots[i].diagonal*cells;
-        #pragma omp simd
-        for (size_t c = 0; c < cells; ++c) diag[c] += alpha;
-    }
+    ChemLinearSystem view={n,cells,s->nonzeros,s->row_start,s->columns,s->index,s->algebraic,s->matrix};
+    int shifted=chem_linear_add_alpha(&view,alpha);
+    if (shifted) return shifted;
     for (size_t i = 0; i < n; ++i) {
         ChemPivot *p = &s->pivots[i];
         double *diag = a + (size_t)p->diagonal*cells;

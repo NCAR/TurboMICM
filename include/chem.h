@@ -3,6 +3,13 @@
 
 #include <stddef.h>
 
+/* Version of the reference API represented by this port. */
+const char *chem_version(void);
+unsigned chem_version_major(void);
+unsigned chem_version_minor(void);
+unsigned chem_version_patch(void);
+unsigned chem_version_tweak(void);
+
 /* All mechanism data are immutable and may be shared between solver states.
  * A caller may initialize these structs in C or link a generated definition. */
 typedef enum {
@@ -188,11 +195,16 @@ ChemLinearSolver chem_mozart_linear_solver(void);
  * the same sparse pattern and distinct value arrays. */
 int chem_linear_factor_copy(const ChemLinearSolver *solver, const ChemLinearSystem *input,
                             ChemLinearSystem *factors, double alpha, void *context);
+int chem_linear_add_alpha(ChemLinearSystem *system, double alpha);
 int chem_update_rates(ChemState *state);
 /* Negative Jacobian, in dense row-major form for one cell, and forcing, for
  * diagnostics and tests. The solver itself uses sparse storage. */
 int chem_evaluate(const ChemState *state, size_t cell, double *forcing, double *negative_jacobian);
 int chem_solve(ChemState *state, const ChemRosenbrock *parameters, double dt, ChemStats *stats);
+/* Arrays are species-major across cells, as returned by chem_species_values. */
+int chem_rosenbrock_normalized_error(size_t species_count, size_t cells, const double *old_values,
+                                     const double *new_values, const double *errors,
+                                     const double *absolute_tolerances, double relative_tolerance, double *result);
 int chem_backward_euler_converged(size_t species_count, size_t cells, const double *residual,
                                   const double *values, const double *absolute_tolerances,
                                   double relative_tolerance, double small);
