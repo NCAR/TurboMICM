@@ -121,6 +121,8 @@ double *chem_parameter_values(ChemState *s, size_t i)
 double *chem_temperatures(ChemState *s) { return s ? s->temperatures : NULL; }
 double *chem_pressures(ChemState *s) { return s ? s->pressures : NULL; }
 double *chem_absolute_tolerances(ChemState *s) { return s ? s->absolute_tolerances : NULL; }
+const double *chem_rate_constants(const ChemState *s, size_t i)
+{ return s && i < s->mechanism->reaction_count ? s->rates+i*s->cells : NULL; }
 double *chem_constraint_constants(ChemState *s, size_t i)
 { return s && i < s->constraint_count ? s->constraint_constants+i*s->cells : NULL; }
 int chem_find_constraint(const ChemState *s, const char *name)

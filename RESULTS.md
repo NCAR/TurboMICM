@@ -1,10 +1,14 @@
 # Results
 
 The work is incomplete. At the latest full case audit, `make test-cpu` emitted
-680 case lines under both clang and gcc-15: 155 PASS, 521 FAIL because the case
+680 case lines under both clang and gcc-15: 181 PASS, 495 FAIL because the case
 has not yet been ported, and 4 N/A for C++ template-concept/SFINAE checks with
 no C equivalent. The analytic, configuration, constraint, and Doolittle core
 checks also passed under both compilers. A failing case report exits nonzero.
+The analytical cases include 999 one-second steps over three cells for each
+of six rate-law families, stiff variants, both time integrators, and the
+surface-reaction case. The six-stage coefficients were checked against the
+reference after the branched-rate trajectory exposed transcription errors.
 
 With `-O3 -DNDEBUG`, TS1, seed 2026, 10,000 cells, 100 timed 30-second steps,
 64-cell groups, and 10 threads, one local measurement was:

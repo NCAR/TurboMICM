@@ -146,6 +146,8 @@ double *chem_parameter_values(ChemState *state, size_t parameter);
 double *chem_temperatures(ChemState *state);
 double *chem_pressures(ChemState *state);
 double *chem_absolute_tolerances(ChemState *state);
+/* Rate constants from the most recent update, one entry per cell. */
+const double *chem_rate_constants(const ChemState *state, size_t reaction);
 double *chem_constraint_constants(ChemState *state, size_t constraint);
 int chem_find_constraint(const ChemState *state, const char *name);
 int chem_is_algebraic(const ChemState *state, size_t species);
