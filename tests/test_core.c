@@ -39,6 +39,20 @@ int main(void)
         CHECK(fabs(a - (c+1)*exp(-0.1)) < 1e-7);
         CHECK(fabs(a+b-(c+1)) < 1e-12);
     }
+    const ChemRosenbrock variants[] = {chem_rosenbrock_two_stage(), chem_rosenbrock_four_stage(),
+                                      chem_rosenbrock_four_stage_dae(), chem_rosenbrock_six_stage_dae()};
+    for (size_t v = 0; v < sizeof variants / sizeof variants[0]; ++v) {
+        for (size_t c = 0; c < 3; ++c) {
+            chem_species_values(s, 0)[c] = (double)c+1;
+            chem_species_values(s, 1)[c] = 0;
+        }
+        CHECK(chem_solve(s, &variants[v], 1, &stats) == CHEM_OK);
+        for (size_t c = 0; c < 3; ++c) {
+            double a = chem_species_values(s, 0)[c], b = chem_species_values(s, 1)[c];
+            CHECK(fabs(a - (c+1)*exp(-0.1)) < 1e-7);
+            CHECK(fabs(a+b-(c+1)) < 1e-12);
+        }
+    }
     chem_state_free(s);
     puts("core analytic decay and Jacobian: PASS");
     return 0;

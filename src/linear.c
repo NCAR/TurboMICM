@@ -30,14 +30,22 @@ int chem_make_symbolic(ChemState *s)
             for (size_t j = 0; j < reaction->reactant_count; ++j) {
                 int row = m->reactants[reaction->reactant_start+j];
                 if (row < 0 || (size_t)row >= n) { free(pattern); return CHEM_INVALID; }
-                pattern[(size_t)row*n+(size_t)col] = 1;
+                if (!s->algebraic[row]) pattern[(size_t)row*n+(size_t)col] = 1;
             }
             for (size_t j = 0; j < reaction->product_count; ++j) {
                 int row = m->products[reaction->product_start+j].species;
                 if (row < 0 || (size_t)row >= n) { free(pattern); return CHEM_INVALID; }
-                pattern[(size_t)row*n+(size_t)col] = 1;
+                if (!s->algebraic[row]) pattern[(size_t)row*n+(size_t)col] = 1;
             }
         }
+    }
+    for (size_t k=0; k<s->constraint_count; ++k) {
+        const ChemConstraint *constraint = &s->constraints[k];
+        size_t row = (size_t)constraint->algebraic_species;
+        for (size_t i=0; i<constraint->reactant_count; ++i)
+            pattern[row*n+(size_t)constraint->reactants[i].species] = 1;
+        for (size_t i=0; i<constraint->product_count; ++i)
+            pattern[row*n+(size_t)constraint->products[i].species] = 1;
     }
     for (size_t i = 0; i < n; ++i)
         for (size_t k = i+1; k < n; ++k)
@@ -102,6 +110,7 @@ int chem_factor(ChemState *s, double alpha)
     size_t n = s->mechanism->species_count, cells = s->cells;
     double *a = s->matrix, *inverse = s->scratch;
     for (size_t i = 0; i < n; ++i) {
+        if (s->algebraic[i]) continue;
         double *diag = a + (size_t)s->pivots[i].diagonal*cells;
         #pragma omp simd
         for (size_t c = 0; c < cells; ++c) diag[c] += alpha;

@@ -4,9 +4,31 @@
 #include <math.h>
 #include <string.h>
 
-ChemRosenbrock chem_rosenbrock_three_stage(void)
+static ChemRosenbrock defaults(void)
 {
     ChemRosenbrock p = {0};
+    p.relative_tolerance = 1e-6;
+    p.factor_min = 0.2; p.factor_max = 6.0; p.safety = 0.9;
+    p.rejection_factor = 0.1; p.max_steps = 1000;
+    p.constraint_max_iterations=10; p.constraint_max_backtracks=24;
+    p.constraint_tolerance=.1; p.constraint_backtrack_factor=.5; p.constraint_sufficient_decrease=1e-4;
+    return p;
+}
+
+ChemRosenbrock chem_rosenbrock_two_stage(void)
+{
+    ChemRosenbrock p = defaults();
+    double g = 1.0 + 1.0 / sqrt(2.0);
+    p.stages=2; p.a[0]=1/g; p.c[0]=-2/g;
+    p.m[0]=3/(2*g); p.m[1]=1/(2*g);
+    p.e[0]=p.e[1]=1/(2*g); p.gamma[0]=g; p.gamma[1]=-g;
+    p.new_function[0]=p.new_function[1]=1; p.order=2;
+    return p;
+}
+
+ChemRosenbrock chem_rosenbrock_three_stage(void)
+{
+    ChemRosenbrock p = defaults();
     p.stages = 3;
     p.a[0] = 1.0; p.a[1] = 1.0;
     p.c[0] = -0.10156171083877702091975600115545e+01;
@@ -18,9 +40,54 @@ ChemRosenbrock chem_rosenbrock_three_stage(void)
     p.e[2] = 0.22354069897811569627360909276199;
     p.gamma[0] = 0.43586652150845899941601945119356;
     p.new_function[0] = p.new_function[1] = 1;
-    p.order = 3.0; p.relative_tolerance = 1e-6;
-    p.factor_min = 0.2; p.factor_max = 6.0; p.safety = 0.9;
-    p.rejection_factor = 0.1; p.max_steps = 1000;
+    p.order = 3.0;
+    return p;
+}
+
+ChemRosenbrock chem_rosenbrock_four_stage(void)
+{
+    ChemRosenbrock p=defaults();
+    p.stages=4;
+    const double a[]={2.0,1.867943637803922,.2344449711399156,1.867943637803922,.2344449711399156,0};
+    const double c[]={-7.137615036412310,2.580708087951457,.6515950076447975,-2.137148994382534,-.3214669691237626,-.6949742501781779};
+    const double m[]={2.255570073418735,.2870493262186792,.4353179431840180,1.093502252409163};
+    const double e[]={-.2815431932141155,-.07276199124938920,-.1082196201495311,-1.093502252409163};
+    memcpy(p.a,a,sizeof a); memcpy(p.c,c,sizeof c); memcpy(p.m,m,sizeof m); memcpy(p.e,e,sizeof e);
+    p.new_function[0]=p.new_function[1]=p.new_function[2]=1;
+    p.gamma[0]=.57282; p.gamma[1]=-1.769193891319233; p.gamma[2]=.7592633437920482; p.gamma[3]=-.1049021087100450;
+    p.order=4;
+    return p;
+}
+
+ChemRosenbrock chem_rosenbrock_four_stage_dae(void)
+{
+    ChemRosenbrock p=defaults();
+    p.stages=4;
+    const double a[]={0,2,0,2,0,1}, c[]={4,1,-1,1,-1,-8.0/3.0};
+    const double m[]={2,0,1,1}, e[]={0,0,0,1};
+    memcpy(p.a,a,sizeof a); memcpy(p.c,c,sizeof c); memcpy(p.m,m,sizeof m); memcpy(p.e,e,sizeof e);
+    p.new_function[0]=p.new_function[2]=p.new_function[3]=1;
+    p.gamma[0]=.5; p.gamma[1]=1.5; p.order=3;
+    return p;
+}
+
+ChemRosenbrock chem_rosenbrock_six_stage_dae(void)
+{
+    ChemRosenbrock p=defaults();
+    p.stages=6;
+    const double a[]={1.544,.9466785280815826,.2557011698983284,3.314825187068521,2.896124015972201,
+                      .9986419139977817,1.221224509226641,6.019134481288629,12.53708332932087,
+                      -.6878860361058950,1.221224509226641,6.019134481288629,12.53708332932087,-.6878860361058950,1};
+    const double c[]={-5.6688,-2.430093356833875,-.2063599157091915,-.1073529058151375,-9.594562251023355,
+                      -20.47028614809616,7.496443313961647,-10.24680431464352,-33.99990352879905,
+                      11.70890893206160,8.08324679592152,-7.981132988064893,-31.52159432874371,
+                      16.31930543123136,-6.058818238834054};
+    memcpy(p.a,a,sizeof a); memcpy(p.c,c,sizeof c);
+    for (size_t i=0;i<4;++i) p.m[i]=a[6+i];
+    p.m[4]=p.m[5]=1; p.e[5]=1;
+    for (size_t i=0;i<6;++i) p.new_function[i]=1;
+    p.gamma[0]=.25; p.gamma[1]=-.1043; p.gamma[2]=.1035; p.gamma[3]=-.03620000000000023;
+    p.order=4;
     return p;
 }
 
@@ -38,7 +105,7 @@ static double normalized_error(const ChemState *s, const ChemRosenbrock *p)
     for (size_t i = 0; i < m->species_count; ++i)
         for (size_t c = 0; c < cells; ++c) {
             size_t at = i*cells+c;
-            double scale = m->species[i].absolute_tolerance +
+            double scale = s->absolute_tolerances[i] +
                 p->relative_tolerance * fmax(fabs(s->values[at]), fabs(s->candidate[at]));
             double ratio = s->error[at] / scale;
             sum += ratio*ratio;
@@ -52,11 +119,20 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
     if (!s || !p || !result || !isfinite(dt) || dt < 0 || p->stages < 1 || p->stages > 6 ||
         p->gamma[0] == 0 || p->order <= 0 || p->relative_tolerance < 0 ||
         p->factor_min <= 0 || p->factor_max < p->factor_min || p->safety <= 0 ||
-        p->rejection_factor <= 0 || p->h_min < 0 || p->h_max < 0 || p->h_start < 0)
+        p->rejection_factor <= 0 || p->h_min < 0 || p->h_max < 0 || p->h_start < 0 ||
+        p->constraint_tolerance < 0 || p->constraint_backtrack_factor <= 0 ||
+        p->constraint_backtrack_factor >= 1 || p->constraint_sufficient_decrease < 0)
         return CHEM_INVALID;
     memset(result, 0, sizeof(*result));
-    if (dt == 0) return CHEM_OK;
     size_t ny = s->mechanism->species_count * s->cells;
+    if (s->constraint_count) {
+        int status=chem_project_constraints(s,p,result);
+        if (status) return status;
+    }
+    if (dt == 0) {
+        for (size_t i = 0; i < ny; ++i) if (!s->algebraic[i/s->cells] && s->values[i] < 0) s->values[i] = 0;
+        return CHEM_OK;
+    }
     double h_min = p->h_min == 0.0 ? 1e-15*dt : p->h_min;
     double h_max = p->h_max == 0.0 ? dt : fmin(dt, p->h_max);
     double h_start = p->h_start == 0.0 ? 1e-6*dt : fmin(h_max, p->h_start);
@@ -90,7 +166,12 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
                 }
                 if (stage+1 < p->stages && !p->new_function[stage+1])
                     memcpy(s->stages+(stage+1)*ny, k, ny*sizeof(*k));
-                for (size_t j = 0; j < stage; ++j) axpy(ny, k, s->stages+j*ny, p->c[first+j]/h);
+                for (size_t j = 0; j < stage; ++j) {
+                    double factor=p->c[first+j]/h;
+                    if (!s->constraint_count) axpy(ny,k,s->stages+j*ny,factor);
+                    else for (size_t i=0; i<s->mechanism->species_count; ++i) if (!s->algebraic[i])
+                        axpy(s->cells,k+i*s->cells,s->stages+j*ny+i*s->cells,factor);
+                }
                 chem_substitute(s, k);
                 ++result->solves;
             }
@@ -100,6 +181,11 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
                 axpy(ny, s->candidate, s->stages+stage*ny, p->m[stage]);
                 axpy(ny, s->error, s->stages+stage*ny, p->e[stage]);
             }
+            for (size_t i=0; i<s->mechanism->species_count; ++i) if (s->algebraic[i])
+                for (size_t c=0; c<s->cells; ++c) {
+                    size_t at=i*s->cells+c;
+                    s->error[at]=s->candidate[at]-s->values[at];
+                }
             double error = normalized_error(s, p);
             if (!isfinite(error)) return CHEM_NONFINITE;
             double factor = fmin(p->factor_max, fmax(p->factor_min, p->safety / pow(error, 1.0/p->order)));
@@ -126,5 +212,6 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
         }
     }
     result->final_time = time;
+    for (size_t i = 0; i < ny; ++i) if (!s->algebraic[i/s->cells] && s->values[i] < 0) s->values[i] = 0;
     return CHEM_OK;
 }

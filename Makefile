@@ -24,9 +24,9 @@ endif
 CFLAGS := -std=c11 -Wall -Wextra -Wpedantic $(OPTFLAGS) $(OMP_CFLAGS) -Iinclude
 LDLIBS := $(OMP_LIBS) -lm
 
-.PHONY: env clean micm-ref cpu bench test-core FORCE
+.PHONY: env clean micm-ref cpu bench test-core test-cpu FORCE
 env:
-	CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(ENV) --file environment.yml
+	@if [ ! -x $(PYTHON) ]; then CONDA_PKGS_DIRS=$(CURDIR)/.conda-pkgs $(CONDA) env create --prefix $(ENV) --file environment.yml; fi
 
 bin:
 	mkdir -p $@
@@ -37,7 +37,7 @@ build:
 build/.compiler: FORCE | build
 	@printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' | cmp -s - $@ || printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' > $@
 
-SOURCES := src/state.c src/rates.c src/linear.c src/rosenbrock.c
+SOURCES := src/state.c src/rates.c src/linear.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/projection.c
 OBJECTS := $(SOURCES:src/%.c=build/%.o)
 
 build/%.o: src/%.c src/internal.h include/chem.h build/.compiler | build
@@ -58,6 +58,21 @@ bin/ts1_bench_cpu: src/ts1_bench.c build/ts1.o build/libchem.a | bin
 bin/test_core: tests/test_core.c build/libchem.a build/.compiler | bin
 	$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
+bin/reference_rates: tests/reference_rates.c build/libchem.a build/.compiler | bin
+	$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/reference_solver: tests/reference_solver.c build/libchem.a build/.compiler | bin
+	$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/reference_constraints: tests/reference_constraints.c build/libchem.a build/.compiler | bin
+	$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/reference_initialization: tests/reference_initialization.c build/libchem.a build/.compiler | bin
+	$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/test_constraints: tests/test_constraints.c build/libchem.a build/.compiler | bin
+	$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
 build/tutorial_no_user.c: tests/fixtures/rate_constants_no_user_defined/config.yaml tests/fixtures/rate_constants_no_user_defined/species.yaml tests/fixtures/rate_constants_no_user_defined/reactions.yaml tools/config.py tools/generate.py
 	$(PYTHON) tools/generate.py $< $@ --symbol tutorial_no_user
 
@@ -73,9 +88,16 @@ build/tutorial_%.o: build/tutorial_%.c include/chem.h build/.compiler
 bin/test_configurations: tests/test_configurations.c build/tutorial_no_user.o build/tutorial_user.o build/tutorial_robertson.o build/libchem.a build/.compiler | bin
 	$(CC) $(CFLAGS) $< build/tutorial_no_user.o build/tutorial_user.o build/tutorial_robertson.o build/libchem.a $(LDLIBS) -o $@
 
-test-core: bin/test_core bin/test_configurations
+bin/tutorial_program: tests/tutorial_program.c build/tutorial_no_user.o build/tutorial_user.o build/libchem.a build/.compiler | bin
+	$(CC) $(CFLAGS) $< build/tutorial_no_user.o build/tutorial_user.o build/libchem.a $(LDLIBS) -o $@
+
+test-core: bin/test_core bin/test_configurations bin/test_constraints
 	./bin/test_core
 	./bin/test_configurations
+	./bin/test_constraints
+
+test-cpu: bin/reference_rates bin/reference_solver bin/reference_constraints bin/reference_initialization bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints
+	@$(PYTHON) tests/run_cases.py
 
 cpu bench: bin/ts1_bench_cpu
 

@@ -8,8 +8,10 @@
 typedef enum {
     CHEM_ARRHENIUS, CHEM_TROE, CHEM_TERNARY, CHEM_TERNARY_JPL19,
     CHEM_BRANCHED, CHEM_TUNNELING, CHEM_TAYLOR, CHEM_REVERSIBLE,
-    CHEM_USER, CHEM_SURFACE
+    CHEM_USER, CHEM_SURFACE, CHEM_CALLBACK
 } ChemRateKind;
+
+typedef double (*ChemRateFunction)(double temperature, double pressure, double air_density, void *context);
 
 typedef struct {
     const char *name;
@@ -17,6 +19,18 @@ typedef struct {
 } ChemSpecies;
 
 typedef struct { int species; double yield; } ChemProduct;
+typedef struct { int species; double coefficient; } ChemTerm;
+
+typedef enum { CHEM_LINEAR_CONSTRAINT, CHEM_EQUILIBRIUM_CONSTRAINT } ChemConstraintKind;
+typedef struct {
+    const char *name;
+    ChemConstraintKind kind;
+    int algebraic_species;
+    const ChemTerm *reactants, *products;
+    size_t reactant_count, product_count;
+    double constant;
+    double equilibrium_constant, enthalpy, gas_constant, reference_temperature;
+} ChemConstraint;
 
 typedef struct {
     ChemRateKind kind;
@@ -31,6 +45,9 @@ typedef struct {
     double diffusion, molecular_weight, probability;
     size_t coefficient_count;
     double coefficients[16];
+    const char *label;
+    ChemRateFunction function;
+    void *context;
 } ChemRate;
 
 typedef struct {
@@ -52,7 +69,7 @@ typedef struct {
 
 typedef struct {
     unsigned long internal_steps, accepted, rejected, function_calls;
-    unsigned long jacobian_updates, decompositions, solves;
+    unsigned long jacobian_updates, decompositions, solves, constraint_init_iterations;
     double final_time;
 } ChemStats;
 
@@ -65,12 +82,35 @@ typedef struct {
     double order, relative_tolerance, h_min, h_max, h_start;
     double factor_min, factor_max, safety, rejection_factor;
     unsigned max_steps;
+    unsigned constraint_max_iterations, constraint_max_backtracks;
+    double constraint_tolerance, constraint_backtrack_factor, constraint_sufficient_decrease;
 } ChemRosenbrock;
+
+typedef struct {
+    double small, h_start, relative_tolerance;
+    unsigned max_iterations;
+    double time_step_reductions[5];
+} ChemBackwardEuler;
 
 typedef struct ChemState ChemState;
 
 ChemRosenbrock chem_rosenbrock_three_stage(void);
+ChemRosenbrock chem_rosenbrock_two_stage(void);
+ChemRosenbrock chem_rosenbrock_four_stage(void);
+ChemRosenbrock chem_rosenbrock_four_stage_dae(void);
+ChemRosenbrock chem_rosenbrock_six_stage_dae(void);
+ChemBackwardEuler chem_backward_euler_defaults(void);
+ChemRate chem_rate_defaults(ChemRateKind kind);
+int chem_rate_calculate(const ChemRate *rate, double temperature, double pressure,
+                        double air_density, const double *parameters, size_t parameter_count,
+                        double *result);
 ChemState *chem_state_create(const ChemMechanism *mechanism, size_t cells);
+ChemState *chem_state_create_constrained(const ChemMechanism *mechanism, const ChemConstraint *constraints,
+                                         size_t constraint_count, size_t cells);
+int chem_validate_constraints(const ChemMechanism *mechanism, const ChemConstraint *constraints, size_t count);
+int chem_constraint_evaluate(const ChemConstraint *constraint, const double *values, size_t species_count,
+                             double temperature, double *residual, double *gradient);
+int chem_initialize_constraints(ChemState *state, const ChemRosenbrock *parameters, ChemStats *stats);
 /* Share the immutable symbolic linear-solver plan with an existing state. */
 ChemState *chem_state_create_like(const ChemState *state, size_t cells);
 void chem_state_free(ChemState *state);
@@ -80,16 +120,28 @@ double *chem_species_values(ChemState *state, size_t species);
 double *chem_parameter_values(ChemState *state, size_t parameter);
 double *chem_temperatures(ChemState *state);
 double *chem_pressures(ChemState *state);
+double *chem_absolute_tolerances(ChemState *state);
+/* By default air density is calculated from temperature and pressure at rate
+ * update. An explicit density can be installed independently for each cell. */
+int chem_set_air_density(ChemState *state, size_t cell, double density);
+int chem_use_ideal_air_density(ChemState *state, size_t cell);
 int chem_find_species(const ChemMechanism *mechanism, const char *name);
 int chem_find_parameter(const ChemMechanism *mechanism, const char *name);
+int chem_override_rate_function(ChemState *state, const char *label, ChemRateFunction function, void *context);
 int chem_update_rates(ChemState *state);
 /* Negative Jacobian, in dense row-major form for one cell, and forcing, for
  * diagnostics and tests. The solver itself uses sparse storage. */
 int chem_evaluate(const ChemState *state, size_t cell, double *forcing, double *negative_jacobian);
 int chem_solve(ChemState *state, const ChemRosenbrock *parameters, double dt, ChemStats *stats);
+int chem_backward_euler_converged(size_t species_count, size_t cells, const double *residual,
+                                  const double *values, const double *absolute_tolerances,
+                                  double relative_tolerance, double small);
+int chem_solve_backward_euler(ChemState *state, const ChemBackwardEuler *parameters, double dt, ChemStats *stats);
 const char *chem_error_string(int code);
 
 enum { CHEM_OK = 0, CHEM_INVALID = 1, CHEM_MEMORY = 2, CHEM_SINGULAR = 3,
-       CHEM_TOO_MANY_STEPS = 4, CHEM_STEP_TOO_SMALL = 5, CHEM_NONFINITE = 6 };
+       CHEM_TOO_MANY_STEPS = 4, CHEM_STEP_TOO_SMALL = 5, CHEM_NONFINITE = 6,
+       CHEM_MISSING_DIFFUSION = 7, CHEM_MISSING_MOLECULAR_WEIGHT = 8,
+       CHEM_UNCONVERGED = 9, CHEM_CONSTRAINT_INITIALIZATION_FAILED = 10 };
 
 #endif
