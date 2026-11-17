@@ -147,8 +147,12 @@ yet timed" wherever these four entries' times would go.
   `results/2026-10-20-tier1-judging-opus/brief/PAGE_TEMPLATE.md`), and no
   judging; whether Terra enters Tiers 2 and 3 is decided after Tier 1.
 - terra-high's case report: each PASS id is the exit status of one of 47 test
-  programs (675 ids, 86 from one); audit that each program checks every case
-  mapped to it (`tools/test_cpu.py:8-293`), as for luna-high.
+  programs (675 ids, 86 from one). A partial audit found 24 vector-ordering LU
+  and linear-solver ids passing on single-cell, standard-storage checks, and 5
+  more in programs with no grouped-layout code
+  (`results/2026-11-17-terra-high-verification`); the rest of the mapping
+  (`tools/test_cpu.py:9-293`) is untraced. For the SSE, with the Luna gate
+  findings.
 - The archived transcripts (all of them, Terra's included) contain the SSE's
   Codex approved-command list, which names a work email address; the SSE has
   been told; redaction is the SSE's call.

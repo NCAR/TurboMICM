@@ -622,7 +622,12 @@ Token counts are as Codex reports them: total = uncached input + output.
   steps per cell and interval; the solver allocates its working memory on
   every call, inside the timer. A finding for the SSE: each PASS id is its
   test program's exit status, 675 ids from 47 programs (86 from one), as for
-  luna-max and luna-xhigh; the mapping was not audited.
+  luna-max and luna-xhigh. A partial audit at wrap-up (read-only): the
+  asserts are live (`NDEBUG` undefined in every test), but 24 vector-ordering
+  LU and linear-solver ids pass from `test_doolittle` and `test_linear_solve`,
+  which test one cell in standard storage only; 5 more vector-ordered ids sit
+  in programs with no grouped-layout code; the rest was not traced
+  (`results/2026-11-17-terra-high-verification`).
 - Timing: the session for all entries was armed at 08:49 in tmux
   `tier1-timing` (`~/NSF-NCAR/tier1-work/time-when-idle.sh terra luna-max
   luna-xhigh luna-high terra-max terra-xhigh terra-high`), waiting for an idle

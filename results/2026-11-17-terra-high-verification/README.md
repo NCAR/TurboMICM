@@ -29,9 +29,22 @@ clang 21.0.0) and once with `CC=gcc-15` (GCC 15.2.0), by
   share 47 exit statuses, 579 of them in programs that carry ten or more ids
   (86 from `build/test_sparse_functions`, 42 from `build/test_sparse_views`).
   The file states that "each listed executable must check every assertion in
-  each mapped case" (`tools/test_cpu.py:8`); this verification did not audit
-  that mapping. It is the pattern Tier 1's judges recorded for luna-max and
-  luna-xhigh.
+  each mapped case" (`tools/test_cpu.py:8`). A partial, read-only audit on
+  2026-11-17: the asserts are live in the `-O3 -DNDEBUG` build, since every
+  test source undefines `NDEBUG` before `<assert.h>`
+  (`tests/test_doolittle.c:3-6`). But `build/test_doolittle` and
+  `build/test_linear_solve` factor and solve one cell's matrix in standard
+  storage only (`tests/test_doolittle.c:13-50`; `tests/test_linear_solve.c:13-42`),
+  and carry 24 of MICM's vector-ordering ids
+  (`lu_decomposition_{doolittle,mozart}[_in_place]:…VectorOrdering`,
+  `linear_solver[_in_place]:…VectorOrdering`): those 24 PASS lines rest on no
+  check of a vector-ordered layout. terra-max and terra-xhigh test these
+  cases at grouped widths. Three more programs carry 5 vector-ordered ids
+  (`ConstraintSet.VectorMatrix1-3`, `ProcessSet.VectorMatrix`,
+  `Process.VectorMatrix`) with no grouped-layout code in their sources (not
+  read further); the other 157 vector-ordered ids come from programs that do
+  build grouped layouts, and the rest of the mapping was not traced. The
+  judges recorded the same reporting pattern for luna-max and luna-xhigh.
 - **TS1 gate:** passes with both compilers; largest relative difference from
   MICM 1.25e-13 with clang (BCARY, cell 6848) and 1.43e-13 with gcc-15
   (BCARYO2VBS, cell 4054).

@@ -430,8 +430,10 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   all day, and a Google Meet call more. Next: that session, as
   `admin/FOLLOW-UP-tier1-timing.md` sets out (the machine check, the gate's
   `IDLE_CPU_LIMIT`, the steps, and every page to update). Still open for
-  Terra: Tier-1-Implementations sections, entrant pages, judging, and an
-  audit of terra-high's case mapping.
+  Terra: Tier-1-Implementations sections, entrant pages, judging, and the
+  rest of the audit of terra-high's case mapping (so far: 24
+  vector-ordering LU and linear-solver ids pass on single-cell checks, 5 more
+  are doubtful; a finding for the SSE that bears on the gate).
 - Luna: run all three fresh, one after another, at max, xhigh, then high (the
   SSE's order, 2026-10-19), each verified and timed with all entries before the
   next starts. luna-max is done: finished 21:05, verified, and timed overnight
