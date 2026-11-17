@@ -188,9 +188,12 @@ ChemSolveStatus chem_rosenbrock_solve(size_t n, double *y, double duration,
         rhs(context, y, initial); ++stats->function_calls;
         if (constraints && constraints->count)
             chem_constraint_residuals(constraints,1,y,&o->constraint_temperature,o->constraint_parameters,initial);
+        /* The reference counts the Jacobian once per outer step. In-place
+           retries rebuild it but do not count those rebuilds as new updates. */
+        ++stats->jacobian_updates;
         int accepted = 0;
         while (!accepted) {
-            jacobian(context, y, matrix); ++stats->jacobian_updates;
+            jacobian(context, y, matrix);
             if (o->sparse_plan) chem_sparse_negate(o->sparse_plan,matrix);
             else for (size_t i = 0; i < n*n; ++i) matrix[i] = -matrix[i];
             if (constraints && constraints->count) {

@@ -189,3 +189,7 @@ executable. On macOS, `LIBOMP_PREFIX` selects the clang OpenMP installation
 and defaults to the prefix reported by Homebrew. On other systems the build
 uses the compiler's `-fopenmp` support. These settings do not select numerical
 methods or change solver tolerances.
+
+For Rosenbrock statistics, a Jacobian update is counted once per outer step;
+rebuilding the matrix after an in-place rejected attempt does not increment
+that count. Decompositions and stage solves are counted for every attempt.

@@ -35,9 +35,11 @@ int main(void)
             ChemSolverStats stats;
             assert(chem_rosenbrock_solve(5,y,1000,rhs,jacobian,&system,&method,&options,&stats)==CHEM_SOLVE_OK);
             assert(stats.steps-stats.accepted>=2);
+            assert(stats.jacobian_updates==stats.accepted && stats.decompositions==stats.steps);
             if (!separate) { reference=stats; for (size_t i=0;i<5;++i) first[i]=y[i]; }
             else {
-                assert(reference.steps==stats.steps && reference.accepted==stats.accepted && reference.rejected==stats.rejected);
+                assert(reference.steps==stats.steps && reference.accepted==stats.accepted && reference.rejected==stats.rejected &&
+                       reference.jacobian_updates==stats.jacobian_updates && reference.decompositions==stats.decompositions);
                 for (size_t i=0;i<5;++i) assert(fabs(first[i]-y[i])<=fabs(first[i])*1e-14);
             }
         }
