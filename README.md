@@ -1,4 +1,4 @@
-# CPU chemistry port (in progress)
+# CPU chemistry port
 
 Create the local tooling environment with `make env`. `make cpu` builds the C11
 mass-action library and TS1 benchmark. `make check CC=clang` or `make check CC=gcc-15` builds and

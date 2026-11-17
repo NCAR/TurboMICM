@@ -1,4 +1,4 @@
-# Design (in progress)
+# Design
 
 For mechanisms constructed in C, `ChemProcess` owns copied reactants,
 products, phase metadata, and a rate descriptor. `chem_build_mechanism`
