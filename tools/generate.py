@@ -40,15 +40,17 @@ def reorder_species(species, rs, ps, reactions):
         order.append(pivot)
     inverse = {old: new for new, old in enumerate(order)}
     species = [species[i] for i in order]
-    rs = [(inverse[i] if i >= 0 else -1, value) for i, value in rs]
+    rs = [(inverse[i] if i >= 0 else i, value) for i, value in rs]
     ps = [(inverse[i], value) for i, value in ps]
     return species, rs, ps
 
 
 def compile_mechanism(mech):
-    species = [s for s in mech['species'] if not s.get('third body')]
+    species = [s for s in mech['species'] if not s.get('third body') and 'parameterization' not in s]
+    parameterized = [s for s in mech['species'] if 'parameterization' in s]
     indices = {s['name']: i for i, s in enumerate(species)}
     indices.update({s['name']: -1 for s in mech['species'] if s.get('third body')})
+    indices.update({s['name']: -2-i for i, s in enumerate(parameterized)})
     properties = {s['name']: s for s in mech['species']}
     params, rs, ps, reactions = [], [], [], []
     def param(name):
@@ -149,6 +151,14 @@ def emit(mech, symbol):
         out.append('};')
     array('char *const', 'species_names', [json.dumps(s['name']) for s in species])
     array('char *const', 'parameter_names', [json.dumps(n) for n in params])
+    parameterized = [s for s in mech['species'] if 'parameterization' in s]
+    entries = []
+    for item in parameterized:
+        coefficients = item['parameterization']
+        if not isinstance(coefficients, dict) or set(coefficients) - {'constant', 'temperature', 'pressure', 'air density'}:
+            raise MechanismError('invalid species parameterization')
+        entries.append('{' + ', '.join(number(coefficients.get(k, 0)) for k in ('constant','temperature','pressure','air density')) + '}')
+    array('ChemParameterization', 'parameterized_species', entries or ['{0, 0, 0, 0}'])
     initial = mech['initial conditions']
     array('double', 'initial_species', [number(initial.get(s['name'], 0)) for s in species])
     array('double', 'initial_parameters', [number(initial.get(n, 0)) for n in params])
@@ -158,7 +168,7 @@ def emit(mech, symbol):
     for kind, rb, rc, pb, pc, idx, values in reactions:
         rows.append('{CHEM_%s, %d, %d, %d, %d, %d, {%s}}' % (kind, rb, rc, pb, pc, idx, ', '.join(map(number, values))))
     array('ChemReaction', 'reactions', rows or ['{0}'])
-    out.append(f'const ChemMechanism {symbol} = {{{len(species)}, {len(reactions)}, {len(params)}, species_names, parameter_names, initial_species, initial_parameters, reactions, reactants, products}};')
+    out.append(f'const ChemMechanism {symbol} = {{{len(species)}, {len(reactions)}, {len(params)}, species_names, parameter_names, initial_species, initial_parameters, reactions, reactants, products, {len(parameterized)}, parameterized_species}};')
     return '\n'.join(out) + '\n'
 
 

@@ -157,7 +157,7 @@ static int backward_solve(void)
         {CHEM_ARRHENIUS,0,1,0,1,-1,{2.15e-11,0,110,300,0}},
         {CHEM_ARRHENIUS,1,1,1,1,-1,{3.3e-11,0,55,300,0}}
     };
-    const ChemMechanism m = {3,2,0,names,NULL,NULL,NULL,reactions,react,product};
+    const ChemMechanism m = {3,2,0,names,NULL,NULL,NULL,reactions,react,product,0,NULL};
     ChemConditions c = {272.5,101253.3,1e6,1};
     ChemBackwardEulerParameters p = chem_backward_euler_defaults();
     p.absolute_tolerance = 1e-6;
@@ -287,7 +287,7 @@ static int initialization_case(int which)
     const char *names[] = {"A","B","C"};
     const ChemTerm react[] = {{0,1}}, prod[] = {{1,1}}, eqreact[] = {{1,1}}, eqprod[] = {{2,1}};
     const ChemReaction reaction = {CHEM_ARRHENIUS,0,1,0,1,-1,{.5,0,0,300,0}};
-    const ChemMechanism m = {3,1,0,names,NULL,NULL,NULL,&reaction,react,prod};
+    const ChemMechanism m = {3,1,0,names,NULL,NULL,NULL,&reaction,react,prod,0,NULL};
     ChemConstraint constraint = {"B_C_eq",CHEM_EQUILIBRIUM_CONSTRAINT,2,eqreact,eqprod,1,1,2,0,8.31446261815324,298.15};
     ChemConditions conditions = {298.15,101325,0,0};
     ChemRosenbrockParameters p = chem_rosenbrock_three_stage();
@@ -386,7 +386,7 @@ static int lambda_case(int solve)
     const char *names[] = {"A","B"}, *parameter_names[] = {"lambda_rc"};
     const ChemTerm reactants[] = {{0,1}}, products[] = {{1,1}};
     const ChemReaction reaction = {CHEM_CALLBACK,0,1,0,1,0,{0}};
-    const ChemMechanism m = {2,1,1,names,parameter_names,NULL,NULL,&reaction,reactants,products};
+    const ChemMechanism m = {2,1,1,names,parameter_names,NULL,NULL,&reaction,reactants,products,0,NULL};
     ChemConditions c = {300,101253.3,1e6,1};
     double scale=solve ? 1e-3 : 2, parameters[1]={0}, rate;
     ChemCallback callbacks[] = {{callback,&scale}};
@@ -403,6 +403,21 @@ static int lambda_case(int solve)
     double y[]={1,0}; ChemStatistics stats;
     int status=chem_backward_euler_solve(&m,w,&p,c,&rate,1,y,&stats); chem_workspace_free(w);
     return !status && stats.final_time==1;
+}
+
+static int parameterized_multiplier(void)
+{
+    ChemParameterization parameterization = {0,0,0,2};
+    ChemConditions conditions = {300,100000,5,1};
+    if (fabs(chem_parameterized_value(parameterization,conditions)-10)>1e-14) return 0;
+    const char *names[]={"a"};
+    const ChemTerm reactants[]={{-2,1}}, products[]={{0,1}};
+    const ChemReaction reactions[]={{CHEM_ARRHENIUS,0,1,0,1,-1,{1,0,0,300,0}}};
+    const ChemMechanism mechanism={1,1,0,names,NULL,NULL,NULL,reactions,reactants,products,1,&parameterization};
+    double rates[1], y[]={0}, f[1];
+    if (chem_rate_constants(&mechanism,conditions,NULL,rates) || fabs(rates[0]-10)>1e-14) return 0;
+    chem_forcing(&mechanism,conditions,rates,y,f);
+    return fabs(f[0]-10)<=1e-14;
 }
 
 static int arrhenius(void)
@@ -506,5 +521,6 @@ int main(void)
     printf("constraint_initialization:ConstraintInitialization.SolverStateToStringNewValue %d\n", !strcmp(chem_solver_status_string(CHEM_SOLVE_CONSTRAINT_INITIALIZATION_FAILED), "Constraint Initialization Failed"));
     printf("lambda_rate_constant:LambdaRateConstant.CalculateWithSystem %d\n", lambda_case(0));
     printf("solver_lambda_rate_constant:Solver.GetLambdaRateConstantByNameCanOverrideLambda %d\n", lambda_case(1));
+    printf("reaction_rate_store:ReactionRateConstantStore.ParameterizedMultipliers %d\n", parameterized_multiplier());
     return 0;
 }

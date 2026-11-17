@@ -74,12 +74,13 @@ test-cpu:
 build/test_dae: tests/test_dae.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
-test-reader: build/test_chem build/test_solver build/test_robertson_config build/test_dae
+test-reader: build/test_chem build/test_solver build/test_robertson_config build/test_dae build/test_parameterized
 	$(PYTHON) -m unittest discover -s tests -v
 	./build/test_chem
 	./build/test_solver
 	./build/test_robertson_config
 	./build/test_dae
+	./build/test_parameterized
 
 clean:
 	rm -rf build bin
@@ -100,4 +101,10 @@ build/robertson.c: ../micm/test/tutorial/configs/robertson/config.json ../micm/t
 	$(PYTHON) tools/generate.py $< $@
 
 build/test_robertson_config: tests/test_robertson_config.c build/robertson.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
+build/parameterized.c: configs/parameterized/config.json configs/parameterized/species.json configs/parameterized/reactions.json tools/generate.py tools/mechanism.py | build
+	$(PYTHON) tools/generate.py $< $@
+
+build/test_parameterized: tests/test_parameterized.c build/parameterized.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@

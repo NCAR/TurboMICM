@@ -7,7 +7,7 @@ int main(void)
     const char *names[] = {"A", "B"};
     const ChemTerm reactants[] = {{0,1}}, products[] = {{1,1}}, terms[] = {{0,1},{1,1}};
     const ChemReaction reaction[] = {{CHEM_ARRHENIUS,0,1,0,1,-1,{.1,0,0,300,0}}};
-    const ChemMechanism mechanism = {2,1,0,names,NULL,NULL,NULL,reaction,reactants,products};
+    const ChemMechanism mechanism = {2,1,0,names,NULL,NULL,NULL,reaction,reactants,products,0,NULL};
     const ChemConstraint constraint = {"total",CHEM_LINEAR_CONSTRAINT,1,terms,NULL,2,0,1,0,0,0};
     ChemWorkspace *work = chem_workspace_create_constrained(&mechanism,&constraint,1);
     ChemConditions conditions = {300,100000,0,0};

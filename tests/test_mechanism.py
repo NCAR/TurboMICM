@@ -51,6 +51,15 @@ class ReaderTests(unittest.TestCase):
                 continue
             self.assertEqual(defaults.get(name, 0.0), float(value), name)
 
+    def test_parameterized_species_are_not_state_variables(self):
+        mech = {'species': [{'type': 'CHEM_SPEC', 'name': 'A'},
+                            {'type': 'CHEM_SPEC', 'name': 'M', 'parameterization': {'air density': 2}}],
+                'reactions': [{'type': 'ARRHENIUS', 'reactants': {'M': {}}, 'products': {'A': {}}}],
+                'initial conditions': {}, 'rate units': 'mol m-3'}
+        species, _, reactants, _, _ = compile_mechanism(mech)
+        self.assertEqual([s['name'] for s in species], ['A'])
+        self.assertEqual(reactants, [(-2, 1.0)])
+
     def test_bad_species_reference(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)

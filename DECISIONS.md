@@ -26,3 +26,8 @@
 - The JPL-19 falloff, reversible, and Taylor-series rate types use explicit
   configuration type names `TERNARY_JPL19`, `REVERSIBLE`, and `TAYLOR`.
   Taylor coefficients are a list of one to sixteen numbers.
+- A `parameterization` species field describes a linear combination of
+  `constant`, `temperature`, `pressure`, and `air density`. Parameterized
+  species have no state variable; their reactant multipliers are folded into
+  the rate constant during the conditions update. This generalizes the
+  air-density-only third-body field.

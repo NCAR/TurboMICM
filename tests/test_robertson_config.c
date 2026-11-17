@@ -15,7 +15,7 @@ int main(void)
     const ChemReaction reactions[] = {
         {CHEM_USER, 0,1,0,1,0,{1}}, {CHEM_USER,1,2,1,2,1,{1}}, {CHEM_USER,3,2,3,2,2,{1}}
     };
-    const ChemMechanism hand = {3,3,3,names,parameter_names,defaults,defaults,reactions,reactants,products};
+    const ChemMechanism hand = {3,3,3,names,parameter_names,defaults,defaults,reactions,reactants,products,0,NULL};
     const ChemMechanism *mechanisms[] = {&hand, &generated_mechanism};
     double solutions[2][3];
     for (size_t m = 0; m < 2; ++m) {

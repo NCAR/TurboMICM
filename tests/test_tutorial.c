@@ -26,7 +26,7 @@ static ChemMechanism hand_mechanism(int user)
     r[7] = (ChemReaction){CHEM_USER,8,1,7,1,2,{1}};
     r[8] = (ChemReaction){CHEM_USER,9,1,8,0,3,{1}};
     r[9] = (ChemReaction){CHEM_USER,10,0,8,1,4,{1}};
-    return (ChemMechanism){7, user ? 10 : 7, user ? 5 : 2, names, params, initial, defaults, r, react, prod};
+    return (ChemMechanism){7, user ? 10 : 7, user ? 5 : 2, names, params, initial, defaults, r, react, prod, 0, NULL};
 }
 
 static int run(const ChemMechanism *m, int user, double output[11][7])

@@ -44,6 +44,9 @@ def read_mechanism(path):
                 reactions.extend(item.get('reactions', []))
             else:
                 raise MechanismError(f'{filename}: unsupported camp-data type {kind!r}')
+    for item in species:
+        if item.get('third body') and 'parameterization' in item:
+            raise MechanismError(f"species {item.get('name')!r}: choose third body or parameterization, not both")
     names = [item.get('name') for item in species]
     if not names or any(not isinstance(n, str) or not n for n in names) or len(set(names)) != len(names):
         raise MechanismError('species names must be nonempty and unique')

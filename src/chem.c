@@ -44,6 +44,20 @@ static double density(ChemConditions c)
     return c.has_air_density ? c.air_density : c.pressure / (gas_constant * c.temperature);
 }
 
+double chem_parameterized_value(ChemParameterization p, ChemConditions c)
+{
+    return p.constant + p.temperature*c.temperature + p.pressure*c.pressure + p.air_density*density(c);
+}
+
+static double reactant_value(const ChemMechanism *m, int species, ChemConditions c, const double *y)
+{
+    if (species >= 0) return y[species];
+    if (species == -1) return density(c);
+    size_t index = (size_t)(-(species+2));
+    return index < m->parameterized_species_count && m->parameterized_species ?
+        chem_parameterized_value(m->parameterized_species[index],c) : NAN;
+}
+
 static double branch_factor(double a, double b)
 {
     double ratio = a / b;
@@ -130,6 +144,10 @@ int chem_rate_constants_with_callbacks(const ChemMechanism *m, ChemConditions c,
         }
         default: return 1;
         }
+        for (size_t q = 0; q < r->reactant_count; ++q) {
+            int species = m->reactants[r->reactant_begin+q].species;
+            if (species < 0) k *= reactant_value(m, species, c, NULL);
+        }
         if (!isfinite(k)) return 1;
         rates[i] = k;
     }
@@ -138,14 +156,14 @@ int chem_rate_constants_with_callbacks(const ChemMechanism *m, ChemConditions c,
 
 void chem_forcing(const ChemMechanism *m, ChemConditions c, const double *rates, const double *y, double *f)
 {
-    double air = density(c);
+    (void)c; /* parameterized reactants are incorporated in rates */
     memset(f, 0, m->species_count * sizeof(*f));
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemReaction *r = &m->reactions[i];
         double rate = rates[i];
         for (size_t q = 0; q < r->reactant_count; ++q) {
             int s = m->reactants[r->reactant_begin + q].species;
-            rate *= s < 0 ? air : y[s];
+            if (s >= 0) rate *= y[s];
         }
         for (size_t q = 0; q < r->reactant_count; ++q) {
             int s = m->reactants[r->reactant_begin + q].species;
@@ -166,8 +184,8 @@ void chem_jacobian(const ChemMechanism *m, ChemConditions c, const double *rates
 
 void chem_jacobian_add(const ChemMechanism *m, ChemConditions c, const double *rates, const double *y, double *j)
 {
+    (void)c;
     size_t n = m->species_count;
-    double air = density(c);
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemReaction *r = &m->reactions[i];
         for (size_t q = 0; q < r->reactant_count; ++q) {
@@ -177,7 +195,7 @@ void chem_jacobian_add(const ChemMechanism *m, ChemConditions c, const double *r
             for (size_t k = 0; k < r->reactant_count; ++k) {
                 if (k == q) continue;
                 int s = m->reactants[r->reactant_begin + k].species;
-                derivative *= s < 0 ? air : y[s];
+                if (s >= 0) derivative *= y[s];
             }
             for (size_t k = 0; k < r->reactant_count; ++k) {
                 int row = m->reactants[r->reactant_begin + k].species;

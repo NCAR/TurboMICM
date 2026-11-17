@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 /* Terms are ordered; repeated reactants have separate entries.  A reactant
- * index of -1 denotes the third body, parameterized by air density. */
+ * index of -1 denotes air density; lower values index parameterized species. */
 typedef struct { int species; double yield; } ChemTerm;
 typedef enum {
     CHEM_ARRHENIUS, CHEM_TROE, CHEM_TERNARY, CHEM_TUNNELING,
@@ -17,18 +17,22 @@ typedef struct {
     int parameter;                 /* first custom parameter, or -1 */
     double p[22];                  /* interpreted by the rate type */
 } ChemReaction;
+typedef struct { double constant, temperature, pressure, air_density; } ChemParameterization;
 typedef struct {
     size_t species_count, reaction_count, parameter_count;
     const char *const *species_names, *const *parameter_names;
     const double *initial_species, *initial_parameters;
     const ChemReaction *reactions;
     const ChemTerm *reactants, *products;
+    size_t parameterized_species_count;
+    const ChemParameterization *parameterized_species;
 } ChemMechanism;
 typedef struct {
     double temperature, pressure;
     double air_density; /* used when has_air_density is nonzero */
     int has_air_density;
 } ChemConditions;
+double chem_parameterized_value(ChemParameterization, ChemConditions);
 typedef double (*ChemRateCallback)(ChemConditions, void *context);
 typedef struct { ChemRateCallback function; void *context; } ChemCallback;
 ptrdiff_t chem_parameter_index(const ChemMechanism *, const char *name);

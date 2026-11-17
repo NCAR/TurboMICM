@@ -1,0 +1,4 @@
+{"camp-data": [{"type": "MECHANISM", "name": "parameterized", "reactions": [
+  {"type": "ARRHENIUS", "reactants": {"A": {}, "M": {}}, "products": {"B": {}}},
+  {"type": "ARRHENIUS", "reactants": {"B": {}, "X": {}}, "products": {"A": {}}}
+]}]}
