@@ -44,7 +44,9 @@ scheduling; `--threads` sets the thread count (default: OpenMP maximum). Each
 cell currently owns independent solver state and error control. Timings exclude
 input, rate setup, warm-up, and output. A mechanism-generic symbolic plan
 calculates fill once, then skips structural
-zeros during factorization and triangular solves. Matrix values still occupy
+zeros during factorization and triangular solves. The plan records each
+row and column diagonal so factorization and substitution can visit just the
+strictly lower or upper entries. Matrix values still occupy
 dense row-major storage. Sparse-plan clearing and sign changes visit only
 structural and fill positions; the benchmark accumulates its Jacobian into
 those cleared entries. The plan must cover every possible derivative. The

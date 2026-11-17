@@ -8,13 +8,15 @@ struct ChemSparsePlan {
     size_t n;
     size_t *row_offsets, *row_columns;
     size_t *col_offsets, *col_rows;
+    size_t *row_diagonal, *col_diagonal;
 };
 
 void chem_sparse_plan_destroy(ChemSparsePlan *p)
 {
     if (p) {
         free(p->row_offsets); free(p->row_columns);
-        free(p->col_offsets); free(p->col_rows); free(p);
+        free(p->col_offsets); free(p->col_rows);
+        free(p->row_diagonal); free(p->col_diagonal); free(p);
     }
 }
 size_t chem_sparse_plan_size(const ChemSparsePlan *p) { return p ? p->n : 0; }
@@ -56,13 +58,16 @@ ChemSparsePlan *chem_sparse_plan_from_pattern(size_t n, const unsigned char *inp
     p->col_offsets = malloc((n+1)*sizeof(size_t));
     p->row_columns = malloc(entries*sizeof(size_t));
     p->col_rows = malloc(entries*sizeof(size_t));
-    if (!p->row_offsets || !p->col_offsets || !p->row_columns || !p->col_rows) goto fail;
+    p->row_diagonal = malloc(n*sizeof(size_t));
+    p->col_diagonal = malloc(n*sizeof(size_t));
+    if (!p->row_offsets || !p->col_offsets || !p->row_columns || !p->col_rows ||
+        !p->row_diagonal || !p->col_diagonal) goto fail;
     size_t row_pos = 0, col_pos = 0;
     for (size_t i = 0; i < n; ++i) {
         p->row_offsets[i] = row_pos; p->col_offsets[i] = col_pos;
         for (size_t j = 0; j < n; ++j) {
-            if (pattern[i*n+j]) p->row_columns[row_pos++] = j;
-            if (pattern[j*n+i]) p->col_rows[col_pos++] = j;
+            if (pattern[i*n+j]) { if (i==j) p->row_diagonal[i]=row_pos; p->row_columns[row_pos++] = j; }
+            if (pattern[j*n+i]) { if (i==j) p->col_diagonal[i]=col_pos; p->col_rows[col_pos++] = j; }
         }
     }
     p->row_offsets[n] = row_pos; p->col_offsets[n] = col_pos;
@@ -88,17 +93,16 @@ int chem_sparse_factor(const ChemSparsePlan *p, double *a)
     for (size_t i = 0; i < n; ++i) {
         if (a[i*n+i] == 0 || !isfinite(a[i*n+i])) return 0;
         double inverse = 1.0/a[i*n+i];
-        size_t cb = p->col_offsets[i], ce = p->col_offsets[i+1];
+        size_t cb = p->col_diagonal[i]+1, ce = p->col_offsets[i+1];
         for (size_t q = cb; q < ce; ++q) {
             size_t row = p->col_rows[q];
-            if (row > i) a[row*n+i] *= inverse;
+            a[row*n+i] *= inverse;
         }
-        for (size_t q = p->row_offsets[i]; q < p->row_offsets[i+1]; ++q) {
+        for (size_t q = p->row_diagonal[i]+1; q < p->row_offsets[i+1]; ++q) {
             size_t col = p->row_columns[q];
-            if (col <= i) continue;
             for (size_t z = cb; z < ce; ++z) {
                 size_t row = p->col_rows[z];
-                if (row > i) a[row*n+col] -= a[row*n+i]*a[i*n+col];
+                a[row*n+col] -= a[row*n+i]*a[i*n+col];
             }
         }
     }
@@ -153,17 +157,22 @@ int chem_sparse_factor_doolittle_copy(const ChemSparsePlan *p, const double *a, 
 void chem_sparse_solve(const ChemSparsePlan *p, const double *a, double *b)
 {
     size_t n = p->n;
-    for (size_t i = 0; i < n; ++i)
-        for (size_t q = p->row_offsets[i]; q < p->row_offsets[i+1]; ++q) {
+    for (size_t i = 0; i < n; ++i) {
+        double value=b[i];
+        const double *row=a+i*n;
+        for (size_t q = p->row_offsets[i]; q < p->row_diagonal[i]; ++q) {
             size_t col = p->row_columns[q];
-            if (col >= i) break;
-            b[i] -= a[i*n+col]*b[col];
+            value -= row[col]*b[col];
         }
+        b[i]=value;
+    }
     for (size_t i = n; i-- > 0;) {
-        for (size_t q = p->row_offsets[i]; q < p->row_offsets[i+1]; ++q) {
+        double value=b[i];
+        const double *row=a+i*n;
+        for (size_t q = p->row_diagonal[i]+1; q < p->row_offsets[i+1]; ++q) {
             size_t col = p->row_columns[q];
-            if (col > i) b[i] -= a[i*n+col]*b[col];
+            value -= row[col]*b[col];
         }
-        b[i] /= a[i*n+i];
+        b[i]=value/row[i];
     }
 }

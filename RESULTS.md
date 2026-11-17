@@ -11,7 +11,7 @@ were 4.18e-14 with clang and 6.04e-14 with gcc-15, against the requested
 values, including the temperature and pressure columns.
 
 A single clang run of the full 10,000-cell, 100-step, 30-second workload with
-seed 2026 and 10 threads took 36,697 ms, compared with 26,479 ms for the MICM
+seed 2026 and 10 threads took 25,806 ms, compared with 26,468 ms for the MICM
 reference built with the same optimization flags. These are single runs, not
 median ranking measurements. The C benchmark advances cells independently;
 the reference uses one group per thread, so their summed statistics count
@@ -51,3 +51,9 @@ warm-up; the largest relative change is 2.84e-5. A one-ULP O2 increase changes
 shows that roundoff-sized input changes can be amplified to the same scale as
 the observed port/reference discrepancy, although it does not rule out an
 implementation difference.
+
+Precomputing each sparse row and column's diagonal position reduced a
+single-thread 1,000-cell, 30-step clang run from 6,263 ms to 4,128 ms in a
+repeat measurement. The before and after outputs were identical in an
+independent run, and the full 10,000-cell comparison above passed. These are
+single-run timings; they are not the experimenter's ranking measurements.
