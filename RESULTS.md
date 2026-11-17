@@ -42,3 +42,12 @@ At a 30-second warm-up, setting just one of the six photolysis defaults to
 1 s-1 while setting the other five to zero produces out-of-tolerance values
 for `jo2_a`, `jh2o_b`, `jh2o_c`, and `jch4_b`; the corresponding `jch4_a` and
 `jhf` trials pass. This narrows the stress case without establishing its cause.
+The reference solution itself is very sensitive on that stress input. With
+`OH=1e-10` and the default photolysis rates, increasing the initial H2O value
+from 0.746 to the next representable double (0.74600000000000011) changes 128
+of 211 reference output values beyond the gate tolerance after the 30-second
+warm-up; the largest relative change is 2.84e-5. A one-ULP O2 increase changes
+104 values beyond tolerance, with a largest relative change of 4.63e-6. This
+shows that roundoff-sized input changes can be amplified to the same scale as
+the observed port/reference discrepancy, although it does not rule out an
+implementation difference.
