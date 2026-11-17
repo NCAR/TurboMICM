@@ -242,6 +242,11 @@ reaction copying, missing systems, unused species, parameterized reactants, and
 per-species tolerances. Both compilers pass the 100-cell TS1 comparison; the
 case report has 593 passing and 87 unported failures.
 
+The flow-tube regression now builds its mechanism through the C process API,
+runs 3,600 steps for each solver, and checks the reference CSV assertions.
+Both compilers pass the 100-cell TS1 comparison; the case report has 607
+passing and 73 unported failures.
+
 Backward Euler now supports grouped, shared-convergence solves. The four
 single- and multi-cell aerosol trajectory cases pass at the reference
 tolerances with both compilers; the case report has 597 passing and 83

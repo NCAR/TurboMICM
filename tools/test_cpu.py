@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    "regression:RosenbrockRegression.FlowTube": ("build/test_flow_tube", "flow-tube trajectories"),
+    "regression:BackwardEulerRegression.FlowTube": ("build/test_flow_tube", "flow-tube trajectories"),
     **{f"regression_test_solve:RegressionRosenbrock.{case}": ("build/test_chapman_regression", "multi-cell Chapman trajectories")
        for case in ["TwoStageSolve", "ThreeStageSolve", "FourStageSolve", "FourStageDASolve", "SixStageDASolve", "VectorSolve"]},
     "openmp:OpenMP.OneSolverManyStates": ("build/test_openmp", "shared solver and thread-local states"),
