@@ -7,6 +7,13 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"external_model_constraints:ExternalModelConstraints.{case}": ("build/test_model_composition", "composed external processes and constraints")
+       for case in ["AddExternalModelWithConstraints", "AddExternalModelProcessOnly", "CombinedBuiltInAndExternalConstraints",
+                    "AddExternalModelOnlyStandardRosenbrock", "ProcessJacobianElementInAlgebraicRowSurvivesFiltering",
+                    "ProcessJacobianElementInBuiltInAlgebraicRowSurvivesFiltering", "ConstraintActiveWhenProcessOnlyModelAddedFirst",
+                    "BuilderCanBuildMultipleSolvers"]},
+    **{f"solver_builder:SolverBuilder.{case}": ("build/test_model_composition", "external model finalization")
+       for case in ["FinalizeReceivesDenseMatrixPolicy", "FinalizeSupportsSparseOnlySignature"]},
     **{f"version:Version.{case}": ("build/test_version", "compatibility version")
        for case in ["FullVersion", "VersionMajor", "VersionMinor", "VersionPatch", "VersionTweak"]},
     "view_category_sfinae:ViewCategorySFINAE.RuntimeVectorUse": ("build/test_typed_views", "typed vector access"),

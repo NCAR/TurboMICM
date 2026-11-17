@@ -23,7 +23,7 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently
-655 cases pass, five C++ template-dispatch cases are N/A, and 20 remain
+665 cases pass, five C++ template-dispatch cases are N/A, and 10 remain
 unported, so the target intentionally fails. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
@@ -45,6 +45,11 @@ and tolerances through `chem_state_init_composed` and resolve their indices
 through the state lookup functions. `chem_state_init_constrained` registers
 constraint names and algebraic rows; its temperature update evaluates the
 equilibrium parameters for each cell.
+
+`include/model.h` composes external process callbacks, state fragments,
+constraints, and sparse patterns. Model contexts and constraint data remain
+caller-owned; the resulting state and sparse structure are owned by the model
+system.
 
 `include/species.h` provides owned species, typed properties, phase metadata,
 parameterizations, diffusion coefficients, and gas-system name queries. These

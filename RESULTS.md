@@ -267,6 +267,11 @@ C++ template-category tests are N/A because the C API uses explicit views
 rather than template dispatch. Both compilers pass the 100-cell TS1
 comparison; the case report has 655 passing, 5 N/A, and 20 unported failures.
 
+External model composition now covers combined constraints, process sparsity
+on algebraic rows, model ordering, repeatable builds, and finalization. Both
+compilers pass the 100-cell TS1 comparison; the case report has 665 passing,
+5 N/A, and 10 unported failures.
+
 Backward Euler now supports grouped, shared-convergence solves. The four
 single- and multi-cell aerosol trajectory cases pass at the reference
 tolerances with both compilers; the case report has 597 passing and 83

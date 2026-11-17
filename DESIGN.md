@@ -6,6 +6,12 @@ resolves names against a gas system, constructs indexed reaction tables,
 carries species tolerances into state metadata, and turns parameterized
 reactants into condition-dependent multipliers.
 
+External models can contribute named state, process callbacks, constraint
+rows, and Jacobian positions through `ChemExternalModel`. Composition unions
+their sparsity with built-in constraints before finalization, including
+process positions on algebraic rows. Runtime constraint evaluation replaces
+the algebraic row values after process evaluation.
+
 `tools/config.py` reads CAMP configuration manifests and their JSON or YAML data.
 `tools/generate.py` emits static C tables for tutorial reaction types,
 including rate parameters and labels for caller-supplied values. `src/rates.c`
