@@ -140,6 +140,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	.conda/bin/python tests/test_config.py
 	.conda/bin/python tests/test_ts1_config.py
 	.conda/bin/python tests/test_benchmark_defaults.py
+	.conda/bin/python tests/test_benchmark_schedule.py
 	.conda/bin/python tests/test_markowitz.py
 build/tutorial.c: tools/generate.py tools/config.py | build
 	.conda/bin/python tools/generate.py ../micm/test/tutorial/configs/rate_constants_no_user_defined/config.yaml $@

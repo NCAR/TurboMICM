@@ -168,7 +168,10 @@ int main(int argc, char **argv)
     for (size_t i=0;i<count;++i) cells[i].plan=plan;
     options.sparse_plan = plan;
     omp_set_num_threads((int)threads);
-#pragma omp parallel for schedule(static)
+    /* Allow the standard OMP_SCHEDULE setting to choose policy and chunk
+       size; absent that setting, preserve the benchmark's static default. */
+    if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_static,0);
+#pragma omp parallel for schedule(runtime)
     for (size_t i = 0; i < count; ++i) {
         ChemConditions c = {cells[i].temperature, cells[i].pressure,
             cells[i].pressure/(1.380649e-23*6.02214076e23*cells[i].temperature)};
@@ -176,7 +179,7 @@ int main(int argc, char **argv)
         cells[i].status = chem_rosenbrock_solve(n,cells[i].y,dt,rhs,jac,&cells[i],&method,&options,NULL);
     }
     double start = omp_get_wtime();
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(runtime)
     for (size_t i = 0; i < count; ++i) {
         for (size_t step = 0; step < steps && cells[i].status == CHEM_SOLVE_OK; ++step) {
             ChemSolverStats stats;

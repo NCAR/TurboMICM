@@ -39,8 +39,10 @@ temperature and pressure are generated scalars. Missing condition defaults in
 a configuration produce zero scalars for the caller to replace. See DECISIONS.md for
 the configuration extensions.
 
-The benchmark schedules individual cells with OpenMP static
-scheduling; `--threads` sets the thread count (default: OpenMP maximum). Each
+The benchmark schedules individual cells through OpenMP; `--threads` sets
+the thread count (default: OpenMP maximum). The `OMP_SCHEDULE` environment
+variable selects the runtime schedule and chunk size; when it is absent, the
+benchmark explicitly selects static scheduling. Each
 cell currently owns independent solver state and error control. Timings exclude
 input, rate setup, warm-up, and output. A mechanism-generic symbolic plan
 calculates fill once, then skips structural
