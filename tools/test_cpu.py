@@ -41,6 +41,18 @@ CASES = {
         'troe_rate_constant:TroeRateConstant.AnalyticalTroeExampleAB',
         'troe_rate_constant:TroeRateConstant.AnalyticalTroeExampleBC',
     ]},
+    **{f'{prefix}:{suite}.{case}': ('build/test_doolittle', 'LU reconstruction')
+       for prefix, suite in [
+           ('lu_decomposition_doolittle', 'LuDecompositionDoolittle'),
+           ('lu_decomposition_doolittle_in_place', 'LuDecompositionDoolittleInPlace'),
+       ] for case in [
+           'DenseMatrixStandardOrdering', 'RandomMatrixStandardOrdering',
+           'DiagonalMatrixStandardOrdering', 'AgnosticToInitialValueStandardOrdering',
+           'DenseMatrixVectorOrdering', 'RandomMatrixVectorOrdering',
+           'DiagonalMatrixVectorOrdering', 'AgnosticToInitialValueVectorOrdering',
+       ]},
+    'analytical_rosenbrock_integration:AnalyticalExamples.Photolysis': ('build/test_analytical_methods', 'analytical trajectories'),
+    'analytical_rosenbrock_integration:AnalyticalExamples.PhotolysisSuperStiffButAnalytical': ('build/test_analytical_methods', 'stiff analytical trajectories'),
     'rosenbrock:RosenbrockSolver.StandardNormalizedError': ('build/test_normalized_error', 'normalized error'),
     'rosenbrock:RosenbrockSolver.VectorNormalizedError': ('build/test_normalized_error', 'normalized error'),
     'backward_euler:BackwardEuler.CanCallSolve': ('build/test_backward_euler', 'chain solve'),

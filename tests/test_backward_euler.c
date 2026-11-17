@@ -51,6 +51,13 @@ int main(void)
     assert(plan); options.sparse_plan = plan; y[0]=1; y[1]=0;
     assert(chem_backward_euler_solve(2,y,1,rhs,jac,&k,&options,&stats) == CHEM_SOLVE_OK);
     assert(fabs(y[0]-1.0/3) < 1e-15 && fabs(y[1]-2.0/3) < 1e-15);
+    options.lu_algorithm = CHEM_LU_DOOLITTLE; y[0]=1; y[1]=0;
+    assert(chem_backward_euler_solve(2,y,1,rhs,jac,&k,&options,&stats) == CHEM_SOLVE_OK);
+    assert(fabs(y[0]-1.0/3) < 1e-15 && fabs(y[1]-2.0/3) < 1e-15);
+    options.sparse_plan = NULL; y[0]=1; y[1]=0;
+    assert(chem_backward_euler_solve(2,y,1,rhs,jac,&k,&options,&stats) == CHEM_SOLVE_OK);
+    assert(fabs(y[0]-1.0/3) < 1e-15 && fabs(y[1]-2.0/3) < 1e-15);
+    options.sparse_plan = plan;
     options.max_iterations = 1; y[0]=1; y[1]=0;
     assert(chem_backward_euler_solve(2,y,1,rhs,jac,&k,&options,&stats) == CHEM_SOLVE_UNCONVERGED);
     assert(stats.rejected == 6 && stats.accepted == 0 && fabs(stats.final_time-.00625) < 1e-15);

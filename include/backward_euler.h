@@ -8,6 +8,7 @@ typedef struct {
     double relative_tolerance;
     const double *absolute_tolerance;
     const ChemSparsePlan *sparse_plan;
+    ChemLuAlgorithm lu_algorithm;
 } ChemBackwardEulerOptions;
 
 ChemBackwardEulerOptions chem_backward_euler_defaults(const double *absolute_tolerance);

@@ -25,9 +25,11 @@ int main(void)
     ChemSparsePlan *plan = chem_sparse_plan_create(&m);
     assert(plan);
     for (size_t method=0; method<5; ++method) {
-        for (size_t sparse=0; sparse<2; ++sparse) {
+        for (size_t sparse=0; sparse<2; ++sparse)
+          for (size_t algorithm=0; algorithm<2; ++algorithm) {
             ChemRosenbrockOptions options = chem_rosenbrock_defaults(atol);
             options.sparse_plan = sparse ? plan : NULL;
+            options.lu_algorithm = (ChemLuAlgorithm)algorithm;
             for (size_t cell=0; cell<3; ++cell) {
                 double a0=1.0-(double)cell/3.0, y[] = {a0,0,0};
                 for (size_t step=1; step<1000; ++step) {
@@ -54,9 +56,11 @@ int main(void)
     plan = chem_sparse_plan_create(&stiff);
     assert(plan);
     for (size_t method=0; method<5; ++method)
-        for (size_t sparse=0; sparse<2; ++sparse) {
+        for (size_t sparse=0; sparse<2; ++sparse)
+          for (size_t algorithm=0; algorithm<2; ++algorithm) {
             ChemRosenbrockOptions options=chem_rosenbrock_defaults(stiff_atol);
             options.sparse_plan=sparse ? plan : NULL;
+            options.lu_algorithm=(ChemLuAlgorithm)algorithm;
             for (size_t cell=0; cell<3; ++cell) {
                 double a0=1.0-(double)cell/3, y[] = {.5*a0,.5*a0,0,0};
                 for (size_t step=1; step<1000; ++step) {

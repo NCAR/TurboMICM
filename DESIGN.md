@@ -13,7 +13,7 @@ functions for forcing and Jacobian, five reference Rosenbrock parameter sets,
 and reference step-size defaults. To add a parameter set, construct a
 `ChemRosenbrockMethod` with stage coefficients, evaluation flags, gamma, and
 error order; the existing integrator consumes it. The two DA parameter sets are
-currently usable only for ODEs because algebraic constraints are not implemented. It supports dense or sparse no-pivot Mozart elimination. The solver clamps negative ODE values after each public solve, as the reference
+currently usable only for ODEs because algebraic constraints are not implemented. It supports dense or sparse no-pivot Mozart and Doolittle elimination. The solver clamps negative ODE values after each public solve, as the reference
 CPU solver does. The current implementation allocates scratch space per solve; multi-cell scheduling,
 compact sparse matrix storage, additional solver features, and constraints are not yet implemented.
 
@@ -37,10 +37,17 @@ path with a separate small mechanism.
 `src/backward_euler.c` implements the implicit Newton iteration and reference
 step-reduction sequence. Its convergence function supports multiple cell rows,
 while the integration function currently advances one cell. Both solver families
-use the same dense or sparse Mozart factorization functions.
+use the same dense or sparse factorization functions; set `lu_algorithm` to
+select Mozart or Doolittle. The default is Mozart.
 
 Rate evaluation dispatches through `ChemRateType`; `p` holds parameters in the
 order used by `src/rates.c`, and the Taylor type uses `custom_index` for its
 coefficient count. To add a rate family, add its enum and evaluation formula,
 then add parsing and unit conversion in `tools/generate.py` and exercise both
 the direct and generated paths.
+
+The sparse plan can be built from a mechanism or an arbitrary structural
+pattern. The plan holds fill and row/column index lists; it is immutable and
+may be shared by threads. To replace the linear solver, implement the factor
+and solve operations for that plan, add an algorithm choice to `ChemLuAlgorithm`,
+and connect it at the factor/solve calls in both integrators.

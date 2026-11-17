@@ -7,7 +7,7 @@
 
 ChemBackwardEulerOptions chem_backward_euler_defaults(const double *atol)
 {
-    ChemBackwardEulerOptions p = {1e-40, 0, {0.5,0.5,0.5,0.5,0.1}, 11, 1e-6, atol, NULL};
+    ChemBackwardEulerOptions p = {1e-40, 0, {0.5,0.5,0.5,0.5,0.1}, 11, 1e-6, atol, NULL, CHEM_LU_MOZART};
     return p;
 }
 
@@ -34,7 +34,8 @@ ChemSolveStatus chem_backward_euler_solve(size_t n, double *y, double duration,
         !isfinite(duration) || duration <= 0 || !isfinite(o->h_start) || o->h_start < 0 ||
         !isfinite(o->small) || o->small < 0 || !isfinite(o->relative_tolerance) ||
         o->relative_tolerance < 0 || !o->max_iterations ||
-        (o->sparse_plan && chem_sparse_plan_size(o->sparse_plan) != n)) return CHEM_SOLVE_INVALID;
+        (o->sparse_plan && chem_sparse_plan_size(o->sparse_plan) != n) ||
+        (o->lu_algorithm != CHEM_LU_MOZART && o->lu_algorithm != CHEM_LU_DOOLITTLE)) return CHEM_SOLVE_INVALID;
     for (size_t i = 0; i < n; ++i)
         if (!isfinite(o->absolute_tolerance[i]) || o->absolute_tolerance[i] < 0) return CHEM_SOLVE_INVALID;
     for (size_t i = 0; i < 5; ++i)
@@ -58,7 +59,11 @@ ChemSolveStatus chem_backward_euler_solve(size_t n, double *y, double duration,
             for (size_t i = 0; i < n*n; ++i) matrix[i] = -matrix[i];
             for (size_t i = 0; i < n; ++i) matrix[i*n+i] += 1/h;
             ++stats->decompositions;
-            int factored = o->sparse_plan ? chem_sparse_factor(o->sparse_plan,matrix) : chem_dense_factor(matrix,n);
+            int factored;
+            if (o->sparse_plan)
+                factored = o->lu_algorithm == CHEM_LU_DOOLITTLE ? chem_sparse_factor_doolittle(o->sparse_plan,matrix) : chem_sparse_factor(o->sparse_plan,matrix);
+            else
+                factored = o->lu_algorithm == CHEM_LU_DOOLITTLE ? chem_dense_factor_doolittle(matrix,n) : chem_dense_factor(matrix,n);
             if (!factored) { status = CHEM_SOLVE_SINGULAR; goto done; }
             for (size_t i = 0; i < n; ++i) residual[i] -= (y[i]-yn[i])/h;
             if (o->sparse_plan) chem_sparse_solve(o->sparse_plan,matrix,residual);

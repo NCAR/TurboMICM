@@ -50,3 +50,8 @@ The latest case report has 32 passing cases and 648 unported failures with both
 compilers. All five Rosenbrock methods pass the 999-step analytical photolysis
 and stiff-exchange trajectories at the reference tolerances using both dense
 and sparse Mozart solves. This does not yet cover Doolittle or constrained DAEs.
+
+The case report now has 50 passing cases and 630 unported failures for both
+compilers. Doolittle reconstruction checks cover dense, random sparse, diagonal,
+and extreme initial scratch values, and both LU algorithms pass the analytical
+photolysis trajectories. The 100-cell TS1 comparison remains passing.

@@ -49,6 +49,7 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_generated_rate_extensions
 	./build/test_falloff
 	./build/test_sparse
+	./build/test_doolittle
 	./build/test_reordered
 	./build/test_chemical_solver
 	./build/test_tutorial
@@ -109,7 +110,7 @@ build/test_backward_euler: tests/test_backward_euler.c build/libchem.a
 check: build/test_backward_euler
 .PHONY: test-cpu
 test-cpu:
-	@$(MAKE) -s build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
+	@$(MAKE) -s build/test_backward_euler build/test_rates build/test_rate_extensions build/test_falloff build/test_normalized_error build/test_doolittle build/test_analytical_methods CC="$(CC)" OPTFLAGS="$(OPTFLAGS)"
 	@.conda/bin/python tools/test_cpu.py
 build/test_rates: tests/test_rates.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_rates.c build/libchem.a -lm -o $@
@@ -131,3 +132,6 @@ check: build/test_analytical_methods
 build/test_normalized_error: tests/test_normalized_error.c build/libchem.a
 	$(CC) $(CFLAGS) tests/test_normalized_error.c build/libchem.a -lm -o $@
 check: build/test_normalized_error
+build/test_doolittle: tests/test_doolittle.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_doolittle.c build/libchem.a -lm -o $@
+check: build/test_doolittle

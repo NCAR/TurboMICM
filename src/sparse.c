@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct ChemSparsePlan {
     size_t n;
@@ -18,33 +19,15 @@ void chem_sparse_plan_destroy(ChemSparsePlan *p)
 }
 size_t chem_sparse_plan_size(const ChemSparsePlan *p) { return p ? p->n : 0; }
 
-ChemSparsePlan *chem_sparse_plan_create(const ChemMechanism *m)
+ChemSparsePlan *chem_sparse_plan_from_pattern(size_t n, const unsigned char *input)
 {
-    if (!m || !m->species_count || m->species_count > SIZE_MAX/m->species_count ||
-        m->species_count >= SIZE_MAX/sizeof(size_t)) return NULL;
-    size_t n = m->species_count;
-    unsigned char *pattern = calloc(n*n, 1);
+    if (!n || !input || n > SIZE_MAX/n || n >= SIZE_MAX/sizeof(size_t)) return NULL;
+    unsigned char *pattern = malloc(n*n);
     ChemSparsePlan *p = calloc(1, sizeof(*p));
     if (!pattern || !p) { free(pattern); free(p); return NULL; }
+    memcpy(pattern,input,n*n);
     p->n = n;
-    for (size_t i = 0; i < n; ++i) pattern[i*n+i] = 1;
-    for (size_t r = 0; r < m->reaction_count; ++r) {
-        const ChemReaction *reaction = m->reactions+r;
-        for (size_t c = 0; c < reaction->reactant_count; ++c) {
-            size_t col = m->reactants[reaction->reactant_begin+c];
-            if (col >= n) goto fail;
-            for (size_t j = 0; j < reaction->reactant_count; ++j) {
-                size_t row = m->reactants[reaction->reactant_begin+j];
-                if (row >= n) goto fail;
-                pattern[row*n+col] = 1;
-            }
-            for (size_t j = 0; j < reaction->product_count; ++j) {
-                size_t row = m->products[reaction->product_begin+j].species;
-                if (row >= n) goto fail;
-                pattern[row*n+col] = 1;
-            }
-        }
-    }
+    for (size_t i=0; i<n; ++i) pattern[i*n+i] = 1;
     /* Complete the structural fill for no-pivot elimination. */
     for (size_t pivot = 0; pivot < n; ++pivot)
         for (size_t row = pivot+1; row < n; ++row)
@@ -73,6 +56,33 @@ fail:
     free(pattern); chem_sparse_plan_destroy(p); return NULL;
 }
 
+ChemSparsePlan *chem_sparse_plan_create(const ChemMechanism *m)
+{
+    if (!m || !m->species_count || m->species_count > SIZE_MAX/m->species_count) return NULL;
+    size_t n=m->species_count;
+    unsigned char *pattern=calloc(n*n,1);
+    if (!pattern) return NULL;
+    for (size_t r=0; r<m->reaction_count; ++r) {
+        const ChemReaction *reaction=m->reactions+r;
+        for (size_t c=0; c<reaction->reactant_count; ++c) {
+            size_t col=m->reactants[reaction->reactant_begin+c];
+            if (col >= n) { free(pattern); return NULL; }
+            for (size_t j=0; j<reaction->reactant_count; ++j) {
+                size_t row=m->reactants[reaction->reactant_begin+j];
+                if (row >= n) { free(pattern); return NULL; }
+                pattern[row*n+col]=1;
+            }
+            for (size_t j=0; j<reaction->product_count; ++j) {
+                size_t row=m->products[reaction->product_begin+j].species;
+                if (row >= n) { free(pattern); return NULL; }
+                pattern[row*n+col]=1;
+            }
+        }
+    }
+    ChemSparsePlan *p=chem_sparse_plan_from_pattern(n,pattern);
+    free(pattern); return p;
+}
+
 int chem_sparse_factor(const ChemSparsePlan *p, double *a)
 {
     size_t n = p->n;
@@ -95,6 +105,46 @@ int chem_sparse_factor(const ChemSparsePlan *p, double *a)
     }
     return 1;
 }
+/* Intersect a factored row and column up to the current pivot. */
+static double subtract_products(const ChemSparsePlan *p, const double *a,
+                                size_t row, size_t col, size_t pivot, double value)
+{
+    size_t r=p->row_offsets[row], re=p->row_offsets[row+1];
+    size_t c=p->col_offsets[col], ce=p->col_offsets[col+1], n=p->n;
+    while (r<re && c<ce) {
+        size_t rj=p->row_columns[r], cj=p->col_rows[c];
+        if (rj >= pivot || cj >= pivot) break;
+        if (rj < cj) ++r;
+        else if (cj < rj) ++c;
+        else { value -= a[row*n+rj]*a[rj*n+col]; ++r; ++c; }
+    }
+    return value;
+}
+
+int chem_sparse_factor_doolittle(const ChemSparsePlan *p, double *a)
+{
+    size_t n=p->n;
+    for (size_t i=0; i<n; ++i) {
+        for (size_t q=p->row_offsets[i]; q<p->row_offsets[i+1]; ++q) {
+            size_t col=p->row_columns[q];
+            if (col >= i) a[i*n+col]=subtract_products(p,a,i,col,i,a[i*n+col]);
+        }
+        if (a[i*n+i] == 0 || !isfinite(a[i*n+i])) return 0;
+        for (size_t q=p->col_offsets[i]; q<p->col_offsets[i+1]; ++q) {
+            size_t row=p->col_rows[q];
+            if (row > i) a[row*n+i]=subtract_products(p,a,row,i,i,a[row*n+i])/a[i*n+i];
+        }
+    }
+    return 1;
+}
+
+int chem_sparse_factor_doolittle_copy(const ChemSparsePlan *p, const double *a, double *factors)
+{
+    if (!p || !a || !factors || p->n > SIZE_MAX/p->n || p->n*p->n > SIZE_MAX/sizeof(double)) return 0;
+    memcpy(factors,a,p->n*p->n*sizeof(double));
+    return chem_sparse_factor_doolittle(p,factors);
+}
+
 void chem_sparse_solve(const ChemSparsePlan *p, const double *a, double *b)
 {
     size_t n = p->n;
