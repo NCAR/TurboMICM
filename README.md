@@ -1,8 +1,9 @@
-# CPU chemistry port (work in progress)
+# CPU chemistry port
 
 `make env` creates a local conda prefix from `environment.yml`. `make cpu`
 builds the C library and TS1 benchmark, and `make test-cpu` reports the status
-of every reference case. Select a compiler with `CC` and optimization flags
+of every reference case (676 pass and four C++ template-only cases are N/A).
+Select a compiler with `CC` and optimization flags
 with `OPTFLAGS` (default `-O3 -DNDEBUG`). Run `make clean` when switching
 compilers. `make test-reader` runs additional reader, Jacobian, and solver
 checks. `make micm-ref` builds the reference benchmark with the same `OPTFLAGS`.
@@ -15,7 +16,8 @@ configuration. `tools/generate.py CONFIG OUTPUT` reads a tutorial-style JSON or
 YAML configuration and writes a C table. The runtime is C11 and does not load
 Python or MICM.
 
-This is incomplete: 671 of the 680 named cases pass, four C++ template-only cases are N/A,
-and the report marks the remaining cases as failures. The algebraic solver, backward Euler, both LU methods, and many API behaviors
-still need substantially broader compatibility coverage. The successful TS1 comparison and
-additional checks are not a substitute for the full compatibility gate.
+The C interfaces for chemistry, matrix storage, state, constraints, and solver
+construction are in `include/`. Tutorial configurations and reference outputs
+used by the tests are included, so ordinary builds and tests do not require a
+neighboring source tree. `make micm-ref` and the TS1 import script are optional
+comparison and translation tools that do require the supplied reference tree.

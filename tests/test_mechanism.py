@@ -10,7 +10,7 @@ from mechanism import MechanismError, read_mechanism
 from generate import compile_mechanism
 
 ROOT = Path(__file__).resolve().parents[1]
-TUTORIAL = ROOT.parent / 'micm/test/tutorial/configs'
+TUTORIAL = ROOT / 'tests/tutorial_configs'
 
 
 class ReaderTests(unittest.TestCase):
@@ -43,7 +43,7 @@ class ReaderTests(unittest.TestCase):
 
     def test_ts1_defaults_match_reference(self):
         mech = read_mechanism(ROOT / 'configs/ts1/config.json')
-        with (ROOT.parent / 'reference/ts1_defaults.csv').open(newline='') as stream:
+        with (ROOT / 'tests/ts1_defaults.csv').open(newline='') as stream:
             reference = next(csv.DictReader(stream))
         defaults = mech['initial conditions']
         for name, value in reference.items():
@@ -61,7 +61,7 @@ class ReaderTests(unittest.TestCase):
         self.assertEqual(reactants, [(-2, 1.0)])
 
     def test_bad_species_reference(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(dir=ROOT / 'build') as directory:
             path = Path(directory)
             (path / 'config.json').write_text(json.dumps({'camp-files': ['data.json']}))
             (path / 'data.json').write_text(json.dumps({'camp-data': [

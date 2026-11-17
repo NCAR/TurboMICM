@@ -7,7 +7,7 @@ import sys
 
 root = Path(__file__).resolve().parents[1]
 results = {}
-for executable in ('test_cases', 'test_matrix_cases', 'test_matrix_function_cases', 'test_matrix_remaining', 'test_sparse_cases', 'test_sparse_function_cases', 'test_sparse_remaining', 'test_lu_cases', 'test_grouped_views', 'test_state_cases', 'test_jacobian_verify', 'test_process_cases', 'test_process_set_cases', 'test_analytical', 'test_rosenbrock_cases', 'test_equilibrium_integration', 'test_dae_regressions', 'test_external_aerosol', 'test_external_constraints', 'test_rate_store', 'test_solver_builder', 'test_chapman', 'test_terminator', 'test_flow_tube'):
+for executable in ('test_cases', 'test_matrix_cases', 'test_matrix_function_cases', 'test_matrix_remaining', 'test_sparse_cases', 'test_sparse_function_cases', 'test_sparse_remaining', 'test_lu_cases', 'test_grouped_views', 'test_state_cases', 'test_jacobian_verify', 'test_process_cases', 'test_process_set_cases', 'test_analytical', 'test_rosenbrock_cases', 'test_equilibrium_integration', 'test_dae_regressions', 'test_external_aerosol', 'test_external_constraints', 'test_rate_store', 'test_solver_builder', 'test_chapman', 'test_terminator', 'test_flow_tube', 'test_stiff'):
     run = subprocess.run([str(root / 'build' / executable)], text=True, capture_output=True, check=True)
     for line in run.stdout.splitlines():
         case, passed = line.split()
@@ -32,7 +32,9 @@ for case in ('README_example', 'solve_results', 'multiple_grid_cells', 'solver_c
         expected, actual = normalize(expected), normalize(actual)
     elif case == 'openmp_tutorial':
         # The progress messages are emitted concurrently and can interleave.
-        expected, actual = expected[expected.find('Thread 1\n'):], actual[actual.find('Thread 1\n'):]
+        marker = 'Thread 1\n'
+        expected = expected[expected.index(marker):]
+        actual = actual[actual.index(marker):] if marker in actual else ''
     results[case] = result.returncode == 0 and actual == expected
 result = subprocess.run([str(root / 'build' / 'tutorial_programs'), 'openmp_unit'], text=True, capture_output=True)
 results['openmp:OpenMP.OneSolverManyStates'] = result.returncode == 0

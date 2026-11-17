@@ -142,6 +142,9 @@ build/test_terminator: tests/test_terminator.c build/libchem.a
 build/test_flow_tube: tests/test_flow_tube.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
+build/test_stiff: tests/test_stiff.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
 build/test_sparse_function_cases: tests/test_sparse_function_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
@@ -161,7 +164,7 @@ build/test_cases: tests/test_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
 test-cpu:
-	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/test_sparse_remaining build/test_lu_cases build/test_grouped_views build/test_state_cases build/test_jacobian_verify build/test_process_cases build/test_process_set_cases build/test_analytical build/test_rosenbrock_cases build/test_equilibrium_integration build/test_dae_regressions build/test_external_aerosol build/test_external_constraints build/test_rate_store build/test_solver_builder build/test_chapman build/test_terminator build/test_flow_tube build/tutorial_programs build/tutorial_no_user build/tutorial_user
+	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/test_sparse_remaining build/test_lu_cases build/test_grouped_views build/test_state_cases build/test_jacobian_verify build/test_process_cases build/test_process_set_cases build/test_analytical build/test_rosenbrock_cases build/test_equilibrium_integration build/test_dae_regressions build/test_external_aerosol build/test_external_constraints build/test_rate_store build/test_solver_builder build/test_chapman build/test_terminator build/test_flow_tube build/test_stiff build/tutorial_programs build/tutorial_no_user build/tutorial_user
 	@$(PYTHON) tools/test_cpu.py
 
 build/test_dae: tests/test_dae.c build/libchem.a
@@ -178,10 +181,10 @@ test-reader: build/test_chem build/test_solver build/test_robertson_config build
 clean:
 	rm -rf build bin
 
-build/tutorial_no_user.c: ../micm/test/tutorial/configs/rate_constants_no_user_defined/config.yaml ../micm/test/tutorial/configs/rate_constants_no_user_defined/species.yaml ../micm/test/tutorial/configs/rate_constants_no_user_defined/reactions.yaml tools/generate.py tools/mechanism.py | build
+build/tutorial_no_user.c: tests/tutorial_configs/rate_constants_no_user_defined/config.yaml tests/tutorial_configs/rate_constants_no_user_defined/species.yaml tests/tutorial_configs/rate_constants_no_user_defined/reactions.yaml tools/generate.py tools/mechanism.py | build
 	$(PYTHON) tools/generate.py $< $@
 
-build/tutorial_user.c: ../micm/test/tutorial/configs/rate_constants_user_defined/config.json ../micm/test/tutorial/configs/rate_constants_user_defined/species.json ../micm/test/tutorial/configs/rate_constants_user_defined/reactions.json tools/generate.py tools/mechanism.py | build
+build/tutorial_user.c: tests/tutorial_configs/rate_constants_user_defined/config.json tests/tutorial_configs/rate_constants_user_defined/species.json tests/tutorial_configs/rate_constants_user_defined/reactions.json tools/generate.py tools/mechanism.py | build
 	$(PYTHON) tools/generate.py $< $@
 
 build/tutorial_no_user: tests/test_tutorial.c build/tutorial_no_user.c build/libchem.a
@@ -190,7 +193,7 @@ build/tutorial_no_user: tests/test_tutorial.c build/tutorial_no_user.c build/lib
 build/tutorial_user: tests/test_tutorial.c build/tutorial_user.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
-build/robertson.c: ../micm/test/tutorial/configs/robertson/config.json ../micm/test/tutorial/configs/robertson/species.json ../micm/test/tutorial/configs/robertson/reactions.json tools/generate.py tools/mechanism.py | build
+build/robertson.c: tests/tutorial_configs/robertson/config.json tests/tutorial_configs/robertson/species.json tests/tutorial_configs/robertson/reactions.json tools/generate.py tools/mechanism.py | build
 	$(PYTHON) tools/generate.py $< $@
 
 build/test_robertson_config: tests/test_robertson_config.c build/robertson.c build/libchem.a

@@ -1,4 +1,4 @@
-# Design (work in progress)
+# Design
 
 The generic linear workspace can also be constructed directly from a matrix
 pattern. It exposes the same symbolic fill, Mozart and Doolittle numeric
@@ -51,14 +51,14 @@ Jacobian rows independently or over a set of cells. A constrained workspace borr
 and term arrays, adds their dependencies to the sparse pattern, and replaces
 algebraic rows during Rosenbrock stages. Initialization uses weighted Newton
 corrections with a backtracking line search and restores the input on failure.
-Four- and six-stage DAE parameter sets are available. This path has preliminary
-coverage and does not yet satisfy the full constraint test inventory.
+Four- and six-stage DAE parameter sets are available. Constraint and coupled
+kinetics regression cases exercise initialization, integration, and conservation.
 
 Backward Euler uses Newton iterations, nonnegative iterates, and the reference
 step-reduction sequence. Both solvers share the chemistry and linear algebra.
 
-The benchmark uses independent solver state per cell and OpenMP static
-scheduling. `--threads N` controls the thread count; absent the option OpenMP's
+The benchmark uses independent solver state per cell and OpenMP scheduling,
+static by default. `--threads N` controls the thread count; absent the option OpenMP's
 maximum is used. Each thread owns a reusable workspace. Current Jacobians use
 dense storage with a symbolic sparse pattern and precomputed row and column
 indices for factorization and substitution; group size is one cell. The
@@ -66,3 +66,23 @@ initial step is `1e-6 * DT`, the minimum is `1e-15 * DT`, relative tolerance is
 `1e-6`, and absolute tolerance is `1e-3`, matching the reference defaults.
 These solver values can be set in `ChemRosenbrockParameters`, including an
 optional per-species absolute tolerance array.
+
+To add a Rosenbrock method, define a constructor alongside the existing
+constructors in `src/rosenbrock.c`, setting stage coefficients, weights,
+function reuse flags, order, and gamma in `ChemRosenbrockParameters`. Both
+the single-cell and grouped integration loops consume that structure. To
+experiment with step control, change the error-to-step calculation and the
+accept/reject logic in both `chem_rosenbrock_solve` and
+`chem_rosenbrock_solve_group`; the error norm is a separate public function.
+The sparse factorization and substitution routines in the same file are the
+boundary for replacing the linear solver. They use workspace-owned symbolic
+indices and the dense Jacobian; `chem_linear_factor` and `chem_linear_solve`
+also expose that path for isolated tests. The current implementation selects
+the two built-in LU variants by enum, rather than through a solver callback.
+
+The benchmark has one cell per solver invocation, so it has no vector-length or
+cell-group tuning parameter. It parallelizes independent cells with a runtime
+thread count through `--threads`; the default is OpenMP's maximum. The
+`OMP_SCHEDULE` environment variable selects the OpenMP runtime schedule and
+chunk size; if it is unset, the default is static. The library's separate grouped solver and matrix layouts
+accept group width at runtime, including partially filled groups.

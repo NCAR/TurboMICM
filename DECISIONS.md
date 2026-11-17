@@ -41,3 +41,6 @@
   the reference analytical solution and its error bounds are unchanged.
 - The flow-tube regression data are copied into the repository so tests do
   not require the reference tree at runtime.
+- Tutorial configuration fixtures and TS1 defaults are copied into the
+  repository as test data, so building and testing the port is independent of
+  the reference source checkout.

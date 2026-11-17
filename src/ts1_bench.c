@@ -170,12 +170,13 @@ int main(int argc, char **argv)
     unsigned long internal=0, accepted=0, rejected=0, functions=0, jacobians=0, decompositions=0, solves=0;
     int failed = 0;
     omp_set_num_threads(threads);
+    if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_static, 0);
     double start = 0, finish = 0;
 #pragma omp parallel reduction(+:internal,accepted,rejected,functions,jacobians,decompositions,solves) reduction(|:failed)
     {
         ChemWorkspace *work = chem_workspace_create(m);
         if (!work) failed = 1;
-#pragma omp for schedule(static)
+#pragma omp for schedule(runtime)
         for (size_t i = 0; i < count; ++i) {
             ChemStatistics s;
             if (!work || chem_rosenbrock_solve(m, work, &p, cells[i].conditions, cells[i].rates, dt, cells[i].y, &s)) failed = 1;
@@ -183,7 +184,7 @@ int main(int argc, char **argv)
 #pragma omp barrier
 #pragma omp single
         start = omp_get_wtime();
-#pragma omp for schedule(static)
+#pragma omp for schedule(runtime)
         for (size_t i = 0; i < count; ++i) {
             for (size_t j = 0; j < steps && work; ++j) {
                 ChemStatistics s;
