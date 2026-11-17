@@ -93,6 +93,8 @@ typedef struct ChemConstraint ChemConstraint;
  * workspace. Callbacks may use conditions and caller-owned per-cell context. */
 typedef int (*ChemExternalFunction)(void *context, ChemConditions, const double *state, double *output);
 typedef int (*ChemExternalUpdate)(void *context, ChemConditions, double *parameters, size_t parameter_count);
+typedef int (*ChemExternalFinalizeDense)(void *context, size_t dense_width, const unsigned char *pattern, size_t order);
+typedef int (*ChemExternalFinalizeSparse)(void *context, const unsigned char *pattern, size_t order);
 typedef struct {
     const unsigned char *jacobian_pattern;
     ChemExternalFunction add_forcing, add_jacobian;
@@ -102,6 +104,8 @@ typedef struct {
     ChemExternalUpdate update_parameters;
     const unsigned char *constraint_rows, *constraint_pattern;
     ChemExternalFunction constraint_residual, constraint_jacobian;
+    ChemExternalFinalizeDense finalize_dense;
+    ChemExternalFinalizeSparse finalize_sparse;
 } ChemExternalModel;
 
 ChemRosenbrockParameters chem_rosenbrock_two_stage(void);

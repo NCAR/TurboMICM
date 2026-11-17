@@ -63,7 +63,10 @@ build/jacobian_verify.o: src/jacobian_verify.c include/jacobian_verify.h include
 build/rate_store.o: src/rate_store.c include/rate_store.h include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/libchem.a: build/chem.o build/rosenbrock.o build/constraint.o build/model.o build/matrix.o build/sparse.o build/state.o build/jacobian_verify.o build/rate_store.o
+build/solver.o: src/solver.c include/solver.h include/state.h include/chem.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/libchem.a: build/chem.o build/rosenbrock.o build/constraint.o build/model.o build/matrix.o build/sparse.o build/state.o build/jacobian_verify.o build/rate_store.o build/solver.o
 	ar rcs $@ $^
 
 cpu: bin/ts1_bench_cpu
@@ -124,6 +127,9 @@ build/test_external_constraints: tests/test_external_constraints.c build/libchem
 build/test_rate_store: tests/test_rate_store.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
+build/test_solver_builder: tests/test_solver_builder.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
 build/test_sparse_function_cases: tests/test_sparse_function_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
@@ -143,7 +149,7 @@ build/test_cases: tests/test_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
 test-cpu:
-	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/test_sparse_remaining build/test_lu_cases build/test_grouped_views build/test_state_cases build/test_jacobian_verify build/test_process_cases build/test_process_set_cases build/test_analytical build/test_rosenbrock_cases build/test_equilibrium_integration build/test_dae_regressions build/test_external_aerosol build/test_external_constraints build/test_rate_store build/tutorial_no_user build/tutorial_user
+	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/test_sparse_remaining build/test_lu_cases build/test_grouped_views build/test_state_cases build/test_jacobian_verify build/test_process_cases build/test_process_set_cases build/test_analytical build/test_rosenbrock_cases build/test_equilibrium_integration build/test_dae_regressions build/test_external_aerosol build/test_external_constraints build/test_rate_store build/test_solver_builder build/tutorial_no_user build/tutorial_user
 	@$(PYTHON) tools/test_cpu.py
 
 build/test_dae: tests/test_dae.c build/libchem.a

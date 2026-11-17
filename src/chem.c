@@ -23,6 +23,8 @@ ChemValidation chem_validate_mechanism(const ChemMechanism *m, char *message, si
     if (!m || !m->species_count || !m->species_names || (m->reaction_count && !m->reactions)) return CHEM_INVALID_MECHANISM;
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemReaction *r = &m->reactions[i];
+        if ((r->reactant_count && !m->reactants) || (r->product_count && !m->products) ||
+            r->reactant_begin > SIZE_MAX-r->reactant_count || r->product_begin > SIZE_MAX-r->product_count) return CHEM_INVALID_MECHANISM;
         if (r->type == CHEM_SURFACE) {
             int index = r->reactant_count && m->reactants ? m->reactants[r->reactant_begin].species : -1;
             const char *name = index >= 0 && (size_t)index < m->species_count ? m->species_names[index] : "?";

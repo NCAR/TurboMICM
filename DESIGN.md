@@ -33,6 +33,9 @@ entries remain represented in the pattern even when constraints replace the
 corresponding numerical rows.
 The group Rosenbrock interface shares a time step and error norm across cells,
 while retaining a workspace and external context for each cell.
+The solver builder validates configuration and calls model finalizers. Solver
+options can be replaced for a solve; grouped Rosenbrock states share control,
+and backward Euler advances cells independently.
 `ChemRosenbrockParameters` contains stage coefficients and control parameters;
 two-, three-, and four-stage ODE parameter sets are provided.
 `chem_rosenbrock_solve` implements the stage loop and error controller. The
