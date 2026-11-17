@@ -186,8 +186,10 @@ build/test_jacobian_check: tests/test_jacobian_check.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
 check: build/test_jacobian_check
 
-build/test_process_set: tests/test_process_set.c build/libchem.a
-	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@
+build/process_fixture.c: tools/generate.py tools/config.py tests/process_fixture/config.json tests/process_fixture/species.json tests/process_fixture/reactions.json | build
+	.conda/bin/python tools/generate.py tests/process_fixture/config.json $@
+build/test_process_set: tests/test_process_set.c build/process_fixture.c build/libchem.a
+	$(CC) $(CFLAGS) tests/test_process_set.c build/process_fixture.c build/libchem.a -lm -o $@
 check: build/test_process_set
 
 build/test_state: tests/test_state.c build/libchem.a

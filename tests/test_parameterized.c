@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 extern const ChemMechanism generated_mechanism;
+extern const ChemSpeciesCatalog generated_species_catalog;
 extern const ChemRate generated_rates[];
 extern const ChemRateMultiplier generated_multipliers[];
 extern const ChemParameterizedSpecies generated_multiplier_functions[];
@@ -16,6 +17,11 @@ extern const size_t generated_custom_count;
 int main(void)
 {
     assert(generated_mechanism.species_count==1 && generated_mechanism.reaction_count==5);
+    assert(chem_species_catalog_used_count(&generated_species_catalog)==4);
+    assert(chem_species_catalog_is_used(&generated_species_catalog,"foo"));
+    assert(chem_species_catalog_is_used(&generated_species_catalog,"bar"));
+    assert(chem_species_catalog_is_used(&generated_species_catalog,"probe"));
+    assert(chem_species_catalog_is_used(&generated_species_catalog,"Q"));
     assert(!strcmp(generated_species[0],"foo") && generated_custom_count==3);
     assert(!strcmp(generated_custom_labels[0],"bar_user"));
     assert(!strcmp(generated_custom_labels[1],"foo_surf.effective radius [m]"));

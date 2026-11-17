@@ -83,3 +83,9 @@ directly without allocating a `ChemState`.
 state species into caller-owned masks. Sparse plan construction shares the
 same Jacobian pattern operation. Parameterized species are represented through
 rate multipliers and are not included in the state-species mask.
+
+The generated `ChemSpeciesCatalog` retains configuration species names and
+marks those occurring in reactions, including parameterized reactants and
+products that are not stored as state variables. It is independent of the
+solver permutation. Callers constructing mechanisms in C can provide the same
+borrowed catalog representation.

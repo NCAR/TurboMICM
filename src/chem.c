@@ -129,3 +129,18 @@ int chem_jacobian_pattern(const ChemMechanism *m, unsigned char *pattern)
     }
     return 1;
 }
+
+size_t chem_species_catalog_used_count(const ChemSpeciesCatalog *catalog)
+{
+    size_t count=0;
+    if (!catalog || !catalog->used) return 0;
+    for (size_t i=0;i<catalog->count;++i) count+=catalog->used[i]!=0;
+    return count;
+}
+int chem_species_catalog_is_used(const ChemSpeciesCatalog *catalog, const char *name)
+{
+    if (!catalog || !catalog->names || !catalog->used || !name) return 0;
+    for (size_t i=0;i<catalog->count;++i)
+        if (catalog->names[i] && !strcmp(name,catalog->names[i])) return catalog->used[i]!=0;
+    return 0;
+}

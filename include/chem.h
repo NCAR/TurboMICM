@@ -15,6 +15,16 @@ typedef struct {
     const ChemProduct *products;
 } ChemMechanism;
 
+/* Catalog metadata includes both state and parameterized species. The names
+   and used flags are borrowed and remain valid for the catalog lifetime. */
+typedef struct {
+    size_t count;
+    const char *const *names;
+    const unsigned char *used;
+} ChemSpeciesCatalog;
+size_t chem_species_catalog_used_count(const ChemSpeciesCatalog *catalog);
+int chem_species_catalog_is_used(const ChemSpeciesCatalog *catalog, const char *name);
+
 /* k has one entry per reaction. Output arrays must not alias inputs. */
 void chem_rhs(const ChemMechanism *m, const double *restrict y,
               const double *restrict k, double *restrict f);

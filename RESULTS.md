@@ -98,3 +98,8 @@ sizes, with additional forcing, Jacobian, and structural checks. A fixed
 process fixture also checks the reference forcing and Jacobian, but its full
 case remains unported because parameterized-species name enumeration is not
 yet represented in the C mechanism. TS1 still passes with both compilers.
+
+The latest case report has 205 passing cases and 475 unported failures on
+both compilers. The fixed process-set fixture now exercises generated
+parameterized-species metadata, forcing, and Jacobian values. The 100-cell TS1
+comparison remains passing on both compilers.

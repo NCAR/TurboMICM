@@ -4,6 +4,12 @@
 #include <float.h>
 #include "chem.h"
 #include "jacobian_check.h"
+#include "rates.h"
+extern const ChemSpeciesCatalog generated_species_catalog;
+extern const ChemMechanism generated_mechanism;
+extern const ChemRate generated_rates[];
+extern const ChemRateMultiplier generated_multipliers[];
+extern const ChemParameterizedSpecies generated_multiplier_functions[];
 
 typedef struct { const ChemMechanism *m; const double *rates; } Context;
 static void forcing(void *v, size_t cell, const double *x, double *f)
@@ -13,13 +19,15 @@ static void forcing(void *v, size_t cell, const double *x, double *f)
 }
 static void test_reference_fixture(void)
 {
-    /* qux is parameterized and its density multiplier is folded into k. */
-    const ChemReaction rx[]={{0,2,0,2},{2,1,2,2},{3,1,4,0},{4,1,4,2}};
-    const size_t react[]={0,2,1,3,2};
-    const ChemProduct product[]={{1,1},{4,2.4},{0,1},{3,1.4},{1,1},{3,2.5}};
-    const ChemMechanism m={6,4,rx,react,product};
+    /* Generated metadata includes qux, which has a density parameterization. */
+    const ChemMechanism m=generated_mechanism;
+    const char *names[]={"foo","bar","baz","quz","quuz","qux"};
+    assert(chem_species_catalog_used_count(&generated_species_catalog)==6);
+    for (size_t i=0;i<6;++i) assert(chem_species_catalog_is_used(&generated_species_catalog,names[i]));
+    assert(!chem_species_catalog_is_used(&generated_species_catalog,"corge"));
+    assert(!chem_species_catalog_is_used(&generated_species_catalog,"missing"));
     const double states[]={.1,.2,.3,.4,.5,0,1.1,1.2,1.3,1.4,1.5,0};
-    const double rs[]={10,20*70*.72,30,40*70*.72,110,120*80*.72,130,140*80*.72};
+    const double custom[]={10,20,30,40,110,120,130,140};
     const unsigned char expected_pattern[]={
         1,1,1,0,0,0, 1,1,1,0,0,0, 1,0,1,0,0,0,
         0,1,1,1,0,0, 1,0,1,0,0,0, 0,0,0,0,0,0};
@@ -28,7 +36,11 @@ static void test_reference_fixture(void)
     for (size_t i=0;i<36;++i) assert(pattern[i]==expected_pattern[i]);
     for (size_t i=0;i<6;++i) assert(used[i]==(i<5));
     for (size_t cell=0;cell<2;++cell) {
-        const double *x=states+cell*6, *k=rs+cell*4;
+        const double *x=states+cell*6;
+        double k[4];
+        ChemConditions conditions={300,101325,cell ? 80 : 70};
+        chem_rates_parameterized(4,generated_rates,generated_multipliers,generated_multiplier_functions,
+                                 conditions,custom+4*cell,k);
         double f[]={1000,1000,1000,1000,1000,1000}, jac[36];
         for (size_t i=0;i<36;++i) jac[i]=100;
         chem_add_forcing(&m,x,k,NULL,f);

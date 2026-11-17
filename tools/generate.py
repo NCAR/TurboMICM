@@ -41,6 +41,8 @@ def markowitz_pattern(pattern):
 def generate(path, reorder=False):
     species, source_reactions = read_mechanism(path)
     root = read_document(path)
+    all_species_names = [s['name'] for s in species]
+    used_species = set()
     parameterized = {}
     third_bodies = set()
     for s in species:
@@ -67,6 +69,8 @@ def generate(path, reorder=False):
 
     def emit(reaction, reactant_map, product_map, kind, params, custom=0):
         rb, pb = len(reactants), len(products)
+        used_species.update(reactant_map)
+        used_species.update(product_map)
         air_order = 0
         multiplier_begin = len(functions)
         for name, properties in reactant_map.items():
@@ -171,6 +175,9 @@ def generate(path, reorder=False):
         return ', '.join(json.dumps(s, ensure_ascii=True) for s in values) or '0'
     lines = ['#include "chem.h"', '#include "rates.h"', '']
     lines.append('const char *const generated_species[] = {' + strings(s['name'] for s in species) + '};')
+    lines.append('static const char *const catalog_names[] = {' + strings(all_species_names) + '};')
+    lines.append('static const unsigned char catalog_used[] = {' + ', '.join(str(int(name in used_species)) for name in all_species_names or ['']) + '};')
+    lines.append(f'const ChemSpeciesCatalog generated_species_catalog = {{{len(all_species_names)}, catalog_names, catalog_used}};')
     lines.append('const char *const generated_custom_labels[] = {' + strings(labels) + '};')
     lines.append(f'const size_t generated_custom_count = {len(labels)};')
     lines.append('const char *const generated_callback_labels[] = {' + strings(callback_labels) + '};')

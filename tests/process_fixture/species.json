@@ -1,0 +1,6 @@
+{"camp-data":[
+ {"type":"CHEM_SPEC","name":"foo"},{"type":"CHEM_SPEC","name":"bar"},
+ {"type":"CHEM_SPEC","name":"baz"},{"type":"CHEM_SPEC","name":"quz"},
+ {"type":"CHEM_SPEC","name":"quuz"},{"type":"CHEM_SPEC","name":"corge"},
+ {"type":"CHEM_SPEC","name":"qux","parameterization":{"air density":0.72}}
+]}

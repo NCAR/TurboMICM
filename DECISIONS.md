@@ -36,3 +36,8 @@ in place of exceptions and C++ special members. A bulk named update checks all
 names and lengths before applying any column, avoiding partial updates after an
 invalid input. Direct row-major arrays remain available for integrations and
 callers that do not need name lookup.
+
+Mechanism generation preserves a separate species catalog with used flags, so
+queries include parameterized species even though those species do not occupy
+state slots. The catalog retains configuration order when state variables are
+reordered; this avoids making name queries depend on the solver permutation.

@@ -1,0 +1,6 @@
+{"camp-data":[{"type":"MECHANISM","name":"process fixture","reactions":[
+ {"type":"USER_DEFINED","MUSICA name":"r1","reactants":{"foo":{},"baz":{}},"products":{"bar":{},"quuz":{"yield":2.4}}},
+ {"type":"USER_DEFINED","MUSICA name":"r2","reactants":{"bar":{},"qux":{}},"products":{"foo":{},"quz":{"yield":1.4}}},
+ {"type":"USER_DEFINED","MUSICA name":"r3","reactants":{"quz":{}},"products":{}},
+ {"type":"USER_DEFINED","MUSICA name":"r4","reactants":{"baz":{},"qux":{}},"products":{"bar":{},"quz":{"yield":2.5}}}
+]}]}
