@@ -12,6 +12,13 @@ for line in run.stdout.splitlines():
     if case in results:
         raise ValueError(f'duplicate case result: {case}')
     results[case] = passed == '1'
+expected = (root / 'tests/tutorial_expected.txt').read_text()
+for case, executable, args in [
+    ('rate_constants_no_user_defined_example_by_hand', 'tutorial_no_user', []),
+    ('rate_constants_user_defined_example_by_hand', 'tutorial_user', ['user']),
+]:
+    result = subprocess.run([str(root / 'build' / executable), *args], text=True, capture_output=True)
+    results[case] = result.returncode == 0 and result.stdout == expected
 failed = False
 for line in (root / 'tests/micm_cases.txt').read_text().splitlines():
     if not line or line.startswith('#'):

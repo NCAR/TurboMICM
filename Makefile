@@ -65,7 +65,7 @@ build/test_cases: tests/test_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
 test-cpu:
-	@$(MAKE) --no-print-directory -s build/test_cases
+	@$(MAKE) --no-print-directory -s build/test_cases build/tutorial_no_user build/tutorial_user
 	@$(PYTHON) tools/test_cpu.py
 
 test-reader: build/test_chem build/test_solver
@@ -75,3 +75,15 @@ test-reader: build/test_chem build/test_solver
 
 clean:
 	rm -rf build bin
+
+build/tutorial_no_user.c: ../micm/test/tutorial/configs/rate_constants_no_user_defined/config.yaml ../micm/test/tutorial/configs/rate_constants_no_user_defined/species.yaml ../micm/test/tutorial/configs/rate_constants_no_user_defined/reactions.yaml tools/generate.py tools/mechanism.py | build
+	$(PYTHON) tools/generate.py $< $@
+
+build/tutorial_user.c: ../micm/test/tutorial/configs/rate_constants_user_defined/config.json ../micm/test/tutorial/configs/rate_constants_user_defined/species.json ../micm/test/tutorial/configs/rate_constants_user_defined/reactions.json tools/generate.py tools/mechanism.py | build
+	$(PYTHON) tools/generate.py $< $@
+
+build/tutorial_no_user: tests/test_tutorial.c build/tutorial_no_user.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
+build/tutorial_user: tests/test_tutorial.c build/tutorial_user.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@

@@ -29,6 +29,34 @@ ChemRosenbrockParameters chem_rosenbrock_three_stage(void)
     return p;
 }
 
+ChemRosenbrockParameters chem_rosenbrock_two_stage(void)
+{
+    ChemRosenbrockParameters p = chem_rosenbrock_three_stage();
+    double g = 1.0 + 1.0/sqrt(2.0);
+    memset(p.a, 0, sizeof p.a); memset(p.c, 0, sizeof p.c);
+    memset(p.m, 0, sizeof p.m); memset(p.e, 0, sizeof p.e);
+    p.stages = 2; p.a[0] = 1.0/g; p.c[0] = -2.0/g;
+    p.m[0] = 3.0/(2.0*g); p.m[1] = 1.0/(2.0*g);
+    p.e[0] = p.e[1] = 1.0/(2.0*g); p.gamma = g; p.order = 2;
+    p.new_function[0] = p.new_function[1] = 1;
+    return p;
+}
+
+ChemRosenbrockParameters chem_rosenbrock_four_stage(void)
+{
+    ChemRosenbrockParameters p = chem_rosenbrock_three_stage();
+    memset(p.a, 0, sizeof p.a); memset(p.c, 0, sizeof p.c);
+    memset(p.m, 0, sizeof p.m); memset(p.e, 0, sizeof p.e);
+    p.stages = 4; p.new_function[0] = p.new_function[1] = p.new_function[2] = 1; p.new_function[3] = 0;
+    p.a[0] = 2.0; p.a[1] = p.a[3] = 1.867943637803922; p.a[2] = p.a[4] = .2344449711399156;
+    p.c[0] = -7.137615036412310; p.c[1] = 2.580708087951457; p.c[2] = .6515950076447975;
+    p.c[3] = -2.137148994382534; p.c[4] = -.3214669691237626; p.c[5] = -.6949742501781779;
+    p.m[0] = 2.255570073418735; p.m[1] = .2870493262186792; p.m[2] = .4353179431840180; p.m[3] = 1.093502252409163;
+    p.e[0] = -.2815431932141155; p.e[1] = -.07276199124938920; p.e[2] = -.1082196201495311; p.e[3] = -1.093502252409163;
+    p.gamma = .57282; p.order = 4;
+    return p;
+}
+
 ChemWorkspace *chem_workspace_create(const ChemMechanism *m)
 {
     if (!m || !m->species_count || m->species_count > (size_t)-1 / m->species_count) return NULL;
@@ -164,7 +192,9 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
                 }
             double err = 0;
             for (size_t i = 0; i < n; ++i) {
-                double scale = p->absolute_tolerance + p->relative_tolerance*fmax(fabs(y[i]), fabs(w->trial[i]));
+                double atol = p->absolute_tolerances ? p->absolute_tolerances[i] : p->absolute_tolerance;
+                if (!(atol > 0)) return 1;
+                double scale = atol + p->relative_tolerance*fmax(fabs(y[i]), fabs(w->trial[i]));
                 double e = w->error[i]/scale; err += e*e;
             }
             err = fmax(sqrt(err/n), 1e-10);
@@ -185,5 +215,6 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
             }
         }
     }
+    for (size_t i = 0; i < n; ++i) y[i] = y[i] > 0.0 ? y[i] : 0.0;
     return 0;
 }

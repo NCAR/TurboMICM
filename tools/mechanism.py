@@ -48,7 +48,7 @@ def read_mechanism(path):
     if not names or any(not isinstance(n, str) or not n for n in names) or len(set(names)) != len(names):
         raise MechanismError('species names must be nonempty and unique')
     allowed = {'ARRHENIUS', 'BRANCHED', 'SURFACE', 'TERNARY_CHEMICAL_ACTIVATION', 'TROE', 'TUNNELING',
-               'PHOTOLYSIS', 'USER_DEFINED', 'FIRST_ORDER_LOSS', 'EMISSION'}
+               'PHOTOLYSIS', 'USER_DEFINED', 'FIRST_ORDER_LOSS', 'EMISSION', 'REVERSIBLE', 'TAYLOR'}
     for i, reaction in enumerate(reactions):
         kind = reaction.get('type')
         if kind not in allowed:

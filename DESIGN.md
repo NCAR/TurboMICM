@@ -10,6 +10,7 @@ mapping back to the input.
 
 Rate constants, forcing, and Jacobian evaluation are separate from the solver.
 `ChemRosenbrockParameters` contains stage coefficients and control parameters;
+two-, three-, and four-stage ODE parameter sets are provided.
 `chem_rosenbrock_solve` implements the stage loop and error controller. The
 workspace derives the symbolic Jacobian and fill once, then uses in-place
 Mozart elimination. A replacement linear solver can use the same Jacobian and
@@ -23,4 +24,5 @@ maximum is used. Each thread owns a reusable workspace. Current Jacobians use
 dense storage with a symbolic sparse pattern; group size is one cell. The
 initial step is `1e-6 * DT`, the minimum is `1e-15 * DT`, relative tolerance is
 `1e-6`, and absolute tolerance is `1e-3`, matching the reference defaults.
-These solver values can be set in `ChemRosenbrockParameters`.
+These solver values can be set in `ChemRosenbrockParameters`, including an
+optional per-species absolute tolerance array.

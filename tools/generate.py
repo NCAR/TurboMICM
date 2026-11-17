@@ -84,6 +84,13 @@ def compile_mechanism(mech):
             elif kind in ('TROE', 'TERNARY_CHEMICAL_ACTIVATION'):
                 enum = 'TERNARY' if kind.startswith('TERNARY') else kind
                 values = [r.get(k, d) for k, d in zip(('k0_A','k0_B','k0_C','kinf_A','kinf_B','kinf_C','Fc','N'), (1,0,0,1,0,0,.6,1))]
+            elif kind == 'REVERSIBLE':
+                enum, values = kind, [r.get('A', 1), r.get('C', 0), r.get('k_r', 0)]
+            elif kind == 'TAYLOR':
+                coefficients = r.get('coefficients', [1])
+                if not isinstance(coefficients, list) or not 1 <= len(coefficients) <= 16:
+                    raise MechanismError('Taylor rate needs 1 to 16 coefficients')
+                enum, values = kind, [r.get(k, d) for k, d in zip('ABCDE', (1, 0, 0, 300, 0))] + [len(coefficients)] + coefficients
             elif kind == 'TUNNELING':
                 enum, values = kind, [r.get(k, d) for k, d in zip('ABC', (1,0,0))]
             elif kind in ('USER_DEFINED', 'PHOTOLYSIS', 'FIRST_ORDER_LOSS', 'EMISSION'):
@@ -106,7 +113,7 @@ def compile_mechanism(mech):
             if mech['rate units'] == 'molecule cm-3':
                 conversion = 1e-6 * 6.02214076e23
                 order = len(rs)-rb
-                if enum in ('ARRHENIUS', 'TUNNELING'):
+                if enum in ('ARRHENIUS', 'TUNNELING', 'TAYLOR'):
                     values[0] *= conversion ** (order-1)
                 elif enum == 'TROE':
                     values[0] *= conversion ** order

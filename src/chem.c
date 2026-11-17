@@ -39,6 +39,17 @@ int chem_rate_constants(const ChemMechanism *m, ChemConditions c, const double *
         case CHEM_TUNNELING:
             k = p[0] * exp(-p[1] / t + p[2] / (t * t * t));
             break;
+        case CHEM_REVERSIBLE:
+            k = p[0] * exp(p[1] / t) * p[2];
+            break;
+        case CHEM_TAYLOR: {
+            int count = (int)p[5];
+            if (count < 1 || count > 16 || p[5] != count) return 1;
+            double polynomial = 0.0, power = 1.0;
+            for (int j = 0; j < count; ++j, power *= t) polynomial += p[6+j] * power;
+            k = polynomial * p[0] * exp(p[2]/t) * pow(t/p[3], p[1]) * (1.0+p[4]*c.pressure);
+            break;
+        }
         case CHEM_USER:
             k = parameters[r->parameter] * p[0];
             break;

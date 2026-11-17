@@ -8,13 +8,14 @@
 typedef struct { int species; double yield; } ChemTerm;
 typedef enum {
     CHEM_ARRHENIUS, CHEM_TROE, CHEM_TERNARY, CHEM_TUNNELING,
-    CHEM_USER, CHEM_SURFACE, CHEM_BRANCH_ALKOXY, CHEM_BRANCH_NITRATE
+    CHEM_USER, CHEM_SURFACE, CHEM_BRANCH_ALKOXY, CHEM_BRANCH_NITRATE,
+    CHEM_REVERSIBLE, CHEM_TAYLOR
 } ChemRateType;
 typedef struct {
     ChemRateType type;
     size_t reactant_begin, reactant_count, product_begin, product_count;
     int parameter;                 /* first custom parameter, or -1 */
-    double p[10];                  /* interpreted by the rate type */
+    double p[22];                  /* interpreted by the rate type */
 } ChemReaction;
 typedef struct {
     size_t species_count, reaction_count, parameter_count;
@@ -37,6 +38,7 @@ typedef struct {
     double a[15], c[15], m[6], e[6], gamma, order;
     double factor_min, factor_max, rejection_factor, safety;
     double h_min, h_max, h_start, relative_tolerance, absolute_tolerance;
+    const double *absolute_tolerances; /* optional per-species override */
 } ChemRosenbrockParameters;
 typedef struct {
     unsigned long internal_steps, accepted, rejected, function_calls;
@@ -44,7 +46,9 @@ typedef struct {
 } ChemStatistics;
 typedef struct ChemWorkspace ChemWorkspace;
 
+ChemRosenbrockParameters chem_rosenbrock_two_stage(void);
 ChemRosenbrockParameters chem_rosenbrock_three_stage(void);
+ChemRosenbrockParameters chem_rosenbrock_four_stage(void);
 ChemWorkspace *chem_workspace_create(const ChemMechanism *);
 void chem_workspace_free(ChemWorkspace *);
 /* On failure returns nonzero; y contains the most recently accepted state. */
