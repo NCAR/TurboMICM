@@ -140,3 +140,8 @@ The latest case report has 273 passing cases and 407 unported failures on
 both compilers. Additional matrix cases cover row-major and interleaved group
 layouts, initialization, indexing, conversion, arithmetic, column operations,
 and printing. Both compilers pass the 100-cell TS1 comparison.
+
+The latest case report has 305 passing cases and 375 unported failures on
+both compilers. New checks cover reusable row callbacks, multiple matrices,
+temporary vectors, size errors, and strict and padded reductions for matrix
+layouts. Both compilers pass the 100-cell TS1 comparison.

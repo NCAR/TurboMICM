@@ -129,6 +129,51 @@ ChemMatrixStatus chem_matrix_get_column(const ChemMatrix *m,size_t col,double *v
     for (size_t row=0;row<m->rows;++row) v[row]=*chem_matrix_const_at(m,row,col);
     return CHEM_MATRIX_OK;
 }
+ChemMatrixStatus chem_matrix_column(ChemMatrix *m,size_t col,ChemColumnView *view)
+{
+    if (!m || !view || col>=m->columns) return CHEM_MATRIX_INVALID;
+    *view=(ChemColumnView){m,col,NULL,m->rows};
+    return CHEM_MATRIX_OK;
+}
+ChemColumnView chem_vector_column(double *data,size_t length)
+{ return (ChemColumnView){NULL,0,data,length}; }
+static int valid_column(const ChemColumnView *view)
+{
+    if (!view) return 0;
+    if (view->matrix) return view->column<view->matrix->columns && view->length==view->matrix->rows;
+    return !view->length || view->vector;
+}
+static double *column_at(const ChemColumnView *view,size_t row)
+{
+    return view->matrix ? view->matrix->data+chem_matrix_index(view->matrix,row,view->column) : view->vector+row;
+}
+ChemMatrixStatus chem_columns_apply(const ChemColumnView *views,size_t count,ChemRowFunction function,void *context)
+{
+    if (!function || (count && !views)) return CHEM_MATRIX_INVALID;
+    if (!count) return CHEM_MATRIX_OK;
+    if (count>SIZE_MAX/sizeof(double *)) return CHEM_MATRIX_SIZE;
+    for (size_t i=0;i<count;++i) {
+        if (!valid_column(views+i)) return CHEM_MATRIX_INVALID;
+        if (views[i].length!=views[0].length) return CHEM_MATRIX_SIZE;
+    }
+    double **values=malloc(count*sizeof(*values));
+    if (!values) return CHEM_MATRIX_ALLOCATION;
+    for (size_t row=0;row<views[0].length;++row) {
+        for (size_t i=0;i<count;++i) values[i]=column_at(views+i,row);
+        function(row,values,context);
+    }
+    free(values); return CHEM_MATRIX_OK;
+}
+ChemMatrixStatus chem_column_reduce(const ChemColumnView *view,int padded,ChemReduceFunction function,
+                                     void *accumulator,void *context)
+{
+    if (!valid_column(view) || !function || !accumulator) return CHEM_MATRIX_INVALID;
+    size_t length=view->length;
+    if (padded && view->matrix && view->matrix->width)
+        length=view->matrix->groups*view->matrix->width;
+    for (size_t row=0;row<length;++row) function(*column_at(view,row),accumulator,context);
+    return CHEM_MATRIX_OK;
+}
 ChemMatrixStatus chem_matrix_print(const ChemMatrix *m,FILE *stream)
 {
     if (!m || !stream) return CHEM_MATRIX_INVALID;

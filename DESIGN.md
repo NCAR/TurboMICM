@@ -103,3 +103,8 @@ final group and interleaves cells within columns. Row and column operations
 validate dimensions, while the low-level index accessor supports direct use
 of the layout. This is a separate utility; the current solver keeps its
 existing per-cell layout.
+
+Borrowed column views can refer to a matrix column or a caller-owned vector.
+`chem_columns_apply` checks row counts before invoking a reusable row callback.
+`chem_column_reduce` supports either logical rows or padded group storage,
+letting callers choose the identity values used in padded reductions.

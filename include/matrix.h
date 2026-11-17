@@ -33,5 +33,18 @@ ChemMatrixStatus chem_matrix_copy_column(ChemMatrix *destination,size_t dest_col
                                           const ChemMatrix *source,size_t src_col);
 ChemMatrixStatus chem_matrix_set_column(ChemMatrix *m,size_t col,const double *values,size_t count);
 ChemMatrixStatus chem_matrix_get_column(const ChemMatrix *m,size_t col,double *values,size_t count);
+/* Column views borrow a matrix or caller-owned vector. All views in an apply
+   operation must have the same logical length; callbacks can be reused with
+   other views and different row counts. */
+typedef struct { ChemMatrix *matrix; size_t column; double *vector; size_t length; } ChemColumnView;
+ChemMatrixStatus chem_matrix_column(ChemMatrix *m,size_t col,ChemColumnView *view);
+ChemColumnView chem_vector_column(double *data,size_t length);
+typedef void (*ChemRowFunction)(size_t row,double *const *values,void *context);
+ChemMatrixStatus chem_columns_apply(const ChemColumnView *views,size_t count,ChemRowFunction function,void *context);
+/* A padded reduction visits the tail group; a strict reduction visits only
+   logical rows. Vector and row-major views have no padding. */
+typedef void (*ChemReduceFunction)(double value,void *accumulator,void *context);
+ChemMatrixStatus chem_column_reduce(const ChemColumnView *view,int include_padding,
+                                     ChemReduceFunction function,void *accumulator,void *context);
 ChemMatrixStatus chem_matrix_print(const ChemMatrix *m,FILE *stream);
 #endif
