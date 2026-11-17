@@ -7,5 +7,10 @@ forcing and its dense Jacobian. The derivative is formed by products excluding
 one factor, so zero concentrations are handled without division. The interface
 separates the mechanism from the kernel and leaves the choice of solver open.
 
-This is a starting point, not the final architecture: no solver, threading,
-tuning parameters, or linear solver have yet been implemented.
+`src/rosenbrock.c` provides a single-cell autonomous ODE solver using callback
+functions for forcing and Jacobian, configurable Rosenbrock coefficients, and
+reference step-size defaults. It uses dense no-pivot Mozart elimination. The
+current implementation allocates scratch space per solve; multi-cell scheduling,
+sparse matrices, other solver families, and constraints are not yet implemented.
+
+This is a starting point, not the final architecture.

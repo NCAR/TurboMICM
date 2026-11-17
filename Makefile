@@ -14,7 +14,9 @@ build:
 	mkdir -p $@
 build/chem.o: src/chem.c include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/chem.o
+build/rosenbrock.o: src/rosenbrock.c include/rosenbrock.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+build/libchem.a: build/chem.o build/rosenbrock.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(filter-out -DNDEBUG,$(CFLAGS)) $< build/libchem.a -lm -o $@
@@ -24,7 +26,13 @@ build/robertson.c: tools/generate.py tools/config.py | build
 	.conda/bin/python tools/generate.py ../micm/test/tutorial/configs/robertson/config.json $@
 build/test_generated: tests/test_generated.c build/robertson.c build/libchem.a
 	$(CC) $(filter-out -DNDEBUG,$(CFLAGS)) tests/test_generated.c build/robertson.c build/libchem.a -lm -o $@
-check: build/test_chem build/test_generated
+build/test_rosenbrock: tests/test_rosenbrock.c build/libchem.a
+	$(CC) $(filter-out -DNDEBUG,$(CFLAGS)) $< build/libchem.a -lm -o $@
+build/test_chemical_solver: tests/test_chemical_solver.c build/robertson.c build/libchem.a
+	$(CC) $(filter-out -DNDEBUG,$(CFLAGS)) tests/test_chemical_solver.c build/robertson.c build/libchem.a -lm -o $@
+check: build/test_chem build/test_generated build/test_rosenbrock build/test_chemical_solver
 	./build/test_chem
+	./build/test_rosenbrock
+	./build/test_chemical_solver
 	./build/test_generated
 	.conda/bin/python tests/test_config.py
