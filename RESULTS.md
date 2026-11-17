@@ -33,3 +33,8 @@ of 1 s-1, the comparison is less close: 44 of 211 values exceed the gate
 tolerance after two timed steps, with a largest relative difference of
 1.47e-5. This stiff input is outside the supplied ranking inputs, which set
 those six rates to zero; its discrepancy remains under investigation.
+A warm-up-only check of that same input passes at step lengths of 1e-12,
+1e-6, and 1e-3 seconds, but exceeds the tolerance at 1 and 30 seconds. This
+locates the divergence during integration at larger steps; it does not yet
+identify whether arithmetic conditioning or an implementation difference is
+responsible.
