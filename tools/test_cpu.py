@@ -7,6 +7,14 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"species:Species.{case}": ("build/test_species", "species properties and copy")
+       for case in ["StringConstructor", "StringAndVectorConstructor", "GetProperty", "SetThirdBody", "CopyConstructor", "CopyAssignment"]},
+    **{f"phase:PhaseSpecies.{case}": ("build/test_species", "phase species metadata")
+       for case in ["ConstructsWithoutDiffusionCoefficient", "ConstructsWithDiffusionCoefficient", "SetDiffusionCoefficient"]},
+    **{f"phase:Phase.{case}": ("build/test_species", "phase names and state size")
+       for case in ["Constructor", "ConstructorWithParameterizedSpecies", "UniqueNamesWithParameterizedSpecies"]},
+    **{f"system:System.{case}": ("build/test_species", "system names and state size")
+       for case in ["ConstructorWithAllParameters", "ConstructorWithParameterizedSpecies"]},
     **{f"{prefix}:AerosolModelIntegration.{case}": ("build/test_aerosol_state", "composed aerosol state and process")
        for prefix in ["aerosol_model_rosenbrock", "aerosol_model_backward_euler"]
        for case in ["StateIncludesStubAerosolModel", "CanUpdateStateWithStubAerosolModel",

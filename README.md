@@ -23,8 +23,8 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently
-574 cases have been ported, so the target intentionally fails and labels the
-other 106 as unported. The focused `make check` tests cover additional behavior
+588 cases have been ported, so the target intentionally fails and labels the
+other 92 as unported. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
 The single-cell backward Euler API is declared in `include/backward_euler.h`.
@@ -43,6 +43,11 @@ existing rate and integration APIs. Initialize states to zero before use and
 release them with `chem_state_destroy`. External models can contribute names
 and tolerances through `chem_state_init_composed` and resolve their indices
 through the state lookup functions.
+
+`include/species.h` provides owned species, typed properties, phase metadata,
+parameterizations, diffusion coefficients, and gas-system name queries. These
+metadata objects are separate from the indexed reaction tables used by the
+numerical kernels.
 
 Custom DAE constraints can provide residual and negative-Jacobian callbacks
 and declare their state dependencies through `ChemCustomConstraint`.

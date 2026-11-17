@@ -232,3 +232,7 @@ External-model state fragments now register variables and parameters with a
 shared state. The aerosol reference checks for registration, named updates,
 forcing, and Jacobians pass for both solver families. Both compilers pass the
 TS1 comparison; the case report has 574 passing and 106 unported failures.
+
+Species, phase-species, phase, and gas-system metadata now have owned-copy and
+parameterization checks. Both compilers pass the 100-cell TS1 comparison; the
+case report has 588 passing and 92 unported failures.
