@@ -16,10 +16,14 @@ static int check_print(ChemSparseMatrix *m,int nonzero)
     static const char *nz="Block 0\n0, 1, 32\n1, 1, 7\n2, 1, 32\n2, 3, 32\n3, 2, 32\n"
         "Block 1\n0, 1, 32\n1, 1, 9\n2, 1, 32\n2, 3, 32\n3, 2, 32\n"
         "Block 2\n0, 1, 32\n1, 1, 11\n2, 1, 32\n2, 3, 32\n3, 2, 32\n";
-    FILE *f=tmpfile(); if(!f) return 0;
+    const char *path="build/test_sparse_print.tmp";
+    FILE *f=fopen(path,"w+"); if(!f) return 0;
     int ok=!chem_sparse_print(m,f,nonzero) && !fseek(f,0,SEEK_SET);
     char text[1024]; size_t n=fread(text,1,sizeof(text)-1,f); text[n]=0;
-    ok=ok && !strcmp(text,nonzero ? nz : dense); fclose(f); return ok;
+    ok=ok && !strcmp(text,nonzero ? nz : dense);
+    if(fclose(f))ok=0;
+    if(remove(path))ok=0;
+    return ok;
 }
 static int sparse_case(int kind,size_t width,int column_major)
 {

@@ -86,11 +86,13 @@ static int matrix_case(int kind, size_t width, int grouped)
     } else if (kind==17) {
         if (chem_matrix_init(&m,2,3,width,grouped,0)) return 0;
         *chem_matrix_at(&m,1,1)=3;
-        FILE *f=tmpfile(); if (!f) { chem_matrix_free(&m); return 0; }
+        const char *path="build/test_matrix_print.tmp";
+        FILE *f=fopen(path,"w+"); if (!f) { chem_matrix_free(&m); return 0; }
         if (chem_matrix_print(&m,f) || fseek(f,0,SEEK_SET)) ok=0;
         char buf[64]={0}; size_t read=fread(buf,1,sizeof(buf)-1,f); buf[read]=0;
         if (strcmp(buf,"0,0,0\n0,3,0\n")) ok=0;
-        fclose(f);
+        if (fclose(f)) ok=0;
+        if (remove(path)) ok=0;
     }
     chem_matrix_free(&m); chem_matrix_free(&x); chem_matrix_free(&z); return ok;
 }

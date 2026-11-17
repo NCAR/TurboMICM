@@ -46,3 +46,5 @@
 - Tutorial configuration fixtures and TS1 defaults are copied into the
   repository as test data, so building and testing the port is independent of
   the reference source checkout.
+- Print-output tests keep their temporary files under the local build directory,
+  so those tests do not write to the system temporary directory.
