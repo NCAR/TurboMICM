@@ -94,6 +94,10 @@ ChemRosenbrockParameters chem_rosenbrock_three_stage(void);
 ChemRosenbrockParameters chem_rosenbrock_four_stage(void);
 ChemRosenbrockParameters chem_rosenbrock_four_stage_dae(void);
 ChemRosenbrockParameters chem_rosenbrock_six_stage_dae(void);
+/* Error arrays are cell-major; optional absolute tolerances are per species. */
+double chem_rosenbrock_normalized_error(size_t cells, size_t species, const double *old_state,
+                                        const double *new_state, const double *error, double relative_tolerance,
+                                        double absolute_tolerance, const double *absolute_tolerances);
 ChemWorkspace *chem_workspace_create(const ChemMechanism *);
 /* Constraints and their term arrays must outlive the workspace. */
 ChemWorkspace *chem_workspace_create_constrained(const ChemMechanism *, const ChemConstraint *, size_t);

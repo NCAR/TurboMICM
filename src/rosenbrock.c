@@ -110,6 +110,23 @@ ChemRosenbrockParameters chem_rosenbrock_six_stage_dae(void)
     return p;
 }
 
+double chem_rosenbrock_normalized_error(size_t cells, size_t species, const double *old_state,
+                                        const double *new_state, const double *error, double relative_tolerance,
+                                        double absolute_tolerance, const double *absolute_tolerances)
+{
+    if (!cells || !species || cells > SIZE_MAX/species || !old_state || !new_state || !error || relative_tolerance < 0) return NAN;
+    double sum=0;
+    for (size_t cell=0; cell<cells; ++cell) for (size_t i=0; i<species; ++i) {
+        size_t index=cell*species+i;
+        double atol=absolute_tolerances?absolute_tolerances[i]:absolute_tolerance;
+        if (!(atol>0)) return NAN;
+        double scale=atol+relative_tolerance*fmax(fabs(old_state[index]),fabs(new_state[index]));
+        double e=error[index]/scale; sum+=e*e;
+    }
+    double result=sqrt(sum/(cells*species));
+    return isfinite(result) ? fmax(result,1e-10) : NAN;
+}
+
 static ChemWorkspace *allocate_workspace(size_t n)
 {
     if (!n || n > SIZE_MAX / n) return NULL;
@@ -234,7 +251,7 @@ static int factor(ChemWorkspace *w, double alpha, ChemLUAlgorithm algorithm)
     size_t n = w->n;
     double *a = w->matrix;
     for (size_t i = 0; i < n; ++i) {
-        a[i*n+i] = -w->jacobian[i*n+i] + (w->mass[i] ? alpha : 0);
+        a[i*n+i] = chem_shift_diagonal(-w->jacobian[i*n+i],alpha,w->mass[i]);
         for (size_t k = w->row_lower_offset[i]; k < w->row_lower_offset[i+1]; ++k) {
             size_t j = w->row_lower_cols[k]; a[i*n+j] = -w->jacobian[i*n+j];
         }
@@ -478,6 +495,7 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
         (!p->absolute_tolerances && p->absolute_tolerance <= 0) || p->relative_tolerance < 0) return 1;
     memset(stats, 0, sizeof *stats);
     size_t n = w->n;
+    if (p->absolute_tolerances) for (size_t i=0;i<n;++i) if (!(p->absolute_tolerances[i]>0)) return 1;
     if (w->constraint_count && chem_initialize_constraints(w,p,cond,y,stats)) return 5;
     double hmin = p->h_min == 0 ? 1e-15*dt : p->h_min;
     double hmax = p->h_max == 0 ? dt : fmin(dt, p->h_max);
@@ -518,16 +536,9 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
                     w->error[i] += p->e[stage]*w->stage[(size_t)stage*n+i];
                 }
             for (size_t i = 0; i < n; ++i) if (!w->mass[i]) w->error[i] = w->trial[i] - y[i];
-            double err = 0;
-            for (size_t i = 0; i < n; ++i) {
-                double atol = p->absolute_tolerances ? p->absolute_tolerances[i] : p->absolute_tolerance;
-                if (!(atol > 0)) return 1;
-                double scale = atol + p->relative_tolerance*fmax(fabs(y[i]), fabs(w->trial[i]));
-                double e = w->error[i]/scale; err += e*e;
-            }
-            err = sqrt(err/n);
+            double err = chem_rosenbrock_normalized_error(1,n,y,w->trial,w->error,p->relative_tolerance,
+                                                          p->absolute_tolerance,p->absolute_tolerances);
             if (!isfinite(err)) return 4;
-            err = fmax(err, 1e-10);
             double fac = fmin(p->factor_max, fmax(p->factor_min, p->safety/pow(err, 1/p->order)));
             double next = h*fac; ++stats->internal_steps;
             if (err < 1 || h < hmin) {

@@ -51,7 +51,7 @@ build/model.o: src/model.c include/chem.h | build
 build/matrix.o: src/matrix.c include/matrix.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/sparse.o: src/sparse.c include/sparse.h | build
+build/sparse.o: src/sparse.c src/internal.h include/sparse.h include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/state.o: src/state.c include/state.h include/matrix.h include/chem.h | build
@@ -103,6 +103,9 @@ build/test_process_set_cases: tests/test_process_set_cases.c build/libchem.a
 build/test_analytical: tests/test_analytical.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
+build/test_rosenbrock_cases: tests/test_rosenbrock_cases.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
 build/test_sparse_function_cases: tests/test_sparse_function_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
@@ -122,7 +125,7 @@ build/test_cases: tests/test_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
 test-cpu:
-	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/test_sparse_remaining build/test_lu_cases build/test_grouped_views build/test_state_cases build/test_jacobian_verify build/test_process_cases build/test_process_set_cases build/test_analytical build/tutorial_no_user build/tutorial_user
+	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/test_sparse_cases build/test_sparse_function_cases build/test_sparse_remaining build/test_lu_cases build/test_grouped_views build/test_state_cases build/test_jacobian_verify build/test_process_cases build/test_process_set_cases build/test_analytical build/test_rosenbrock_cases build/tutorial_no_user build/tutorial_user
 	@$(PYTHON) tools/test_cpu.py
 
 build/test_dae: tests/test_dae.c build/libchem.a

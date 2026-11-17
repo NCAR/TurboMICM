@@ -1,4 +1,5 @@
 #include "sparse.h"
+#include "internal.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -122,6 +123,16 @@ void chem_sparse_add_diagonal(ChemSparseMatrix *m,double value)
     for(size_t b=0;b<m->blocks;++b) for(size_t i=0;i<m->order;++i) {
         double *p=chem_sparse_at(m,b,i,i); if (p) *p+=value;
     }
+}
+int chem_rosenbrock_alpha_minus_jacobian(ChemSparseMatrix *m,double alpha,const unsigned char *differential_rows)
+{
+    if(!m) return 1;
+    if(m->blocks) for(size_t i=0;i<m->order;++i) if(!chem_sparse_at(m,0,i,i)) return 1;
+    for(size_t b=0;b<m->blocks;++b) for(size_t i=0;i<m->order;++i) {
+        double *p=chem_sparse_at(m,b,i,i);
+        *p=chem_shift_diagonal(*p,alpha,!differential_rows || differential_rows[i]);
+    }
+    return 0;
 }
 int chem_sparse_print(const ChemSparseMatrix *m,FILE *file,int nonzero_only)
 {

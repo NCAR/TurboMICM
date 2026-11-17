@@ -30,6 +30,7 @@ double *chem_sparse_at(ChemSparseMatrix *, size_t block, size_t row, size_t colu
 const double *chem_sparse_const_at(const ChemSparseMatrix *, size_t block, size_t row, size_t column);
 void chem_sparse_fill(ChemSparseMatrix *, double);
 void chem_sparse_add_diagonal(ChemSparseMatrix *, double);
+int chem_rosenbrock_alpha_minus_jacobian(ChemSparseMatrix *, double alpha, const unsigned char *differential_rows);
 int chem_sparse_print(const ChemSparseMatrix *, FILE *, int nonzero_only);
 double *chem_sparse_at_vector_index(ChemSparseMatrix *, size_t block, size_t block_zero_index);
 int chem_sparse_fill_block_view(ChemSparseMatrix *, size_t row, size_t column, double value);

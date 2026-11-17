@@ -21,6 +21,7 @@ int chem_state_init(ChemState *s,const ChemStateParameters *p,size_t cells,size_
        chem_matrix_init(&t.custom_parameters,cells,p->parameter_count,width,width!=1,0) ||
        chem_matrix_init(&t.rate_constants,cells,p->rate_count,width,width!=1,0)) { chem_state_free(&t); return 1; }
     if(p->variable_count && p->absolute_tolerances) memcpy(t.absolute_tolerances,p->absolute_tolerances,p->variable_count*sizeof(double));
+    else for(size_t i=0;i<p->variable_count;++i) t.absolute_tolerances[i]=1e-3;
     t.parameters.absolute_tolerances=t.absolute_tolerances;
     *s=t; return 0;
 }
@@ -101,4 +102,21 @@ int chem_state_update_rate_constants(ChemState *s,const ChemMechanism *m,const C
            chem_matrix_set_row(&s->rate_constants,cell,rates,m->reaction_count)) { status=1; break; }
     }
     free(data); return status;
+}
+int chem_state_apply_phase_tolerances(ChemState *s,ChemPhase phase)
+{
+    if(!s || (phase.count && !phase.species)) return 1;
+    for(size_t i=0;i<phase.count;++i) {
+        const ChemSpecies *species=phase.species[i].species;
+        if(!species) return 1;
+        if(species->is_parameterized) continue;
+        ptrdiff_t index=chem_state_variable_index(s,species->name);
+        if(index<0) return 1;
+        ChemPropertyValue tolerance;
+        if(chem_species_get(species,"absolute tolerance",CHEM_PROPERTY_REAL,&tolerance)==CHEM_PROPERTY_OK) {
+            if(!(tolerance.real>0)) return 1;
+            s->absolute_tolerances[index]=tolerance.real;
+        }
+    }
+    return 0;
 }
