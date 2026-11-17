@@ -181,6 +181,16 @@ int chem_sparse_copy_block_view(ChemSparseMatrix *out,size_t orow,size_t ocol,co
     for(size_t b=0;b<out->blocks;++b) *chem_sparse_at(out,b,orow,ocol)=*chem_sparse_const_at(in,b,irow,icol);
     return 0;
 }
+int chem_sparse_matvec(const ChemSparseMatrix *m,size_t block,const double *x,size_t x_count,double *out,size_t out_count)
+{
+    if(!m || block>=m->blocks || !x || !out || x_count<m->order || out_count<m->order || x==out)return 1;
+    for(size_t i=0;i<m->order;++i) {
+        double sum=0;
+        for(size_t j=0;j<m->order;++j) {const double *value=chem_sparse_const_at(m,block,i,j);if(value)sum+=*value*x[j];}
+        out[i]=sum;
+    }
+    return 0;
+}
 int chem_sparse_function_init(ChemSparseFunction *f,ChemSparseMatrix *const *sparse,size_t ns,
                               ChemMatrix *const *dense,size_t nd,size_t nv,ChemBlockFunction fn,void *context)
 {

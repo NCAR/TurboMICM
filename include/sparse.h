@@ -38,6 +38,8 @@ int chem_sparse_block_to_vector(const ChemSparseMatrix *, size_t row, size_t col
 int chem_sparse_vector_to_block(ChemSparseMatrix *, size_t row, size_t column, const double *values, size_t size);
 int chem_sparse_copy_block_view(ChemSparseMatrix *out, size_t out_row, size_t out_column,
                                 const ChemSparseMatrix *in, size_t in_row, size_t in_column);
+int chem_sparse_matvec(const ChemSparseMatrix *, size_t block, const double *x, size_t x_count,
+                       double *out, size_t out_count);
 
 typedef int (*ChemBlockFunction)(size_t block, ChemSparseMatrix *const *sparse,
                                  ChemMatrix *const *dense, ChemVector *const *vectors, void *context);
