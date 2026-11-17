@@ -420,8 +420,13 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   to 01:25 MST, verified (676 PASS, 4 N/A, gate 2.51e-13; 64-cell groups;
   `results/2026-11-17-terra-max-verification`), not yet timed. terra-xhigh:
   01:39 to 04:29, verified (676 PASS, 4 N/A, gate 1.77e-13; one cell at a
-  time; `results/2026-11-17-terra-xhigh-verification`). terra-high launched
-  04:44 on 2026-11-17 (`admin/runs.md`).
+  time; `results/2026-11-17-terra-xhigh-verification`). terra-high: 04:44 to
+  08:35 (58 turns), verified (675 PASS, 5 N/A, gate 1.25e-13; one cell at a
+  time, solver allocation inside the timer; its PASS ids are 47 programs' exit
+  statuses, unaudited; `results/2026-11-17-terra-high-verification`). The
+  timing session for all twelve entries was armed at 08:49 in tmux
+  `tier1-timing` (out: `~/NSF-NCAR/tier1-work/timing-terra/`); afterwards
+  follow `admin/FOLLOW-UP-tier1-timing.md` with twelve entries (`admin/runs.md`).
 - Luna: run all three fresh, one after another, at max, xhigh, then high (the
   SSE's order, 2026-10-19), each verified and timed with all entries before the
   next starts. luna-max is done: finished 21:05, verified, and timed overnight

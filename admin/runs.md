@@ -159,7 +159,7 @@ Transcripts
 | luna-high | gpt-6-luna | high | Codex CLI 0.163.0, interactive, launched by Claude Code (rerun) | 2026-10-20 14:27-18:20 | `d3c2480`, 18:20 (128 commits) | finished |
 | terra-max | gpt-6.1-terra | max | Codex CLI 0.169.0, interactive, launched by Claude Code | 2026-11-16 22:52-2026-11-17 01:25 | `9071941`, 01:25 (22 commits) | finished |
 | terra-xhigh | gpt-6.1-terra | xhigh | Codex CLI 0.169.0, interactive, launched by Claude Code | 2026-11-17 01:39-04:29 | `288f274`, 04:29 (37 commits) | finished |
-| terra-high | gpt-6.1-terra | high | Codex CLI 0.169.0, interactive, launched by Claude Code | 2026-11-17 04:44- | | running |
+| terra-high | gpt-6.1-terra | high | Codex CLI 0.169.0, interactive, launched by Claude Code | 2026-11-17 04:44-08:35 | `a8a2ea0`, 08:35 (79 commits) | finished |
 
 Token counts are as Codex reports them: total = uncached input + output.
 
@@ -587,6 +587,46 @@ Token counts are as Codex reports them: total = uncached input + output.
   besides `CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN`. No other Codex session was
   running.
 - Codex session `01a1e952-4b55-7dd0-8b9e-68cc5b40c0cf`.
+- Progress, from Claude Code's checks every 20 minutes: the 10,000-cell gate
+  passing at 20 minutes (its own run 42.0 s against MICM's 27.4 s); 92 cases
+  passing at 40, 202 at 61, 235 at 81, 526 at 101, 560 at 121, 593 at 142, 649
+  at 162, 673 at 182; then performance work and an investigation of a stiff
+  default-photolysis input. Unlike the other two Terra runs, the goal ran 58
+  short turns, most ending after one commit without reporting done; every
+  check found new cases passing, so none found it floundering.
+- Session end: the 58th turn ended at 08:35:40 with DONE: 675 PASS and 5 N/A
+  with both compilers, the gate passing, and its own single runs at 25.69 s
+  against MICM's 26.32 s. Codex showed "Goal achieved (3h 50m)". The record was
+  idle 10 minutes by 08:46; Claude Code quit Codex and closed the tmux session.
+- Final commit `a8a2ea0` (08:35), 79 commits; collected as `runs/terra/high`.
+- Tokens: 2,126,035 total; input 1,606,476 (plus 291,015,808 cached); output
+  519,559 (116,322 reasoning). Codex's weekly usage window went from 23 % to
+  29 %.
+- Other load during the session: Claude Code's read-only progress checks and
+  its reading of terra-xhigh's verification worktree; terra-xhigh's
+  verification had ended before the launch. No builds, tests, or timing by the
+  experimenter.
+- Compliance (`admin/scan_commands.py`): 952 commands; two benign path
+  findings (a mistyped `../micmicm`, and `/Users` as an `rg` pattern); none
+  naming another run or a private folder; no installs or downloads; no
+  connector, MCP, or web-search calls; no subagents; all 110 file edits inside
+  the run directory.
+- Transcript archived as `transcripts/terra-high.jsonl.gz` (account
+  identifiers redacted, none left). The credential scan's only matches (18, of
+  the `sk-` pattern) were inside encrypted content.
+- Verified, 08:46, with `admin/verify_tier3.py --stages build,tests,ts1,audit`
+  (`results/2026-11-17-terra-high-verification`): 675 PASS, 0 FAIL, 5 N/A
+  with each compiler, every id once; the TS1 gate passes (1.25e-13 with clang,
+  1.43e-13 with gcc-15); the audit finds nothing outside the rules (its 56
+  programs in `build/` checked by hand); no warnings. One cell at a time, 9
+  steps per cell and interval; the solver allocates its working memory on
+  every call, inside the timer. A finding for the SSE: each PASS id is its
+  test program's exit status, 675 ids from 47 programs (86 from one), as for
+  luna-max and luna-xhigh; the mapping was not audited.
+- Timing: the session for all entries was armed at 08:49 in tmux
+  `tier1-timing` (`~/NSF-NCAR/tier1-work/time-when-idle.sh terra luna-max
+  luna-xhigh luna-high terra-max terra-xhigh terra-high`), waiting for an idle
+  machine.
 
 # Tier 2
 
