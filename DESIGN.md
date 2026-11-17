@@ -128,3 +128,8 @@ logical blocks, including across sparse, dense, and vector storage.
 Sparse block functions use the shared matrix-function signature over their
 value matrices. Signatures validate compatible group widths at creation and
 again at invocation. An empty invocation returns without calling the callback.
+
+Group spans expose the contiguous lanes of a dense column or sparse block
+entry, with separate logical length and padded capacity. Const spans allow
+read-only access; group fill and copy cover the allocated lanes, including
+tail padding, while callers can restrict calculations to the logical length.

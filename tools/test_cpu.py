@@ -7,6 +7,13 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"grouped_views:GroupedView.{case}": ("build/test_grouped_views", "grouped dense and sparse views") for case in [
+        "MatrixColumnViewRoundTrip", "VectorMatrixColumnViewContiguousBlock", "DenseGroupedMatchesRawL1", "DenseGroupedMatchesRawL2",
+        "DenseGroupedMatchesRawL4", "DenseGroupedMatchesRawL8", "PlainMatrixGroupedRoundTrip", "SparseStandardBlockViewRoundTrip",
+        "SparseVectorBlockViewContiguousBlock", "MixedSparseAndDenseGroupedL1", "MixedSparseAndDenseGroupedL2", "MixedSparseAndDenseGroupedL4",
+        "MixedSparseAndDenseGroupedL8", "SparseVectorRowColOverloadStillFunctional", "ConstGroupViewProducesGroupedViews",
+        "FillAndCopySparseStandardCSR", "FillAndCopySparseStandardCSC", "FillAndCopySparseVectorCSR_L4", "FillAndCopySparseVectorCSC_L4",
+        "FillAndCopySparseVectorCSR_L8", "FillCopyCrossGroupViewSources"]},
     **{f"{prefix}:{suite}.{case}": ("build/test_sparse_functions", "sparse function validation")
        for prefix, suite in [
            ("sparse_matrix_standard_compressed_row_ordering", "SparseCompressedRowMatrix"),

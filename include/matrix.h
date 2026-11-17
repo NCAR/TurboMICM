@@ -37,6 +37,14 @@ ChemMatrixStatus chem_matrix_get_column(const ChemMatrix *m,size_t col,double *v
    operation must have the same logical length; callbacks can be reused with
    other views and different row counts. */
 typedef struct { ChemMatrix *matrix; size_t column; double *vector; size_t length; } ChemColumnView;
+typedef struct { double *base; size_t length, capacity; } ChemGroupSpan;
+typedef struct { const double *base; size_t length, capacity; } ChemConstGroupSpan;
+/* Each span has contiguous lanes; length excludes tail padding, capacity
+   includes it. Fill and copy include padding, like grouped storage. */
+ChemMatrixStatus chem_matrix_group_column(ChemMatrix *m,size_t group,size_t column,ChemGroupSpan *span);
+ChemMatrixStatus chem_matrix_const_group_column(const ChemMatrix *m,size_t group,size_t column,ChemConstGroupSpan *span);
+ChemMatrixStatus chem_group_fill(ChemGroupSpan destination,double value);
+ChemMatrixStatus chem_group_copy(ChemGroupSpan destination,ChemConstGroupSpan source);
 ChemMatrixStatus chem_matrix_column(ChemMatrix *m,size_t col,ChemColumnView *view);
 ChemColumnView chem_vector_column(double *data,size_t length);
 ChemMatrixStatus chem_column_fill(const ChemColumnView *view,double value);

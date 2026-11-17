@@ -165,3 +165,8 @@ The latest case report has 505 passing cases and 175 unported failures on
 both compilers. New checks cover sparse function block/vector dimensions,
 reusable functions, empty blocks, and incompatible group widths. Both
 compilers pass the 100-cell TS1 comparison.
+
+The latest case report has 526 passing cases and 154 unported failures on
+both compilers. New grouped-view checks cover dense and sparse lanes, const
+access, mixed views, partial groups, and fill/copy across CSR and CSC layouts.
+Both compilers pass the 100-cell TS1 comparison.

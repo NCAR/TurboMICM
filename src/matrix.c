@@ -129,6 +129,39 @@ ChemMatrixStatus chem_matrix_get_column(const ChemMatrix *m,size_t col,double *v
     for (size_t row=0;row<m->rows;++row) v[row]=*chem_matrix_const_at(m,row,col);
     return CHEM_MATRIX_OK;
 }
+ChemMatrixStatus chem_matrix_const_group_column(const ChemMatrix *m,size_t group,size_t col,ChemConstGroupSpan *span)
+{
+    if (!m || !span || group>=m->groups || col>=m->columns) return CHEM_MATRIX_INVALID;
+    size_t capacity=m->width ? m->width : 1;
+    size_t first=group*capacity, length=m->rows-first;
+    if (length>capacity) length=capacity;
+    *span=(ChemConstGroupSpan){m->data+chem_matrix_index(m,first,col),length,capacity};
+    return CHEM_MATRIX_OK;
+}
+ChemMatrixStatus chem_matrix_group_column(ChemMatrix *m,size_t group,size_t col,ChemGroupSpan *span)
+{
+    if (!span) return CHEM_MATRIX_INVALID;
+    ChemConstGroupSpan source;
+    ChemMatrixStatus status=chem_matrix_const_group_column(m,group,col,&source);
+    if (status!=CHEM_MATRIX_OK) return status;
+    *span=(ChemGroupSpan){m->data+(source.base-m->data),source.length,source.capacity};
+    return CHEM_MATRIX_OK;
+}
+ChemMatrixStatus chem_group_fill(ChemGroupSpan destination,double value)
+{
+    if (destination.length>destination.capacity || (destination.capacity && !destination.base)) return CHEM_MATRIX_INVALID;
+    for (size_t i=0;i<destination.capacity;++i) destination.base[i]=value;
+    return CHEM_MATRIX_OK;
+}
+ChemMatrixStatus chem_group_copy(ChemGroupSpan destination,ChemConstGroupSpan source)
+{
+    if (destination.length>destination.capacity || source.length>source.capacity ||
+        (destination.capacity && !destination.base) || (source.capacity && !source.base)) return CHEM_MATRIX_INVALID;
+    if (destination.length!=source.length || destination.capacity!=source.capacity ||
+        destination.capacity>SIZE_MAX/sizeof(double)) return CHEM_MATRIX_SIZE;
+    if (destination.capacity) memmove(destination.base,source.base,destination.capacity*sizeof(double));
+    return CHEM_MATRIX_OK;
+}
 ChemMatrixStatus chem_matrix_column(ChemMatrix *m,size_t col,ChemColumnView *view)
 {
     if (!m || !view || col>=m->columns) return CHEM_MATRIX_INVALID;
