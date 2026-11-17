@@ -51,9 +51,11 @@ Prompt changes
   experimenter judged immaterial to their solutions.
 
 Launch changes
-- 2026-11-16, for Terra: the 2026-10-19 authorization to stop a floundering run
-  was given for the Luna runs; for Terra, Claude Code keeps the 20-minute
-  read-only checks and asks the SSE before stopping a run.
+- 2026-11-16, for Terra: the SSE authorized Claude Code to stop a Terra run it
+  judges to be floundering ("I expect Terra runs to progress, you may stop
+  floundering runs"), as for Luna on 2026-10-19: no time limit, slowness alone
+  is no reason, 20-minute read-only checks, and any stop recorded here with its
+  reasons.
 - 2026-10-16, from luna-high on: at the SSE's request, Claude Code launches the
   runs with `admin/launch_codex_run.sh`. It is the same interactive Codex session,
   command, and goal, typed into a detached tmux session started from an empty

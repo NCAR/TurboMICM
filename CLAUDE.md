@@ -415,8 +415,8 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   then terra-high (the SSE's order), one at a time, each collected, archived,
   and verified before the next launches; then one timing session with all
   entries and luna-high's deferred timing (the SSE's choice). Tiers 2 and 3 are
-  decided after Tier 1. Stopping a floundering Terra run needs the SSE's word
-  (the 2026-10-19 authorization covered Luna). terra-max launched 22:52 MST,
+  decided after Tier 1. Claude may stop a floundering Terra run (the SSE,
+  2026-11-16: "I expect Terra runs to progress"); slowness alone is no reason. terra-max launched 22:52 MST,
   2026-11-16 (`admin/runs.md`).
 - Luna: run all three fresh, one after another, at max, xhigh, then high (the
   SSE's order, 2026-10-19), each verified and timed with all entries before the
