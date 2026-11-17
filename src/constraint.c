@@ -32,6 +32,14 @@ static double product(const ChemTerm *terms, size_t count, const double *y, size
     return value;
 }
 
+ChemConstraintStatus chem_constraint_equilibrium_constant(const ChemConstraint *c,double temperature,double *value)
+{
+    if(!c || !value || c->type!=CHEM_EQUILIBRIUM_CONSTRAINT || !(c->constant>0) || !(temperature>0) ||
+       !(c->reference_temperature>0) || !(c->gas_constant>0)) return CHEM_CONSTRAINT_BAD_EQUILIBRIUM;
+    *value=c->constant*exp((c->enthalpy/c->gas_constant)*(1/temperature-1/c->reference_temperature));
+    return isfinite(*value)?CHEM_CONSTRAINT_OK:CHEM_CONSTRAINT_BAD_EQUILIBRIUM;
+}
+
 ChemConstraintStatus chem_constraint_apply(const ChemConstraint *c, size_t n, double temperature,
                                           const double *y, double *forcing, double *negative_jacobian)
 {
@@ -49,8 +57,8 @@ ChemConstraintStatus chem_constraint_apply(const ChemConstraint *c, size_t n, do
         }
         forcing[c->row] = residual-c->constant;
     } else {
-        if (!(temperature > 0) || !(c->reference_temperature > 0) || !(c->gas_constant > 0)) return CHEM_CONSTRAINT_BAD_EQUILIBRIUM;
-        double k = c->constant * exp((c->enthalpy/c->gas_constant)*(1/temperature-1/c->reference_temperature));
+        double k;
+        if (chem_constraint_equilibrium_constant(c,temperature,&k)) return CHEM_CONSTRAINT_BAD_EQUILIBRIUM;
         forcing[c->row] = k*product(c->reactants,c->reactant_count,y,(size_t)-1)
                         - product(c->products,c->product_count,y,(size_t)-1);
         for (size_t side = 0; side < 2; ++side) {
@@ -91,6 +99,16 @@ ChemConstraintStatus chem_constraint_set_pattern(ChemConstraintSet set, size_t n
         for (size_t j=0;j<c->reactant_count;++j) pattern[c->row*n+(size_t)c->reactants[j].species]=1;
         for (size_t j=0;j<c->product_count;++j) pattern[c->row*n+(size_t)c->products[j].species]=1;
     }
+    return CHEM_CONSTRAINT_OK;
+}
+
+ChemConstraintStatus chem_constraint_mass_diagonal(ChemConstraintSet set,size_t n,unsigned char *diagonal)
+{
+    ChemConstraintStatus status=chem_constraint_set_validate(set,n);
+    if(status) return status;
+    if(n && !diagonal) return CHEM_CONSTRAINT_BAD_ROW;
+    if(n) memset(diagonal,1,n);
+    for(size_t i=0;i<set.count;++i) diagonal[set.items[i].row]=0;
     return CHEM_CONSTRAINT_OK;
 }
 

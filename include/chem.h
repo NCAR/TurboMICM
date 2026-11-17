@@ -155,6 +155,8 @@ typedef struct { const ChemConstraint *items; size_t count; } ChemConstraintSet;
 ChemConstraintStatus chem_constraint_validate(const ChemConstraint *, size_t species_count);
 ChemConstraintStatus chem_constraint_set_validate(ChemConstraintSet, size_t species_count);
 ChemConstraintStatus chem_constraint_set_pattern(ChemConstraintSet, size_t species_count, unsigned char *pattern);
+ChemConstraintStatus chem_constraint_mass_diagonal(ChemConstraintSet, size_t species_count, unsigned char *diagonal);
+ChemConstraintStatus chem_constraint_equilibrium_constant(const ChemConstraint *, double temperature, double *value);
 /* Cells are contiguous; temperatures, forcing, and Jacobians have one entry/block per cell. */
 ChemConstraintStatus chem_constraint_set_apply(ChemConstraintSet, size_t species_count, size_t cells,
                                                const double *temperatures, const double *y,

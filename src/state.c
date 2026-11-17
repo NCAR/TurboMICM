@@ -91,14 +91,18 @@ int chem_state_set_parameter_rows(ChemState *s,const double *const *rows,const s
 }
 int chem_state_update_rate_constants(ChemState *s,const ChemMechanism *m,const ChemCallback *callbacks)
 {
-    if(!s || !m || s->parameters.rate_count!=m->reaction_count || s->parameters.parameter_count!=m->parameter_count ||
+    if(!s || !m || s->parameters.rate_count!=m->reaction_count || (m->parameter_count && !m->parameter_names) ||
        m->parameter_count>SIZE_MAX-m->reaction_count || m->parameter_count+m->reaction_count>SIZE_MAX/sizeof(double)) return 1;
     size_t n=m->parameter_count+m->reaction_count;
     double *data=malloc((n?n:1)*sizeof(double)); if(!data) return 1;
     double *params=data, *rates=data+m->parameter_count; int status=0;
     for(size_t cell=0;cell<s->cells;++cell) {
-        if(chem_matrix_get_row(&s->custom_parameters,cell,params,m->parameter_count) ||
-           chem_rate_constants_with_callbacks(m,s->conditions[cell],params,callbacks,rates) ||
+        for(size_t i=0;i<m->parameter_count;++i) {
+            ptrdiff_t col=chem_state_parameter_index(s,m->parameter_names[i]);
+            if(col<0) { status=1; break; }
+            params[i]=*chem_matrix_at(&s->custom_parameters,cell,(size_t)col);
+        }
+        if(status || chem_rate_constants_with_callbacks(m,s->conditions[cell],params,callbacks,rates) ||
            chem_matrix_set_row(&s->rate_constants,cell,rates,m->reaction_count)) { status=1; break; }
     }
     free(data); return status;
@@ -116,6 +120,20 @@ int chem_state_apply_phase_tolerances(ChemState *s,ChemPhase phase)
         if(chem_species_get(species,"absolute tolerance",CHEM_PROPERTY_REAL,&tolerance)==CHEM_PROPERTY_OK) {
             if(!(tolerance.real>0)) return 1;
             s->absolute_tolerances[index]=tolerance.real;
+        }
+    }
+    return 0;
+}
+int chem_state_update_constraint_parameters(ChemState *s,ChemConstraintSet set)
+{
+    if(!s || chem_constraint_set_validate(set,s->parameters.variable_count)) return 1;
+    for(size_t i=0;i<set.count;++i) if(set.items[i].type==CHEM_EQUILIBRIUM_CONSTRAINT) {
+        ptrdiff_t column=chem_state_parameter_index(s,set.items[i].name);
+        if(column<0) return 1;
+        for(size_t cell=0;cell<s->cells;++cell) {
+            double value;
+            if(chem_constraint_equilibrium_constant(&set.items[i],s->conditions[cell].temperature,&value)) return 1;
+            *chem_matrix_at(&s->custom_parameters,cell,(size_t)column)=value;
         }
     }
     return 0;
