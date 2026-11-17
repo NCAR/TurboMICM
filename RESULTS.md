@@ -15,7 +15,7 @@ matched the reference after three 1e-6-second steps; all 211 reported values
 passed, with a largest relative difference of 2.88e-16.
 
 A single 10-thread run on 10,000 cells, 100 timed 30-second steps, seed 2026,
-with clang `-O3 -DNDEBUG` measured 28,867 ms for this implementation and
-28,211 ms for the same-flag MICM reference. All 2,110,000 output values passed
+with clang `-O3 -DNDEBUG` measured 30,496 ms for this implementation and
+29,617 ms for the same-flag MICM reference. All 2,110,000 output values passed
 the requested tolerance; the largest relative difference was 1.77e-13. These are
 single exploratory samples, not ranking measurements.
