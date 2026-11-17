@@ -38,6 +38,8 @@ tests; the chemistry kernel keeps its own specialized species-major workspace.
 `chem_sparse.h` adds compressed-row and compressed-column structures whose
 blocks use the same row-major or grouped storage. Sparse coordinates are
 validated and deduplicated when a structure is created.
+Dense columns and sparse block entries expose explicit grouped views with
+checked fill and copy operations, including partial final groups.
 
 ## Numerical components
 

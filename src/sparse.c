@@ -78,6 +78,23 @@ void *chem_sparse_block_slot(ChemSparseMatrix *m, size_t block, size_t slot)
     if (slot%stride || slot/stride>=m->nonzeros) return NULL;
     return chem_matrix_at(&m->storage,block,slot/stride);
 }
+int chem_sparse_const_group_block(const ChemSparseMatrix *m, size_t group, size_t row, size_t column,
+                                  ChemConstGroupView *view)
+{
+    size_t at=chem_sparse_entry(m,row,column);
+    if (at==SIZE_MAX) return CHEM_INVALID;
+    int status=chem_matrix_const_group_column(&m->storage,group,at,view);
+    if (!status) view->category=CHEM_GROUPED_SPARSE_VIEW;
+    return status;
+}
+int chem_sparse_group_block(ChemSparseMatrix *m, size_t group, size_t row, size_t column, ChemGroupView *view)
+{
+    size_t at=chem_sparse_entry(m,row,column);
+    if (at==SIZE_MAX) return CHEM_INVALID;
+    int status=chem_matrix_group_column(&m->storage,group,at,view);
+    if (!status) view->category=CHEM_GROUPED_SPARSE_VIEW;
+    return status;
+}
 int chem_sparse_fill(ChemSparseMatrix *m, const void *value)
 { return m ? chem_matrix_fill(&m->storage,value) : CHEM_INVALID; }
 int chem_sparse_add_diagonal(ChemSparseMatrix *m, const void *value, ChemNumberType type)

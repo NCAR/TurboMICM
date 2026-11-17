@@ -27,6 +27,9 @@ void *chem_sparse_at(ChemSparseMatrix *matrix, size_t block, size_t row, size_t 
 const void *chem_sparse_at_const(const ChemSparseMatrix *matrix, size_t block, size_t row, size_t column);
 /* A block-zero slot addresses a given nonzero across blocks. */
 void *chem_sparse_block_slot(ChemSparseMatrix *matrix, size_t block, size_t block_zero_slot);
+int chem_sparse_group_block(ChemSparseMatrix *matrix, size_t group, size_t row, size_t column, ChemGroupView *view);
+int chem_sparse_const_group_block(const ChemSparseMatrix *matrix, size_t group, size_t row, size_t column,
+                                  ChemConstGroupView *view);
 int chem_sparse_fill(ChemSparseMatrix *matrix, const void *value);
 int chem_sparse_add_diagonal(ChemSparseMatrix *matrix, const void *value, ChemNumberType type);
 int chem_sparse_format(const ChemSparseMatrix *matrix, char *buffer, size_t capacity,

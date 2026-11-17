@@ -10,6 +10,11 @@ typedef struct {
     unsigned char *data;
 } ChemMatrix;
 
+typedef enum { CHEM_DENSE_COLUMN_VIEW, CHEM_SPARSE_BLOCK_VIEW, CHEM_GROUPED_DENSE_VIEW,
+               CHEM_GROUPED_SPARSE_VIEW, CHEM_VECTOR_VIEW } ChemViewCategory;
+typedef struct { unsigned char *base; size_t length, element_size; ChemViewCategory category; } ChemGroupView;
+typedef struct { const unsigned char *base; size_t length, element_size; ChemViewCategory category; } ChemConstGroupView;
+
 int chem_matrix_init(ChemMatrix *matrix, size_t rows, size_t columns, size_t group_size,
                      size_t element_size, const void *initial_value);
 int chem_matrix_from_rows(ChemMatrix *matrix, const void *const *rows, const size_t *lengths,
@@ -32,6 +37,10 @@ int chem_matrix_axpy(ChemMatrix *destination, double alpha, const ChemMatrix *so
 int chem_matrix_bound(ChemMatrix *matrix, double value, int minimum);
 /* Format double-valued matrices as comma-separated rows, including newlines. */
 int chem_matrix_format(const ChemMatrix *matrix, char *buffer, size_t capacity);
+int chem_matrix_group_column(ChemMatrix *matrix, size_t group, size_t column, ChemGroupView *view);
+int chem_matrix_const_group_column(const ChemMatrix *matrix, size_t group, size_t column, ChemConstGroupView *view);
+int chem_group_fill(ChemGroupView view, const void *value);
+int chem_group_copy(ChemGroupView destination, ChemConstGroupView source);
 
 typedef void (*ChemMatrixReducer)(const void *value, void *accumulator, void *context);
 /* A non-strict reduction includes padded lanes, while strict visits real rows. */

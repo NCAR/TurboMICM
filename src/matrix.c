@@ -143,6 +143,38 @@ int chem_matrix_format(const ChemMatrix *m, char *buffer, size_t capacity)
     }
     return CHEM_OK;
 }
+int chem_matrix_const_group_column(const ChemMatrix *m, size_t group, size_t column, ChemConstGroupView *view)
+{
+    if (!m || !view || !m->data || column>=m->columns) return CHEM_INVALID;
+    size_t width=m->group_size ? m->group_size : 1;
+    if (group>SIZE_MAX/width || group*width>=m->rows) return CHEM_INVALID;
+    size_t first=group*width, length=m->rows-first<width ? m->rows-first : width;
+    *view=(ChemConstGroupView){chem_matrix_at_const(m,first,column),length,m->element_size,CHEM_GROUPED_DENSE_VIEW};
+    return CHEM_OK;
+}
+int chem_matrix_group_column(ChemMatrix *m, size_t group, size_t column, ChemGroupView *view)
+{
+    if (!view) return CHEM_INVALID;
+    ChemConstGroupView read;
+    int status=chem_matrix_const_group_column(m,group,column,&read);
+    if (status) return status;
+    *view=(ChemGroupView){(unsigned char *)(void *)read.base,read.length,read.element_size,read.category};
+    return CHEM_OK;
+}
+int chem_group_fill(ChemGroupView view, const void *value)
+{
+    if (!view.base || !view.element_size || !value) return CHEM_INVALID;
+    for (size_t i=0;i<view.length;++i) memcpy(view.base+i*view.element_size,value,view.element_size);
+    return CHEM_OK;
+}
+int chem_group_copy(ChemGroupView destination, ChemConstGroupView source)
+{
+    if (!destination.base || !source.base || !destination.element_size ||
+        destination.length!=source.length || destination.element_size!=source.element_size ||
+        destination.length>SIZE_MAX/destination.element_size) return CHEM_INVALID;
+    memmove(destination.base,source.base,destination.length*destination.element_size);
+    return CHEM_OK;
+}
 int chem_matrix_reduce_column(const ChemMatrix *m, size_t column, int strict,
                               ChemMatrixReducer reducer, void *accumulator, void *context)
 {
