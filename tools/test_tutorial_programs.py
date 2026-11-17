@@ -7,6 +7,9 @@ root = Path(__file__).resolve().parents[1]
 programs = (
     ("rate_constants_no_user_defined_example_by_hand", "tutorial_no_custom.expected"),
     ("rate_constants_user_defined_example_by_hand", "tutorial_custom.expected"),
+    ("README_example", "readme.expected"),
+    ("multiple_grid_cells", "multiple_grid_cells.expected"),
+    ("solve_results", "solve_results.expected"),
 )
 for program, expected_name in programs:
     result = subprocess.run([root / "build" / program], capture_output=True, check=True)
@@ -14,4 +17,4 @@ for program, expected_name in programs:
     if result.stdout != expected:
         print(f"{program}: output differs from the reference", file=sys.stderr)
         sys.exit(1)
-print("Both rate-constant tutorial programs match the reference output")
+print("Tutorial programs match the reference output")

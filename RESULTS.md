@@ -205,3 +205,8 @@ reference executables' output exactly. The generated configuration comparison
 also exercises the tutorial's changing photolysis rate. Both compilers pass
 the 100-cell TS1 comparison; the case report has 560 passing and 120 unported
 failures.
+
+The README, multi-cell, and solver-results tutorial ports now reproduce the
+reference programs' output, including the shared solver statistics. Both
+compilers pass the 100-cell TS1 comparison; the case report has 563 passing
+and 117 unported failures.
