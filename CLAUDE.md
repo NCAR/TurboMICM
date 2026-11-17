@@ -416,8 +416,10 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   and verified before the next launches; then one timing session with all
   entries and luna-high's deferred timing (the SSE's choice). Tiers 2 and 3 are
   decided after Tier 1. Claude may stop a floundering Terra run (the SSE,
-  2026-11-16: "I expect Terra runs to progress"); slowness alone is no reason. terra-max launched 22:52 MST,
-  2026-11-16 (`admin/runs.md`).
+  2026-11-16: "I expect Terra runs to progress"); slowness alone is no reason. terra-max: 2026-11-16 22:52
+  to 01:25 MST, verified (676 PASS, 4 N/A, gate 2.51e-13; 64-cell groups;
+  `results/2026-11-17-terra-max-verification`), not yet timed. terra-xhigh
+  launched 01:39 on 2026-11-17 (`admin/runs.md`).
 - Luna: run all three fresh, one after another, at max, xhigh, then high (the
   SSE's order, 2026-10-19), each verified and timed with all entries before the
   next starts. luna-max is done: finished 21:05, verified, and timed overnight
