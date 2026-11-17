@@ -75,7 +75,10 @@ typedef struct {
 
 /* The arrays a and c store the strictly lower triangular matrices in row order.
  * The maximum of six stages matches the supported Rosenbrock parameter sets. */
-typedef struct {
+typedef struct ChemRosenbrock ChemRosenbrock;
+typedef double (*ChemStepController)(double error, double step, const ChemRosenbrock *parameters, void *context);
+
+struct ChemRosenbrock {
     size_t stages;
     double a[15], c[15], m[6], e[6], gamma[6];
     int new_function[6];
@@ -84,7 +87,9 @@ typedef struct {
     unsigned max_steps;
     unsigned constraint_max_iterations, constraint_max_backtracks;
     double constraint_tolerance, constraint_backtrack_factor, constraint_sufficient_decrease;
-} ChemRosenbrock;
+    ChemStepController step_controller;
+    void *step_controller_context;
+};
 
 typedef struct {
     double small, h_start, relative_tolerance;
@@ -93,6 +98,21 @@ typedef struct {
 } ChemBackwardEuler;
 
 typedef struct ChemState ChemState;
+
+/* Matrix entries use sparse row order; values[entry*cells+cell] holds one
+ * value per cell. lookup[row*species_count+column] is -1 for structural zero.
+ * factor must add alpha only to differential diagonals before factorizing. */
+typedef struct {
+    size_t species_count, cells, nonzeros;
+    const size_t *row_start;
+    const int *columns, *lookup;
+    const unsigned char *algebraic;
+    double *values;
+} ChemLinearSystem;
+typedef struct {
+    int (*factor)(ChemLinearSystem *system, double alpha, void *context);
+    int (*solve)(const ChemLinearSystem *system, double *rhs, void *context);
+} ChemLinearSolver;
 
 ChemRosenbrock chem_rosenbrock_three_stage(void);
 ChemRosenbrock chem_rosenbrock_two_stage(void);
@@ -128,6 +148,9 @@ int chem_use_ideal_air_density(ChemState *state, size_t cell);
 int chem_find_species(const ChemMechanism *mechanism, const char *name);
 int chem_find_parameter(const ChemMechanism *mechanism, const char *name);
 int chem_override_rate_function(ChemState *state, const char *label, ChemRateFunction function, void *context);
+/* NULL restores the default in-place Mozart solver; callback context is borrowed. */
+int chem_set_linear_solver(ChemState *state, const ChemLinearSolver *solver, void *context);
+ChemLinearSolver chem_doolittle_linear_solver(void);
 int chem_update_rates(ChemState *state);
 /* Negative Jacobian, in dense row-major form for one cell, and forcing, for
  * diagnostics and tests. The solver itself uses sparse storage. */

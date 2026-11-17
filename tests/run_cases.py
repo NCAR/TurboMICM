@@ -29,7 +29,7 @@ for argument, case in (("no_user", "rate_constants_no_user_defined_example_by_ha
     ok = process.returncode == 0 and process.stdout == (EXPECTED / f"{argument}.txt").read_text()
     results[case] = ("PASS", "printed reference output matched") if ok else ("FAIL", "printed output or program status differed")
 
-for executable in ("test_core", "test_configurations", "test_constraints"):
+for executable in ("test_core", "test_configurations", "test_constraints", "test_linear"):
     process = subprocess.run([ROOT / "bin" / executable], cwd=ROOT, capture_output=True, text=True)
     if process.returncode:
         unexpected_failure = True

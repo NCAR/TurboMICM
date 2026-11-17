@@ -142,23 +142,29 @@ int chem_factor(ChemState *s, double alpha)
     return CHEM_OK;
 }
 
-void chem_substitute(const ChemState *s, double *x)
+static ChemLinearSystem linear_view(const ChemState *s)
 {
-    size_t n = s->mechanism->species_count, cells = s->cells;
-    const double *a = s->matrix;
+    return (ChemLinearSystem){s->mechanism->species_count,s->cells,s->nonzeros,
+                              s->row_start,s->columns,s->index,s->algebraic,s->matrix};
+}
+
+static void substitute_view(const ChemLinearSystem *system, double *x)
+{
+    size_t n = system->species_count, cells = system->cells;
+    const double *a = system->values;
     for (size_t i = 0; i < n; ++i) {
         double *xi = x + i*cells;
-        for (size_t k = s->row_start[i]; k < s->row_start[i+1] && (size_t)s->columns[k] < i; ++k) {
-            const double *lij = a + k*cells, *xj = x + (size_t)s->columns[k]*cells;
+        for (size_t k = system->row_start[i]; k < system->row_start[i+1] && (size_t)system->columns[k] < i; ++k) {
+            const double *lij = a + k*cells, *xj = x + (size_t)system->columns[k]*cells;
             #pragma omp simd
             for (size_t c = 0; c < cells; ++c) xi[c] -= lij[c]*xj[c];
         }
     }
     for (size_t i = n; i-- > 0;) {
         double *xi = x + i*cells;
-        size_t diagonal = (size_t)s->pivots[i].diagonal;
-        for (size_t k = diagonal+1; k < s->row_start[i+1]; ++k) {
-            const double *uij = a + k*cells, *xj = x + (size_t)s->columns[k]*cells;
+        size_t diagonal = (size_t)system->lookup[i*n+i];
+        for (size_t k = diagonal+1; k < system->row_start[i+1]; ++k) {
+            const double *uij = a + k*cells, *xj = x + (size_t)system->columns[k]*cells;
             #pragma omp simd
             for (size_t c = 0; c < cells; ++c) xi[c] -= uij[c]*xj[c];
         }
@@ -167,3 +173,73 @@ void chem_substitute(const ChemState *s, double *x)
         for (size_t c = 0; c < cells; ++c) xi[c] /= diag[c];
     }
 }
+
+void chem_substitute(const ChemState *s, double *x)
+{
+    ChemLinearSystem view=linear_view(s);
+    substitute_view(&view,x);
+}
+
+int chem_linear_factor(ChemState *s, double alpha)
+{
+    if (!s->linear_solver.factor) return chem_factor(s,alpha);
+    ChemLinearSystem view=linear_view(s);
+    return s->linear_solver.factor(&view,alpha,s->linear_solver_context);
+}
+
+int chem_linear_solve(ChemState *s, double *values)
+{
+    if (!s->linear_solver.solve) { chem_substitute(s,values); return CHEM_OK; }
+    ChemLinearSystem view=linear_view(s);
+    return s->linear_solver.solve(&view,values,s->linear_solver_context);
+}
+
+static int doolittle_factor(ChemLinearSystem *s, double alpha, void *context)
+{
+    (void)context;
+    size_t n=s->species_count, cells=s->cells;
+    double *a=s->values;
+    for (size_t i=0;i<n;++i) if (!s->algebraic[i]) {
+        double *diag=a+(size_t)s->lookup[i*n+i]*cells;
+        #pragma omp simd
+        for (size_t cell=0;cell<cells;++cell) diag[cell]+=alpha;
+    }
+    for (size_t i=0;i<n;++i) {
+        for (size_t k=i;k<n;++k) {
+            int target=s->lookup[i*n+k];
+            if (target<0) continue;
+            double *aik=a+(size_t)target*cells;
+            for (size_t j=0;j<i;++j) {
+                int left=s->lookup[i*n+j], right=s->lookup[j*n+k];
+                if (left<0 || right<0) continue;
+                const double *aij=a+(size_t)left*cells, *ajk=a+(size_t)right*cells;
+                #pragma omp simd
+                for (size_t cell=0;cell<cells;++cell) aik[cell]-=aij[cell]*ajk[cell];
+            }
+        }
+        const double *diag=a+(size_t)s->lookup[i*n+i]*cells;
+        for (size_t cell=0;cell<cells;++cell)
+            if (diag[cell]==0 || !isfinite(diag[cell])) return CHEM_SINGULAR;
+        for (size_t k=i+1;k<n;++k) {
+            int target=s->lookup[k*n+i];
+            if (target<0) continue;
+            double *aki=a+(size_t)target*cells;
+            for (size_t j=0;j<i;++j) {
+                int left=s->lookup[k*n+j], right=s->lookup[j*n+i];
+                if (left<0 || right<0) continue;
+                const double *akj=a+(size_t)left*cells, *aji=a+(size_t)right*cells;
+                #pragma omp simd
+                for (size_t cell=0;cell<cells;++cell) aki[cell]-=akj[cell]*aji[cell];
+            }
+            #pragma omp simd
+            for (size_t cell=0;cell<cells;++cell) aki[cell]/=diag[cell];
+        }
+    }
+    return CHEM_OK;
+}
+
+static int doolittle_solve(const ChemLinearSystem *s, double *rhs, void *context)
+{ (void)context; substitute_view(s,rhs); return CHEM_OK; }
+
+ChemLinearSolver chem_doolittle_linear_solver(void)
+{ return (ChemLinearSolver){doolittle_factor,doolittle_solve}; }

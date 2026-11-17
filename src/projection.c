@@ -45,9 +45,10 @@ int chem_project_constraints(ChemState *s, const ChemRosenbrock *p, ChemStats *s
         if (maximum==0) return CHEM_OK;
         memset(s->matrix,0,s->nonzeros*cells*sizeof(*s->matrix));
         chem_constraint_jacobian(s,s->values); ++stats->jacobian_updates;
-        int factor_status=chem_factor(s,1); ++stats->decompositions;
+        int factor_status=chem_linear_factor(s,1); ++stats->decompositions;
         if (factor_status) break;
-        chem_substitute(s,delta); ++stats->solves;
+        int solve_status=chem_linear_solve(s,delta); ++stats->solves;
+        if (solve_status) { result=solve_status; break; }
         if (!finite_algebraic(s,delta,&maximum)) { result=CHEM_NONFINITE; break; }
         double current=weighted_correction(s,p,s->values,delta);
         if (current <= p->constraint_tolerance) return CHEM_OK;
@@ -65,7 +66,8 @@ int chem_project_constraints(ChemState *s, const ChemRosenbrock *p, ChemStats *s
                 chem_constraint_residuals(s,candidate,trial);
                 if (!finite_algebraic(s,trial,&maximum)) { step*=p->constraint_backtrack_factor; continue; }
                 if (maximum==0) { accepted=1; break; }
-                chem_substitute(s,trial); ++stats->solves;
+                solve_status=chem_linear_solve(s,trial); ++stats->solves;
+                if (solve_status) { result=solve_status; break; }
                 if (!finite_algebraic(s,trial,&maximum)) { step*=p->constraint_backtrack_factor; continue; }
                 double q=weighted_correction(s,p,candidate,trial);
                 if (q<=p->constraint_tolerance || q<(1-p->constraint_sufficient_decrease*step)*current) {

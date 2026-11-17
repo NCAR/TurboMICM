@@ -149,7 +149,7 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
         ++result->jacobian_updates;
         int accepted = 0;
         while (!accepted) {
-            int status = chem_factor(s, 1.0 / (h*p->gamma[0]));
+            int status = chem_linear_factor(s, 1.0 / (h*p->gamma[0]));
             ++result->decompositions;
             if (status != CHEM_OK) return status;
             for (size_t stage = 0; stage < p->stages; ++stage) {
@@ -172,8 +172,9 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
                     else for (size_t i=0; i<s->mechanism->species_count; ++i) if (!s->algebraic[i])
                         axpy(s->cells,k+i*s->cells,s->stages+j*ny+i*s->cells,factor);
                 }
-                chem_substitute(s, k);
+                status = chem_linear_solve(s, k);
                 ++result->solves;
+                if (status != CHEM_OK) return status;
             }
             memcpy(s->candidate, s->values, ny*sizeof(*s->candidate));
             memset(s->error, 0, ny*sizeof(*s->error));
@@ -188,7 +189,9 @@ int chem_solve(ChemState *s, const ChemRosenbrock *p, double dt, ChemStats *resu
                 }
             double error = normalized_error(s, p);
             if (!isfinite(error)) return CHEM_NONFINITE;
-            double factor = fmin(p->factor_max, fmax(p->factor_min, p->safety / pow(error, 1.0/p->order)));
+            double factor = p->step_controller ? p->step_controller(error,h,p,p->step_controller_context) :
+                fmin(p->factor_max, fmax(p->factor_min, p->safety / pow(error, 1.0/p->order)));
+            if (!isfinite(factor) || factor <= 0) return CHEM_INVALID;
             double h_new = h*factor;
             ++result->internal_steps;
             if (error < 1 || h < h_min) {

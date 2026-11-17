@@ -40,11 +40,12 @@ int chem_solve_backward_euler(ChemState *s, const ChemBackwardEuler *p, double d
             ++stats->internal_steps;
             chem_forcing(s,s->values,s->forcing,s->scratch); ++stats->function_calls;
             chem_negative_jacobian(s,s->values); ++stats->jacobian_updates;
-            int status=chem_factor(s,1/h); ++stats->decompositions;
+            int status=chem_linear_factor(s,1/h); ++stats->decompositions;
             if (status) { stats->final_time=time; return status; }
             #pragma omp simd
             for (size_t i=0;i<ny;++i) s->forcing[i]-=(s->values[i]-s->candidate[i])/h;
-            chem_substitute(s,s->forcing); ++stats->solves;
+            status=chem_linear_solve(s,s->forcing); ++stats->solves;
+            if (status) { stats->final_time=time; return status; }
             #pragma omp simd
             for (size_t i=0;i<ny;++i) {
                 double next=s->values[i]+s->forcing[i];

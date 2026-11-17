@@ -20,3 +20,14 @@ hand-built equivalents. The generator converts rate coefficients to mol m-3
 using reaction order. TS1 is already in molar units, so its configuration sets
 `rate units: mol m-3`. Named user parameters are supplied in the library's
 molar units, including emission parameters.
+
+Generated mechanisms may use a symmetric minimum-fill ordering computed from
+their reaction graph. The benchmark enables it; an independent fixture checks
+ordered and original forms by species name. Hand-built mechanisms retain the
+caller-specified order. The ordering changes storage and LU fill, not the
+chemical equations.
+
+Absent an explicit air density, rate updates calculate the ideal-gas density
+from the current temperature and pressure. A C caller can override the density
+per cell. The benchmark rejects nonpositive time steps and uses group size 64
+by default; both group size and scheduling can be changed at run time.

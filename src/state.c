@@ -162,6 +162,14 @@ int chem_override_rate_function(ChemState *s, const char *label, ChemRateFunctio
     return CHEM_INVALID;
 }
 
+int chem_set_linear_solver(ChemState *s, const ChemLinearSolver *solver, void *context)
+{
+    if (!s || (solver && (!solver->factor || !solver->solve))) return CHEM_INVALID;
+    s->linear_solver = solver ? *solver : (ChemLinearSolver){0};
+    s->linear_solver_context = context;
+    return CHEM_OK;
+}
+
 const char *chem_error_string(int code)
 {
     switch (code) {

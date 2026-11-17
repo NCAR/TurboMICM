@@ -16,10 +16,12 @@ static const ChemTerm eq_reactants[]={{1,1}}, eq_products[]={{2,1}};
 static const ChemConstraint equilibrium={"B_C_eq",CHEM_EQUILIBRIUM_CONSTRAINT,2,
                                           eq_reactants,eq_products,1,1,0,2,0,0,0};
 
-static int integration(ChemRosenbrock p, size_t cells)
+static int integration(ChemRosenbrock p, size_t cells, int use_doolittle)
 {
     ChemState *s=chem_state_create_constrained(&mechanism,&equilibrium,1,cells);
     CHECK(s);
+    ChemLinearSolver alternative=chem_doolittle_linear_solver();
+    if (use_doolittle) CHECK(chem_set_linear_solver(s,&alternative,NULL)==CHEM_OK);
     for (size_t c=0;c<cells;++c) {
         chem_species_values(s,1)[c]=.5+.1*c;
         chem_species_values(s,2)[c]=5+10*c;
@@ -68,9 +70,10 @@ int main(void)
         y[i]=value;
         CHECK(fabs((plus-minus)/(2*h)-gradient[i])<1e-7);
     }
-    CHECK(integration(chem_rosenbrock_three_stage(),1)==0);
-    CHECK(integration(chem_rosenbrock_four_stage_dae(),4)==0);
-    CHECK(integration(chem_rosenbrock_six_stage_dae(),2)==0);
+    CHECK(integration(chem_rosenbrock_three_stage(),1,0)==0);
+    CHECK(integration(chem_rosenbrock_four_stage_dae(),4,0)==0);
+    CHECK(integration(chem_rosenbrock_six_stage_dae(),2,0)==0);
+    CHECK(integration(chem_rosenbrock_four_stage_dae(),3,1)==0);
     CHECK(scaled_projection(1)==0 && scaled_projection(1e-12)==0 && scaled_projection(1e12)==0);
     ChemState *s=chem_state_create_constrained(&mechanism,&equilibrium,1,1); CHECK(s);
     CHECK(chem_update_rates(s)==CHEM_OK);

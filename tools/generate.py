@@ -9,6 +9,43 @@ from pathlib import Path
 from config import normalize, number, read_config
 
 
+def reorder_mechanism(mechanism):
+    """Symmetric minimum-fill ordering, derived from any reaction graph.
+
+    The diagonal is included even for product-only species. The returned
+    ordering changes only generated indices; names and numerical data follow
+    their species, and reactions are remapped consistently.
+    """
+    n = len(mechanism["species"])
+    rows = [{i} for i in range(n)]
+    for reaction in mechanism["reactions"]:
+        for col in reaction["reactants"]:
+            for row in reaction["reactants"]:
+                rows[row].add(col)
+            for row, _ in reaction["products"]:
+                rows[row].add(col)
+    alive = set(range(n))
+    order = []
+    while alive:
+        columns = {j: set() for j in alive}
+        for i in alive:
+            for j in rows[i] & alive:
+                columns[j].add(i)
+        pivot = min(alive, key=lambda i: ((len(rows[i] & alive)-1)*(len(columns[i])-1), i))
+        order.append(pivot)
+        outgoing = (rows[pivot] & alive) - {pivot}
+        incoming = columns[pivot] - {pivot}
+        for i in incoming:
+            rows[i].update(outgoing)
+        alive.remove(pivot)
+    inverse = {old: new for new, old in enumerate(order)}
+    mechanism["species"] = [mechanism["species"][i] for i in order]
+    for reaction in mechanism["reactions"]:
+        reaction["reactants"] = [inverse[i] for i in reaction["reactants"]]
+        reaction["products"] = [(inverse[i], amount) for i, amount in reaction["products"]]
+    return mechanism
+
+
 def c_number(value):
     text = format(number(value, "generated number"), ".17g")
     return text if any(char in text for char in ".eE") else text + ".0"
@@ -113,8 +150,12 @@ def main():
     parser.add_argument("config", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--symbol", default="chem_generated_mechanism")
+    parser.add_argument("--reorder", action="store_true", help="apply a symmetric minimum-fill species ordering")
     args = parser.parse_args()
-    result = generate(normalize(read_config(args.config)), args.symbol)
+    mechanism = normalize(read_config(args.config))
+    if args.reorder:
+        mechanism = reorder_mechanism(mechanism)
+    result = generate(mechanism, args.symbol)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(result, encoding="utf-8")
 

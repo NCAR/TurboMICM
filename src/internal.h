@@ -20,6 +20,8 @@ struct ChemState {
     unsigned char *explicit_air_density;
     ChemRateFunction *rate_functions;
     void **rate_contexts;
+    ChemLinearSolver linear_solver;
+    void *linear_solver_context;
     double *matrix, *scratch, *forcing, *candidate, *error, *stages;
     double *constraint_constants, *constraint_gradient;
     unsigned char *algebraic;
@@ -43,5 +45,7 @@ double chem_constraint_value(const ChemConstraint *constraint, const double *val
                              size_t cell, double equilibrium_constant, double *gradient, size_t species_count);
 int chem_factor(ChemState *state, double alpha);
 void chem_substitute(const ChemState *state, double *values);
+int chem_linear_factor(ChemState *state, double alpha);
+int chem_linear_solve(ChemState *state, double *values);
 
 #endif

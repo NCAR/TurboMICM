@@ -6,6 +6,8 @@
 extern const ChemMechanism tutorial_no_user;
 extern const ChemMechanism tutorial_user;
 extern const ChemMechanism tutorial_robertson;
+extern const ChemMechanism tutorial_ordered;
+extern const ChemMechanism tutorial_unordered;
 
 #define CHECK(condition) do { if (!(condition)) { \
     fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #condition); return 1; \
@@ -117,11 +119,50 @@ static int check_robertson(void)
     return 0;
 }
 
+static int check_generated_ordering(void)
+{
+    const ChemMechanism *a=&tutorial_unordered, *b=&tutorial_ordered;
+    ChemState *sa=chem_state_create(a,3), *sb=chem_state_create(b,3);
+    CHECK(sa && sb && a->species_count==b->species_count);
+    int mapping[3], different=0;
+    for (size_t i=0;i<a->species_count;++i) {
+        mapping[i]=chem_find_species(b,a->species[i].name);
+        CHECK(mapping[i]>=0);
+        different |= mapping[i]!=(int)i;
+        for (size_t cell=0;cell<3;++cell)
+            chem_species_values(sa,i)[cell]=chem_species_values(sb,(size_t)mapping[i])[cell]=.01*(i+1)*(cell+1);
+    }
+    CHECK(different);
+    for (size_t cell=0;cell<3;++cell) {
+        chem_temperatures(sa)[cell]=chem_temperatures(sb)[cell]=287.45+cell;
+        chem_pressures(sa)[cell]=chem_pressures(sb)[cell]=101319.9;
+    }
+    CHECK(chem_update_rates(sa)==CHEM_OK && chem_update_rates(sb)==CHEM_OK);
+    for (size_t cell=0;cell<3;++cell) {
+        double fa[3],fb[3],ja[9],jb[9];
+        CHECK(chem_evaluate(sa,cell,fa,ja)==CHEM_OK && chem_evaluate(sb,cell,fb,jb)==CHEM_OK);
+        for (size_t i=0;i<3;++i) {
+            CHECK(close_enough(fa[i],fb[mapping[i]]));
+            for (size_t j=0;j<3;++j) CHECK(close_enough(ja[i*3+j],jb[(size_t)mapping[i]*3+(size_t)mapping[j]]));
+        }
+    }
+    ChemRosenbrock p=chem_rosenbrock_three_stage();
+    for (size_t step=0;step<5;++step) {
+        ChemStats sta,stb;
+        CHECK(chem_solve(sa,&p,1,&sta)==CHEM_OK && chem_solve(sb,&p,1,&stb)==CHEM_OK);
+        for (size_t i=0;i<3;++i) for (size_t cell=0;cell<3;++cell)
+            CHECK(close_enough(chem_species_values(sa,i)[cell],chem_species_values(sb,(size_t)mapping[i])[cell]));
+    }
+    chem_state_free(sa); chem_state_free(sb);
+    return 0;
+}
+
 int main(void)
 {
     CHECK(check_pair(&tutorial_no_user, &hand_no_user, 0) == 0);
     CHECK(check_pair(&tutorial_user, &hand_user, 1) == 0);
     CHECK(check_robertson() == 0);
+    CHECK(check_generated_ordering() == 0);
     puts("YAML, JSON, and Robertson configurations match hand-built mechanisms: PASS");
     return 0;
 }

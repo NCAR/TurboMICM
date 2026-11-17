@@ -1,0 +1,12 @@
+{
+  "rate units": "mol m-3",
+  "camp-data": [
+    {"type": "CHEM_SPEC", "name": "A"},
+    {"type": "CHEM_SPEC", "name": "B"},
+    {"type": "CHEM_SPEC", "name": "C"},
+    {"type": "MECHANISM", "name": "association", "reactions": [
+      {"type": "USER_DEFINED", "MUSICA name": "k", "reactants": {"A": {}, "B": {}}, "products": {"C": {}}}
+    ]}
+  ],
+  "initial conditions": {"temperature": 298.15, "pressure": 101325, "rate parameters": {"k": 0.2}}
+}

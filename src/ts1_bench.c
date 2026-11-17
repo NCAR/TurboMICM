@@ -192,8 +192,9 @@ int main(int argc, char **argv)
     if (!read_cells(argv[arg+3], groups, group_size, cells, m)) goto done;
     omp_set_dynamic(0);
     omp_set_num_threads((int)threads);
+    if (!getenv("OMP_SCHEDULE")) omp_set_schedule(omp_sched_static,0);
     ChemRosenbrock p = chem_rosenbrock_three_stage();
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(runtime)
     for (size_t g = 0; g < ngroups; ++g) {
         ChemStats warmup;
         groups[g].status = chem_update_rates(groups[g].state);
@@ -203,7 +204,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "warm-up group %zu: %s\n", g, chem_error_string(groups[g].status)); goto done;
     }
     double start = omp_get_wtime();
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(runtime)
     for (size_t g = 0; g < ngroups; ++g) {
         for (size_t step = 0; step < steps && !groups[g].status; ++step) {
             ChemStats stats;
