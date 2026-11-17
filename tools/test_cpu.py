@@ -9,7 +9,7 @@ CASE_LIST = ROOT / '../reference/micm_cases.txt'
 CASES = {
     **{case: ("tools/test_tutorial_programs.py", "tutorial output matches reference")
        for case in ["rate_constants_no_user_defined_example_by_hand", "rate_constants_user_defined_example_by_hand",
-                    "README_example", "multiple_grid_cells", "solve_results"]},
+                    "README_example", "multiple_grid_cells", "solve_results", "solver_configuration"]},
     **{f"aerosol_model_rosenbrock:AerosolModelIntegration.{case}": ("build/test_aerosol", "grouped aerosol solves")
        for case in ["CanSolveSingleGridCellWithStubAerosolModel1", "CanSolveSingleGridCellWithTwoStubAerosolModels",
                     "CanSolveMultiGridCellWithStubAerosolModel1", "CanSolveMultiGridCellWithTwoStubAerosolModels"]},

@@ -210,3 +210,8 @@ The README, multi-cell, and solver-results tutorial ports now reproduce the
 reference programs' output, including the shared solver statistics. Both
 compilers pass the 100-cell TS1 comparison; the case report has 563 passing
 and 117 unported failures.
+
+The solver-configuration tutorial additionally checks all five methods'
+printed trajectories and statistics. Its measured timing fields are validated
+as nonnegative numbers, since elapsed times vary between runs. Both compilers
+pass the TS1 comparison; the case report has 564 passing and 116 unported.
