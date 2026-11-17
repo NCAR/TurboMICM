@@ -268,4 +268,72 @@ static void integrated_rates(void)
         assert(y[3]>=prev1 && y[4]>=prev2);
     }
 }
-int main(void) { robertson(); hires(); e5(); oregonator(); surface(); terminator(); integrated_rates(); puts("nonlinear benchmark trajectories PASS"); return 0; }
+static void chapman(void)
+{
+    /* State species: O, O1D, O2, O3, M, Ar, N2, H2O, CO2. */
+    const size_t reactants[]={1,6,1,2,0,3,0,2,4,2,3,3};
+    const ChemProduct products[]={
+        {0,1},{6,1},{0,1},{2,1},{2,2},{3,1},{4,1},{0,2},{1,1},{2,1},{0,1},{2,1}};
+    const ChemReaction reactions[]={
+        {0,2,0,2},{2,2,2,2},{4,2,4,1},{6,3,5,2},{9,1,7,1},{10,1,8,2},{11,1,10,2}};
+    const ChemMechanism mechanism={9,7,reactions,reactants,products};
+    const ChemRate rate[]={
+        {CHEM_RATE_ARRHENIUS,{2.15e-11,0,110,300,0},0},
+        {CHEM_RATE_ARRHENIUS,{3.3e-11,0,55,300,0},0},
+        {CHEM_RATE_ARRHENIUS,{8e-12,0,-2060,300,0},0},
+        {CHEM_RATE_ARRHENIUS,{6e-34,0,2.4,300,0},0}};
+    const ChemConditions conditions={2,3,0};
+    double k[7];
+    /* Compare independent rate, forcing, and Jacobian formulas at three cells. */
+    const double temperatures[]={284.19,215.02,299.31};
+    const double pressures[]={101245,100789.2,101398};
+    const double photos[3][3]={{1e-4,1e-5,1e-6},{3.2e-4,7.3e-5,3.2e-6},{5.2e-4,8.2e-5,4.6e-6}};
+    for (size_t cell=0;cell<3;++cell) {
+        double t=temperatures[cell];
+        ChemConditions c={t,pressures[cell],0};
+        ChemRate regression_rates[4]={rate[0],rate[1],rate[2],rate[3]};
+        regression_rates[3].p[1]=2.4; regression_rates[3].p[2]=0;
+        chem_rates(4,regression_rates,c,NULL,k);
+        double expected_rates[]={2.15e-11*exp(110/t),3.3e-11*exp(55/t),8e-12*exp(-2060/t),6e-34*pow(t/300,2.4)};
+        for (size_t r=0;r<4;++r) assert(k[r]==expected_rates[r]);
+        const ChemRate photo_rates[]={ {CHEM_RATE_USER,{1},0}, {CHEM_RATE_USER,{1},1}, {CHEM_RATE_USER,{1},2} };
+        chem_rates(3,photo_rates,c,photos[cell],k+4);
+        for (size_t r=0;r<3;++r) assert(k[4+r]==photos[cell][r]);
+        /* Positive values span different orders of magnitude. */
+        double x[9], f[9], j[81], ref[9]={0}, refj[81]={0};
+        for (size_t i=0;i<9;++i) x[i]=.05+(double)((i*13+cell*7)%23)/7;
+        for (size_t r=0;r<7;++r) k[r]=.01+(double)((r*11+cell*17)%19)/5;
+        chem_rhs(&mechanism,x,k,f); chem_jacobian(&mechanism,x,k,j);
+        double reaction[7]={k[0]*x[1]*x[6],k[1]*x[1]*x[2],k[2]*x[0]*x[3],
+                            k[3]*x[0]*x[2]*x[4],k[4]*x[2],k[5]*x[3],k[6]*x[3]};
+        const double stoich[4][7]={{1,1,-1,-1,2,0,1},{-1,-1,0,0,0,1,0},
+                                   {0,0,2,-1,-1,1,1},{0,0,-1,1,0,-1,-1}};
+        double derivative[7][9]={{0}};
+        derivative[0][1]=k[0]*x[6]; derivative[0][6]=k[0]*x[1];
+        derivative[1][1]=k[1]*x[2]; derivative[1][2]=k[1]*x[1];
+        derivative[2][0]=k[2]*x[3]; derivative[2][3]=k[2]*x[0];
+        derivative[3][0]=k[3]*x[2]*x[4]; derivative[3][2]=k[3]*x[0]*x[4]; derivative[3][4]=k[3]*x[0]*x[2];
+        derivative[4][2]=k[4]; derivative[5][3]=k[5]; derivative[6][3]=k[6];
+        for (size_t row=0;row<4;++row) for (size_t r=0;r<7;++r) {
+            ref[row]+=stoich[row][r]*reaction[r];
+            for (size_t col=0;col<9;++col) refj[row*9+col]+=stoich[row][r]*derivative[r][col];
+        }
+        for (size_t i=0;i<9;++i) assert(fabs(f[i]-ref[i])<=(fabs(f[i])+fabs(ref[i]))*1e-8+1e-12);
+        for (size_t i=0;i<81;++i) assert(fabs(j[i]-refj[i])<=(fabs(j[i])+fabs(refj[i]))*1e-8+1e-12);
+    }
+    chem_rates(4,rate,conditions,NULL,k); k[4]=.1; k[5]=.2; k[6]=.3;
+    const double atol[]={1e-3,1e-3,1e-3,1e-3,1e-3,1e-3,1e-3,1e-3,1e-3};
+    double y[]={.1,.1,.1,.2,.2,.2,.3,.3,.3};
+    double oxygen=y[0]+y[1]+2*y[2]+3*y[3], initial_o=y[0], initial_o2=y[2];
+    const double spectator[]={y[4],y[5],y[6],y[7],y[8]};
+    System sys={&mechanism,k}; ChemRosenbrockMethod method=chem_rosenbrock_three_stage();
+    ChemRosenbrockOptions opts=chem_rosenbrock_defaults(atol);
+    for (size_t step=0;step<100;++step) {
+        assert(chem_rosenbrock_solve(9,y,30,rhs,jac,&sys,&method,&opts,NULL)==CHEM_SOLVE_OK);
+        for (size_t i=0;i<9;++i) assert(isfinite(y[i]) && y[i]>=0);
+        assert(fabs(y[0]+y[1]+2*y[2]+3*y[3]-oxygen)<=1e-8*fabs(oxygen));
+        for (size_t i=0;i<5;++i) assert(fabs(y[4+i]-spectator[i])<=1e-8*fabs(spectator[i]));
+    }
+    assert(y[2]<.5*initial_o2 && y[0]>initial_o && y[0]>.5*oxygen);
+}
+int main(void) { robertson(); hires(); e5(); oregonator(); surface(); terminator(); integrated_rates(); chapman(); puts("nonlinear benchmark trajectories PASS"); return 0; }
