@@ -310,3 +310,10 @@ acceptance, and rejection counts on the reference stiff five-species case;
 the check covers dense and sparse Mozart and Doolittle factorization. Both
 compilers pass the focused suite and TS1 comparison. The case report has 674
 passing, 5 N/A, and 1 unported failure.
+
+The constrained DAE test now derives a non-identity runtime ordering from
+kinetic and constraint sparsity, remaps the mechanism and equilibrium
+constraint, checks the temperature-dependent parameter, and verifies the
+constraint and mass balance over 100 steps. Both clang and gcc-15 pass the
+focused suite, the 100-cell TS1 comparison, and the CPU case report: 675
+passing and 5 N/A.

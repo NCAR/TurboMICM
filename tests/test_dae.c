@@ -1,4 +1,6 @@
 #include "rosenbrock.h"
+#include "reorder.h"
+#include "state.h"
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -50,8 +52,58 @@ static void run(ChemConstraintSet *set, Reaction *reaction, double *initial, siz
       }
     chem_sparse_plan_destroy(plan);
 }
+typedef struct { const ChemMechanism *mechanism; double rate; } ReorderedReaction;
+static void reordered_rhs(void *context,const double *y,double *out)
+{ ReorderedReaction *reaction=context; chem_rhs(reaction->mechanism,y,&reaction->rate,out); }
+static void reordered_jac(void *context,const double *y,double *out)
+{ ReorderedReaction *reaction=context; chem_jacobian(reaction->mechanism,y,&reaction->rate,out); }
+static void automatically_reordered(void)
+{
+    /* Start with B,A,C so the computed ordering changes the state indices. */
+    const char *original_names[]={"B","A","C"};
+    const ChemConstraintTerm b[]={{0,1}}, c[]={{2,1}};
+    const ChemConstraint row={"B_C_eq",CHEM_CONSTRAINT_EQUILIBRIUM,2,b,c,1,1,2,-2400,8.31446261815324,298.15,NULL};
+    const ChemConstraintSet original={3,1,&row};
+    const size_t reactants[]={1}; const ChemProduct products[]={{0,1}};
+    const ChemReaction reactions[]={{0,1,0,1}};
+    const ChemMechanism mechanism={3,1,reactions,reactants,products};
+    ChemPermutation permutation={0};
+    assert(chem_permutation_for_system(&permutation,&mechanism,&original)==CHEM_REORDER_OK);
+    assert(permutation.old_to_new[1]!=1);
+    for (size_t i=0;i<3;++i) assert(permutation.new_to_old[permutation.old_to_new[i]]==i);
+    ChemReorderedMechanism reordered_mechanism={0};
+    assert(chem_reordered_mechanism_init(&reordered_mechanism,&mechanism,&permutation)==CHEM_REORDER_OK);
+    ChemReorderedConstraints reordered={0};
+    assert(chem_reordered_constraints_init(&reordered,&original,&permutation)==CHEM_REORDER_OK);
+    const char *names[3];
+    for (size_t i=0;i<3;++i) names[i]=original_names[permutation.new_to_old[i]];
+    const double atol[]={.001,.001,.001};
+    const ChemStateConfig config={1,3,0,0,names,NULL,1e-6,atol};
+    ChemState state={0};
+    assert(chem_state_init_constrained(&state,&config,0,NULL,&reordered.set)==CHEM_STATE_OK);
+    size_t a=chem_state_species_index(&state,"A"),bb=chem_state_species_index(&state,"B"),cc=chem_state_species_index(&state,"C");
+    size_t k=chem_state_parameter_index(&state,"B_C_eq");
+    assert(a==permutation.old_to_new[1] && bb==permutation.old_to_new[0] && cc==permutation.old_to_new[2] && k==0);
+    state.concentrations[a]=1; state.conditions[0]=(ChemConditions){400,101325,0};
+    assert(chem_state_update_constraint_parameters(&state,&reordered.set)==CHEM_STATE_OK);
+    const double expected=2*exp(-2400/8.31446261815324*(1.0/400-1.0/298.15));
+    assert(fabs(state.parameters[k]-expected)<1e-10);
+    ReorderedReaction reaction={&reordered_mechanism.mechanism,1};
+    ChemRosenbrockOptions options=chem_rosenbrock_defaults(state.absolute_tolerances);
+    options.constraints=&reordered.set; options.constraint_parameters=state.parameters; options.constraint_temperature=400;
+    ChemRosenbrockMethod method=chem_rosenbrock_three_stage();
+    for (size_t step=0;step<100;++step) {
+        assert(chem_state_update_constraint_parameters(&state,&reordered.set)==CHEM_STATE_OK);
+        assert(chem_rosenbrock_solve(3,state.concentrations,.001,reordered_rhs,reordered_jac,&reaction,&method,&options,NULL)==CHEM_SOLVE_OK);
+        assert(fabs(state.parameters[k]*state.concentrations[bb]-state.concentrations[cc])<1e-6);
+    }
+    assert(fabs(state.concentrations[a]+state.concentrations[bb]-1)<.01);
+    chem_state_destroy(&state); chem_reordered_constraints_destroy(&reordered);
+    chem_reordered_mechanism_destroy(&reordered_mechanism); chem_permutation_destroy(&permutation);
+}
 int main(void)
 {
+    automatically_reordered();
     const ChemConstraintTerm b[]={{1,1}}, c[]={{2,1}}, d[]={{3,1}};
     ChemConstraint constraints[]={
         {"B_C",CHEM_CONSTRAINT_EQUILIBRIUM,2,b,c,1,1,2,-2400,8.31446261815324,298.15,NULL},

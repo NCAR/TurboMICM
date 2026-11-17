@@ -27,10 +27,8 @@ and reference step-size defaults. To add a parameter set, construct a
 error order; the existing integrator consumes it. The parameter sets can use
 algebraic constraints. It supports dense or sparse no-pivot Mozart and Doolittle
 elimination. The solver clamps negative ODE values after each public solve, as
-the reference CPU solver does. It allocates scratch space per solve; multi-cell scheduling,
-compact sparse matrix storage and additional solver features are not yet implemented.
-
-This is a starting point, not the final architecture.
+the reference CPU solver does. It allocates scratch space per solve; the sparse
+plan uses dense value buffers with structural index lists.
 
 `tools/import_ts1.py` translates the reference generated C++ into the checked-in
 CAMP-style JSON files. The generator excludes parameterized species from the state and emits their
@@ -39,7 +37,7 @@ to reaction constants. A third body is the special case equal to air density.
 Species and custom defaults are also emitted as C arrays. See DECISIONS.md for
 the configuration extensions.
 
-The preliminary benchmark schedules individual cells with OpenMP static
+The benchmark schedules individual cells with OpenMP static
 scheduling; `--threads` sets the thread count (default: OpenMP maximum). Each
 cell currently owns independent solver state and error control. Timings exclude
 input, rate setup, warm-up, and output. A mechanism-generic symbolic plan
@@ -167,3 +165,10 @@ and other option pointers are borrowed.
 Rosenbrock factorization can use the assembled matrix in place or copy it to
 a separate LU buffer. Both modes use the same LU algorithm and sparse plan,
 and retry rejected steps with a newly assembled alpha-minus-Jacobian matrix.
+
+Runtime Markowitz ordering combines the mechanism Jacobian and constraint
+sparsity, including algebraic diagonals, then computes a symmetric ordering.
+The permutation remaps owned mechanism tables and linear or equilibrium
+constraint terms; callers use its inverse mapping to construct state names
+and values. Custom constraint callbacks receive full state arrays and require
+a caller-provided adapter when their indices are permuted.

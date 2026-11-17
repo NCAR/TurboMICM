@@ -56,11 +56,13 @@ build/composite.o: src/composite.c include/composite.h include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/model.o: src/model.c include/model.h include/composite.h include/state.h include/sparse_matrix.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
+build/reorder.o: src/reorder.c include/reorder.h include/constraint.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
 build/cpu_solver.o: src/cpu_solver.c include/cpu_solver.h include/process.h include/state.h include/backward_euler.h include/rosenbrock.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/mechanism_metadata.o: src/mechanism_metadata.c include/mechanism_metadata.h include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/cpu_solver.o build/mechanism_metadata.o build/typed_sparse_matrix.o build/model.o build/version.o build/typed_matrix.o build/backward_euler_group.o build/process.o build/species.o build/rosenbrock_group.o build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
+build/libchem.a: build/reorder.o build/cpu_solver.o build/mechanism_metadata.o build/typed_sparse_matrix.o build/model.o build/version.o build/typed_matrix.o build/backward_euler_group.o build/process.o build/species.o build/rosenbrock_group.o build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@

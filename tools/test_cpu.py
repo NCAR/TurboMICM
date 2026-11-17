@@ -34,6 +34,7 @@ CASES = {
                     "MixedVectorBlockViewBlockVariable", "IntegerVectorSparse", "FunctionWithConstSignatureSparse"]},
     **{f"equilibrium_constraint:EquilibriumIntegration.{case}": ("build/test_constraint_state", "constraint state metadata")
        for case in ["SetConstraintsAPIWorks", "SetConstraintsAPIMultipleConstraints"]},
+    "equilibrium_constraint:EquilibriumIntegration.DAESolveWithConstraintAndReorderState": ("build/test_dae", "automatically reordered constrained DAE"),
     "regression:RosenbrockRegression.FlowTube": ("build/test_flow_tube", "flow-tube trajectories"),
     "regression:BackwardEulerRegression.FlowTube": ("build/test_flow_tube", "flow-tube trajectories"),
     **{f"regression_test_solve:RegressionRosenbrock.{case}": ("build/test_chapman_regression", "multi-cell Chapman trajectories")
