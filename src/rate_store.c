@@ -1,6 +1,7 @@
 #include "rate_store.h"
 #include <math.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,19 +28,26 @@ void chem_rate_store_destroy(ChemRateStore *store)
     if (store) { free(store->entries); memset(store, 0, sizeof(*store)); }
 }
 
-ChemRateStoreStatus chem_rate_store_init(ChemRateStore *store, size_t count,
-                                         const ChemRateDescriptor *descriptors)
+ChemRateStoreStatus chem_rate_store_init_diagnostic(ChemRateStore *store, size_t count,
+                                                    const ChemRateDescriptor *descriptors,
+                                                    size_t *invalid_index)
 {
+    if (invalid_index) *invalid_index=SIZE_MAX;
     if (!store || (count && !descriptors)) return CHEM_RATE_STORE_INVALID;
     memset(store, 0, sizeof(*store));
     if (count > SIZE_MAX / sizeof(*store->entries)) return CHEM_RATE_STORE_NO_MEMORY;
     for (size_t i=0;i<count;++i) {
         int g=group(descriptors[i].rate.type);
-        if (g<0) { memset(store,0,sizeof(*store)); return CHEM_RATE_STORE_INVALID; }
+        if (g<0) {
+            if (invalid_index) *invalid_index=i;
+            memset(store,0,sizeof(*store)); return CHEM_RATE_STORE_INVALID;
+        }
         if (g==9 && !descriptors[i].has_diffusion_coefficient) {
+            if (invalid_index) *invalid_index=i;
             memset(store,0,sizeof(*store)); return CHEM_RATE_STORE_MISSING_DIFFUSION;
         }
         if (g==9 && !descriptors[i].has_molecular_weight) {
+            if (invalid_index) *invalid_index=i;
             memset(store,0,sizeof(*store)); return CHEM_RATE_STORE_MISSING_MOLECULAR_WEIGHT;
         }
         ++store->offset[g+1];
@@ -77,4 +85,26 @@ ChemRateStoreStatus chem_rate_store_init(ChemRateStore *store, size_t count,
     }
     store->count=count;
     return CHEM_RATE_STORE_OK;
+}
+
+ChemRateStoreStatus chem_rate_store_init(ChemRateStore *store, size_t count,
+                                         const ChemRateDescriptor *descriptors)
+{
+    return chem_rate_store_init_diagnostic(store,count,descriptors,NULL);
+}
+
+int chem_rate_store_error_message(ChemRateStoreStatus status, const char *species,
+                                  char *buffer, size_t buffer_size)
+{
+    if (!species) species="";
+    switch (status) {
+    case CHEM_RATE_STORE_MISSING_DIFFUSION:
+        return snprintf(buffer,buffer_size,"Diffusion coefficient for species '%s' is not defined",species);
+    case CHEM_RATE_STORE_MISSING_MOLECULAR_WEIGHT:
+        return snprintf(buffer,buffer_size,"Species: '%s' Property: 'molecular weight [kg mol-1]'",species);
+    case CHEM_RATE_STORE_OK: return snprintf(buffer,buffer_size,"No error");
+    case CHEM_RATE_STORE_NO_MEMORY: return snprintf(buffer,buffer_size,"Out of memory");
+    case CHEM_RATE_STORE_INVALID: return snprintf(buffer,buffer_size,"Invalid rate descriptor");
+    }
+    return snprintf(buffer,buffer_size,"Unknown rate-store error");
 }

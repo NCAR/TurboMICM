@@ -156,6 +156,10 @@ both compilers. New sparse checks cover CSR and CSC structures, grouped
 blocks, duplicate and invalid coordinates, diagonals, copying, and printing.
 Both compilers pass the 100-cell TS1 comparison.
 
+Surface-property diagnostics additionally report the failing descriptor and
+species/property text. The case report is now 544 passing and 136 unported
+failures on both compilers.
+
 The latest case report has 419 passing cases and 261 unported failures on
 both compilers. New sparse tests cover reusable block views, row callbacks,
 multiple structures, dense and vector interoperability, index lookup, fill,

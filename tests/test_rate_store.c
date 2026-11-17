@@ -61,10 +61,17 @@ int main(void)
     chem_rate_store_destroy(&s);
 
     d[0].has_diffusion_coefficient=0;
-    assert(chem_rate_store_init(&s,8,d)==CHEM_RATE_STORE_MISSING_DIFFUSION);
+    size_t bad=123; char message[160];
+    ChemRateStoreStatus status=chem_rate_store_init_diagnostic(&s,8,d,&bad);
+    assert(status==CHEM_RATE_STORE_MISSING_DIFFUSION && bad==0);
+    assert(chem_rate_store_error_message(status,"foo",message,sizeof(message))>0);
+    assert(strstr(message,"Diffusion coefficient for species 'foo' is not defined"));
     assert(!s.entries && !s.count);
     d[0].has_diffusion_coefficient=1; d[0].has_molecular_weight=0;
-    assert(chem_rate_store_init(&s,8,d)==CHEM_RATE_STORE_MISSING_MOLECULAR_WEIGHT);
+    status=chem_rate_store_init_diagnostic(&s,8,d,&bad);
+    assert(status==CHEM_RATE_STORE_MISSING_MOLECULAR_WEIGHT && bad==0);
+    assert(chem_rate_store_error_message(status,"foo",message,sizeof(message))>0);
+    assert(strstr(message,"foo") && strstr(message,"molecular weight"));
     assert(!s.entries && !s.count);
     assert(chem_rate_store_init(&s,0,NULL)==CHEM_RATE_STORE_OK);
     chem_rate_store_destroy(&s);

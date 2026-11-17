@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"surface_rate_constant:SurfaceRateConstant.{case}": ("build/test_rate_store", "surface property diagnostics")
+       for case in ["DiffusionCoefficientIsMissing", "MolecularWeightIsMissing"]},
     **{f"reaction_rate_store:ReactionRateConstantStore.{case}": ("build/test_rate_store", "rate store metadata")
        for case in ["OffsetsAreContiguousCumulativeSizes", "ArrheniusParametersPreserved", "BranchedDerivedFieldsComputed",
                     "UserDefinedCustomParamIndex", "SurfaceDataFieldsAndCustomParamIndex", "SurfaceCustomParamIndexAfterUserDefined",

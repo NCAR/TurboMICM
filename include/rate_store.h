@@ -32,5 +32,13 @@ typedef struct {
    Initialize an empty store before use; on failure it remains empty. */
 ChemRateStoreStatus chem_rate_store_init(ChemRateStore *store, size_t count,
                                          const ChemRateDescriptor *descriptors);
+/* The diagnostic variant reports the source descriptor that failed validation;
+   SIZE_MAX means no descriptor-specific failure. Error formatting returns the
+   number of characters needed, excluding the terminating null. */
+ChemRateStoreStatus chem_rate_store_init_diagnostic(ChemRateStore *store, size_t count,
+                                                    const ChemRateDescriptor *descriptors,
+                                                    size_t *invalid_index);
+int chem_rate_store_error_message(ChemRateStoreStatus status, const char *species,
+                                  char *buffer, size_t buffer_size);
 void chem_rate_store_destroy(ChemRateStore *store);
 #endif
