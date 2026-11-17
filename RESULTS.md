@@ -135,3 +135,8 @@ The latest case report has 235 passing cases and 445 unported failures on
 both compilers. New checks compare kinetic and composed DAE systems, built-in
 and callback constraints at each step, multiple equilibria, and temperature-
 dependent parameter updates. Both compilers pass the 100-cell TS1 comparison.
+
+The latest case report has 273 passing cases and 407 unported failures on
+both compilers. Additional matrix cases cover row-major and interleaved group
+layouts, initialization, indexing, conversion, arithmetic, column operations,
+and printing. Both compilers pass the 100-cell TS1 comparison.

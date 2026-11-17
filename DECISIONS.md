@@ -46,3 +46,8 @@ External algebraic models use caller-owned C callbacks and explicit dependency
 indices. The Jacobian callback adds the negative derivative to an existing
 row, matching the existing constraint interface and permitting the same sparse
 solver path to handle built-in and external constraints.
+
+The C matrix interface uses an explicit runtime group width, including a
+row-major option, in place of compile-time C++ matrix policies. The caller
+owns the resulting matrix and can access its padded storage; checked row and
+column functions operate only on logical cells.

@@ -7,6 +7,15 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"{prefix}:{suite}.{case}": ("build/test_matrix", "matrix operations")
+       for prefix, suite, cases in [
+           ("matrix", "Matrix", ["SmallMatrix", "SmallConstMatrix", "InitializeMatrix", "InitializeConstMatrix", "LoopOverMatrix", "LoopOverConstMatrix"]),
+           ("vector_matrix", "VectorMatrix", ["SmallVectorMatrix", "SmallConstVectorMatrix", "InitializeVectorMatrix", "InitializeConstVectorMatrix", "LoopOverVectorMatrix", "LoopOverConstVectorMatrix"]),
+       ] for case in cases},
+    **{f"{prefix}:{suite}.{case}": ("build/test_matrix", "matrix operations")
+       for prefix, suite in [("matrix", "Matrix"), ("vector_matrix", "VectorMatrix")]
+       for case in ["Strides", "ConversionToVector", "ConstConversionToVector", "ConversionFromVector", "AssignmentFromVector",
+                    "Axpy", "ForEach", "SetScaler", "Max", "Min", "Print", "TestFill", "TestCopy"]},
     **{f"external_model_constraints:ExternalModelConstraints.{case}": ("build/test_external_composition", "composed constraints")
        for case in ["KineticVsConservativeConstraintConvergence", "SimpleConstraintPreservesRatioNotMass",
                     "BuiltInVsExternalModelConstraintStepByStep", "MultiEquilibriumKineticVsComposedConstraints",

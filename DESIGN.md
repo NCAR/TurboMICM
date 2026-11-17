@@ -96,3 +96,10 @@ the state, temperature, and optional per-cell parameter override. They can be
 combined with built-in constraints in one set; declared dependencies are added
 to the sparse pattern before constructing a plan. Context and dependency
 storage must outlive the solve.
+
+`ChemMatrix` provides optional owned row-major and interleaved group layouts.
+A group width of zero selects row-major storage; a positive width pads the
+final group and interleaves cells within columns. Row and column operations
+validate dimensions, while the low-level index accessor supports direct use
+of the layout. This is a separate utility; the current solver keeps its
+existing per-cell layout.
