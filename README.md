@@ -23,7 +23,7 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently
-666 cases pass, five C++ template-dispatch cases are N/A, and 9 remain
+669 cases pass, five C++ template-dispatch cases are N/A, and 6 remain
 unported, so the target intentionally fails. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
@@ -68,3 +68,6 @@ const input and mutable output row views for callbacks.
 with optional interleaved cell groups. `include/typed_sparse_matrix.h` provides
 the same layouts for trivially copyable values; pointers stored there remain
 caller-owned.
+
+`include/chapman_names.h` exposes the fixed Chapman reference mechanism’s
+reaction, photolysis, and species names with static lifetime.

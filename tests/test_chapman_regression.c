@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "chem.h"
+#include "chapman_names.h"
 #include "matrix.h"
 #include "rates.h"
 #include "rosenbrock.h"
@@ -235,4 +236,17 @@ static void reference_trajectories(void)
         chem_matrix_destroy(&state);
     }
 }
-int main(void) { matrix_checks(); forcing_checks(); solve_checks(); reference_trajectories(); return 0; }
+static void name_checks(void)
+{
+    const char *const expected_reactions[]={"O2_1","O3_1","O3_2","N2_O1D_1","O1D_O2_1","O_O3_1","M_O_O2_1"};
+    const char *const expected_species[]={"M","Ar","CO2","H2O","N2","O1D","O","O2","O3"};
+    size_t count=0; const char *const *names=chem_chapman_reaction_names(&count);
+    assert(count==7);
+    for (size_t i=0;i<count;++i) assert(!strcmp(names[i],expected_reactions[i]));
+    names=chem_chapman_photolysis_names(&count); assert(count==3);
+    for (size_t i=0;i<count;++i) assert(!strcmp(names[i],expected_reactions[i]));
+    names=chem_chapman_species_names(&count); assert(count==9);
+    for (size_t i=0;i<count;++i) assert(!strcmp(names[i],expected_species[i]));
+    assert(chem_chapman_species_names(NULL)==names);
+}
+int main(void) { name_checks(); matrix_checks(); forcing_checks(); solve_checks(); reference_trajectories(); return 0; }

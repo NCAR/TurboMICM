@@ -66,7 +66,7 @@ CASES = {
                     "CanSolveMultiGridCellWithStubAerosolModel1", "CanSolveMultiGridCellWithTwoStubAerosolModels"]},
     **{f"chapman_ode_solver:ChapmanMechanismHardCodedAndGeneral.{case}": ("build/test_chapman_regression", "Chapman mechanism regression")
        for case in ["DefaultConstructor", "lin_solve", "simple_force", "smaller_force", "factored_alpha_minus_jac",
-                    "dforce_dy_times_vector", "Solve", "solve_10_times_larger", "solve_with_random_number_densities"]},
+                    "dforce_dy_times_vector", "ReactionNames", "PhotolysisNames", "SpeciesNames", "Solve", "solve_10_times_larger", "solve_with_random_number_densities"]},
     "chapman_ode_solver:RegressionChapmanODESolver.solve_10_times_smaller": ("build/test_chapman_regression", "Chapman mechanism regression"),
     **{f"surface_rate_constant:SurfaceRateConstant.{case}": ("build/test_rate_store", "surface property diagnostics")
        for case in ["DiffusionCoefficientIsMissing", "MolecularWeightIsMissing"]},

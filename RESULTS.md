@@ -293,3 +293,7 @@ The vectorized matrix tutorial now reproduces the reference output, including
 the regular and grouped sparse string layouts. The reference initializes the
 solver state as converged, so its inner solve loop does not run. The CPU case
 report has 666 passing, 5 N/A, and 9 unported failures.
+
+The fixed Chapman reference metadata now exposes and checks all seven reaction
+names, three photolysis names, and nine species names. The CPU case report has
+669 passing, 5 N/A, and 6 unported failures.
