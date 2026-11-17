@@ -31,6 +31,11 @@ absolute-tolerance array contains one value per species.
 immutable symbolic plan; callback contexts and mechanism data remain borrowed.
 Named bulk setters check every label and vector length before changing a state.
 
+`chem_matrix.h` provides typed-by-element-size dense matrices with row-major or
+grouped storage, checked row and column operations, reusable matrix functions,
+and strict or padded reductions. These utilities have independent reference
+tests; the chemistry kernel keeps its own specialized species-major workspace.
+
 ## Numerical components
 
 The Rosenbrock implementation has the two-, three-, four-, and differential-

@@ -38,10 +38,10 @@ build:
 build/.compiler: FORCE | build
 	@printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' | cmp -s - $@ || printf '%s\n' '$(CC)|$(OPTFLAGS)|$(OMP_CFLAGS)' > $@
 
-SOURCES := src/state.c src/rates.c src/linear.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/projection.c
+SOURCES := src/state.c src/rates.c src/linear.c src/rosenbrock.c src/backward_euler.c src/constraints.c src/projection.c src/matrix.c
 OBJECTS := $(SOURCES:src/%.c=build/%.o)
 
-build/%.o: src/%.c src/internal.h include/chem.h build/.compiler | build
+build/%.o: src/%.c src/internal.h include/chem.h include/chem_matrix.h build/.compiler | build
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 build/libchem.a: $(OBJECTS)
@@ -84,6 +84,9 @@ bin/reference_nonlinear_integration: tests/reference_nonlinear_integration.c bui
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
 bin/reference_state: tests/reference_state.c build/libchem.a build/.compiler | bin
+	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
+
+bin/reference_matrix: tests/reference_matrix.c build/libchem.a build/.compiler | bin
 	@$(CC) $(CFLAGS) $< build/libchem.a $(LDLIBS) -o $@
 
 bin/reference_initialization: tests/reference_initialization.c build/libchem.a build/.compiler | bin
@@ -137,7 +140,7 @@ test-core: bin/test_core bin/test_configurations bin/test_constraints bin/test_l
 	./bin/test_constraints
 	./bin/test_linear
 
-test-cpu: bin/reference_rates bin/reference_solver bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_stiff_constraints bin/reference_analytical bin/reference_nonlinear_integration bin/reference_state bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
+test-cpu: bin/reference_rates bin/reference_solver bin/reference_constraints bin/reference_constraint_set bin/reference_equilibrium_integration bin/reference_stiff_constraints bin/reference_analytical bin/reference_nonlinear_integration bin/reference_state bin/reference_matrix bin/reference_initialization bin/reference_lu bin/tutorial_program bin/test_core bin/test_configurations bin/test_constraints bin/test_linear
 	@$(PYTHON) tests/run_cases.py
 
 cpu bench: bin/ts1_bench_cpu
