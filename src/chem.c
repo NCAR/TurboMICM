@@ -52,7 +52,8 @@ static double density(ChemConditions c)
 
 double chem_parameterized_value(ChemParameterization p, ChemConditions c)
 {
-    return p.constant + p.temperature*c.temperature + p.pressure*c.pressure + p.air_density*density(c);
+    return p.constant + p.temperature*c.temperature + p.pressure*c.pressure +
+           (p.air_density == 0 ? 0 : p.air_density*density(c));
 }
 
 static double reactant_value(const ChemMechanism *m, int species, ChemConditions c, const double *y)

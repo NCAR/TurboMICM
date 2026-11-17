@@ -5,13 +5,14 @@ import subprocess
 import sys
 
 root = Path(__file__).resolve().parents[1]
-run = subprocess.run([str(root / 'build/test_cases')], text=True, capture_output=True, check=True)
 results = {}
-for line in run.stdout.splitlines():
-    case, passed = line.split()
-    if case in results:
-        raise ValueError(f'duplicate case result: {case}')
-    results[case] = passed == '1'
+for executable in ('test_cases', 'test_matrix_cases', 'test_matrix_function_cases', 'test_matrix_remaining'):
+    run = subprocess.run([str(root / 'build' / executable)], text=True, capture_output=True, check=True)
+    for line in run.stdout.splitlines():
+        case, passed = line.split()
+        if case in results:
+            raise ValueError(f'duplicate case result: {case}')
+        results[case] = passed == '1'
 expected = (root / 'tests/tutorial_expected.txt').read_text()
 for case, executable, args in [
     ('rate_constants_no_user_defined_example_by_hand', 'tutorial_no_user', []),

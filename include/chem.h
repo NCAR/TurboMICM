@@ -140,4 +140,33 @@ ChemConstraintStatus chem_constraint_apply(const ChemConstraint *, size_t specie
                                           double temperature, const double *y,
                                           double *forcing, double *negative_jacobian);
 
+/* Model-building metadata. Names and string values are borrowed; copies own
+ * independent property arrays, while the referenced strings remain borrowed. */
+typedef enum { CHEM_PROPERTY_REAL, CHEM_PROPERTY_STRING, CHEM_PROPERTY_INT, CHEM_PROPERTY_BOOL } ChemPropertyType;
+typedef union { double real; const char *string; int integer; int boolean; } ChemPropertyValue;
+typedef struct { const char *name; ChemPropertyType type; ChemPropertyValue value; } ChemProperty;
+typedef struct {
+    const char *name;
+    ChemProperty *properties;
+    size_t property_count, property_capacity;
+    int is_parameterized;
+    ChemParameterization parameterization;
+} ChemSpecies;
+typedef enum { CHEM_PROPERTY_OK, CHEM_PROPERTY_NOT_FOUND, CHEM_PROPERTY_INVALID_TYPE, CHEM_PROPERTY_NO_MEMORY } ChemPropertyStatus;
+void chem_species_init(ChemSpecies *, const char *name);
+void chem_species_free(ChemSpecies *);
+ChemPropertyStatus chem_species_copy(ChemSpecies *destination, const ChemSpecies *source);
+ChemPropertyStatus chem_species_set(ChemSpecies *, const char *name, ChemPropertyType, ChemPropertyValue);
+ChemPropertyStatus chem_species_get(const ChemSpecies *, const char *name, ChemPropertyType, ChemPropertyValue *);
+void chem_species_set_third_body(ChemSpecies *);
+typedef struct { const ChemSpecies *species; int has_diffusion; double diffusion; } ChemPhaseSpecies;
+void chem_phase_species_set_diffusion(ChemPhaseSpecies *, double diffusion);
+typedef struct { const char *name; const ChemPhaseSpecies *species; size_t count; } ChemPhase;
+typedef struct { ChemPhase gas_phase; } ChemSystem;
+size_t chem_phase_state_size(ChemPhase);
+/* Returns zero on success; output receives phase.name or the unqualified name. */
+int chem_phase_state_name(ChemPhase, size_t state_index, int qualified, char *output, size_t capacity);
+size_t chem_system_state_size(ChemSystem);
+int chem_system_state_name(ChemSystem, size_t state_index, const size_t *order, char *output, size_t capacity);
+
 #endif

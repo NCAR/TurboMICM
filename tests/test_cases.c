@@ -500,6 +500,89 @@ static int constraint_set_case(int which)
     return 0;
 }
 
+static int species_case(int which)
+{
+    ChemSpecies s,copy; chem_species_init(&s,"thing"); chem_species_init(&copy,NULL);
+    ChemPropertyValue v; int ok=1;
+    if (which==0) {
+        if (strcmp(s.name,"thing") || s.is_parameterized) ok=0;
+        s.is_parameterized=1; s.parameterization=(ChemParameterization){0,100,0,0};
+        ChemConditions c={12.5,0,0,0};
+        if (!s.is_parameterized || chem_parameterized_value(s.parameterization,c)!=1250) ok=0;
+    } else if (which==3) {
+        chem_species_free(&s); chem_species_init(&s,"M"); chem_species_set_third_body(&s);
+        ChemConditions c={300,0,42.4,1};
+        if (strcmp(s.name,"M") || !s.is_parameterized || chem_parameterized_value(s.parameterization,c)!=42.4) ok=0;
+    } else {
+        v.real=1; if (chem_species_set(&s,"name [units]",CHEM_PROPERTY_REAL,v)) ok=0;
+        v.real=2; if (chem_species_set(&s,"name2 [units2]",CHEM_PROPERTY_REAL,v)) ok=0;
+        if (which==4 || which==5) {
+            v.string="bar"; if (chem_species_set(&s,"foo",CHEM_PROPERTY_STRING,v)) ok=0;
+            v.integer=42; if (chem_species_set(&s,"baz",CHEM_PROPERTY_INT,v)) ok=0;
+            v.boolean=1; if (chem_species_set(&s,"qux",CHEM_PROPERTY_BOOL,v)) ok=0;
+        }
+        for (int parametrized=0; parametrized<((which==4 || which==5) ? 2 : 1); ++parametrized) {
+            if (parametrized) { s.is_parameterized=1; s.parameterization=(ChemParameterization){15.4,0,0,0}; }
+            ChemSpecies *target=&s;
+            if (which==4 || which==5) { if (chem_species_copy(&copy,&s)) ok=0; target=&copy; }
+            if (strcmp(target->name,"thing") || chem_species_get(target,"name [units]",CHEM_PROPERTY_REAL,&v) || v.real!=1 ||
+                chem_species_get(target,"name2 [units2]",CHEM_PROPERTY_REAL,&v) || v.real!=2) ok=0;
+            if (which==1 && target->property_count!=2) ok=0;
+            if (which==2) {
+                for (int type=0;type<4;++type) if (chem_species_get(target,"not there",(ChemPropertyType)type,&v)!=CHEM_PROPERTY_NOT_FOUND) ok=0;
+                if (chem_species_get(target,"name [units]",(ChemPropertyType)99,&v)!=CHEM_PROPERTY_INVALID_TYPE) ok=0;
+            }
+            if (which==4 || which==5) {
+                int real_count=0;
+                for (size_t property=0;property<target->property_count;++property) real_count += target->properties[property].type==CHEM_PROPERTY_REAL;
+                if (target->property_count!=5 || real_count!=2 || chem_species_get(target,"foo",CHEM_PROPERTY_STRING,&v) || strcmp(v.string,"bar") ||
+                    chem_species_get(target,"baz",CHEM_PROPERTY_INT,&v) || v.integer!=42 ||
+                    chem_species_get(target,"qux",CHEM_PROPERTY_BOOL,&v) || v.boolean!=1 || target->is_parameterized!=parametrized) ok=0;
+                if (parametrized && chem_parameterized_value(target->parameterization,(ChemConditions){0,0,0,0})!=15.4) ok=0;
+            }
+        }
+    }
+    chem_species_free(&copy); chem_species_free(&s); return ok;
+}
+
+static int phase_case(int which)
+{
+    ChemSpecies foo,bar,baz; chem_species_init(&foo,"foo"); chem_species_init(&bar,"bar"); chem_species_init(&baz,"baz");
+    ChemPhaseSpecies members[]={{&foo,0,0},{&bar,0,0},{&baz,0,0}};
+    ChemPhase phase={"gas",members,3}; char a[64],b[64]; int ok=1;
+    if (which<=2) {
+        foo.name="CO2";
+        if (which==1) { members[0].has_diffusion=1; members[0].diffusion=1.23e-5; }
+        if (which==2) { if (members[0].has_diffusion) ok=0; chem_phase_species_set_diffusion(&members[0],2.5e-6); }
+        if (strcmp(members[0].species->name,"CO2")) ok=0;
+        if (which==0 && members[0].has_diffusion) ok=0;
+        if (which==1 && (!members[0].has_diffusion || members[0].diffusion!=1.23e-5)) ok=0;
+        if (which==2 && (!members[0].has_diffusion || members[0].diffusion!=2.5e-6)) ok=0;
+    } else if (which==3) {
+        foo.name="species1"; bar.name="species2"; phase.name="test_phase"; phase.count=2;
+        if (phase.count!=2 || chem_phase_state_size(phase)!=2 || chem_phase_state_name(phase,0,1,a,sizeof a) || chem_phase_state_name(phase,1,1,b,sizeof b) || strcmp(a,"test_phase.species1") || strcmp(b,"test_phase.species2")) ok=0;
+    } else {
+        bar.is_parameterized=1; bar.parameterization=(ChemParameterization){42,0,0,0};
+        if (phase.count!=3 || chem_phase_state_size(phase)!=2) ok=0;
+        if (which==5 && (chem_phase_state_name(phase,0,1,a,sizeof a) || chem_phase_state_name(phase,1,1,b,sizeof b) || strcmp(a,"gas.foo") || strcmp(b,"gas.baz"))) ok=0;
+    }
+    chem_species_free(&foo); chem_species_free(&bar); chem_species_free(&baz); return ok;
+}
+
+static int system_case(int parameterized)
+{
+    ChemSpecies foo,bar,extra; chem_species_init(&foo,"foo"); chem_species_init(&bar,"bar"); chem_species_init(&extra,"paramSpecies");
+    extra.is_parameterized=1; extra.parameterization=(ChemParameterization){64.2,0,0,0};
+    ChemPhaseSpecies members[]={{&foo,0,0},{&bar,0,0},{&extra,0,0}};
+    ChemSystem system={{"gas",members,parameterized ? 3u : 2u}}; char first[32],second[32]; int ok=1;
+    if (system.gas_phase.count!=(parameterized ? 3u : 2u) || chem_system_state_size(system)!=2 ||
+        chem_system_state_name(system,0,NULL,first,sizeof first) || chem_system_state_name(system,1,NULL,second,sizeof second) || strcmp(first,"foo") || strcmp(second,"bar")) ok=0;
+    if (parameterized) { size_t order[]={1,0}; char x[32],y[32];
+        if (chem_system_state_name(system,0,order,x,sizeof x) || chem_system_state_name(system,1,order,y,sizeof y) || strcmp(x,second) || strcmp(y,first)) ok=0;
+    }
+    chem_species_free(&foo); chem_species_free(&bar); chem_species_free(&extra); return ok;
+}
+
 static int arrhenius(void)
 {
     double p[] = {1, 0, 0, 300, 0};
@@ -625,5 +708,19 @@ int main(void)
     printf("constraint_set:ConstraintSet.VectorMatrix1 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_set_case(4) && constraint_set_case(5));
     printf("constraint_set:ConstraintSet.VectorMatrix2 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_set_case(4) && constraint_set_case(5));
     printf("constraint_set:ConstraintSet.VectorMatrix3 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_set_case(4) && constraint_set_case(5));
+    printf("species:Species.StringConstructor %d\n", species_case(0));
+    printf("species:Species.StringAndVectorConstructor %d\n", species_case(1));
+    printf("species:Species.GetProperty %d\n", species_case(2));
+    printf("species:Species.SetThirdBody %d\n", species_case(3));
+    printf("species:Species.CopyConstructor %d\n", species_case(4));
+    printf("species:Species.CopyAssignment %d\n", species_case(5));
+    printf("phase:PhaseSpecies.ConstructsWithoutDiffusionCoefficient %d\n", phase_case(0));
+    printf("phase:PhaseSpecies.ConstructsWithDiffusionCoefficient %d\n", phase_case(1));
+    printf("phase:PhaseSpecies.SetDiffusionCoefficient %d\n", phase_case(2));
+    printf("phase:Phase.Constructor %d\n", phase_case(3));
+    printf("phase:Phase.ConstructorWithParameterizedSpecies %d\n", phase_case(4));
+    printf("phase:Phase.UniqueNamesWithParameterizedSpecies %d\n", phase_case(5));
+    printf("system:System.ConstructorWithAllParameters %d\n", system_case(0));
+    printf("system:System.ConstructorWithParameterizedSpecies %d\n", system_case(1));
     return 0;
 }

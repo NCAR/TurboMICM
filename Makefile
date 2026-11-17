@@ -45,7 +45,13 @@ build/rosenbrock.o: src/rosenbrock.c src/internal.h include/chem.h | build
 build/constraint.o: src/constraint.c include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/libchem.a: build/chem.o build/rosenbrock.o build/constraint.o
+build/model.o: src/model.c include/chem.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/matrix.o: src/matrix.c include/matrix.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build/libchem.a: build/chem.o build/rosenbrock.o build/constraint.o build/model.o build/matrix.o
 	ar rcs $@ $^
 
 cpu: bin/ts1_bench_cpu
@@ -64,11 +70,20 @@ build/test_chem: tests/test_chem.c build/ts1.o build/libchem.a
 build/test_solver: tests/test_solver.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
+build/test_matrix_remaining: tests/test_matrix_remaining.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
+build/test_matrix_function_cases: tests/test_matrix_function_cases.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
+build/test_matrix_cases: tests/test_matrix_cases.c build/libchem.a
+	$(CC) $(CFLAGS) $^ -lm -o $@
+
 build/test_cases: tests/test_cases.c build/libchem.a
 	$(CC) $(CFLAGS) $^ -lm -o $@
 
 test-cpu:
-	@$(MAKE) --no-print-directory -s build/test_cases build/tutorial_no_user build/tutorial_user
+	@$(MAKE) --no-print-directory -s build/test_cases build/test_matrix_cases build/test_matrix_function_cases build/test_matrix_remaining build/tutorial_no_user build/tutorial_user
 	@$(PYTHON) tools/test_cpu.py
 
 build/test_dae: tests/test_dae.c build/libchem.a

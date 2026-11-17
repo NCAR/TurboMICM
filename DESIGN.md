@@ -8,6 +8,10 @@ The generator chooses a diagonal minimum-degree species ordering from the
 Jacobian graph to reduce factorization fill. Names in the output preserve the
 mapping back to the input.
 
+`matrix.h` supplies contiguous and grouped matrix storage with runtime group
+width, row functions, column operations, and reductions. Function objects retain
+expected column shapes and validate row and vector sizes on each invocation.
+
 Rate constants, forcing, and Jacobian evaluation are separate from the solver.
 `ChemRosenbrockParameters` contains stage coefficients and control parameters;
 two-, three-, and four-stage ODE parameter sets are provided.
