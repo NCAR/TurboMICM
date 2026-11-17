@@ -87,6 +87,21 @@ int main(void)
         putchar('\n');
 #endif
     }
+#ifdef WITH_CUSTOM
+    /* Repeat with the actual time-varying tutorial parameters. */
+    double tutorial_custom[]={1e-7,2.5e6,1e-10,1e-23,1e-20};
+    double from_config[]={1,0,0,0,0,0,0}, from_code[]={1,0,0,0,0,0,0};
+    for (size_t step=0;step<10;++step) {
+        chem_rates(count,generated_rates,conditions,tutorial_custom,a.k);
+        chem_rates(count,rates,conditions,tutorial_custom,b.k);
+        for (size_t i=0;i<count;++i) assert(fabs(a.k[i]-b.k[i])<=1e-13*fmax(fabs(b.k[i]),1e-300));
+        assert(chem_rosenbrock_solve(7,from_config,500,rhs,jac,&a,&method,&options,NULL)==CHEM_SOLVE_OK);
+        assert(chem_rosenbrock_solve(7,from_code,500,rhs,jac,&b,&method,&options,NULL)==CHEM_SOLVE_OK);
+        for (size_t i=0;i<7;++i)
+            assert(fabs(from_config[i]-from_code[i])<=1e-12*fmax(fabs(from_code[i]),1e-300));
+        tutorial_custom[2]*=1.5;
+    }
+#endif
     puts("generated tutorial matches hand-built mechanism PASS");
     return 0;
 }

@@ -199,3 +199,9 @@ Grouped Rosenbrock solves share error control over cells and pass the four
 single- and multi-cell aerosol trajectory cases with reference tolerances.
 The latest case report has 558 passing and 122 unported failures for both
 compilers. Both also pass the 100-cell TS1 comparison.
+
+The two hand-built rate-constant tutorial programs now reproduce the copied
+reference executables' output exactly. The generated configuration comparison
+also exercises the tutorial's changing photolysis rate. Both compilers pass
+the 100-cell TS1 comparison; the case report has 560 passing and 120 unported
+failures.
