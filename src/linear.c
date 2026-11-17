@@ -12,6 +12,30 @@ static void *allocate(size_t n, size_t size)
     return calloc(n ? n : 1, size);
 }
 
+int chem_linear_multiply(const ChemLinearSystem *s,const double *input,const unsigned char *row_mask,double *output)
+{
+    if (!s || !s->species_count || !s->cells || !s->row_start || !s->columns || !s->values ||
+        !input || !output || input==output || s->species_count>SIZE_MAX/s->cells ||
+        s->nonzeros>SIZE_MAX/s->cells || s->species_count*s->cells>SIZE_MAX/sizeof(double) ||
+        s->nonzeros*s->cells>SIZE_MAX/sizeof(double) || s->row_start[0]!=0 ||
+        s->row_start[s->species_count]!=s->nonzeros)
+        return CHEM_INVALID;
+    size_t n=s->species_count,cells=s->cells;
+    memset(output,0,n*cells*sizeof(*output));
+    for (size_t row=0;row<n;++row) {
+        if (s->row_start[row]>s->row_start[row+1] || s->row_start[row+1]>s->nonzeros) return CHEM_INVALID;
+        if (row_mask && !row_mask[row]) continue;
+        for (size_t k=s->row_start[row];k<s->row_start[row+1];++k) {
+            if (s->columns[k]<0 || (size_t)s->columns[k]>=n) return CHEM_INVALID;
+            const double *x=input+(size_t)s->columns[k]*cells,*a=s->values+k*cells;
+            double *y=output+row*cells;
+            #pragma omp simd
+            for (size_t c=0;c<cells;++c) y[c]+=a[c]*x[c];
+        }
+    }
+    return CHEM_OK;
+}
+
 int chem_linear_add_alpha(ChemLinearSystem *s, double alpha)
 {
     if (!s || !s->values || !s->lookup || !s->algebraic || !s->cells || !s->species_count ||

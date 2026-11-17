@@ -257,6 +257,10 @@ ChemLinearSolver chem_mozart_linear_solver(void);
 int chem_linear_factor_copy(const ChemLinearSolver *solver, const ChemLinearSystem *input,
                             ChemLinearSystem *factors, double alpha, void *context);
 int chem_linear_add_alpha(ChemLinearSystem *system, double alpha);
+/* Multiply species-major vectors by a sparse view. Rows with a zero mask are
+ * set to zero; NULL selects every row. Input and output must not alias. */
+int chem_linear_multiply(const ChemLinearSystem *system, const double *input,
+                         const unsigned char *row_mask, double *output);
 int chem_update_rates(ChemState *state);
 /* Add native reaction terms for one cell to existing dense arrays. values is
  * a species_count-element vector; an optional mask skips algebraic rows. */

@@ -1,7 +1,7 @@
 # Results
 
 The work is incomplete. At the latest full case audit, `make test-cpu` emitted
-680 case lines under both clang and gcc-15: 638 PASS, 38 FAIL because the case
+680 case lines under both clang and gcc-15: 663 PASS, 13 FAIL because the case
 has not yet been ported, and 4 N/A for C++ template-concept/SFINAE checks with
 no C equivalent. The analytic, configuration, constraint, and Doolittle core
 checks also passed under both compilers. A failing case report exits nonzero.
@@ -17,6 +17,9 @@ The external-model cases exercise two independently declared aerosol models,
 both integrators, multiple cells, callback-defined constraints, composed
 equilibria, temperature-dependent constraint parameters, model ordering, and
 finite-difference checks of the process and constraint Jacobians.
+The Chapman regression cases compare the generic reaction network with
+independent rate, forcing, Jacobian, and fixed-step RK4 calculations, and
+check the reference sparse factorization and solve quantities.
 
 With `-O3 -DNDEBUG`, TS1, seed 2026, 10,000 cells, 100 timed 30-second steps,
 64-cell groups, and 10 threads, one local measurement was:
