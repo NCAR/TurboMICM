@@ -376,6 +376,35 @@ static int initialization_case(int which)
     return 0;
 }
 
+static double callback(ChemConditions conditions, void *context)
+{
+    return *(double *)context * conditions.temperature;
+}
+
+static int lambda_case(int solve)
+{
+    const char *names[] = {"A","B"}, *parameter_names[] = {"lambda_rc"};
+    const ChemTerm reactants[] = {{0,1}}, products[] = {{1,1}};
+    const ChemReaction reaction = {CHEM_CALLBACK,0,1,0,1,0,{0}};
+    const ChemMechanism m = {2,1,1,names,parameter_names,NULL,NULL,&reaction,reactants,products};
+    ChemConditions c = {300,101253.3,1e6,1};
+    double scale=solve ? 1e-3 : 2, parameters[1]={0}, rate;
+    ChemCallback callbacks[] = {{callback,&scale}};
+    if (solve) {
+        ptrdiff_t index = chem_parameter_index(&m,"lambda_rc");
+        if (index != 0 || chem_parameter_index(&m,"missing") != -1) return 0;
+        scale=2e-3; callbacks[index].function=callback; callbacks[index].context=&scale;
+    }
+    if (chem_rate_constants_with_callbacks(&m,c,parameters,callbacks,&rate)) return 0;
+    if (!solve) return fabs(rate-600)<=1e-13*600;
+    if (fabs(rate-.6)>1e-12) return 0;
+    ChemWorkspace *w=chem_workspace_create(&m); if (!w) return 0;
+    ChemBackwardEulerParameters p=chem_backward_euler_defaults(); p.absolute_tolerance=1e-6;
+    double y[]={1,0}; ChemStatistics stats;
+    int status=chem_backward_euler_solve(&m,w,&p,c,&rate,1,y,&stats); chem_workspace_free(w);
+    return !status && stats.final_time==1;
+}
+
 static int arrhenius(void)
 {
     double p[] = {1, 0, 0, 300, 0};
@@ -475,5 +504,7 @@ int main(void)
     printf("constraint_initialization:ConstraintInitialization.MultiCellSystems %d\n", initialization_case(9));
     printf("constraint_initialization:ConstraintInitialization.SubsequentSolveCallsReinitialize %d\n", initialization_case(10));
     printf("constraint_initialization:ConstraintInitialization.SolverStateToStringNewValue %d\n", !strcmp(chem_solver_status_string(CHEM_SOLVE_CONSTRAINT_INITIALIZATION_FAILED), "Constraint Initialization Failed"));
+    printf("lambda_rate_constant:LambdaRateConstant.CalculateWithSystem %d\n", lambda_case(0));
+    printf("solver_lambda_rate_constant:Solver.GetLambdaRateConstantByNameCanOverrideLambda %d\n", lambda_case(1));
     return 0;
 }

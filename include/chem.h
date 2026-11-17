@@ -9,7 +9,7 @@ typedef struct { int species; double yield; } ChemTerm;
 typedef enum {
     CHEM_ARRHENIUS, CHEM_TROE, CHEM_TERNARY, CHEM_TUNNELING,
     CHEM_USER, CHEM_SURFACE, CHEM_BRANCH_ALKOXY, CHEM_BRANCH_NITRATE,
-    CHEM_REVERSIBLE, CHEM_TAYLOR, CHEM_TERNARY_JPL19
+    CHEM_REVERSIBLE, CHEM_TAYLOR, CHEM_TERNARY_JPL19, CHEM_CALLBACK
 } ChemRateType;
 typedef struct {
     ChemRateType type;
@@ -29,12 +29,19 @@ typedef struct {
     double air_density; /* used when has_air_density is nonzero */
     int has_air_density;
 } ChemConditions;
+typedef double (*ChemRateCallback)(ChemConditions, void *context);
+typedef struct { ChemRateCallback function; void *context; } ChemCallback;
+ptrdiff_t chem_parameter_index(const ChemMechanism *, const char *name);
 
 typedef enum { CHEM_VALID, CHEM_INVALID_MECHANISM, CHEM_MISSING_DIFFUSION, CHEM_MISSING_MOLECULAR_WEIGHT } ChemValidation;
 ChemValidation chem_validate_mechanism(const ChemMechanism *, char *message, size_t message_size);
 
 /* Return nonzero for invalid conditions, arguments, or non-finite results. */
 int chem_rate_constants(const ChemMechanism *, ChemConditions, const double *parameters, double *rates);
+/* Callback entries share the custom-parameter index space and may be replaced
+ * by the caller between updates. */
+int chem_rate_constants_with_callbacks(const ChemMechanism *, ChemConditions, const double *parameters,
+                                       const ChemCallback *callbacks, double *rates);
 void chem_forcing(const ChemMechanism *, ChemConditions, const double *rates, const double *y, double *f);
 void chem_jacobian(const ChemMechanism *, ChemConditions, const double *rates, const double *y, double *j);
 

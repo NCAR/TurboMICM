@@ -1,4 +1,5 @@
 #include "chem.h"
+#include "internal.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -30,6 +31,14 @@ ChemValidation chem_validate_mechanism(const ChemMechanism *m, char *message, si
     return CHEM_VALID;
 }
 
+ptrdiff_t chem_parameter_index(const ChemMechanism *m, const char *name)
+{
+    if (!m || !name || (m->parameter_count && !m->parameter_names)) return -1;
+    for (size_t i = 0; i < m->parameter_count; ++i)
+        if (!strcmp(m->parameter_names[i], name)) return (ptrdiff_t)i;
+    return -1;
+}
+
 static double density(ChemConditions c)
 {
     return c.has_air_density ? c.air_density : c.pressure / (gas_constant * c.temperature);
@@ -43,6 +52,12 @@ static double branch_factor(double a, double b)
 }
 
 int chem_rate_constants(const ChemMechanism *m, ChemConditions c, const double *parameters, double *rates)
+{
+    return chem_rate_constants_with_callbacks(m, c, parameters, NULL, rates);
+}
+
+int chem_rate_constants_with_callbacks(const ChemMechanism *m, ChemConditions c, const double *parameters,
+                                       const ChemCallback *callbacks, double *rates)
 {
     if (!m || !rates || (m->parameter_count && !parameters) || !(c.temperature > 0) || !(c.pressure >= 0)) return 1;
     double t = c.temperature, air = density(c);
@@ -88,10 +103,16 @@ int chem_rate_constants(const ChemMechanism *m, ChemConditions c, const double *
             k = polynomial * p[0] * exp(p[2]/t) * pow(t/p[3], p[1]) * (1.0+p[4]*c.pressure);
             break;
         }
+        case CHEM_CALLBACK:
+            if (!callbacks || r->parameter < 0 || (size_t)r->parameter >= m->parameter_count || !callbacks[r->parameter].function) return 1;
+            k = callbacks[r->parameter].function(c, callbacks[r->parameter].context);
+            break;
         case CHEM_USER:
+            if (r->parameter < 0 || (size_t)r->parameter >= m->parameter_count) return 1;
             k = parameters[r->parameter] * p[0];
             break;
         case CHEM_SURFACE: {
+            if (r->parameter < 0 || (size_t)r->parameter >= m->parameter_count || m->parameter_count-(size_t)r->parameter < 2) return 1;
             double radius = parameters[r->parameter], count = parameters[r->parameter + 1];
             double speed = sqrt(8.0 * gas_constant * t / (pi * p[1]));
             k = 4.0 * count * pi * radius * radius / (radius / p[0] + 4.0 / (speed * p[2]));
@@ -139,9 +160,14 @@ void chem_forcing(const ChemMechanism *m, ChemConditions c, const double *rates,
 
 void chem_jacobian(const ChemMechanism *m, ChemConditions c, const double *rates, const double *y, double *j)
 {
+    memset(j, 0, m->species_count * m->species_count * sizeof(*j));
+    chem_jacobian_add(m,c,rates,y,j);
+}
+
+void chem_jacobian_add(const ChemMechanism *m, ChemConditions c, const double *rates, const double *y, double *j)
+{
     size_t n = m->species_count;
     double air = density(c);
-    memset(j, 0, n * n * sizeof(*j));
     for (size_t i = 0; i < m->reaction_count; ++i) {
         const ChemReaction *r = &m->reactions[i];
         for (size_t q = 0; q < r->reactant_count; ++q) {

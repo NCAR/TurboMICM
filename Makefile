@@ -30,7 +30,7 @@ env:
 build bin:
 	mkdir -p $@
 
-build/chem.o: src/chem.c include/chem.h | build
+build/chem.o: src/chem.c src/internal.h include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/ts1.c: configs/ts1/config.json configs/ts1/species.json configs/ts1/reactions.json tools/generate.py tools/mechanism.py | build
@@ -39,7 +39,7 @@ build/ts1.c: configs/ts1/config.json configs/ts1/species.json configs/ts1/reacti
 build/ts1.o: build/ts1.c include/chem.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/rosenbrock.o: src/rosenbrock.c include/chem.h | build
+build/rosenbrock.o: src/rosenbrock.c src/internal.h include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build/constraint.o: src/constraint.c include/chem.h | build

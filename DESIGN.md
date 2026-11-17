@@ -16,7 +16,8 @@ workspace derives the symbolic Jacobian and fill once, then uses in-place
 Mozart or Doolittle elimination selected in the solver parameters. A replacement linear solver can use the same Jacobian and
 stage interfaces, though the interface should be made pluggable before swapping
 it. A new rate type requires an enum member, parameter interpretation in the
-rate calculation, generator mapping, and tests.
+rate calculation, generator mapping, and tests. C callers may also install
+named rate callbacks and replace them between rate updates.
 
 Linear and equilibrium constraints expose validation, residuals, and negative
 Jacobian rows independently. A constrained workspace borrows the constraint
@@ -32,7 +33,8 @@ step-reduction sequence. Both solvers share the chemistry and linear algebra.
 The benchmark uses independent solver state per cell and OpenMP static
 scheduling. `--threads N` controls the thread count; absent the option OpenMP's
 maximum is used. Each thread owns a reusable workspace. Current Jacobians use
-dense storage with a symbolic sparse pattern; group size is one cell. The
+dense storage with a symbolic sparse pattern and precomputed row and column
+indices for factorization and substitution; group size is one cell. The
 initial step is `1e-6 * DT`, the minimum is `1e-15 * DT`, relative tolerance is
 `1e-6`, and absolute tolerance is `1e-3`, matching the reference defaults.
 These solver values can be set in `ChemRosenbrockParameters`, including an
