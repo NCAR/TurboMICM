@@ -1,0 +1,1067 @@
+{
+  "camp-data": [
+    {
+      "type": "CHEM_SPEC",
+      "name": "ALKNIT",
+      "molecular weight [kg mol-1]": 0.133141
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BZOOH",
+      "molecular weight [kg mol-1]": 0.124135
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C6H5OOH",
+      "molecular weight [kg mol-1]": 0.110109
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "COF2",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "O2",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "COFCL",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HF",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "F",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BENZO2",
+      "molecular weight [kg mol-1]": 0.159115
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BZOO",
+      "molecular weight [kg mol-1]": 0.123128
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "N2",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "E90",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NH_5",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NH_50",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ST80_25",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "PAN",
+      "molecular weight [kg mol-1]": 0.121048
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MVK",
+      "molecular weight [kg mol-1]": 0.0700878
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MACROOH",
+      "molecular weight [kg mol-1]": 0.120101
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SOAG0",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SOAG1",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SOAG2",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SOAG3",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SOAG4",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa4_a1",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa5_a1",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa5_a2",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa3_a1",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa2_a1",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa1_a1",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa1_a2",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa2_a2",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa3_a2",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "soa4_a2",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ISOPNITB",
+      "molecular weight [kg mol-1]": 0.147031980536874,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SO3",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "OCS",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SO",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "S",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BCARYO2VBS",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SF6",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "sink",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "H",
+      "molecular weight [kg mol-1]": 0.0010074
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MEK",
+      "molecular weight [kg mol-1]": 0.0721026
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MTERP",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "N2O5",
+      "molecular weight [kg mol-1]": 0.108023495904642,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HCN",
+      "molecular weight [kg mol-1]": 0.0270251
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SVOC",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ISOPNO3",
+      "molecular weight [kg mol-1]": 0.162118
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "RO2",
+      "molecular weight [kg mol-1]": 0.0890682
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "PHENO2",
+      "molecular weight [kg mol-1]": 0.175114
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BENZO2VBS",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "IVOC",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TERPNIT",
+      "molecular weight [kg mol-1]": 0.215154758199771,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ISOPO2VBS",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "IVOCO2VBS",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HNO3",
+      "molecular weight [kg mol-1]": 0.0630123
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ACBZO2",
+      "molecular weight [kg mol-1]": 0.137112
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3COOOH",
+      "molecular weight [kg mol-1]": 0.0760498
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "SO2",
+      "molecular weight [kg mol-1]": 0.0640648
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MTERPO2VBS",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH4",
+      "molecular weight [kg mol-1]": 0.0160406
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3CL",
+      "molecular weight [kg mol-1]": 0.0504859
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3CO3",
+      "molecular weight [kg mol-1]": 0.0750424
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C6H5O2",
+      "molecular weight [kg mol-1]": 0.109102
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TERPROD1",
+      "molecular weight [kg mol-1]": 0.168227
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HYAC",
+      "molecular weight [kg mol-1]": 0.0740762
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HPALD",
+      "molecular weight [kg mol-1]": 0.116112
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TOLUO2VBS",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "H2O",
+      "molecular weight [kg mol-1]": 0.0180142
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NO2",
+      "molecular weight [kg mol-1]": 0.045803364407376784,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "EOOH",
+      "molecular weight [kg mol-1]": 0.0780646
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NTERPOOH",
+      "molecular weight [kg mol-1]": 0.23118008751781,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "XYLEO2VBS",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CCL4",
+      "molecular weight [kg mol-1]": 0.153822
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CF2CLBR",
+      "molecular weight [kg mol-1]": 0.165365
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CF3BR",
+      "molecular weight [kg mol-1]": 0.14891
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CFC11",
+      "molecular weight [kg mol-1]": 0.137368
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CFC113",
+      "molecular weight [kg mol-1]": 0.187375
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CFC114",
+      "molecular weight [kg mol-1]": 0.170921
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CFC115",
+      "molecular weight [kg mol-1]": 0.154467
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CFC12",
+      "molecular weight [kg mol-1]": 0.120913
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH2BR2",
+      "molecular weight [kg mol-1]": 0.173834
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3BR",
+      "molecular weight [kg mol-1]": 0.0949372
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3CCL3",
+      "molecular weight [kg mol-1]": 0.133402
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NO",
+      "molecular weight [kg mol-1]": 0.0300061
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BR",
+      "molecular weight [kg mol-1]": 0.079904
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BRCL",
+      "molecular weight [kg mol-1]": 0.115357
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BRO",
+      "molecular weight [kg mol-1]": 0.0959034
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BRONO2",
+      "molecular weight [kg mol-1]": 0.141909
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CL",
+      "molecular weight [kg mol-1]": 0.0354527
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CL2",
+      "molecular weight [kg mol-1]": 0.0709054
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CL2O2",
+      "molecular weight [kg mol-1]": 0.102904
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CLO",
+      "molecular weight [kg mol-1]": 0.0514521
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CLONO2",
+      "molecular weight [kg mol-1]": 0.0974576
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HCOOH",
+      "molecular weight [kg mol-1]": 0.0460246
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HBR",
+      "molecular weight [kg mol-1]": 0.0809114
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HOBR",
+      "molecular weight [kg mol-1]": 0.0969108
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HOCL",
+      "molecular weight [kg mol-1]": 0.0524595
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "N",
+      "molecular weight [kg mol-1]": 0.0140067
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BIGENE",
+      "molecular weight [kg mol-1]": 0.0561032
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C2H4",
+      "molecular weight [kg mol-1]": 0.0280516
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C2H5O2",
+      "molecular weight [kg mol-1]": 0.0610578
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3COCHO",
+      "molecular weight [kg mol-1]": 0.0720614
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3COCH3",
+      "molecular weight [kg mol-1]": 0.0580768
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "O",
+      "molecular weight [kg mol-1]": 0.0159994
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "OCLO",
+      "molecular weight [kg mol-1]": 0.0674515
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "O1D",
+      "molecular weight [kg mol-1]": 0.0159994
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "PHENO",
+      "molecular weight [kg mol-1]": 0.159115
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HCFC141B",
+      "molecular weight [kg mol-1]": 0.116948
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HCFC142B",
+      "molecular weight [kg mol-1]": 0.100494
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HCFC22",
+      "molecular weight [kg mol-1]": 0.0864679
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "DMS",
+      "molecular weight [kg mol-1]": 0.0621324
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C2H5OH",
+      "molecular weight [kg mol-1]": 0.0460658
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HCL",
+      "molecular weight [kg mol-1]": 0.0364601
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BEPOMUC",
+      "molecular weight [kg mol-1]": 0.126109
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CHBR3",
+      "molecular weight [kg mol-1]": 0.25273
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "H2402",
+      "molecular weight [kg mol-1]": 0.259824
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CO2",
+      "molecular weight [kg mol-1]": 0.0440098
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BZALD",
+      "molecular weight [kg mol-1]": 0.106121
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BENZENE",
+      "molecular weight [kg mol-1]": 0.0781104
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C3H7O2",
+      "molecular weight [kg mol-1]": 0.0750836
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3O2",
+      "molecular weight [kg mol-1]": 0.047032
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BCARY",
+      "molecular weight [kg mol-1]": 0.204343
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BIGALD",
+      "molecular weight [kg mol-1]": 0.0980982
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BIGALD2",
+      "molecular weight [kg mol-1]": 0.0980982
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BIGALD3",
+      "molecular weight [kg mol-1]": 0.0980982
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BIGALD4",
+      "molecular weight [kg mol-1]": 0.112124
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BIGALK",
+      "molecular weight [kg mol-1]": 0.0721438
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "H2O2",
+      "molecular weight [kg mol-1]": 0.0340136
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C2H5OOH",
+      "molecular weight [kg mol-1]": 0.0620652
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C2H6",
+      "molecular weight [kg mol-1]": 0.0300664
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C3H8",
+      "molecular weight [kg mol-1]": 0.0440922
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C3H6",
+      "molecular weight [kg mol-1]": 0.0420774
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH2O",
+      "molecular weight [kg mol-1]": 0.0300252
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3CN",
+      "molecular weight [kg mol-1]": 0.0410509
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C2H2",
+      "molecular weight [kg mol-1]": 0.0260368
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3OH",
+      "molecular weight [kg mol-1]": 0.03204
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3OOH",
+      "molecular weight [kg mol-1]": 0.0480394
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CRESOL",
+      "molecular weight [kg mol-1]": 0.108136
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ENEO2",
+      "molecular weight [kg mol-1]": 0.105109
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MACRO2",
+      "molecular weight [kg mol-1]": 0.119093
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ISOPAO2",
+      "molecular weight [kg mol-1]": 0.11712
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MALO2",
+      "molecular weight [kg mol-1]": 0.115064
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ISOPBO2",
+      "molecular weight [kg mol-1]": 0.11712
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MCO3",
+      "molecular weight [kg mol-1]": 0.101079
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MDIALO2",
+      "molecular weight [kg mol-1]": 0.117079
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MEKO2",
+      "molecular weight [kg mol-1]": 0.103094
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "EO2",
+      "molecular weight [kg mol-1]": 0.0770572
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "EO",
+      "molecular weight [kg mol-1]": 0.0610578
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "GLYOXAL",
+      "molecular weight [kg mol-1]": 0.0580064525191708,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MPAN",
+      "molecular weight [kg mol-1]": 0.147085
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NC4CH2OH",
+      "molecular weight [kg mol-1]": 0.147031980536874,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ISOPOOH",
+      "molecular weight [kg mol-1]": 0.118127
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "GLYALD",
+      "molecular weight [kg mol-1]": 0.0600504
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HO2",
+      "molecular weight [kg mol-1]": 0.03307754409115893,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HOCH2OO",
+      "molecular weight [kg mol-1]": 0.0630314
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "H2",
+      "molecular weight [kg mol-1]": 0.0020148
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HYDRALD",
+      "molecular weight [kg mol-1]": 0.100113
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ISOP",
+      "molecular weight [kg mol-1]": 0.0681142
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NTERPO2",
+      "molecular weight [kg mol-1]": 0.230232
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TOLO2",
+      "molecular weight [kg mol-1]": 0.173141
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TERP2O2",
+      "molecular weight [kg mol-1]": 0.199219
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "XYLENO2",
+      "molecular weight [kg mol-1]": 0.187166
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TERPO2",
+      "molecular weight [kg mol-1]": 0.185234
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "XYLOLO2",
+      "molecular weight [kg mol-1]": 0.203166
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "PBZNIT",
+      "molecular weight [kg mol-1]": 0.183118
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "XYLENES",
+      "molecular weight [kg mol-1]": 0.106162
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "PO2",
+      "molecular weight [kg mol-1]": 0.091083
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TOLUENE",
+      "molecular weight [kg mol-1]": 0.0921362
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "XO2",
+      "molecular weight [kg mol-1]": 0.149119
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "XOOH",
+      "molecular weight [kg mol-1]": 0.150126
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TERPROD2",
+      "molecular weight [kg mol-1]": 0.154201
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MEKOOH",
+      "molecular weight [kg mol-1]": 0.104101
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "MACR",
+      "molecular weight [kg mol-1]": 0.0700878
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HONITR",
+      "molecular weight [kg mol-1]": 0.133362340623015,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ISOPNITA",
+      "molecular weight [kg mol-1]": 0.147031980536874,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ISOPNOOH",
+      "molecular weight [kg mol-1]": 0.163125
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "IEPOX",
+      "molecular weight [kg mol-1]": 0.118127
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ONITR",
+      "molecular weight [kg mol-1]": 0.147031980536874,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "H2SO4",
+      "molecular weight [kg mol-1]": 0.0980784
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "N2O",
+      "molecular weight [kg mol-1]": 0.0440129
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NO3",
+      "molecular weight [kg mol-1]": 0.06186298085408304,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "OH",
+      "molecular weight [kg mol-1]": 0.0170068
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "PHENOOH",
+      "molecular weight [kg mol-1]": 0.176122
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "PHENOL",
+      "molecular weight [kg mol-1]": 0.0941098
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "XYLOL",
+      "molecular weight [kg mol-1]": 0.122161
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ROOH",
+      "molecular weight [kg mol-1]": 0.0900756
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "O3",
+      "molecular weight [kg mol-1]": 0.0479982
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TERPOOH",
+      "molecular weight [kg mol-1]": 0.186241
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TOLOOH",
+      "molecular weight [kg mol-1]": 0.174148
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "XYLENOOH",
+      "molecular weight [kg mol-1]": 0.188174
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "XYLOLOOH",
+      "molecular weight [kg mol-1]": 0.204173
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CO",
+      "molecular weight [kg mol-1]": 0.0280104
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3COOH",
+      "molecular weight [kg mol-1]": 0.0600504
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "CH3CHO",
+      "molecular weight [kg mol-1]": 0.044051
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BIGALD1",
+      "molecular weight [kg mol-1]": 0.0840724
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ALKOOH",
+      "molecular weight [kg mol-1]": 0.104143
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "DICARBO2",
+      "molecular weight [kg mol-1]": 0.12909
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "BENZOOH",
+      "molecular weight [kg mol-1]": 0.160122
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "ALKO2",
+      "molecular weight [kg mol-1]": 0.103135
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "HO2NO2",
+      "molecular weight [kg mol-1]": 0.0790117
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "C3H7OOH",
+      "molecular weight [kg mol-1]": 0.076091
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NH3",
+      "molecular weight [kg mol-1]": 0.017031
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TERP2OOH",
+      "molecular weight [kg mol-1]": 0.200226
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "POOH",
+      "molecular weight [kg mol-1]": 0.0920904
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NOA",
+      "molecular weight [kg mol-1]": 0.119074
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NC4CHO",
+      "molecular weight [kg mol-1]": 0.14461174234895102,
+      "diffusion coefficient [m2 s-1]": 1e-05
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "TEPOMUC",
+      "molecular weight [kg mol-1]": 0.140134
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "NH4",
+      "molecular weight [kg mol-1]": 0.0
+    },
+    {
+      "type": "CHEM_SPEC",
+      "name": "M",
+      "third body": true
+    }
+  ]
+}
