@@ -13,7 +13,13 @@ many commands match and the first few, with their times:
   run directory (<model>-<effort>), TurboMICM, tier2-work, .tier2-heldout, or
   the transcripts;
 - installs and downloads: brew, pip, conda or mamba install, curl, wget, git
-  clone or fetch, npm, and web access.
+  clone or fetch, npm, and web access;
+- connector, MCP, and web-search calls, which are not shell commands: Codex
+  0.169.0 records them as McpToolCall items, function calls in an mcp__
+  namespace, or code-mode JavaScript naming an mcp__ tool (ChatGPT's app
+  connectors are mcp__codex_apps__*);
+- subagents: spawn and message calls, and messages between agents (each
+  subagent writes a record of its own, to be scanned and counted too).
 A finding is a lead for review, not a verdict: the command's context decides.
 Needs only the Python standard library.
 """
@@ -103,6 +109,35 @@ for stamp, text, cwd in commands(args.record):
         findings["other runs and private folders"].append((stamp, text, []))
     if install.search(text):
         findings["installs and downloads"].append((stamp, text, []))
+
+# Tool calls that are not shell commands (Codex 0.169.0's record): calls to MCP servers and
+# ChatGPT's app connectors (an McpToolCall item, a function call in an mcp__ namespace, or
+# code-mode JavaScript that names an mcp__ tool), web searches, and messages to subagents
+connector = re.compile(r"mcp__(codex_apps|[\w-]+)__\w+|\bweb_search\b")
+findings["connector, MCP, and web-search calls"] = []
+findings["subagents"] = []
+with open(args.record, errors="replace") as file:
+    for line in file:
+        try:
+            item = json.loads(line)
+        except ValueError:
+            continue
+        payload = item.get("payload") if isinstance(item.get("payload"), dict) else {}
+        stamp, kind = item.get("timestamp", "")[11:19], payload.get("type")
+        inner = payload.get("item") or {}
+        if kind == "item_completed" and inner.get("type") in ("McpToolCall", "WebSearch"):
+            findings["connector, MCP, and web-search calls"].append(
+                (stamp, f"{inner.get('type')} {inner.get('server', '')} {inner.get('tool', '')}", []))
+        elif kind == "function_call" and str(payload.get("namespace", "")).startswith("mcp__"):
+            findings["connector, MCP, and web-search calls"].append(
+                (stamp, f"{payload['namespace']} {payload.get('name')}", []))
+        elif kind == "custom_tool_call" and connector.search(payload.get("input", "")):
+            names = sorted(set(m.group(0) for m in connector.finditer(payload["input"])))
+            findings["connector, MCP, and web-search calls"].append((stamp, f"exec names {' '.join(names)}", []))
+        elif kind == "web_search_call":
+            findings["connector, MCP, and web-search calls"].append((stamp, "web_search_call", []))
+        elif kind == "agent_message" or (kind == "function_call" and payload.get("namespace") == "collaboration"):
+            findings["subagents"].append((stamp, f"{kind} {payload.get('name', '')} {payload.get('recipient', '')}", []))
 
 print(f"{args.record.name}: {total} commands")
 for kind, rows in findings.items():
