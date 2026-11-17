@@ -1,0 +1,9 @@
+.conda/
+.conda-pkgs/
+build/
+bin/
+my_micm_build/
+ts1_final.csv
+*.o
+__pycache__/
+PROMPT.md
