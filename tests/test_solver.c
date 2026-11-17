@@ -14,10 +14,11 @@ int main(void)
     ChemWorkspace *w = chem_workspace_create(&mechanism);
     double rates[1];
     if (!w || chem_rate_constants(&mechanism, conditions, NULL, rates)) return 1;
-    for (int method = 0; method < 3; ++method) {
+    for (int algorithm = 0; algorithm < 2; ++algorithm) for (int method = 0; method < 3; ++method) {
         ChemRosenbrockParameters p = method == 0 ? chem_rosenbrock_two_stage() :
                                      method == 1 ? chem_rosenbrock_three_stage() : chem_rosenbrock_four_stage();
         p.absolute_tolerance = 1e-9; p.relative_tolerance = 1e-6;
+        p.linear_solver = (ChemLUAlgorithm)algorithm;
         double y[] = {1, 0};
         ChemStatistics stats;
         if (chem_rosenbrock_solve(&mechanism, w, &p, conditions, rates, .1, y, &stats)) return 1;
@@ -27,7 +28,15 @@ int main(void)
         }
         if (!chem_rosenbrock_solve(&mechanism, w, &p, conditions, rates, 0, y, &stats)) return 3;
     }
+    ChemBackwardEulerParameters be = chem_backward_euler_defaults();
+    for (int algorithm = 0; algorithm < 2; ++algorithm) {
+        be.linear_solver = (ChemLUAlgorithm)algorithm;
+        double backward_y[] = {1, 0};
+        ChemStatistics backward_stats;
+        if (chem_backward_euler_solve(&mechanism, w, &be, conditions, rates, .1, backward_y, &backward_stats) ||
+            fabs(backward_y[0] - 1.0/1.2) > 1e-14 || fabs(backward_y[0]+backward_y[1]-1) > 1e-14) return 4;
+    }
     chem_workspace_free(w);
-    puts("Rosenbrock decay and conservation: PASS");
+    puts("Rosenbrock and backward Euler decay and conservation: PASS");
     return 0;
 }

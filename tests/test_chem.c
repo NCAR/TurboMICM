@@ -37,7 +37,22 @@ int main(void)
             }
         }
     }
+    /* Exercise both LU algorithms on the generated mechanism, including fill. */
+    ChemWorkspace *work = chem_workspace_create(m);
+    if (!work) return 4;
+    for (size_t i = 0; i < m->species_count; ++i) y[i] = fp[i] = m->initial_species[i];
+    ChemRosenbrockParameters parameters = chem_rosenbrock_three_stage();
+    ChemStatistics stats;
+    if (chem_rosenbrock_solve(m, work, &parameters, c, rates, 0.001, y, &stats)) return 5;
+    parameters.linear_solver = CHEM_LU_DOOLITTLE;
+    if (chem_rosenbrock_solve(m, work, &parameters, c, rates, 0.001, fp, &stats)) return 6;
+    for (size_t i = 0; i < m->species_count; ++i)
+        if (fabs(y[i]-fp[i]) > 1e-30 + 1e-10*fabs(y[i])) {
+            fprintf(stderr, "LU algorithms disagree for %s: %.17g %.17g\n", m->species_names[i], y[i], fp[i]);
+            return 7;
+        }
+    chem_workspace_free(work);
     free(rates); free(y); free(f); free(fp); free(fm); free(j);
-    puts("forcing and finite-difference Jacobian: PASS");
+    puts("forcing, finite-difference Jacobian, and LU algorithms: PASS");
     return 0;
 }

@@ -15,7 +15,7 @@ configuration. `tools/generate.py CONFIG OUTPUT` reads a tutorial-style JSON or
 YAML configuration and writes a C table. The runtime is C11 and does not load
 Python or MICM.
 
-This is incomplete: only 34 of the 680 named cases are individually ported,
-and the report marks the rest as failures. Algebraic constraints, backward Euler,
-and many API behaviors are still missing. The successful TS1 comparison and
+This is incomplete: only 36 of the 680 named cases are individually ported,
+and the report marks the rest as failures. Algebraic constraints and many API behaviors are still missing; backward Euler
+and both LU methods need substantially broader compatibility coverage. The successful TS1 comparison and
 additional checks are not a substitute for the full compatibility gate.

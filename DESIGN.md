@@ -13,10 +13,13 @@ Rate constants, forcing, and Jacobian evaluation are separate from the solver.
 two-, three-, and four-stage ODE parameter sets are provided.
 `chem_rosenbrock_solve` implements the stage loop and error controller. The
 workspace derives the symbolic Jacobian and fill once, then uses in-place
-Mozart elimination. A replacement linear solver can use the same Jacobian and
+Mozart or Doolittle elimination selected in the solver parameters. A replacement linear solver can use the same Jacobian and
 stage interfaces, though the interface should be made pluggable before swapping
 it. A new rate type requires an enum member, parameter interpretation in the
 rate calculation, generator mapping, and tests.
+
+Backward Euler uses Newton iterations, nonnegative iterates, and the reference
+step-reduction sequence. Both solvers share the chemistry and linear algebra.
 
 The benchmark uses independent solver state per cell and OpenMP static
 scheduling. `--threads N` controls the thread count; absent the option OpenMP's

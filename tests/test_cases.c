@@ -130,6 +130,45 @@ static int missing_surface(int weight)
         && strstr(message, "foo") && strstr(message, weight ? "molecular weight" : "Diffusion coefficient");
 }
 
+static int backward_convergence(void)
+{
+    double residual[12] = {0}, y[12] = {0}, atol[] = {1e-6,1e-6,1e-6};
+    double small = 1e-6, rtol = 1e-3;
+    if (!chem_backward_euler_converged(4,3,residual,y,small,rtol,atol)) return 0;
+    residual[1] = 1e-5;
+    if (chem_backward_euler_converged(4,3,residual,y,small,rtol,atol)) return 0;
+    small = 1e-4;
+    if (!chem_backward_euler_converged(4,3,residual,y,small,rtol,atol)) return 0;
+    residual[11] = 1e-3;
+    if (chem_backward_euler_converged(4,3,residual,y,small,rtol,atol)) return 0;
+    y[11] = 10;
+    if (!chem_backward_euler_converged(4,3,residual,y,small,rtol,atol)) return 0;
+    residual[11] = .1;
+    if (chem_backward_euler_converged(4,3,residual,y,small,rtol,atol)) return 0;
+    atol[2] = 1;
+    return chem_backward_euler_converged(4,3,residual,y,small,rtol,atol);
+}
+
+static int backward_solve(void)
+{
+    const char *names[] = {"A","B","C"};
+    const ChemTerm react[] = {{0,1},{1,1}}, product[] = {{1,1},{2,1}};
+    const ChemReaction reactions[] = {
+        {CHEM_ARRHENIUS,0,1,0,1,-1,{2.15e-11,0,110,300,0}},
+        {CHEM_ARRHENIUS,1,1,1,1,-1,{3.3e-11,0,55,300,0}}
+    };
+    const ChemMechanism m = {3,2,0,names,NULL,NULL,NULL,reactions,react,product};
+    ChemConditions c = {272.5,101253.3,1e6,1};
+    ChemBackwardEulerParameters p = chem_backward_euler_defaults();
+    p.absolute_tolerance = 1e-6;
+    ChemWorkspace *work = chem_workspace_create(&m);
+    double rates[2], y[] = {1,0,0};
+    ChemStatistics stats;
+    int ok = work && !chem_rate_constants(&m,c,NULL,rates) && !chem_backward_euler_solve(&m,work,&p,c,rates,1,y,&stats);
+    chem_workspace_free(work);
+    return ok;
+}
+
 static int arrhenius(void)
 {
     double p[] = {1, 0, 0, 300, 0};
@@ -188,5 +227,7 @@ int main(void)
     printf("surface_rate_constant:SurfaceRateConstant.MolecularWeightIsMissing %d\n", missing_surface(1));
     printf("reaction_rate_store:ReactionRateConstantStore.SurfaceMissingDiffusionCoefficientThrows %d\n", missing_surface(0));
     printf("reaction_rate_store:ReactionRateConstantStore.SurfaceMissingMolecularWeightThrows %d\n", missing_surface(1));
+    printf("backward_euler:BackwardEuler.CanCallSolve %d\n", backward_solve());
+    printf("backward_euler:BackwardEuler.IsConverged %d\n", backward_convergence());
     return 0;
 }

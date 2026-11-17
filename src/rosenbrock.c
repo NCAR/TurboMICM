@@ -110,12 +110,28 @@ void chem_workspace_free(ChemWorkspace *w)
     free(w->trial); free(w->error); free(w->stage); free(w);
 }
 
-static int factor(ChemWorkspace *w, double alpha)
+static int factor(ChemWorkspace *w, double alpha, ChemLUAlgorithm algorithm)
 {
     size_t n = w->n;
     double *a = w->matrix;
     for (size_t i = 0; i < n*n; ++i) a[i] = -w->jacobian[i];
     for (size_t i = 0; i < n; ++i) a[i*n+i] += alpha;
+    if (algorithm == CHEM_LU_DOOLITTLE) {
+        const unsigned char *pattern = w->pattern;
+        for (size_t i = 0; i < n; ++i) {
+            for (size_t k = i; k < n; ++k) if (pattern[i*n+k])
+                for (size_t j = 0; j < i; ++j) if (pattern[i*n+j] && pattern[j*n+k])
+                    a[i*n+k] -= a[i*n+j]*a[j*n+k];
+            if (a[i*n+i] == 0 || !isfinite(a[i*n+i])) return 1;
+            for (size_t k = i+1; k < n; ++k) if (pattern[k*n+i]) {
+                for (size_t j = 0; j < i; ++j) if (pattern[k*n+j] && pattern[j*n+i])
+                    a[k*n+i] -= a[k*n+j]*a[j*n+i];
+                a[k*n+i] /= a[i*n+i];
+            }
+        }
+        return 0;
+    }
+    if (algorithm != CHEM_LU_MOZART) return 1;
     for (size_t i = 0; i < n; ++i) {
         if (a[i*n+i] == 0 || !isfinite(a[i*n+i])) return 1;
         double inverse = 1.0 / a[i*n+i];
@@ -167,7 +183,7 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
         chem_jacobian(m, cond, rates, y, w->jacobian); ++stats->jacobian_updates;
         int accepted = 0;
         while (!accepted) {
-            if (factor(w, 1.0/(h*p->gamma))) return 3;
+            if (factor(w, 1.0/(h*p->gamma), p->linear_solver)) return 3;
             ++stats->decompositions;
             for (int stage = 0; stage < p->stages; ++stage) {
                 double *ks = w->stage + (size_t)stage*n;
@@ -197,12 +213,13 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
                 double scale = atol + p->relative_tolerance*fmax(fabs(y[i]), fabs(w->trial[i]));
                 double e = w->error[i]/scale; err += e*e;
             }
-            err = fmax(sqrt(err/n), 1e-10);
+            err = sqrt(err/n);
             if (!isfinite(err)) return 4;
+            err = fmax(err, 1e-10);
             double fac = fmin(p->factor_max, fmax(p->factor_min, p->safety/pow(err, 1/p->order)));
             double next = h*fac; ++stats->internal_steps;
             if (err < 1 || h < hmin) {
-                ++stats->accepted; time += h; memcpy(y, w->trial, n*sizeof(double));
+                ++stats->accepted; time += h; stats->final_time = time; memcpy(y, w->trial, n*sizeof(double));
                 next = fmax(hmin, fmin(next, hmax));
                 if (reject_last) next = fmin(next, h);
                 reject_last = reject_more = 0; h = next; accepted = 1;
@@ -216,5 +233,79 @@ int chem_rosenbrock_solve(const ChemMechanism *m, ChemWorkspace *w,
         }
     }
     for (size_t i = 0; i < n; ++i) y[i] = y[i] > 0.0 ? y[i] : 0.0;
+    return 0;
+}
+
+ChemBackwardEulerParameters chem_backward_euler_defaults(void)
+{
+    ChemBackwardEulerParameters p = {0};
+    p.small = 1e-40; p.max_iterations = 11;
+    p.reductions[0] = p.reductions[1] = p.reductions[2] = p.reductions[3] = 0.5;
+    p.reductions[4] = 0.1;
+    p.relative_tolerance = 1e-6; p.absolute_tolerance = 1e-3;
+    return p;
+}
+
+int chem_backward_euler_converged(size_t cells, size_t species, const double *residual,
+                                  const double *y, double small, double rtol, const double *atol)
+{
+    for (size_t c = 0; c < cells; ++c) for (size_t i = 0; i < species; ++i) {
+        double r = fabs(residual[c*species+i]);
+        if (!isfinite(r) || (r > small && r > atol[i] && r > rtol*fabs(y[c*species+i]))) return 0;
+    }
+    return 1;
+}
+
+int chem_backward_euler_solve(const ChemMechanism *m, ChemWorkspace *w,
+                              const ChemBackwardEulerParameters *p, ChemConditions cond,
+                              const double *rates, double dt, double *y, ChemStatistics *stats)
+{
+    if (!m || !w || !p || !rates || !y || !stats || w->n != m->species_count ||
+        !(dt > 0) || p->max_iterations < 1 || p->small < 0 || p->relative_tolerance < 0 ||
+        (!p->absolute_tolerances && p->absolute_tolerance < 0)) return 1;
+    memset(stats, 0, sizeof *stats);
+    size_t n = w->n;
+    double h = p->h_start == 0 ? dt : p->h_start, time = 0;
+    if (!(h > 0)) return 1;
+    int successes = 0, failures = 0;
+    memcpy(w->initial, y, n*sizeof(double));
+    while (time < dt) {
+        int converged = 0;
+        for (int iteration = 0; iteration < p->max_iterations; ++iteration) {
+            ++stats->internal_steps;
+            chem_forcing(m, cond, rates, y, w->trial); ++stats->function_calls;
+            chem_jacobian(m, cond, rates, y, w->jacobian); ++stats->jacobian_updates;
+            if (factor(w, 1/h, p->linear_solver)) return 3;
+            ++stats->decompositions;
+            for (size_t i = 0; i < n; ++i) w->trial[i] -= (y[i]-w->initial[i])/h;
+            substitute(w, w->trial); ++stats->solves;
+            for (size_t i = 0; i < n; ++i) {
+                double next = y[i]+w->trial[i];
+                y[i] = 0.0 > next ? 0.0 : next;
+            }
+            if (iteration == 0) continue;
+            converged = 1;
+            for (size_t i = 0; i < n; ++i) {
+                double a = p->absolute_tolerances ? p->absolute_tolerances[i] : p->absolute_tolerance;
+                double residual = fabs(w->trial[i]);
+                if (!isfinite(residual) || (residual > p->small && residual > a && residual > p->relative_tolerance*fabs(y[i]))) {
+                    converged = 0; break;
+                }
+            }
+            if (converged) break;
+        }
+        if (!converged) {
+            ++stats->rejected; successes = 0;
+            if (failures >= 5) { stats->final_time = time+h; return 2; }
+            memcpy(y, w->initial, n*sizeof(double));
+            h *= p->reductions[failures++];
+            if (!(h > 0) || time+h == time) return 2;
+        } else {
+            ++stats->accepted; time += h; stats->final_time = time;
+            memcpy(w->initial, y, n*sizeof(double));
+            if (++successes >= 2) { successes = 0; h *= 2; }
+        }
+        h = fmin(h, dt-time);
+    }
     return 0;
 }

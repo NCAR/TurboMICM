@@ -40,8 +40,10 @@ void chem_jacobian(const ChemMechanism *, ChemConditions, const double *rates, c
 
 /* Rosenbrock parameters are data, so the step controller and formula can be
  * changed independently. Arrays use row-wise strictly lower triangular order. */
+typedef enum { CHEM_LU_MOZART, CHEM_LU_DOOLITTLE } ChemLUAlgorithm;
 typedef struct {
     int stages, new_function[6], max_steps;
+    ChemLUAlgorithm linear_solver;
     double a[15], c[15], m[6], e[6], gamma, order;
     double factor_min, factor_max, rejection_factor, safety;
     double h_min, h_max, h_start, relative_tolerance, absolute_tolerance;
@@ -50,6 +52,7 @@ typedef struct {
 typedef struct {
     unsigned long internal_steps, accepted, rejected, function_calls;
     unsigned long jacobian_updates, decompositions, solves;
+    double final_time;
 } ChemStatistics;
 typedef struct ChemWorkspace ChemWorkspace;
 
@@ -62,5 +65,18 @@ void chem_workspace_free(ChemWorkspace *);
 int chem_rosenbrock_solve(const ChemMechanism *, ChemWorkspace *,
                           const ChemRosenbrockParameters *, ChemConditions,
                           const double *rates, double dt, double *y, ChemStatistics *);
+
+typedef struct {
+    double small, h_start, reductions[5], relative_tolerance, absolute_tolerance;
+    const double *absolute_tolerances;
+    int max_iterations;
+    ChemLUAlgorithm linear_solver;
+} ChemBackwardEulerParameters;
+ChemBackwardEulerParameters chem_backward_euler_defaults(void);
+int chem_backward_euler_converged(size_t cells, size_t species, const double *residual,
+                                  const double *y, double small, double rtol, const double *atol);
+int chem_backward_euler_solve(const ChemMechanism *, ChemWorkspace *,
+                              const ChemBackwardEulerParameters *, ChemConditions,
+                              const double *rates, double dt, double *y, ChemStatistics *);
 
 #endif
