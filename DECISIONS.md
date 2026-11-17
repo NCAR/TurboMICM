@@ -51,3 +51,7 @@ The C matrix interface uses an explicit runtime group width, including a
 row-major option, in place of compile-time C++ matrix policies. The caller
 owns the resulting matrix and can access its padded storage; checked row and
 column functions operate only on logical cells.
+
+Compressed sparse storage is represented as a shared CSR or CSC pattern plus
+a configurable grouped value matrix. This preserves the reference indexing
+semantics while allowing C callers to choose layout at runtime.

@@ -7,6 +7,15 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"{prefix}:{suite}.{case}": ("build/test_sparse_matrix", "compressed sparse blocks")
+       for prefix, suite in [
+           ("sparse_matrix_standard_compressed_row_ordering", "SparseCompressedRowMatrix"),
+           ("sparse_matrix_standard_compressed_column_ordering", "SparseCompressedColumnMatrix"),
+           ("sparse_matrix_vector_compressed_row_ordering", "SparseVectorCompressedRowMatrix"),
+           ("sparse_matrix_vector_compressed_column_ordering", "SparseVectorCompressedColumnMatrix")]
+       for case in ["ZeroMatrix", "ConstZeroMatrix", "SetScalar", "AddToDiagonal", "SingleBlockMatrix", "ConstSingleBlockMatrix", "MultiBlockMatrix", "Print", "PrintNonZero"]},
+    **{f"{prefix}:SparseMatrixBuilder.BadConfiguration": ("build/test_sparse_matrix", "invalid sparse indices")
+       for prefix in ["sparse_matrix_standard_compressed_row_ordering", "sparse_matrix_standard_compressed_column_ordering"]},
     **{f"{prefix}:{suite}.{case}": ("build/test_matrix_function", "matrix function validation")
        for prefix, suite in [("matrix", "Matrix"), ("vector_matrix", "VectorMatrix")]
        for case in ["MismatchedRowDimensions", "MismatchedColumnDimensions", "WrongMatrixDimensions", "WrongColumnCountAtInvocation",

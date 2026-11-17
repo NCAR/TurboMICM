@@ -113,3 +113,9 @@ letting callers choose the identity values used in padded reductions.
 vector arguments at creation. Calls may use a different row count, but all
 arguments must agree on it; validation completes before the callback runs.
 The caller owns the function and destroys it when it is no longer needed.
+
+`ChemSparseMatrix` owns one shared sparsity pattern and a `ChemMatrix` of
+block values. Its CSR or CSC order controls entry numbering, and the matrix
+group width controls how block values are interleaved. Duplicate coordinates
+are coalesced; absent and out-of-range entries return an invalid index. This
+utility is separate from the current LU plan, which retains dense value buffers.

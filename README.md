@@ -23,8 +23,8 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently only
-339 cases have been ported, so the target intentionally fails and labels the
-other 341 as unported. The focused `make check` tests cover additional behavior
+377 cases have been ported, so the target intentionally fails and labels the
+other 303 as unported. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
 The single-cell backward Euler API is declared in `include/backward_euler.h`.
@@ -47,3 +47,6 @@ and declare their state dependencies through `ChemCustomConstraint`.
 
 `include/matrix.h` provides owned row-major or interleaved group matrices,
 with checked row and column operations and configurable group width.
+
+`include/sparse_matrix.h` provides compressed row and column sparse blocks
+with optional interleaved cell groups.
