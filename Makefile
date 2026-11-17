@@ -38,8 +38,10 @@ check: build/test_chem build/test_generated build/test_rosenbrock build/test_che
 	./build/test_chemical_solver
 	./build/test_tutorial
 	./build/test_tutorial_custom
+	./build/test_ts1_rates
 	./build/test_generated
 	.conda/bin/python tests/test_config.py
+	.conda/bin/python tests/test_ts1_config.py
 build/tutorial.c: tools/generate.py tools/config.py | build
 	.conda/bin/python tools/generate.py ../micm/test/tutorial/configs/rate_constants_no_user_defined/config.yaml $@
 build/tutorial_custom.c: tools/generate.py tools/config.py | build
@@ -49,3 +51,8 @@ build/test_tutorial: tests/test_tutorial.c build/tutorial.c build/libchem.a
 build/test_tutorial_custom: tests/test_tutorial.c build/tutorial_custom.c build/libchem.a
 	$(CC) $(filter-out -DNDEBUG,$(CFLAGS)) -DWITH_CUSTOM tests/test_tutorial.c build/tutorial_custom.c build/libchem.a -lm -o $@
 check: build/test_tutorial build/test_tutorial_custom
+build/ts1.c: tools/generate.py tools/config.py configs/ts1/config.json configs/ts1/species.json configs/ts1/reactions.json | build
+	.conda/bin/python tools/generate.py configs/ts1/config.json $@
+build/test_ts1_rates: tests/test_ts1_rates.c build/ts1.c build/libchem.a
+	$(CC) $(filter-out -DNDEBUG,$(CFLAGS)) tests/test_ts1_rates.c build/ts1.c build/libchem.a -lm -o $@
+check: build/test_ts1_rates

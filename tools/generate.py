@@ -2,16 +2,19 @@
 import argparse
 import json
 import math
-from config import read_mechanism
+from config import read_mechanism, read_document
 
 CONVERSION = 6.02214076e17  # molecules cm-3 per mol m-3
 
 
 def generate(path):
     species, source_reactions = read_mechanism(path)
+    root = read_document(path)
+    third_bodies = {s['name'] for s in species if s.get('third body', False)}
+    species = [s for s in species if s['name'] not in third_bodies]
     indices = {s['name']: i for i, s in enumerate(species)}
     species_by_name = {s['name']: s for s in species}
-    reactants, products, rows, rate_rows, labels = [], [], [], [], []
+    reactants, products, rows, rate_rows, labels, air_orders = [], [], [], [], [], []
 
     def label(name):
         if name not in labels:
@@ -20,15 +23,22 @@ def generate(path):
 
     def emit(reaction, reactant_map, product_map, kind, params, custom=0):
         rb, pb = len(reactants), len(products)
+        air_order = 0
         for name, properties in reactant_map.items():
             qty = properties.get('qty', 1)
             if not isinstance(qty, int) or isinstance(qty, bool) or qty < 1:
                 raise ValueError('reactant qty must be a positive integer')
-            reactants.extend([indices[name]] * qty)
+            if name in third_bodies:
+                air_order += qty
+            else:
+                reactants.extend([indices[name]] * qty)
         for name, properties in product_map.items():
+            if name in third_bodies:
+                continue
             products.append((indices[name], float(properties.get('yield', 1))))
         rows.append((rb, len(reactants)-rb, pb, len(products)-pb))
         rate_rows.append((kind, params, custom))
+        air_orders.append(air_order)
 
     for reaction in source_reactions:
         typ = reaction['type']
@@ -43,29 +53,34 @@ def generate(path):
             rs, ps = {}, {reaction['species']: {}}
         order = sum(properties.get('qty', 1) for properties in rs.values())
         get = reaction.get
+        units = get('rate coefficient units', 'molecules cm-3')
+        if units not in ('SI', 'molecules cm-3'):
+            raise ValueError(f'unsupported rate coefficient units: {units}')
+        conversion = 1 if units == 'SI' else CONVERSION
         if typ == 'ARRHENIUS':
-            p = [float(get('A', 1))*CONVERSION**(order-1), get('B', 0), get('C', 0), get('D', 300), get('E', 0)]
+            p = [float(get('A', 1))*conversion**(order-1), get('B', 0), get('C', 0), get('D', 300), get('E', 0)]
             emit(reaction, rs, ps, 'ARRHENIUS', p)
         elif typ in ('TROE', 'TERNARY_CHEMICAL_ACTIVATION'):
             low_order = order if typ == 'TROE' else order-1
-            p = [float(get('k0_A', 1))*CONVERSION**low_order, get('k0_B', 0), get('k0_C', 0),
-                 float(get('kinf_A', 1))*CONVERSION**(low_order-1), get('kinf_B', 0), get('kinf_C', 0),
+            p = [float(get('k0_A', 1))*conversion**low_order, get('k0_B', 0), get('k0_C', 0),
+                 float(get('kinf_A', 1))*conversion**(low_order-1), get('kinf_B', 0), get('kinf_C', 0),
                  get('Fc', .6), get('N', 1)]
             emit(reaction, rs, ps, 'TROE' if typ == 'TROE' else 'TERNARY', p)
         elif typ == 'TUNNELING':
-            emit(reaction, rs, ps, 'TUNNELING', [float(get('A', 1))*CONVERSION**(order-1), get('B', 0), get('C', 0)])
+            emit(reaction, rs, ps, 'TUNNELING', [float(get('A', 1))*conversion**(order-1), get('B', 0), get('C', 0)])
         elif typ == 'BRANCHED':
-            p = [float(get('X'))*CONVERSION**(order-1), get('Y'), get('a0'), get('n')]
+            p = [float(get('X'))*conversion**(order-1), get('Y'), get('a0'), get('n')]
             emit(reaction, rs, reaction['alkoxy products'], 'ALKOXY', p)
             emit(reaction, rs, reaction['nitrate products'], 'NITRATE', p)
         elif typ == 'SURFACE':
             sp = species_by_name[name]
-            custom = label(name + '.effective radius [m]')
-            if label(name + '.particle number concentration [# m-3]') != custom+1:
+            surface_label = get('surface parameter label', name)
+            custom = label(surface_label + '.effective radius [m]')
+            if label(surface_label + '.particle number concentration [# m-3]') != custom+1:
                 raise ValueError('surface parameters must be consecutive')
             emit(reaction, rs, ps, 'SURFACE', [sp['diffusion coefficient [m2 s-1]'], sp['molecular weight [kg mol-1]'], get('reaction probability', 1)], custom)
-        elif typ in ('PHOTOLYSIS', 'FIRST_ORDER_LOSS', 'EMISSION'):
-            emit(reaction, rs, ps, 'USER', [1], label(reaction['MUSICA name']))
+        elif typ in ('PHOTOLYSIS', 'FIRST_ORDER_LOSS', 'EMISSION', 'USER_DEFINED'):
+            emit(reaction, rs, ps, 'USER', [get('scaling factor', 1)], label(reaction['MUSICA name']))
         else:
             raise ValueError(f'unsupported reaction type: {typ}')
 
@@ -80,6 +95,10 @@ def generate(path):
     lines.append('const char *const generated_species[] = {' + strings(s['name'] for s in species) + '};')
     lines.append('const char *const generated_custom_labels[] = {' + strings(labels) + '};')
     lines.append(f'const size_t generated_custom_count = {len(labels)};')
+    custom_defaults = root.get('custom parameter defaults', {})
+    lines.append('const double generated_custom_defaults[] = {' + ', '.join(number(custom_defaults.get(name, 0)) for name in labels or ['']) + '};')
+    lines.append('const double generated_initial_concentrations[] = {' + ', '.join(number(s.get('initial concentration [mol m-3]', 0)) for s in species) + '};')
+    lines.append('const unsigned generated_air_orders[] = {' + ', '.join(map(str, air_orders or [0])) + '};')
     lines.append('static const size_t reactants[] = {' + ', '.join(map(str, reactants or [0])) + '};')
     lines.append('static const ChemProduct products[] = {' + ', '.join('{%d, %s}' % (i, number(y)) for i, y in (products or [(0, 0)])) + '};')
     lines.append('static const ChemReaction reactions[] = {' + ', '.join('{%d, %d, %d, %d}' % row for row in (rows or [(0, 0, 0, 0)])) + '};')

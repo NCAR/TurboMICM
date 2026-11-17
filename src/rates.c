@@ -53,3 +53,13 @@ void chem_rates(size_t count, const ChemRate *rates, ChemConditions conditions,
 {
     for (size_t i = 0; i < count; ++i) out[i] = chem_rate(&rates[i], conditions, custom);
 }
+
+void chem_rates_with_air(size_t count, const ChemRate *rates, const unsigned *air_orders,
+                         ChemConditions conditions, const double *custom, double *out)
+{
+    for (size_t i = 0; i < count; ++i) {
+        double rate = chem_rate(&rates[i], conditions, custom);
+        for (unsigned j = 0; j < air_orders[i]; ++j) rate *= conditions.air_density;
+        out[i] = rate;
+    }
+}

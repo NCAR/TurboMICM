@@ -15,3 +15,9 @@ CPU solver does. The current implementation allocates scratch space per solve; m
 sparse matrices, other solver families, and constraints are not yet implemented.
 
 This is a starting point, not the final architecture.
+
+`tools/import_ts1.py` translates the reference generated C++ into the checked-in
+CAMP-style JSON files. The generator excludes third bodies from the state and
+outputs their powers; `chem_rates_with_air` applies these to reaction constants.
+Species and custom defaults are also emitted as C arrays. See DECISIONS.md for
+the configuration extensions.

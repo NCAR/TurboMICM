@@ -8,3 +8,11 @@ CAMP rate coefficients are converted from molecule/cm3 to mol/m3 using the
 reaction order; user-defined parameters are already in the solver units. Surface
 parameter labels use the gas-phase species name, as in the tutorial built by hand.
 Unsupported types are rejected explicitly.
+
+TS1 configuration extensions: `third body` marks a species whose concentration
+is air density rather than a state variable; `rate coefficient units: SI` marks
+coefficients already expressed in mole-based units; `USER_DEFINED` accepts a
+`scaling factor`; and `surface parameter label` distinguishes the parameter
+label from the gas species. Species may specify `initial concentration [mol m-3]`;
+the manifest may provide custom parameter defaults, temperature, and pressure.
+These retain the values in the generated C++ source without converting them twice.

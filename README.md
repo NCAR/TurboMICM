@@ -9,3 +9,8 @@ A preliminary single-cell three-stage Rosenbrock solver is available through
 `include/rosenbrock.h`. The required full test suite, remaining rate types, additional
 solver features, and TS1 benchmark remain to be implemented. Run `make clean`
 before switching compilers.
+
+Regenerate the TS1 configuration from the reference source with
+`.conda/bin/python tools/import_ts1.py ../micm/test/benchmark/ts1_mechanism.hpp configs/ts1`.
+The current checks compare the translation's initial values with the reference
+defaults CSV and exercise generated TS1 rate and forcing evaluation.

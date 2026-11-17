@@ -17,4 +17,7 @@ typedef struct { double temperature, pressure, air_density; } ChemConditions;
 double chem_rate(const ChemRate *rate, ChemConditions conditions, const double *custom);
 void chem_rates(size_t count, const ChemRate *rates, ChemConditions conditions,
                 const double *custom, double *out);
+/* Optional third-body powers multiply the computed rate by air density. */
+void chem_rates_with_air(size_t count, const ChemRate *rates, const unsigned *air_orders,
+                         ChemConditions conditions, const double *custom, double *out);
 #endif
