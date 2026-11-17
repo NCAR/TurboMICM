@@ -416,17 +416,22 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   and verified before the next launches; then one timing session with all
   entries and luna-high's deferred timing (the SSE's choice). Tiers 2 and 3 are
   decided after Tier 1. Claude may stop a floundering Terra run (the SSE,
-  2026-11-16: "I expect Terra runs to progress"); slowness alone is no reason. terra-max: 2026-11-16 22:52
-  to 01:25 MST, verified (676 PASS, 4 N/A, gate 2.51e-13; 64-cell groups;
+  2026-11-16: "I expect Terra runs to progress"); slowness alone is no reason.
+  terra-max: 2026-11-16 22:52 to 01:25 MST, verified (676 PASS, 4 N/A, gate 2.51e-13; 64-cell groups;
   `results/2026-11-17-terra-max-verification`), not yet timed. terra-xhigh:
   01:39 to 04:29, verified (676 PASS, 4 N/A, gate 1.77e-13; one cell at a
   time; `results/2026-11-17-terra-xhigh-verification`). terra-high: 04:44 to
   08:35 (58 turns), verified (675 PASS, 5 N/A, gate 1.25e-13; one cell at a
   time, solver allocation inside the timer; its PASS ids are 47 programs' exit
   statuses, unaudited; `results/2026-11-17-terra-high-verification`). The
-  timing session for all twelve entries was armed at 08:49 in tmux
-  `tier1-timing` (out: `~/NSF-NCAR/tier1-work/timing-terra/`); afterwards
-  follow `admin/FOLLOW-UP-tier1-timing.md` with twelve entries (`admin/runs.md`).
+  timing session for all twelve entries (luna-high and the three Terra
+  entries not yet timed) was deferred by the SSE on 2026-11-17 at 11:43,
+  before it started: two macOS daemons (`suggestd`, `maild`) held 1.1 cores
+  all day, and a Google Meet call more. Next: that session, as
+  `admin/FOLLOW-UP-tier1-timing.md` sets out (the machine check, the gate's
+  `IDLE_CPU_LIMIT`, the steps, and every page to update). Still open for
+  Terra: Tier-1-Implementations sections, entrant pages, judging, and an
+  audit of terra-high's case mapping.
 - Luna: run all three fresh, one after another, at max, xhigh, then high (the
   SSE's order, 2026-10-19), each verified and timed with all entries before the
   next starts. luna-max is done: finished 21:05, verified, and timed overnight
@@ -435,10 +440,8 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   (`results/2026-10-20-luna-xhigh-verification`), 1.32 times MICM's default at
   10 threads and 2.41 on one, scaling only 2.79 times. luna-high's rerun is
   done and verified (finished 18:20 on 2026-10-20, 662 PASS, 0 FAIL, 18 N/A,
-  `results/2026-10-20-luna-high-verification`) but not yet timed: the SSE
-  deferred the timing session to a follow-on session. Next: that session, as
-  `admin/FOLLOW-UP-tier1-timing.md` sets out (the steps, the checks, and
-  every page to update). The first luna-high attempt was stopped at 08:11
+  `results/2026-10-20-luna-high-verification`) but not yet timed; it is timed
+  with the Terra entries (see the Terra item). The first luna-high attempt was stopped at 08:11
   on 2026-10-16, after 1 h 23 min, far from done (615 failing cases at its 07:51
   checkpoint); it is kept, outside the run root, at
   `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/` was recreated.

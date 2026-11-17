@@ -632,8 +632,17 @@ Token counts are as Codex reports them: total = uncached input + output.
   limit. At 10:52 the SSE chose to relax the gate and run now: the gate's limit
   became a setting (`IDLE_CPU_LIMIT`, default 100 %), and the session was
   re-armed at 10:53 with 200 %, the daemons' load to be recorded in the load
-  audit. Times from this session at 10 threads may run slower than in earlier
-  sessions by that load; comparisons within the session are unaffected.
+  audit. Times from this session at 10 threads might run slower than in
+  earlier sessions by that load; within the session every program runs in
+  rotation under it.
+- Timing deferred: the relaxed gate counted three quiet minutes by 10:59, then
+  reset from 11:00 to 11:41, when the total rose to 230-270 %; the SSE had been
+  in a Google Meet call. At 11:43 the SSE deferred the session to a follow-on
+  session ("let us defer to a follow on session"); Claude Code stopped the gate
+  before the session started (no timing output was written). The plan is
+  `admin/FOLLOW-UP-tier1-timing.md`, now for all twelve entries. The gate's
+  logs are `~/NSF-NCAR/tier1-work/timing-terra-wait-1cpu.log` and
+  `timing-terra-wait.log`.
 
 # Tier 2
 
