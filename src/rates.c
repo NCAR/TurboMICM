@@ -277,6 +277,49 @@ void chem_negative_jacobian(ChemState *s, const double *y)
     chem_constraint_jacobian(s,y);
 }
 
+static void add_reaction_terms(const ChemState *s,size_t cell,const double *values,size_t stride,
+                               const unsigned char *algebraic,double *forcing,double *jacobian)
+{
+    const ChemMechanism *m = s->mechanism;
+    size_t n = m->species_count, cells = s->cells;
+    for (size_t r = 0; r < m->reaction_count; ++r) {
+        const ChemReaction *rx = &m->reactions[r];
+        double rate = s->rates[r*cells+cell], flux = rate;
+        for (size_t k = 0; k < rx->reactant_count; ++k)
+            flux *= values[(size_t)m->reactants[rx->reactant_start+k]*stride];
+        for (size_t k = 0; k < rx->reactant_count; ++k) {
+            int row=m->reactants[rx->reactant_start+k];
+            if (!algebraic || !algebraic[row]) forcing[row] -= flux;
+        }
+        for (size_t k = 0; k < rx->product_count; ++k) {
+            ChemProduct p = m->products[rx->product_start+k];
+            if (!algebraic || !algebraic[p.species]) forcing[p.species] += p.yield*flux;
+        }
+        for (size_t k = 0; k < rx->reactant_count; ++k) {
+            size_t col = (size_t)m->reactants[rx->reactant_start+k];
+            double derivative = rate;
+            for (size_t j = 0; j < rx->reactant_count; ++j) if (j != k)
+                derivative *= values[(size_t)m->reactants[rx->reactant_start+j]*stride];
+            for (size_t j = 0; j < rx->reactant_count; ++j) {
+                int row=m->reactants[rx->reactant_start+j];
+                if (!algebraic || !algebraic[row]) jacobian[(size_t)row*n+col] += derivative;
+            }
+            for (size_t j = 0; j < rx->product_count; ++j) {
+                ChemProduct p = m->products[rx->product_start+j];
+                if (!algebraic || !algebraic[p.species]) jacobian[(size_t)p.species*n+col] -= p.yield*derivative;
+            }
+        }
+    }
+}
+
+int chem_add_reaction_terms(const ChemState *s,size_t cell,const double *values,const unsigned char *algebraic,
+                            double *forcing,double *jacobian)
+{
+    if (!s || cell>=s->cells || !values || !forcing || !jacobian) return CHEM_INVALID;
+    add_reaction_terms(s,cell,values,1,algebraic,forcing,jacobian);
+    return CHEM_OK;
+}
+
 int chem_evaluate(const ChemState *s, size_t cell, double *forcing, double *jacobian)
 {
     if (!s || cell >= s->cells || !forcing || !jacobian) return CHEM_INVALID;
@@ -284,34 +327,7 @@ int chem_evaluate(const ChemState *s, size_t cell, double *forcing, double *jaco
     size_t n = m->species_count, cells = s->cells;
     memset(forcing, 0, n*sizeof(*forcing));
     memset(jacobian, 0, n*n*sizeof(*jacobian));
-    for (size_t r = 0; r < m->reaction_count; ++r) {
-        const ChemReaction *rx = &m->reactions[r];
-        double rate = s->rates[r*cells+cell], flux = rate;
-        for (size_t k = 0; k < rx->reactant_count; ++k)
-            flux *= s->values[(size_t)m->reactants[rx->reactant_start+k]*cells+cell];
-        for (size_t k = 0; k < rx->reactant_count; ++k) {
-            int row=m->reactants[rx->reactant_start+k];
-            if (!s->algebraic[row]) forcing[row] -= flux;
-        }
-        for (size_t k = 0; k < rx->product_count; ++k) {
-            ChemProduct p = m->products[rx->product_start+k];
-            if (!s->algebraic[p.species]) forcing[p.species] += p.yield*flux;
-        }
-        for (size_t k = 0; k < rx->reactant_count; ++k) {
-            size_t col = (size_t)m->reactants[rx->reactant_start+k];
-            double derivative = rate;
-            for (size_t j = 0; j < rx->reactant_count; ++j) if (j != k)
-                derivative *= s->values[(size_t)m->reactants[rx->reactant_start+j]*cells+cell];
-            for (size_t j = 0; j < rx->reactant_count; ++j) {
-                int row=m->reactants[rx->reactant_start+j];
-                if (!s->algebraic[row]) jacobian[(size_t)row*n+col] += derivative;
-            }
-            for (size_t j = 0; j < rx->product_count; ++j) {
-                ChemProduct p = m->products[rx->product_start+j];
-                if (!s->algebraic[p.species]) jacobian[(size_t)p.species*n+col] -= p.yield*derivative;
-            }
-        }
-    }
+    add_reaction_terms(s,cell,s->values+cell,cells,s->algebraic,forcing,jacobian);
     if (s->external_model_count) {
         double *external_forcing=calloc(n*cells,sizeof(*external_forcing));
         double *external_jacobian=calloc(s->nonzeros*cells,sizeof(*external_jacobian));

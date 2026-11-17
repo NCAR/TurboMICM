@@ -42,6 +42,28 @@ int chem_state_build(ChemState **state,const ChemMechanism *m,size_t cells,int i
     *state=created; return CHEM_OK;
 }
 
+int chem_reaction_pattern(const ChemMechanism *m,const unsigned char *algebraic,unsigned char *pattern)
+{
+    int status=chem_validate_reaction_species(m,1);
+    if (status || !pattern || m->species_count>SIZE_MAX/m->species_count) return status ? status : CHEM_INVALID;
+    size_t n=m->species_count; memset(pattern,0,n*n);
+    for (size_t i=0;i<m->reaction_count;++i) {
+        const ChemReaction *r=&m->reactions[i];
+        for (size_t k=0;k<r->reactant_count;++k) {
+            size_t col=(size_t)m->reactants[r->reactant_start+k];
+            for (size_t j=0;j<r->reactant_count;++j) {
+                size_t row=(size_t)m->reactants[r->reactant_start+j];
+                if (!algebraic || !algebraic[row]) pattern[row*n+col]=1;
+            }
+            for (size_t j=0;j<r->product_count;++j) {
+                size_t row=(size_t)m->products[r->product_start+j].species;
+                if (!algebraic || !algebraic[row]) pattern[row*n+col]=1;
+            }
+        }
+    }
+    return CHEM_OK;
+}
+
 void chem_mechanism_composition_destroy(ChemMechanismComposition *c)
 {
     if (!c) return;

@@ -199,6 +199,9 @@ ChemState *chem_state_create(const ChemMechanism *mechanism, size_t cells);
  * Use the extended constructor directly when external models own dependencies. */
 int chem_validate_reaction_species(const ChemMechanism *mechanism, int ignore_unused);
 int chem_state_build(ChemState **state, const ChemMechanism *mechanism, size_t cells, int ignore_unused);
+/* Unfilled native-reaction Jacobian pattern, row-major species_count square.
+ * The optional mask excludes reaction contributions to algebraic rows. */
+int chem_reaction_pattern(const ChemMechanism *mechanism, const unsigned char *algebraic, unsigned char *pattern);
 ChemState *chem_state_create_constrained(const ChemMechanism *mechanism, const ChemConstraint *constraints,
                                          size_t constraint_count, size_t cells);
 ChemState *chem_state_create_extended(const ChemMechanism *mechanism, const ChemConstraint *constraints,
@@ -255,6 +258,10 @@ int chem_linear_factor_copy(const ChemLinearSolver *solver, const ChemLinearSyst
                             ChemLinearSystem *factors, double alpha, void *context);
 int chem_linear_add_alpha(ChemLinearSystem *system, double alpha);
 int chem_update_rates(ChemState *state);
+/* Add native reaction terms for one cell to existing dense arrays. values is
+ * a species_count-element vector; an optional mask skips algebraic rows. */
+int chem_add_reaction_terms(const ChemState *state, size_t cell, const double *values,
+                            const unsigned char *algebraic, double *forcing, double *negative_jacobian);
 /* Negative Jacobian, in dense row-major form for one cell, and forcing, for
  * diagnostics and tests. The solver itself uses sparse storage. */
 int chem_evaluate(const ChemState *state, size_t cell, double *forcing, double *negative_jacobian);

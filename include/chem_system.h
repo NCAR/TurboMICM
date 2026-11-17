@@ -32,6 +32,8 @@ double chem_parameterized_value(ChemParameterizedFunction function, double tempe
 typedef struct { const ChemSpeciesInfo *species; int has_diffusion; double diffusion; } ChemPhaseSpecies;
 typedef struct { const char *name; const ChemPhaseSpecies *species; size_t species_count; } ChemPhase;
 typedef struct { const ChemPhase *gas; } ChemSystem;
+/* Construction-time association; the runtime reaction stores species indices. */
+typedef struct { ChemReaction reaction; const ChemPhase *phase; } ChemProcessDefinition;
 size_t chem_phase_state_size(const ChemPhase *phase);
 int chem_phase_state_name(const ChemPhase *phase, size_t state_index, char *buffer, size_t size);
 /* Materialize the non-parameterized phase species in state order. Names are

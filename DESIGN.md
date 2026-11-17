@@ -38,6 +38,9 @@ system views for hand-built mechanisms. Phase export creates the runtime
 species array, excluding parameterized species. Checked state construction
 can reject species unused by native reactions; extended mechanisms may instead
 use their model declarations when validating dependencies.
+Native-reaction diagnostics can expose the unfilled Jacobian pattern or add
+forcing and negative-Jacobian contributions to existing arrays, with optional
+algebraic-row masking.
 
 `chem_matrix.h` provides typed-by-element-size dense matrices with row-major or
 grouped storage, checked row and column operations, reusable matrix functions,
