@@ -227,3 +227,8 @@ and custom constraints, including cell-specific temperatures and parameter
 overrides, both LU algorithms, dense and sparse plans, and invalid temperatures.
 Both compilers pass these checks and the TS1 comparison. The case report
 remains 564 passing and 116 unported failures.
+
+External-model state fragments now register variables and parameters with a
+shared state. The aerosol reference checks for registration, named updates,
+forcing, and Jacobians pass for both solver families. Both compilers pass the
+TS1 comparison; the case report has 574 passing and 106 unported failures.

@@ -7,6 +7,11 @@ ROOT = Path(__file__).resolve().parents[1]
 CASE_LIST = ROOT / '../reference/micm_cases.txt'
 # Each listed executable must check every assertion in each mapped case.
 CASES = {
+    **{f"{prefix}:AerosolModelIntegration.{case}": ("build/test_aerosol_state", "composed aerosol state and process")
+       for prefix in ["aerosol_model_rosenbrock", "aerosol_model_backward_euler"]
+       for case in ["StateIncludesStubAerosolModel", "CanUpdateStateWithStubAerosolModel",
+                    "CanUpdateMultiCellStateWithStubAerosolModel", "CanCalculateSingleGridCellForcingWithStubAerosolModel",
+                    "CanCalculateSingleGridCellJacobianWithStubAerosolModel"]},
     **{case: ("tools/test_tutorial_programs.py", "tutorial output matches reference")
        for case in ["rate_constants_no_user_defined_example_by_hand", "rate_constants_user_defined_example_by_hand",
                     "README_example", "multiple_grid_cells", "solve_results", "solver_configuration"]},

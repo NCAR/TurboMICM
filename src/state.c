@@ -70,6 +70,53 @@ fail:
     chem_state_destroy(&s);
     return result;
 }
+ChemStateStatus chem_state_init_composed(ChemState *state, const ChemStateConfig *base,
+                                         size_t fragment_count, const ChemStateFragment *fragments)
+{
+    if (!state || !base || (fragment_count && !fragments) ||
+        (base->species_count && !base->species_names) ||
+        (base->parameter_count && !base->parameter_names)) return CHEM_STATE_INVALID;
+    size_t ns=base->species_count,np=base->parameter_count;
+    for (size_t i=0;i<fragment_count;++i) {
+        const ChemStateFragment *f=fragments+i;
+        if ((f->species_count && !f->species_names) || (f->parameter_count && !f->parameter_names))
+            return CHEM_STATE_INVALID;
+        if (f->species_count>SIZE_MAX-ns || f->parameter_count>SIZE_MAX-np) return CHEM_STATE_SIZE;
+        ns+=f->species_count; np+=f->parameter_count;
+    }
+    if (ns>SIZE_MAX/sizeof(char *) || np>SIZE_MAX/sizeof(char *) || ns>SIZE_MAX/sizeof(double))
+        return CHEM_STATE_SIZE;
+    const char **species=ns ? malloc(ns*sizeof(*species)) : NULL;
+    const char **parameters=np ? malloc(np*sizeof(*parameters)) : NULL;
+    double *atol=ns ? calloc(ns,sizeof(*atol)) : NULL;
+    if ((ns && (!species || !atol)) || (np && !parameters)) {
+        free(species); free(parameters); free(atol); return CHEM_STATE_NO_MEMORY;
+    }
+    size_t si=0,pi=0;
+    if (base->species_count) {
+        memcpy(species,base->species_names,base->species_count*sizeof(*species));
+        if (base->absolute_tolerances) memcpy(atol,base->absolute_tolerances,base->species_count*sizeof(*atol));
+        si=base->species_count;
+    }
+    if (base->parameter_count) {
+        memcpy(parameters,base->parameter_names,base->parameter_count*sizeof(*parameters)); pi=base->parameter_count;
+    }
+    for (size_t i=0;i<fragment_count;++i) {
+        const ChemStateFragment *f=fragments+i;
+        if (f->species_count) {
+            memcpy(species+si,f->species_names,f->species_count*sizeof(*species));
+            if (f->absolute_tolerances) memcpy(atol+si,f->absolute_tolerances,f->species_count*sizeof(*atol));
+            si+=f->species_count;
+        }
+        if (f->parameter_count) {
+            memcpy(parameters+pi,f->parameter_names,f->parameter_count*sizeof(*parameters)); pi+=f->parameter_count;
+        }
+    }
+    ChemStateConfig combined={base->cells,ns,np,base->rate_count,species,parameters,base->relative_tolerance,atol};
+    ChemStateStatus result=chem_state_init(state,&combined);
+    free(species); free(parameters); free(atol);
+    return result;
+}
 ChemStateStatus chem_state_clone(ChemState *destination, const ChemState *source)
 {
     if (!destination || !source) return CHEM_STATE_INVALID;
@@ -97,6 +144,10 @@ static size_t find_name(char *const *names, size_t n, const char *name)
     if (name) for (size_t i=0;i<n;++i) if (!strcmp(names[i],name)) return i;
     return n;
 }
+size_t chem_state_species_index(const ChemState *s,const char *name)
+{ return s ? find_name(s->species_names,s->species_count,name) : 0; }
+size_t chem_state_parameter_index(const ChemState *s,const char *name)
+{ return s ? find_name(s->parameter_names,s->parameter_count,name) : 0; }
 static ChemStateStatus set_column(size_t cells, size_t columns, char *const *names, double *matrix,
                                   const char *name, const double *values, size_t count)
 {

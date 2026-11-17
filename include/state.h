@@ -22,10 +22,21 @@ typedef struct {
     double relative_tolerance;
     const double *absolute_tolerances; /* NULL initializes to zero. */
 } ChemStateConfig;
+/* Additional names contributed by an external model. The arrays are borrowed
+   only during initialization; NULL tolerances give zero for that fragment. */
+typedef struct {
+    size_t species_count, parameter_count;
+    const char *const *species_names, *const *parameter_names;
+    const double *absolute_tolerances;
+} ChemStateFragment;
 
 /* Start with ChemState s = {0}; init and clone replace an initialized state
    only after success. Names and all numeric arrays are owned by the state. */
 ChemStateStatus chem_state_init(ChemState *state, const ChemStateConfig *config);
+/* Append fragments in order to the base configuration, copying all names and
+   tolerances. Duplicate names or other errors leave the original state intact. */
+ChemStateStatus chem_state_init_composed(ChemState *state, const ChemStateConfig *base,
+                                         size_t fragment_count, const ChemStateFragment *fragments);
 ChemStateStatus chem_state_clone(ChemState *destination, const ChemState *source);
 void chem_state_move(ChemState *destination, ChemState *source);
 void chem_state_destroy(ChemState *state);
@@ -40,6 +51,9 @@ ChemStateStatus chem_state_set_concentrations(ChemState *state, const ChemStateC
 ChemStateStatus chem_state_set_parameters(ChemState *state, const ChemStateColumn *columns, size_t count);
 /* Direct access for one cell; returns NULL for an invalid name or cell. */
 double *chem_state_concentration(ChemState *state, size_t cell, const char *name);
+/* Return the relevant count when the name is absent. */
+size_t chem_state_species_index(const ChemState *state, const char *name);
+size_t chem_state_parameter_index(const ChemState *state, const char *name);
 /* Copy a cell-major parameter table after validating both dimensions. */
 ChemStateStatus chem_state_set_parameter_table(ChemState *state, const double *values,
                                                size_t cells, size_t parameters);
