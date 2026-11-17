@@ -45,6 +45,9 @@ build/rosenbrock.o: src/rosenbrock.c src/internal.h include/chem.h | build
 build/constraint.o: src/constraint.c include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
+build/constraint_matrix.o: src/constraint_matrix.c include/constraint_matrix.h include/chem.h include/matrix.h include/sparse.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
 build/model.o: src/model.c include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -66,7 +69,7 @@ build/rate_store.o: src/rate_store.c include/rate_store.h include/chem.h | build
 build/solver.o: src/solver.c include/solver.h include/state.h include/chem.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 
-build/libchem.a: build/chem.o build/rosenbrock.o build/constraint.o build/model.o build/matrix.o build/sparse.o build/state.o build/jacobian_verify.o build/rate_store.o build/solver.o
+build/libchem.a: build/chem.o build/rosenbrock.o build/constraint.o build/constraint_matrix.o build/model.o build/matrix.o build/sparse.o build/state.o build/jacobian_verify.o build/rate_store.o build/solver.o
 	ar rcs $@ $^
 
 cpu: bin/ts1_bench_cpu

@@ -1,4 +1,5 @@
 #include "chem.h"
+#include "constraint_matrix.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -500,6 +501,35 @@ static int constraint_set_case(int which)
     return 0;
 }
 
+static int constraint_grouped(size_t width,int indexing)
+{
+    const ChemTerm reactants[]={{0,1},{1,1}},products[]={{2,1}};
+    const ChemConstraint constraint={"A_B_eq",CHEM_EQUILIBRIUM_CONSTRAINT,2,reactants,products,2,1,.033,0,8.31446261815324,298.15};
+    const ChemConstraintSet set={&constraint,1};
+    const double indexing_states[3][3]={{.01,.02,.05},{.03,.01,.2},{.001,.002,.004}};
+    const double regular_states[3][3]={{.2,.4,.6},{.1,.3,.7},{.01,.02,.05}};
+    const double (*states)[3]=indexing?indexing_states:regular_states;
+    const double temperature[]={298.15,298.15,298.15};
+    ChemMatrix state={0},forcing={0};ChemSparseBuilder builder={0};ChemSparseMatrix jacobian={0};
+    int ok=!chem_matrix_init(&state,3,3,width,1,0) && !chem_matrix_init(&forcing,3,3,width,1,-4) &&
+           !chem_sparse_builder_init(&builder,3);
+    if(ok)for(size_t i=0;i<3;++i)if(chem_sparse_builder_add(&builder,i,i) || chem_sparse_builder_add(&builder,2,i))ok=0;
+    if(ok && chem_sparse_init(&jacobian,&builder,3,width,0,11))ok=0;
+    chem_sparse_builder_free(&builder);
+    if(ok)for(size_t cell=0;cell<3;++cell)if(chem_matrix_set_row(&state,cell,states[cell],3))ok=0;
+    if(ok && chem_constraint_set_apply_matrices(set,temperature,3,&state,&forcing,&jacobian))ok=0;
+    if(ok)for(size_t cell=0;cell<3;++cell) {
+        double a=states[cell][0],b=states[cell][1],ab=states[cell][2];
+        if(fabs(*chem_matrix_at(&forcing,cell,2)-(.033*a*b-ab))>1e-12 ||
+           *chem_matrix_at(&forcing,cell,0)!=-4 || *chem_matrix_at(&forcing,cell,1)!=-4 ||
+           fabs(*chem_sparse_at(&jacobian,cell,2,0)+.033*b)>1e-12 ||
+           fabs(*chem_sparse_at(&jacobian,cell,2,1)+.033*a)>1e-12 ||
+           *chem_sparse_at(&jacobian,cell,2,2)!=1 || *chem_sparse_at(&jacobian,cell,0,0)!=11 ||
+           *chem_sparse_at(&jacobian,cell,1,1)!=11)ok=0;
+    }
+    chem_matrix_free(&state);chem_matrix_free(&forcing);chem_sparse_free(&jacobian);return ok;
+}
+
 static int species_case(int which)
 {
     ChemSpecies s,copy; chem_species_init(&s,"thing"); chem_species_init(&copy,NULL);
@@ -704,10 +734,10 @@ int main(void)
     printf("constraint_set:ConstraintSet.ThreeDStateOneConstraint %d\n", constraint_set_case(8));
     printf("constraint_set:ConstraintSet.FourDStateTwoConstraints %d\n", constraint_set_case(9));
     printf("constraint_set:ConstraintSet.CoupledConstraintsSharedSpecies %d\n", constraint_set_case(10));
-    printf("constraint_set:ConstraintSet.VectorizedMatricesRespectGridCellIndexing %d\n", constraint_set_case(11));
-    printf("constraint_set:ConstraintSet.VectorMatrix1 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_set_case(4) && constraint_set_case(5));
-    printf("constraint_set:ConstraintSet.VectorMatrix2 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_set_case(4) && constraint_set_case(5));
-    printf("constraint_set:ConstraintSet.VectorMatrix3 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_set_case(4) && constraint_set_case(5));
+    printf("constraint_set:ConstraintSet.VectorizedMatricesRespectGridCellIndexing %d\n", constraint_set_case(11) && constraint_grouped(4,1));
+    printf("constraint_set:ConstraintSet.VectorMatrix1 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_grouped(1,0));
+    printf("constraint_set:ConstraintSet.VectorMatrix2 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_grouped(2,0));
+    printf("constraint_set:ConstraintSet.VectorMatrix3 %d\n", constraint_set_case(0) && constraint_set_case(2) && constraint_grouped(3,0));
     printf("species:Species.StringConstructor %d\n", species_case(0));
     printf("species:Species.StringAndVectorConstructor %d\n", species_case(1));
     printf("species:Species.GetProperty %d\n", species_case(2));
