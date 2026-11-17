@@ -28,6 +28,8 @@ build/linear.o: src/linear.c include/linear.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/backward_euler.o: src/backward_euler.c include/backward_euler.h include/rosenbrock.h include/linear.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
+build/backward_euler_group.o: src/backward_euler_group.c include/backward_euler.h | build
+	$(CC) $(CFLAGS) -c $< -o $@
 build/constraint.o: src/constraint.c include/constraint.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
 build/constraint_init.o: src/constraint_init.c include/rosenbrock.h include/constraint.h | build
@@ -46,7 +48,7 @@ build/sparse_matrix.o: src/sparse_matrix.c include/sparse_matrix.h include/matri
 	$(CC) $(CFLAGS) -c $< -o $@
 build/composite.o: src/composite.c include/composite.h include/rates.h | build
 	$(CC) $(CFLAGS) -c $< -o $@
-build/libchem.a: build/process.o build/species.o build/rosenbrock_group.o build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
+build/libchem.a: build/backward_euler_group.o build/process.o build/species.o build/rosenbrock_group.o build/rate_store.o build/composite.o build/sparse_matrix.o build/matrix.o build/state.o build/jacobian_check.o build/chem.o build/rosenbrock.o build/rates.o build/sparse.o build/linear.o build/backward_euler.o build/constraint.o build/constraint_init.o
 	ar rcs $@ $^
 build/test_chem: tests/test_chem.c build/libchem.a
 	$(CC) $(CFLAGS) $< build/libchem.a -lm -o $@

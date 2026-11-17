@@ -47,8 +47,8 @@ Markowitz permutation before emitting the mechanism; the tests exercise that
 path with a separate small mechanism.
 
 `src/backward_euler.c` implements the implicit Newton iteration and reference
-step-reduction sequence. Its convergence function supports multiple cell rows,
-while the integration function currently advances one cell. Both solver families
+step-reduction sequence. Its grouped interface shares convergence and step
+acceptance across independent cell blocks. Both solver families
 use the same dense or sparse factorization functions; set `lu_algorithm` to
 select Mozart or Doolittle. The default is Mozart.
 

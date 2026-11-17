@@ -241,3 +241,8 @@ Named process construction and compilation to indexed mechanisms now cover
 reaction copying, missing systems, unused species, parameterized reactants, and
 per-species tolerances. Both compilers pass the 100-cell TS1 comparison; the
 case report has 593 passing and 87 unported failures.
+
+Backward Euler now supports grouped, shared-convergence solves. The four
+single- and multi-cell aerosol trajectory cases pass at the reference
+tolerances with both compilers; the case report has 597 passing and 83
+unported failures. Both compilers also pass the 100-cell TS1 comparison.

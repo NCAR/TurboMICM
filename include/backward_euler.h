@@ -18,4 +18,11 @@ int chem_backward_euler_converged(size_t cells, size_t variables, const double *
 ChemSolveStatus chem_backward_euler_solve(size_t n, double *y, double duration,
     ChemOdeFunction rhs, ChemOdeFunction jacobian, void *context,
     const ChemBackwardEulerOptions *options, ChemSolverStats *stats);
+/* Advance independent cells with shared step acceptance and convergence.
+   Tolerances are per variable; cell_pattern is an optional row-major Jacobian
+   mask used to construct a block-sparse plan. options->sparse_plan must be NULL. */
+ChemSolveStatus chem_backward_euler_solve_grouped(size_t cells, size_t variables,
+    double *y, double duration, ChemOdeFunction rhs, ChemOdeFunction jacobian,
+    void *const *contexts, const unsigned char *cell_pattern,
+    const ChemBackwardEulerOptions *options, ChemSolverStats *stats);
 #endif

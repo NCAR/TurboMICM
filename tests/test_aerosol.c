@@ -37,7 +37,7 @@ static void grouped_solves(const unsigned char *pattern, const ChemRosenbrockMet
 {
     double atol[NVAR]; for (size_t i=0;i<NVAR;++i) atol[i]=.001;
     for (size_t cells=1;cells<=3;cells+=2) for (size_t both=0;both<2;++both)
-      for (size_t method=0;method<5;++method) for (size_t sparse=0;sparse<2;++sparse)
+      for (size_t method=0;method<6;++method) for (size_t sparse=0;sparse<2;++sparse)
       for (size_t lu=0;lu<2;++lu) {
         Transfers first[3],second[3]; ChemOdeComponent components[3][2];
         ChemCompositeOde systems[3]; void *contexts[3];
@@ -63,14 +63,18 @@ static void grouped_solves(const unsigned char *pattern, const ChemRosenbrockMet
         }
         ChemRosenbrockOptions options=chem_rosenbrock_defaults(atol);
         options.lu_algorithm=(ChemLuAlgorithm)lu;
-        assert(chem_rosenbrock_solve_grouped(cells,NVAR,y,10,chem_composite_rhs,
-               chem_composite_jacobian,contexts,sparse ? pattern : NULL,&methods[method],&options,NULL)==CHEM_SOLVE_OK);
+        ChemBackwardEulerOptions be=chem_backward_euler_defaults(atol); be.lu_algorithm=(ChemLuAlgorithm)lu;
+        ChemSolveStatus status=method<5 ? chem_rosenbrock_solve_grouped(cells,NVAR,y,10,chem_composite_rhs,
+               chem_composite_jacobian,contexts,sparse ? pattern : NULL,&methods[method],&options,NULL) :
+            chem_backward_euler_solve_grouped(cells,NVAR,y,10,chem_composite_rhs,
+               chem_composite_jacobian,contexts,sparse ? pattern : NULL,&be,NULL);
+        assert(status==CHEM_SOLVE_OK);
         for (size_t c=0;c<cells;++c) {
             double *x=y+c*NVAR, fo2=1+.5*c,baz=.5+.2*c,fo2aq=.8+.2*c;
             assert(chem_state_concentration(&state,c,"FO2")==x+F);
             assert(chem_state_concentration(&state,c,"STUB2.MODE3.QUUX.BAZ")==x+BAZ3);
             double delta1=fo2*(1-exp(-.01)),delta2=baz*(1-exp(-.02));
-            double tolerance=method==0 && both ? 5e-4 : 5e-5;
+            double tolerance=method==5 ? (both ? .1 : 2e-4) : (method==0 && both ? 5e-4 : 5e-5);
             assert(fabs(x[F]-(fo2-delta1))<=tolerance*fo2 && fabs(x[FO2_AQ]-(fo2aq+delta1))<=tolerance*fo2);
             assert(fabs(x[BAZ1]-(baz-delta2))<=tolerance*baz && fabs(x[BAZ2]-delta2)<=tolerance*baz);
             assert(x[BAR]==2+.5*c && x[N1]==1000+100*c && x[N2]==500+50*c);

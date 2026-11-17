@@ -23,13 +23,13 @@ The current solver uses independent per-cell integration and sparse no-pivot
 factorization; further optimization and broader verification are still needed.
 
 `make test-cpu` reports every ID from the reference case list. Currently
-593 cases have been ported, so the target intentionally fails and labels the
-other 87 as unported. The focused `make check` tests cover additional behavior
+597 cases have been ported, so the target intentionally fails and labels the
+other 83 as unported. The focused `make check` tests cover additional behavior
 but do not claim full equivalence with those remaining cases.
 
-The single-cell backward Euler API is declared in `include/backward_euler.h`.
-It shares forcing, Jacobian, and optional sparse linear-solver interfaces with
-the Rosenbrock solver.
+The backward Euler API is declared in `include/backward_euler.h`. It supports
+single-cell and shared-step grouped solves and shares forcing, Jacobian, and
+optional sparse linear-solver interfaces with the Rosenbrock solver.
 
 `include/constraint.h` provides indexed linear and equilibrium constraints,
 validation, residuals, Jacobians, sparsity, and algebraic error estimates.

@@ -61,6 +61,23 @@ int main(void)
     options.max_iterations = 1; y[0]=1; y[1]=0;
     assert(chem_backward_euler_solve(2,y,1,rhs,jac,&k,&options,&stats) == CHEM_SOLVE_UNCONVERGED);
     assert(stats.rejected == 6 && stats.accepted == 0 && fabs(stats.final_time-.00625) < 1e-15);
+    {
+        double rates[]={2,4,8}; void *contexts[]={rates,rates+1,rates+2};
+        const unsigned char pattern[]={1,0,1,0};
+        for (size_t sparse=0;sparse<2;++sparse) for (size_t lu=0;lu<2;++lu) {
+            double group_y[]={1,0,2,0,3,0};
+            ChemBackwardEulerOptions group=chem_backward_euler_defaults(atol); group.lu_algorithm=(ChemLuAlgorithm)lu;
+            assert(chem_backward_euler_solve_grouped(3,2,group_y,1,rhs,jac,contexts,sparse ? pattern : NULL,&group,&stats)==CHEM_SOLVE_OK);
+            assert(stats.steps==2 && stats.accepted==1 && stats.final_time==1);
+            for (size_t c=0;c<3;++c) {
+                double expected=(c+1)/(1+rates[c]);
+                assert(fabs(group_y[2*c]-expected)<1e-14 && fabs(group_y[2*c+1]-((c+1)-expected))<1e-14);
+            }
+            group.max_iterations=1;
+            assert(chem_backward_euler_solve_grouped(3,2,group_y,1,rhs,jac,contexts,sparse ? pattern : NULL,&group,&stats)==CHEM_SOLVE_UNCONVERGED);
+            assert(stats.rejected==6 && stats.accepted==0 && fabs(stats.final_time-.00625)<1e-15);
+        }
+    }
     chem_sparse_plan_destroy(plan);
     /* The reference CanCallSolve case uses this chain and conditions. */
     const size_t chain_reactants[] = {0,1};
