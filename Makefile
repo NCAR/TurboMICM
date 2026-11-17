@@ -1,5 +1,6 @@
 CC = clang
 OPTFLAGS ?= -O3 -DNDEBUG
+CONDA ?= conda
 CFLAGS = $(OPTFLAGS) -std=c11 -Wall -Wextra -Wpedantic -Iinclude
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
@@ -8,7 +9,7 @@ endif
 
 .PHONY: env cpu check clean
 env:
-	CONDA_PKGS_DIRS="$(CURDIR)/.conda-pkgs" $(HOME)/miniforge3/bin/conda env create --prefix "$(CURDIR)/.conda" --file environment.yml
+	CONDA_PKGS_DIRS="$(CURDIR)/.conda-pkgs" $(CONDA) env create --prefix "$(CURDIR)/.conda" --file environment.yml
 cpu: build/libchem.a
 build:
 	mkdir -p $@
@@ -173,8 +174,9 @@ check: build/test_ts1_rates
 # Apple clang needs Homebrew libomp; GCC and non-Apple compilers use -fopenmp.
 ifeq ($(UNAME_S),Darwin)
 ifneq (,$(findstring clang,$(shell $(CC) --version | head -1)))
-OMP_CFLAGS = -Xpreprocessor -fopenmp -isystem /opt/homebrew/opt/libomp/include
-OMP_LIBS = -L/opt/homebrew/opt/libomp/lib -lomp
+LIBOMP_PREFIX ?= $(shell brew --prefix libomp 2>/dev/null)
+OMP_CFLAGS = -Xpreprocessor -fopenmp -isystem $(LIBOMP_PREFIX)/include
+OMP_LIBS = -L$(LIBOMP_PREFIX)/lib -lomp
 else
 OMP_CFLAGS = -fopenmp
 OMP_LIBS = -fopenmp

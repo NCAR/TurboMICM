@@ -3,7 +3,9 @@
 Create the local tooling environment with `make env`. `make cpu` builds the C11
 mass-action library and TS1 benchmark. `make check CC=clang` or `make check CC=gcc-15` builds and
 runs the current focused tests; the tests read tutorial configuration input from
-the adjacent `micm` checkout. `OPTFLAGS` can be supplied to make.
+the adjacent `micm` checkout. `OPTFLAGS` can be supplied to make. Set `CONDA`
+if Conda is not on `PATH`; on macOS with clang, `LIBOMP_PREFIX` can override
+the Homebrew libomp location.
 
 Rosenbrock and backward Euler solvers are available through
 `include/rosenbrock.h` and `include/backward_euler.h`. Run `make clean`

@@ -183,3 +183,9 @@ limits the next step, and applies the repeated-rejection factor. To replace it,
 change that block while preserving the solver's accepted-state and retry
 semantics; the method's `error_order` and the option fields provide its inputs.
 The controller is shared by single-cell and grouped solves.
+
+Build configuration accepts `CC` and `OPTFLAGS`; `CONDA` selects the Conda
+executable. On macOS, `LIBOMP_PREFIX` selects the clang OpenMP installation
+and defaults to the prefix reported by Homebrew. On other systems the build
+uses the compiler's `-fopenmp` support. These settings do not select numerical
+methods or change solver tolerances.
