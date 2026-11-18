@@ -1,0 +1,24 @@
+terra-max permute_m_terra-max_reorder.c: 5 reactions, species ['C', 'A', 'B', 'D']: match
+terra-max permute_m_terra-max.c: 5 reactions, species ['A', 'B', 'C', 'D']: match
+terra-max permute_reorder.c: 4 reactions, species ['B', 'A', 'C', 'D']: match
+terra-max permute.c: 4 reactions, species ['A', 'B', 'C', 'D']: match
+terra-max rate_constants_user_defined_reorder.c: 10 reactions, species ['A', 'B', 'C', 'D', 'E', 'F', 'G']: match
+terra-max rate_constants_user_defined.c: 10 reactions, species ['A', 'B', 'C', 'D', 'E', 'F', 'G']: match
+terra-max robertson_reorder.c: 3 reactions, species ['A', 'B', 'C']: match
+terra-max robertson.c: 3 reactions, species ['A', 'B', 'C']: match
+terra-xhigh permute_m_terra-xhigh.c: 5 reactions, species ['C', 'A', 'B', 'D']: match
+terra-xhigh permute.c: 4 reactions, species ['B', 'A', 'C', 'D']: match
+terra-xhigh rate_constants_user_defined.c: 10 reactions, species ['A', 'B', 'C', 'D', 'E', 'F', 'G']: match
+terra-xhigh robertson.c: 3 reactions, species ['A', 'B', 'C']: match
+terra-high permute_m_terra-high_reference.c: 5 reactions, species ['C', 'A', 'B', 'D']: match
+terra-high permute_m_terra-high_reorder.c: 5 reactions, species ['C', 'A', 'B', 'D']: match
+terra-high permute_m_terra-high.c: 5 reactions, species ['A', 'B', 'C', 'D']: match
+terra-high permute_reference.c: 4 reactions, species ['B', 'A', 'C', 'D']: match
+terra-high permute_reorder.c: 4 reactions, species ['B', 'A', 'C', 'D']: match
+terra-high permute.c: 4 reactions, species ['A', 'B', 'C', 'D']: match
+terra-high rate_constants_user_defined_reference.c: 10 reactions, species ['A', 'B', 'C', 'D', 'E', 'F', 'G']: match
+terra-high rate_constants_user_defined_reorder.c: 10 reactions, species ['A', 'B', 'C', 'D', 'E', 'F', 'G']: match
+terra-high rate_constants_user_defined.c: 10 reactions, species ['A', 'B', 'C', 'D', 'E', 'F', 'G']: match
+terra-high robertson_reference.c: 3 reactions, species ['A', 'B', 'C']: match
+terra-high robertson_reorder.c: 3 reactions, species ['A', 'B', 'C']: match
+terra-high robertson.c: 3 reactions, species ['A', 'B', 'C']: match

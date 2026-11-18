@@ -140,7 +140,7 @@ The public record is the wiki: NCAR/TurboMICM.wiki, checked out at
   Role-of-Claude-in-the-Design.
   - Tier 1 also has Tier-1-Judging (criteria, exercises, a results column per
     judge), one report page per judge (`Tier-1-Judging-Opus`, then Fable's and
-    the SSE's), and `Entrant-<run>` for each of the nine entrants: the same
+    the SSE's), and `Entrant-<run>` for each of the twelve entrants: the same
     sections in the same order and six diagrams each. Keep them consistent
     when one changes; `results/2026-10-20-tier1-judging-opus/brief/PAGE_TEMPLATE.md`
     is the template.
@@ -381,7 +381,14 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   its comparison with Judge 1 is the last section of its page; it records two
   of Judge 1's findings that Judge 2 had missed (sol-xhigh's user-rate
   scaling, astra-high's callback scan) and their arithmetic, with the scores
-  left as fixed. Next, Judge 3
+  left as fixed. Judge 1 scored the three Terra entries on 2026-11-18, to the
+  same standard, gathering the evidence itself with no helpers
+  (`results/2026-11-18-tier1-judging-opus-terra`; Tier-1-Judging-Opus covers
+  all twelve): terra-max 22.8 (second of the twelve), terra-high 19.2 (eighth,
+  tied with sol-max, which leads on maintainability), terra-xhigh 18.8 (ninth).
+  Judge 2's scores for the Terra entries are still to come (a Fable session
+  the SSE starts; Judge 2's briefs are in
+  `results/2026-10-24-tier1-judging-fable/brief/`). Next, Judge 3
   (the SSE): a report page and the third column of Tier-1-Judging's Results
   table. Findings for the SSE that bear on the gate (both judges): luna-high
   prints its PASS lines from a list once one program passes; luna-max and
@@ -389,6 +396,10 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   a step whose error norm is NaN; the Luna readers convert MICM's units with
   fixed exponents; luna-high's generator emits wrong reactions for a CAMP
   mechanism whose species order it changes (verified on a permuted tutorial).
+  Judge 1 adds for Terra: terra-high's PASS lines are mapped programs' exit
+  statuses; terra-max's LU and Jacobian ids check a searching Mozart and a
+  per-cell helper, not the plan and grouped kernels its solver runs; no
+  wrong-result defect in the three Terra readers (E5).
 - Time the entries on an x86-64 Linux machine.
 - Tier 3: Luna's arm, if its Tier 1 passes (it needs new held-out scenarios,
   since `tier3/heldout/` is public). Fable's reference solution (not a
@@ -433,8 +444,10 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   thread), terra-high 25,343 (1.08×), terra-xhigh 29,239 (0.93×); the eight
   timed before keep their order. The wiki has Tier-1-Implementations
   sections and Entrant pages for the three (written in the orchestrating
-  session, citations checked). Still open for Terra: judging, and the case
-  mapping of terra-high's 205 ids that name no variant; the audit of the
+  session, citations checked). Judge 1 scored them on 2026-11-18 (above,
+  "Tier 1's secondary criteria"). Still open for Terra: Judge 2's and Judge
+  3's review, and the case mapping of terra-high's 205 ids that name no
+  variant; the audit of the
   other 470 found 36 vector-ordered ids resting on standard-storage checks
   (a finding for the SSE that bears on the gate).
 - Luna: run all three fresh, one after another, at max, xhigh, then high (the

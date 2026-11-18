@@ -1,0 +1,79 @@
+{
+ "judge": "Claude Opus 5.5, max effort",
+ "order": 1,
+ "blind": false,
+ "date": "2026-11-18",
+ "scope": "the three Terra entries, judged to the standard of 2026-10-21; the nine entries' scores are those of results/2026-10-20-tier1-judging-opus/scores.json",
+ "criteria": [
+  "readability",
+  "maintainability",
+  "extensibility"
+ ],
+ "exercises": [
+  "E1 parameter set",
+  "E2 controller",
+  "E3 linear solver",
+  "E4 rate type",
+  "E5 another mechanism"
+ ],
+ "extensibility_rule": "twice the mean of the five exercise ratings, one decimal",
+ "scores": {
+  "terra-max": {
+   "readability": 7,
+   "maintainability": 7,
+   "exercises": [
+    5,
+    5,
+    5,
+    3,
+    4
+   ],
+   "extensibility": 8.8,
+   "total": 22.8
+  },
+  "terra-high": {
+   "readability": 7,
+   "maintainability": 5,
+   "exercises": [
+    5,
+    4,
+    2,
+    3,
+    4
+   ],
+   "extensibility": 7.2,
+   "total": 19.2
+  },
+  "terra-xhigh": {
+   "readability": 6,
+   "maintainability": 6,
+   "exercises": [
+    5,
+    3,
+    2,
+    3,
+    4
+   ],
+   "extensibility": 6.8,
+   "total": 18.8
+  }
+ },
+ "rank_of_twelve": [
+  "astra-xhigh",
+  "terra-max",
+  "sol-xhigh",
+  "astra-high",
+  "astra-max",
+  "sol-high",
+  "sol-max",
+  "terra-high",
+  "terra-xhigh",
+  "luna-xhigh",
+  "luna-max",
+  "luna-high"
+ ],
+ "ties": [
+  "astra-high and astra-max: total 22.4 and extensibility 8.4; astra-high ahead on maintainability (8 to 7)",
+  "sol-max and terra-high: total 19.2 and extensibility 7.2; sol-max ahead on maintainability (6 to 5)"
+ ]
+}

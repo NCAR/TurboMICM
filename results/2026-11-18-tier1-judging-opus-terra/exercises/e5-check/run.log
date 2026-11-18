@@ -1,0 +1,48 @@
+$ python3 -I run_copy.py tools generate.py ../inputs/rate_constants_user_defined/config.json out/rate_constants_user_defined.c --symbol cfg_rate_constants_user_defined
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/rate_constants_user_defined/config.json out/rate_constants_user_defined_reorder.c --symbol cfg_rate_constants_user_defined --reorder
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/robertson/config.json out/robertson.c --symbol cfg_robertson
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/robertson/config.json out/robertson_reorder.c --symbol cfg_robertson --reorder
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/permute/config.json out/permute.c --symbol cfg_permute
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/permute/config.json out/permute_reorder.c --symbol cfg_permute --reorder
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/permute_m_terra-max/config.json out/permute_m_terra-max.c --symbol cfg_permute_m_terra_max
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/permute_m_terra-max/config.json out/permute_m_terra-max_reorder.c --symbol cfg_permute_m_terra_max --reorder
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/rate_constants_user_defined/config.json out/rate_constants_user_defined.c --symbol cfg_rate_constants_user_defined
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/robertson/config.json out/robertson.c --symbol cfg_robertson
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/permute/config.json out/permute.c --symbol cfg_permute
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/permute_m_terra-xhigh/config.json out/permute_m_terra-xhigh.c --symbol cfg_permute_m_terra_xhigh
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/rate_constants_user_defined/config.json out/rate_constants_user_defined.c
+exit 0
+$ python3 -I run_copy.py tools generate.py --reorder ../inputs/rate_constants_user_defined/config.json out/rate_constants_user_defined_reorder.c
+exit 0
+$ python3 -I run_copy.py tools generate.py --reference-order ../inputs/rate_constants_user_defined/config.json out/rate_constants_user_defined_reference.c
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/robertson/config.json out/robertson.c
+exit 0
+$ python3 -I run_copy.py tools generate.py --reorder ../inputs/robertson/config.json out/robertson_reorder.c
+exit 0
+$ python3 -I run_copy.py tools generate.py --reference-order ../inputs/robertson/config.json out/robertson_reference.c
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/permute/config.json out/permute.c
+exit 0
+$ python3 -I run_copy.py tools generate.py --reorder ../inputs/permute/config.json out/permute_reorder.c
+exit 0
+$ python3 -I run_copy.py tools generate.py --reference-order ../inputs/permute/config.json out/permute_reference.c
+exit 0
+$ python3 -I run_copy.py tools generate.py ../inputs/permute_m_terra-high/config.json out/permute_m_terra-high.c
+exit 0
+$ python3 -I run_copy.py tools generate.py --reorder ../inputs/permute_m_terra-high/config.json out/permute_m_terra-high_reorder.c
+exit 0
+$ python3 -I run_copy.py tools generate.py --reference-order ../inputs/permute_m_terra-high/config.json out/permute_m_terra-high_reference.c
+exit 0

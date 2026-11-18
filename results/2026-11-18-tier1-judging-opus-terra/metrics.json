@@ -1,0 +1,110 @@
+{
+ "terra-max": {
+  "lines": {
+   "other": 21849,
+   "docs": 305,
+   "c_lib": 2932,
+   "c_bench": 234,
+   "c_tests": 5755,
+   "py_tests": 128,
+   "py_tools": 522
+  },
+  "files": {
+   "other": 29,
+   "docs": 4,
+   "c_lib": 19,
+   "c_bench": 1,
+   "c_tests": 33,
+   "py_tests": 2,
+   "py_tools": 3
+  },
+  "generated": {
+   "build/ts1.c": 772
+  },
+  "functions": 169,
+  "median_function": 8,
+  "over_60": 5,
+  "over_100": 2,
+  "largest": [
+   "chem_make_symbolic (src/linear.c:56, 110 lines)",
+   "chem_solve (src/rosenbrock.c:140, 104 lines)",
+   "create_state (src/state.c:46, 92 lines)",
+   "main (src/ts1_bench.c:158, 77 lines)",
+   "read_cells (src/ts1_bench.c:62, 67 lines)",
+   "chem_solve_backward_euler (src/backward_euler.c:24, 56 lines)"
+  ],
+  "lines_with_comments": 0.026
+ },
+ "terra-xhigh": {
+  "lines": {
+   "other": 21617,
+   "docs": 189,
+   "c_lib": 2658,
+   "c_bench": 207,
+   "c_tests": 4209,
+   "py_tests": 151,
+   "py_tools": 366
+  },
+  "files": {
+   "other": 29,
+   "docs": 4,
+   "c_lib": 20,
+   "c_bench": 1,
+   "c_tests": 32,
+   "py_tests": 2,
+   "py_tools": 3
+  },
+  "generated": {
+   "build/ts1.c": 3703
+  },
+  "functions": 172,
+  "median_function": 7,
+  "over_60": 6,
+  "over_100": 0,
+  "largest": [
+   "chem_rosenbrock_solve_group (src/rosenbrock.c:637, 88 lines)",
+   "chem_rate_constants_with_callbacks (src/chem.c:84, 83 lines)",
+   "chem_rosenbrock_solve (src/rosenbrock.c:561, 75 lines)",
+   "main (src/ts1_bench.c:142, 66 lines)",
+   "chem_workspace_create_external (src/rosenbrock.c:191, 65 lines)",
+   "chem_initialize_constraints (src/rosenbrock.c:497, 63 lines)"
+  ],
+  "lines_with_comments": 0.023
+ },
+ "terra-high": {
+  "lines": {
+   "other": 15958,
+   "docs": 422,
+   "c_bench": 215,
+   "c_tests": 5467,
+   "c_lib": 3842,
+   "py_tests": 539,
+   "py_tools": 385
+  },
+  "files": {
+   "other": 31,
+   "docs": 4,
+   "c_bench": 1,
+   "c_tests": 61,
+   "c_lib": 47,
+   "py_tests": 7,
+   "py_tools": 3
+  },
+  "generated": {
+   "build/ts1.c": 23
+  },
+  "functions": 226,
+  "median_function": 8,
+  "over_60": 7,
+  "over_100": 1,
+  "largest": [
+   "chem_rosenbrock_solve (src/rosenbrock.c:139, 134 lines)",
+   "main (bench/ts1_bench.c:133, 83 lines)",
+   "chem_backward_euler_solve (src/backward_euler.c:26, 78 lines)",
+   "chem_model_system_init (src/model.c:13, 76 lines)",
+   "chem_rosenbrock_solve_grouped_temperatures (src/rosenbrock_group.c:58, 75 lines)",
+   "chem_rosenbrock_initialize_constraints (src/constraint_init.c:41, 73 lines)"
+  ],
+  "lines_with_comments": 0.043
+ }
+}
