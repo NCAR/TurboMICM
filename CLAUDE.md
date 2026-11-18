@@ -404,7 +404,9 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
 - Time each new entry with all the others in one session (`admin/time_entries.py`,
   5 rounds at 10 and 1 threads), alongside `micm-standard-in-place-mozart`, its
   `-g32` variant, and `micm-vector8-in-place-mozart-g32`, as in
-  `results/2026-10-20-luna-xhigh-verification`.
+  `results/2026-11-17-tier1-all-twelve-timing` (all twelve entries; run it
+  from `~/NSF-NCAR/tier1-work/time-when-idle.sh LABEL RUN ...` in tmux, and
+  keep Claude Code idle through the 10-thread runs).
   - `admin/leaderboard.py` regenerates the wiki's Leaderboard: at 10 threads from
     every session's `timings.csv` except the Sol verification's, whose MICM names
     it does not parse; at 1 thread from the sessions that ran it.
@@ -418,22 +420,23 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   decided after Tier 1. Claude may stop a floundering Terra run (the SSE,
   2026-11-16: "I expect Terra runs to progress"); slowness alone is no reason.
   terra-max: 2026-11-16 22:52 to 01:25 MST, verified (676 PASS, 4 N/A, gate 2.51e-13; 64-cell groups;
-  `results/2026-11-17-terra-max-verification`), not yet timed. terra-xhigh:
+  `results/2026-11-17-terra-max-verification`). terra-xhigh:
   01:39 to 04:29, verified (676 PASS, 4 N/A, gate 1.77e-13; one cell at a
   time; `results/2026-11-17-terra-xhigh-verification`). terra-high: 04:44 to
   08:35 (58 turns), verified (675 PASS, 5 N/A, gate 1.25e-13; one cell at a
-  time, solver allocation inside the timer; its PASS ids are 47 programs' exit
-  statuses, unaudited; `results/2026-11-17-terra-high-verification`). The
-  timing session for all twelve entries (luna-high and the three Terra
-  entries not yet timed) was deferred by the SSE on 2026-11-17 at 11:43,
-  before it started: two macOS daemons (`suggestd`, `maild`) held 1.1 cores
-  all day, and a Google Meet call more. Next: that session, as
-  `admin/FOLLOW-UP-tier1-timing.md` sets out (the machine check, the gate's
-  `IDLE_CPU_LIMIT`, the steps, and every page to update). Still open for
-  Terra: Tier-1-Implementations sections, entrant pages, judging, and the
-  rest of the audit of terra-high's case mapping (so far: 24
-  vector-ordering LU and linear-solver ids pass on single-cell checks, 5 more
-  are doubtful; a finding for the SSE that bears on the gate).
+  time, solver allocation inside the timer; its PASS ids are 47 programs'
+  exit statuses; `results/2026-11-17-terra-high-verification`). All twelve
+  entries were timed together on 2026-11-17, 20:49 to 23:39, after a reboot
+  had cleared the daemons that deferred the session that morning
+  (`results/2026-11-17-tier1-all-twelve-timing`, 150 runs passing): at 10
+  threads terra-max 8,668 ms (3.15× MICM's default, sixth; third on one
+  thread), terra-high 25,343 (1.08×), terra-xhigh 29,239 (0.93×); the eight
+  timed before keep their order. The wiki has Tier-1-Implementations
+  sections and Entrant pages for the three (written in the orchestrating
+  session, citations checked). Still open for Terra: judging, and the case
+  mapping of terra-high's 205 ids that name no variant; the audit of the
+  other 470 found 36 vector-ordered ids resting on standard-storage checks
+  (a finding for the SSE that bears on the gate).
 - Luna: run all three fresh, one after another, at max, xhigh, then high (the
   SSE's order, 2026-10-19), each verified and timed with all entries before the
   next starts. luna-max is done: finished 21:05, verified, and timed overnight
@@ -442,8 +445,9 @@ The wiki pages are Tier-2-Design, Tier-2-Prompt, and Tier-2-Results.
   (`results/2026-10-20-luna-xhigh-verification`), 1.32 times MICM's default at
   10 threads and 2.41 on one, scaling only 2.79 times. luna-high's rerun is
   done and verified (finished 18:20 on 2026-10-20, 662 PASS, 0 FAIL, 18 N/A,
-  `results/2026-10-20-luna-high-verification`) but not yet timed; it is timed
-  with the Terra entries (see the Terra item). The first luna-high attempt was stopped at 08:11
+  `results/2026-10-20-luna-high-verification`), and timed with all twelve on
+  2026-11-17: 50,942 ms at 10 threads, 0.54 times MICM's default, the slowest
+  entry. The first luna-high attempt was stopped at 08:11
   on 2026-10-16, after 1 h 23 min, far from done (615 failing cases at its 07:51
   checkpoint); it is kept, outside the run root, at
   `~/NSF-NCAR/aborted-runs/luna-high-2026-10-16`, and `luna-high/` was recreated.

@@ -1,9 +1,8 @@
 # Verification of luna-high, 2026-10-20
 
 luna-high's rerun was rebuilt from its branch, retested, and audited with both
-compilers. It has not yet been timed with the other entries: on 2026-10-20 at
-18:33 the SSE deferred the timing session, all nine entries with MICM's three
-programs, to a follow-on session. Its times will be added here then.
+compilers. The SSE deferred its timing session on 2026-10-20 at 18:33; it was
+timed with all twelve entries on 2026-11-17 (see [Timing](#timing)).
 
 | File | Contents |
 |---|---|
@@ -60,3 +59,19 @@ build,tests,ts1,audit`, the method of
   (`tools/import_ts1.py:56-61`), and the tests check the generated text only
   for the two tutorial configurations, whose order is unchanged
   (`tests/test_codegen.py:108-114`).
+
+## Timing
+
+Timed on 2026-11-17, 20:49 to 23:39, with every other entry and MICM's three
+programs, in
+[`2026-11-17-tier1-all-twelve-timing`](../2026-11-17-tier1-all-twelve-timing/README.md):
+5 rounds at 10 and 1 threads, every run passing the gate.
+
+| | 10 threads, median ms (range) | vs MICM's default | vs MICM's fastest | 1 thread, median ms (range) | vs MICM's default | vs MICM's fastest |
+|---|---:|---:|---:|---:|---:|---:|
+| luna-high | 50,942 (50,542–51,727) | 0.54× | 0.19× | 311,252 (308,706–312,341) | 0.47× | 0.16× |
+
+It is the last of the twelve entries at both thread counts, and gains 6.11× from
+one thread to ten, the most of any program timed. Its self-report, 48.5 s
+against 27.3 s for MICM's default in one ten-thread run, compares with 50,942
+and 27,265 ms here.

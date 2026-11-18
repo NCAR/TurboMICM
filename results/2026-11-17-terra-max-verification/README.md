@@ -2,10 +2,9 @@
 
 terra-max, the first Terra entry (gpt-6.1-terra at max effort, Codex CLI
 0.169.0), was rebuilt from its branch, retested, and audited with both
-compilers on 2026-11-17 at 01:37, twelve minutes after the run ended. It is
-timed later, with the other two Terra entries, luna-high, and every other
-entry, in one session (the SSE's choice, 2026-11-16); its times will be added
-here then.
+compilers on 2026-11-17 at 01:37, twelve minutes after the run ended. It was
+timed with every other entry that evening, in one session (the SSE's choice,
+2026-11-16; see [Timing](#timing)).
 
 | File | Contents |
 |---|---|
@@ -57,6 +56,23 @@ MICM's timed programs) and once with `CC=gcc-15` (Homebrew GCC 15.2.0), by
 - **Self-report** (one line, not a timing): its RESULTS.md gives 9,632 ms
   against 23,835 ms for MICM with 64-cell groups, in one run each at 10
   threads.
+
+## Timing
+
+Timed on 2026-11-17, 20:49 to 23:39, with every other entry and MICM's three
+programs, in
+[`2026-11-17-tier1-all-twelve-timing`](../2026-11-17-tier1-all-twelve-timing/README.md):
+5 rounds at 10 and 1 threads, every run passing the gate.
+
+| | 10 threads, median ms (range) | vs MICM's default | vs MICM's fastest | 1 thread, median ms (range) | vs MICM's default | vs MICM's fastest |
+|---|---:|---:|---:|---:|---:|---:|
+| terra-max | 8,668 (8,591–8,707) | 3.15× | 1.11× | 43,691 (43,676–43,762) | 3.35× | 1.17× |
+
+It is sixth of the twelve entries at ten threads and third on one, and gains
+5.04× from one thread to ten. With its 64-cell groups it is 2.63× faster than
+MICM with 32-cell groups at ten threads and 3.11× on one; MICM with 64-cell
+groups was not timed in the session. Its self-report, 9,632 ms against 23,835 ms
+for MICM with 64-cell groups in one ten-thread run, compares with 8,668 ms here.
 
 ## Compliance
 

@@ -473,6 +473,9 @@ Token counts are as Codex reports them: total = uncached input + output.
   One group per thread, with MICM's default solver work at ten threads.
 - Not yet timed: at 18:33 the SSE deferred the timing session, all nine entries
   with MICM's three programs, to a follow-on session.
+- Timed with all entries: 2026-11-17, 20:49 to 23:39 (`results/2026-11-17-tier1-all-twelve-timing`; 5 rounds at 10 and 1 threads, all 150 runs passing the gate): 50,942 ms at 10 threads (0.54× MICM's default, 0.19× its fastest) and
+  311,252 ms on one (0.47×), last of the twelve at both; 6.11× from one thread
+  to ten, the most of any program.
 
 ## terra-max
 
@@ -527,6 +530,9 @@ Token counts are as Codex reports them: total = uncached input + output.
   1.57e-13 with gcc-15); the audit finds nothing outside the rules; no
   warnings. 64-cell groups by default, with MICM's solver work per group (9
   steps per interval).
+- Timed with all entries: 2026-11-17, 20:49 to 23:39 (`results/2026-11-17-tier1-all-twelve-timing`; 5 rounds at 10 and 1 threads, all 150 runs passing the gate): 8,668 ms at 10 threads (3.15× MICM's default, 1.11× its fastest), sixth
+  of the twelve, and 43,691 ms on one (3.35×, 1.17×), third; 5.04× from one
+  thread to ten.
 
 ## terra-xhigh
 
@@ -574,6 +580,8 @@ Token counts are as Codex reports them: total = uncached input + output.
   2.33e-13 with gcc-15); the audit finds nothing outside the rules (its 29 test
   programs, built in `build/`, checked by hand); no warnings. One cell at a
   time, each with its own step control, 9 steps per cell and interval.
+- Timed with all entries: 2026-11-17, 20:49 to 23:39 (`results/2026-11-17-tier1-all-twelve-timing`; 5 rounds at 10 and 1 threads, all 150 runs passing the gate): 29,239 ms at 10 threads (0.93× MICM's default) and 168,884 ms on one
+  (0.87×), tenth of the twelve at both; 5.78× from one thread to ten.
 
 ## terra-high
 
@@ -644,10 +652,37 @@ Token counts are as Codex reports them: total = uncached input + output.
   reset from 11:00 to 11:41, when the total rose to 230-270 %; the SSE had been
   in a Google Meet call. At 11:43 the SSE deferred the session to a follow-on
   session ("let us defer to a follow on session"); Claude Code stopped the gate
-  before the session started (no timing output was written). The plan is
-  `admin/FOLLOW-UP-tier1-timing.md`, now for all twelve entries. The gate's
+  before the session started (no timing output was written). The plan was
+  `admin/FOLLOW-UP-tier1-timing.md`, for all twelve entries (carried out that
+  evening and then deleted, as it said). The gate's
   logs are `~/NSF-NCAR/tier1-work/timing-terra-wait-1cpu.log` and
   `timing-terra-wait.log`.
+- Timing, the follow-on session (2026-11-17 evening, Claude Opus 5.5 at max,
+  the SSE: "machine is idle, start the Terra entrant timings"): after a reboot
+  the two daemons were gone, so the gate kept its one-core limit
+  (`IDLE_CPU_LIMIT=100`). Armed at 20:03:58 in tmux `tier1-timing`
+  (`time-when-idle.sh all-twelve luna-max luna-xhigh luna-high terra-max
+  terra-xhigh terra-high`); macOS's work after the reboot (XProtect's
+  remediators, the media analysis daemon, Spotlight's `spotlightknowledged`)
+  reset the gate until 20:39, and the session started at 20:49:01. It ended at
+  23:39:07 with `exit 0`: all 150 runs passed the gate. Claude Code waited
+  through every 10-thread phase (foreground waits, the goal's Stop hook keeping
+  the turn open) and read and wrote files during the 1-thread runs; the load
+  audit shows it at 5–10 % of a core in 20 of 170 samples, and macOS daemons
+  up to a core in 17, four of them in 10-thread runs
+  (`results/2026-11-17-tier1-all-twelve-timing`).
+- Timed with all entries: 2026-11-17, 20:49 to 23:39 (`results/2026-11-17-tier1-all-twelve-timing`; 5 rounds at 10 and 1 threads, all 150 runs passing the gate): 25,343 ms at 10 threads (1.08× MICM's default) and 144,516 ms on one
+  (1.01×), ninth of the twelve at both; 5.70× from one thread to ten. The eight
+  entries timed on 2026-10-20 keep their order, within 2.9 % of that session at
+  10 threads and 0.7 % on one.
+- Case-mapping audit, continued (read-only, the same evening): of the 19
+  programs whose ids name a layout, an ordering, or a solver variant (470 ids),
+  eleven run their checks in every layout and ordering their ids name, each as
+  one sequence per variant; 36 vector-ordered ids pass on checks of standard
+  storage only, the 24 found at wrap-up and twelve more; the other 205 ids name
+  no variant and were not compared with MICM's tests
+  (`results/2026-11-17-terra-high-verification`, "The case mapping,
+  continued").
 
 # Tier 2
 

@@ -31,7 +31,7 @@ LAYOUTS = ["standard", "vector1", "vector2", "vector4", "vector8", "vector128"]
 LUS = [("in-place", "mozart"), ("in-place", "doolittle"), ("separate", "mozart"), ("separate", "doolittle")]
 DEFAULT = "micm-standard-in-place-mozart"
 # Display names: the model as its harness lists it, then the reasoning effort.
-MODEL_NAMES = {"sol": "GPT-6.1-Sol", "astra": "GPT-6-Astra", "luna": "GPT-6-Luna"}
+MODEL_NAMES = {"sol": "GPT-6.1-Sol", "astra": "GPT-6-Astra", "luna": "GPT-6-Luna", "terra": "GPT-6.1-Terra"}
 EFFORT_NAMES = {"high": "High", "xhigh": "Extra High", "max": "Max"}
 # Each entry's own cell grouping, from its DESIGN.md and benchmark source.
 ENTRY_GROUPING = {"sol-high": "32 cells", "sol-xhigh": "32 cells", "sol-max": "32 cells", "astra-high": "32 cells", "astra-xhigh": "32 cells", "astra-max": "32 cells", "luna-max": "one per thread", "luna-xhigh": "one per thread", "luna-high": "one per thread", "terra-max": "64 cells", "terra-xhigh": "one cell", "terra-high": "one cell"}
